@@ -1,5 +1,6 @@
 export * from './botanical'
 export * from './pincode'
+export * from './validations'
 
 export interface GlorovProductPreview {
   id: string

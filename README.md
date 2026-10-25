@@ -82,6 +82,13 @@ Create an administrative user for the Medusa Admin dashboard:
 pnpm --filter @glorov/backend user -e admin@glorov.in -p SuperSecretPassword123!
 ```
 
+### Step 6: Seed Default Indian Region & Primary Currency (INR)
+Initialize the store with INR currency, India region, tax regions, and Pune Nursery stock location:
+```bash
+pnpm backend:seed
+# Or: pnpm --filter @glorov/backend exec ./src/scripts/seed-india-region.ts
+```
+
 ---
 
 ## 4. Running the Development Servers
@@ -120,6 +127,9 @@ pnpm typecheck
 # Lint all code
 pnpm lint
 
+# Run unit tests across backend, storefront, and shared types
+pnpm test
+
 # Build production artifacts
 pnpm build
 ```
@@ -138,4 +148,4 @@ pnpm build
 ## 7. Next Roadmap Milestone
 
 Following the approved `docs/implementation-roadmap.md`, the next phase is:
-**Phase 2, Task 6: Seed Default Indian Region, INR Currency & Sales Channel**, followed by **Phase 3: Domain Modeling & Botanical Product Extensions (Medusa v2 DML)**.
+**Phase 3: Domain Modeling & Botanical Product Extensions (Medusa v2 DML - Tasks 7–9)**, defining custom plant attributes (`botanical_name`, `sunlight`, `watering`, `season`, `germination_days`, `is_perishable`) and establishing product module links.

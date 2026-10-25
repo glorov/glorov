@@ -2,7 +2,7 @@ import { loadEnv, defineConfig } from "@medusajs/framework/utils"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
-module.exports = defineConfig({
+export default defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: process.env.REDIS_URL,
@@ -13,9 +13,14 @@ module.exports = defineConfig({
       jwtSecret: process.env.JWT_SECRET || "super-secret-jwt-key-glorov-dev-32bytes",
       cookieSecret: process.env.COOKIE_SECRET || "super-secret-cookie-glorov-dev-32bytes",
     },
-    databaseDriverOptions:
-      process.env.NODE_ENV === "production"
+    databaseDriverOptions: {
+      pool: {
+        min: Number(process.env.DB_POOL_MIN) || 2,
+        max: Number(process.env.DB_POOL_MAX) || 10,
+      },
+      ...(process.env.NODE_ENV === "production"
         ? { connection: { ssl: { rejectUnauthorized: false } } }
-        : {},
+        : {}),
+    },
   },
 })

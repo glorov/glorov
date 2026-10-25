@@ -29,7 +29,7 @@ export function MobileNav() {
       </Button>
 
       {isOpen && (
-        <div className="fixed inset-x-0 top-[105px] z-50 bg-background/95 backdrop-blur-md border-b shadow-lg p-6 animate-in slide-in-from-top duration-200">
+        <div className="absolute inset-x-0 top-full z-50 bg-background/98 backdrop-blur-md border-b shadow-lg p-6 animate-in slide-in-from-top duration-200">
           <nav className="flex flex-col space-y-4">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon

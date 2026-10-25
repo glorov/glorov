@@ -4,7 +4,11 @@ import { ArrowRight, Sprout, Sparkles, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
-export function Hero() {
+interface HeroProps {
+  backendOnline?: boolean
+}
+
+export function Hero({ backendOnline }: HeroProps = {}) {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-earth-100/60 via-background to-background py-16 md:py-24 border-b border-border/40">
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
@@ -14,14 +18,14 @@ export function Hero() {
             <div className="inline-flex items-center gap-2">
               <Badge variant="botanical" className="gap-1.5 py-1 px-3 text-xs">
                 <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-                <span>Monsoon & Winter Sowing Season Open</span>
+                <span>Monsoon &amp; Winter Sowing Season Open</span>
               </Badge>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-botanical-950 leading-[1.15]">
               Cultivate Vitality.{' '}
               <span className="text-botanical-700 block mt-1">
-                Living Botanicals & Pure Seeds.
+                Living Botanicals &amp; Pure Seeds.
               </span>
             </h1>
 
@@ -70,7 +74,14 @@ export function Hero() {
                   <Badge variant="warning" className="text-xs">
                     Root-Safe Packing
                   </Badge>
-                  <span className="text-xs font-semibold text-botanical-700">GLOROV Direct Nursery</span>
+                  {backendOnline ? (
+                    <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                      Medusa v2 Online
+                    </span>
+                  ) : (
+                    <span className="text-xs font-semibold text-botanical-700">GLOROV Direct Nursery</span>
+                  )}
                 </div>
 
                 <div className="h-56 rounded-xl bg-botanical-900/5 border border-dashed border-botanical-300 flex flex-col items-center justify-center p-6 text-center text-botanical-900 space-y-3">

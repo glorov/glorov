@@ -16,6 +16,7 @@ uploads/
 # Build artifacts
 dist/
 build/
+*.tsbuildinfo
 
 # Logs
 npm-debug.log*

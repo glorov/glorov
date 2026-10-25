@@ -14,7 +14,7 @@ const NAV_LINKS = [
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 relative">
       <AnnouncementBar />
       <div className="container mx-auto flex h-16 items-center justify-between gap-4 px-4 sm:px-6">
         {/* Left: Mobile Nav & Brand Logo */}

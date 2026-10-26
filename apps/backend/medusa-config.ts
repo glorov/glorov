@@ -12,6 +12,13 @@ export function validateProductionConfig(env: NodeJS.ProcessEnv = process.env): 
   if (!env.DATABASE_URL) missing.push("DATABASE_URL")
   if (!env.REDIS_URL) missing.push("REDIS_URL")
 
+  if (env.DATABASE_URL && env.DATABASE_URL.includes(":6543")) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "Database Configuration Error: Port 6543 (Transaction Pooler) is incompatible with Medusa v2 ORM, prepared statements, and migrations. Use Port 5432 (Session Pooler or Direct Connection)."
+    )
+  }
+
   const jwtSecret = env.JWT_SECRET || ""
   if (!jwtSecret || jwtSecret.includes("dev") || jwtSecret.length < 32) {
     missing.push("JWT_SECRET (must be >= 32 characters and non-dev)")
@@ -77,6 +84,7 @@ export default defineConfig({
       pool: {
         min: Number(process.env.DB_POOL_MIN) || 2,
         max: Number(process.env.DB_POOL_MAX) || 10,
+        idleTimeoutMillis: 30000,
       },
       ...(process.env.NODE_ENV === "production"
         ? { connection: { ssl: { rejectUnauthorized: false } } }

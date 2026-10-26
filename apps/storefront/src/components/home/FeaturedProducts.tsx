@@ -1,13 +1,16 @@
 import React from 'react'
 import Link from 'next/link'
 import { ArrowRight, Sparkles } from 'lucide-react'
-import { getStoreCatalogProducts } from '@/lib/catalog'
+import { getStoreCatalogProducts, STORE_CATALOG_LISTING_FIELDS } from '@/lib/catalog'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
 export async function FeaturedProducts() {
-  const response = await getStoreCatalogProducts({ limit: 4 })
+  const response = await getStoreCatalogProducts({
+    limit: 4,
+    fields: STORE_CATALOG_LISTING_FIELDS,
+  })
   const products = response.success ? response.products : []
 
   return (

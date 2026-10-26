@@ -43,7 +43,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Add published catalog products (Medusa Store API only returns published items)
   try {
-    const productsRes = await getStoreCatalogProducts({ limit: 100 })
+    const productsRes = await getStoreCatalogProducts({
+      limit: 100,
+      fields: 'id,handle,updated_at',
+    })
     if (productsRes.success && productsRes.products) {
       for (const prod of productsRes.products) {
         if (prod.handle) {

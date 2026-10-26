@@ -24,6 +24,22 @@ export const STORE_CATALOG_DEFAULT_FIELDS = [
   '+created_at',
 ].join(',')
 
+/**
+ * Optimized field selection for catalog grids, search, and category listing.
+ * Omits deeply nested location levels to prevent unnecessary link-table joins.
+ */
+export const STORE_CATALOG_LISTING_FIELDS = [
+  '*variants',
+  '*variants.prices',
+  '+variants.inventory_quantity',
+  '+metadata',
+  '*categories',
+  '*collection',
+  '+created_at',
+].join(',')
+
+export const STORE_CATALOG_PDP_FIELDS = STORE_CATALOG_DEFAULT_FIELDS
+
 export interface CatalogProductsResponse {
   success: boolean
   count: number
@@ -89,7 +105,7 @@ export async function getStoreCatalogProducts(
     const queryParams: Record<string, unknown> = {
       limit: params.limit ?? 20,
       offset: params.offset ?? 0,
-      fields: params.fields ?? STORE_CATALOG_DEFAULT_FIELDS,
+      fields: params.fields ?? STORE_CATALOG_LISTING_FIELDS,
     }
 
     if (params.category_id && params.category_id.length > 0) {

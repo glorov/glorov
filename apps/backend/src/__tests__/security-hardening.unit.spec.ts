@@ -97,6 +97,20 @@ describe("Application Security & Hardening Invariant Unit Tests", () => {
       }).toThrow(/NOTIFICATION_MOCK_MODE/);
     });
 
+    it("throws MedusaError in production when DATABASE_URL uses port 6543 (transaction pooler)", () => {
+      expect(() => {
+        validateProductionConfig({
+          NODE_ENV: "production",
+          DATABASE_URL: "postgresql://postgres:pass@aws-0-ap-south-1.pooler.supabase.com:6543/postgres",
+          REDIS_URL: "redis://localhost:6379",
+          JWT_SECRET: "a-very-secure-production-jwt-secret-string-32-chars",
+          COOKIE_SECRET: "a-very-secure-production-cookie-secret-string-32-chars",
+          STORE_CORS: "https://glorov.in",
+          ADMIN_CORS: "https://admin.glorov.in",
+        });
+      }).toThrow(/Port 6543/);
+    });
+
     it("passes cleanly in production when all security requirements are satisfied", () => {
       expect(() => {
         validateProductionConfig({

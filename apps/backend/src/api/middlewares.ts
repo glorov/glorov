@@ -135,6 +135,30 @@ export default defineMiddlewares({
         csvImportRateLimiter,
       ],
     },
+    {
+      method: ['GET', 'POST'],
+      matcher: '/admin/orders/:id/shipment*',
+      middlewares: [
+        authenticate('user', ['session', 'bearer']),
+      ],
+    },
+    {
+      method: ['POST'],
+      matcher: '/admin/payments/cod/reconcile*',
+      middlewares: [
+        authenticate('user', ['session', 'bearer']),
+      ],
+    },
+    {
+      method: ['GET'],
+      matcher: '/store/orders/:id/tracking',
+      middlewares: [
+        authenticate('customer', ['session', 'bearer'], {
+          allowUnauthenticated: true,
+        }),
+        validateOrderOwnership,
+      ],
+    },
   ],
 })
 

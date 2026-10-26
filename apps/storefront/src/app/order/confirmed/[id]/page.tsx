@@ -16,6 +16,7 @@ import { getCustomerToken } from '@/lib/auth-session'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatINR } from '@/lib/utils'
+import { ShipmentTracker } from '@/components/shipping/ShipmentTracker'
 
 interface OrderItem {
   id: string
@@ -125,6 +126,11 @@ export default async function OrderConfirmedPage({ params }: OrderConfirmedPageP
             {order.fulfillment_status || 'Queued for Nursery Dispatch'}
           </p>
         </div>
+      </div>
+
+      {/* Live Shipment Tracking Card */}
+      <div className="mb-8">
+        <ShipmentTracker orderId={order.id} />
       </div>
 
       {/* Main Order Details Card */}

@@ -583,6 +583,215 @@ describe('Medusa v2 Shipping, Pincode Serviceability, and Shiprocket Fulfillment
       })
     })
 
+    describe('4. Administrative Controlled Shipment Operations & Customer Tracking API', () => {
+      let controlledOrderId = ''
+      let controlledAwb = ''
+
+      beforeAll(async () => {
+        // Create an order specifically for administrative dispatch and tracking testing
+        const cartRes = await fetch(`${BACKEND_URL}/store/carts`, {
+          method: 'POST',
+          headers: storeHeaders,
+          body: JSON.stringify({}),
+        })
+        const { cart } = await cartRes.json()
+
+        await fetch(`${BACKEND_URL}/store/carts/${cart.id}/line-items`, {
+          method: 'POST',
+          headers: storeHeaders,
+          body: JSON.stringify({ variant_id: inStockVariantId, quantity: 1 }),
+        })
+
+        await fetch(`${BACKEND_URL}/store/carts/${cart.id}`, {
+          method: 'POST',
+          headers: storeHeaders,
+          body: JSON.stringify({
+            email: 'admin.dispatch@glorov.in',
+            shipping_address: {
+              first_name: 'Pooja',
+              last_name: 'Bhide',
+              address_1: 'Plot 42, Shivajinagar',
+              city: 'Pune',
+              province: 'Maharashtra',
+              postal_code: '411005',
+              phone: '9876543210',
+              country_code: 'in',
+            },
+          }),
+        })
+
+        const optRes = await fetch(
+          `${BACKEND_URL}/store/shipping-options?cart_id=${cart.id}`,
+          { headers: storeHeaders }
+        )
+        const { shipping_options } = await optRes.json()
+        const option = shipping_options[0]
+
+        await fetch(`${BACKEND_URL}/store/carts/${cart.id}/shipping-methods`, {
+          method: 'POST',
+          headers: storeHeaders,
+          body: JSON.stringify({ option_id: option.id }),
+        })
+
+        const pcRes = await fetch(`${BACKEND_URL}/store/payment-collections`, {
+          method: 'POST',
+          headers: storeHeaders,
+          body: JSON.stringify({ cart_id: cart.id }),
+        })
+        const { payment_collection } = await pcRes.json()
+
+        await fetch(
+          `${BACKEND_URL}/store/payment-collections/${payment_collection.id}/payment-sessions`,
+          {
+            method: 'POST',
+            headers: storeHeaders,
+            body: JSON.stringify({ provider_id: 'pp_system_default' }),
+          }
+        )
+
+        const completeRes = await fetch(`${BACKEND_URL}/store/carts/${cart.id}/complete`, {
+          method: 'POST',
+          headers: storeHeaders,
+        })
+        const completeData = await completeRes.json()
+        controlledOrderId = completeData.order.id
+      }, 20000)
+
+      it('checks shipment eligibility via GET /admin/orders/:id/shipment', async () => {
+        const res = await fetch(`${BACKEND_URL}/admin/orders/${controlledOrderId}/shipment`, {
+          headers: adminHeaders,
+        })
+        expect(res.status).toBe(200)
+
+        const body = await res.json()
+        expect(body.order_id).toBe(controlledOrderId)
+        expect(body.eligible).toBe(true)
+        expect(body.destination_pincode).toBe('411005')
+        expect(body.destination_city).toBe('Pune')
+        expect(body.reasons).toEqual([])
+      })
+
+      it('dispatches shipment via POST /admin/orders/:id/shipment with AWB allocation', async () => {
+        const res = await fetch(`${BACKEND_URL}/admin/orders/${controlledOrderId}/shipment`, {
+          method: 'POST',
+          headers: adminHeaders,
+        })
+        expect(res.status).toBe(201)
+
+        const body = await res.json()
+        expect(body.success).toBe(true)
+        expect(body.order_id).toBe(controlledOrderId)
+        expect(body.awb).toMatch(/^SR\d+/)
+        expect(body.courier_name).toBeDefined()
+        expect(body.tracking_url).toContain('https://shiprocket.co/tracking/')
+        expect(body.label_url).toBeDefined()
+        controlledAwb = body.awb
+      })
+
+      it('prevents duplicate shipment creation on second POST /admin/orders/:id/shipment', async () => {
+        const res = await fetch(`${BACKEND_URL}/admin/orders/${controlledOrderId}/shipment`, {
+          method: 'POST',
+          headers: adminHeaders,
+        })
+        expect(res.status).toBe(200)
+
+        const body = await res.json()
+        expect(body.success).toBe(true)
+        expect(body.duplicate_prevented).toBe(true)
+        expect(body.awb).toBe(controlledAwb)
+        expect(body.message).toContain('Duplicate dispatch prevented')
+      })
+
+      it('retrieves shipping label via GET /admin/orders/:id/shipment/label', async () => {
+        const res = await fetch(`${BACKEND_URL}/admin/orders/${controlledOrderId}/shipment/label`, {
+          headers: adminHeaders,
+        })
+        expect(res.status).toBe(200)
+
+        const body = await res.json()
+        expect(body.success).toBe(true)
+        expect(body.order_id).toBe(controlledOrderId)
+        expect(body.awb).toBe(controlledAwb)
+        expect(body.label_url).toBeDefined()
+        expect(body.label_status).toBe('ready')
+      })
+
+      it('reconciles shipment status with Shiprocket tracking API via POST /admin/orders/:id/shipment/reconcile', async () => {
+        const res = await fetch(`${BACKEND_URL}/admin/orders/${controlledOrderId}/shipment/reconcile`, {
+          method: 'POST',
+          headers: adminHeaders,
+        })
+        expect(res.status).toBe(200)
+
+        const body = await res.json()
+        expect(body.success).toBe(true)
+        expect(body.order_id).toBe(controlledOrderId)
+        expect(body.awb).toBe(controlledAwb)
+        expect(body.current_status).toBeDefined()
+        expect(body.action_taken).toBeDefined()
+      })
+
+      it('provides customer tracking view via GET /store/orders/:id/tracking with sanitized details', async () => {
+        const res = await fetch(`${BACKEND_URL}/store/orders/${controlledOrderId}/tracking`, {
+          headers: storeHeaders,
+        })
+        expect(res.status).toBe(200)
+
+        const body = await res.json()
+        expect(body.order_id).toBe(controlledOrderId)
+        expect(body.awb).toBe(controlledAwb)
+        expect(body.courier_name).toBeDefined()
+        expect(body.origin).toContain('Pune Central Nursery Hub')
+        expect(body.destination_city).toBe('Pune')
+        expect(body.destination_pincode).toBe('411005')
+        expect(body.moisture_shield_status).toBeDefined()
+        expect(Array.isArray(body.scans)).toBe(true)
+        expect(body.scans.length).toBeGreaterThanOrEqual(1)
+        // Verify internal provider secrets are NOT exposed
+        expect((body as any).shiprocket_token).toBeUndefined()
+        expect((body as any).internal_cost).toBeUndefined()
+      })
+
+      it('reconciles COD cash remittance and bank settlement via POST /admin/payments/cod/reconcile', async () => {
+        // Fetch order total
+        const orderRes = await fetch(`${BACKEND_URL}/admin/orders/${controlledOrderId}`, {
+          headers: adminHeaders,
+        })
+        const { order } = await orderRes.json()
+        const orderTotalINR = (order.total || 0) / 100
+
+        const res = await fetch(`${BACKEND_URL}/admin/payments/cod/reconcile`, {
+          method: 'POST',
+          headers: adminHeaders,
+          body: JSON.stringify({
+            order_id: controlledOrderId,
+            remittance_ref: 'CRN-SHIPROCKET-TEST-1001',
+            amount_collected_inr: orderTotalINR,
+            bank_utr: 'HDFC000123456789',
+            remittance_date: '2026-10-26',
+            courier_deductions_inr: 35,
+          }),
+        })
+        expect(res.status).toBe(200)
+
+        const body = await res.json()
+        expect(body.success).toBe(true)
+        expect(body.order_id).toBe(controlledOrderId)
+        expect(body.amount_settled_inr).toBe(orderTotalINR)
+        expect(body.remittance_ref).toBe('CRN-SHIPROCKET-TEST-1001')
+        expect(body.settlement_record.bank_utr).toBe('HDFC000123456789')
+      })
+
+      afterAll(async () => {
+        if (controlledOrderId) {
+          await fetch(`${BACKEND_URL}/admin/orders/${controlledOrderId}/cancel`, {
+            method: 'POST',
+            headers: adminHeaders,
+          })
+        }
+      })
+    })
+
     afterAll(async () => {
       if (orderId) {
         // Clean up test order

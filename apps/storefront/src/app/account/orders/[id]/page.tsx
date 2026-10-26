@@ -20,6 +20,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatINR } from '@/lib/utils'
+import { ShipmentTracker } from '@/components/shipping/ShipmentTracker'
 
 export const dynamic = 'force-dynamic'
 
@@ -115,6 +116,9 @@ export default async function CustomerOrderDetailsPage({ params }: OrderDetailsP
         <AccountNav />
 
         <div className="flex-1 w-full space-y-6">
+          {/* Live Shipment Tracking Card */}
+          <ShipmentTracker orderId={order.id} />
+
           {/* Order Header Card */}
           <Card className="border-border shadow-sm">
             <CardHeader className="p-5 sm:p-6 pb-4 border-b bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

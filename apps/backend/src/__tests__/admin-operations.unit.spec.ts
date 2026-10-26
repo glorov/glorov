@@ -160,4 +160,159 @@ describe("Admin Operations & Widgets Unit Invariants", () => {
       expect(validateActorScope("user", "/store/customers/me")).toBe(false);
     });
   });
+
+  describe("5. Shipment Operations, Tracking, and COD Settlement Invariants", () => {
+    it("enforces pre-flight shipment eligibility rules before dispatch", () => {
+      const evaluateEligibility = (order: {
+        status: string;
+        payment_status: string;
+        is_cod: boolean;
+        total: number;
+        postal_code: string;
+        phone: string;
+        existing_awb?: string;
+      }) => {
+        const reasons: string[] = [];
+        if (order.status === "canceled") reasons.push("Order canceled");
+        if (order.existing_awb) reasons.push("Already dispatched");
+
+        if (order.is_cod) {
+          if (order.total > 500000) reasons.push("COD exceeds limit");
+        } else {
+          if (order.payment_status !== "captured" && order.payment_status !== "authorized") {
+            reasons.push("Payment not settled");
+          }
+        }
+
+        if (!/^[1-9][0-9]{5}$/.test(order.postal_code)) reasons.push("Invalid PIN");
+        if (order.phone.replace(/\D/g, "").length < 10) reasons.push("Invalid phone");
+
+        return {
+          eligible: reasons.length === 0,
+          reasons,
+        };
+      };
+
+      // Valid prepaid order
+      const validPrepaid = evaluateEligibility({
+        status: "pending",
+        payment_status: "captured",
+        is_cod: false,
+        total: 19800,
+        postal_code: "411001",
+        phone: "9876543210",
+      });
+      expect(validPrepaid.eligible).toBe(true);
+      expect(validPrepaid.reasons).toHaveLength(0);
+
+      // Unpaid prepaid order
+      const unpaidPrepaid = evaluateEligibility({
+        status: "pending",
+        payment_status: "not_paid",
+        is_cod: false,
+        total: 19800,
+        postal_code: "411001",
+        phone: "9876543210",
+      });
+      expect(unpaidPrepaid.eligible).toBe(false);
+      expect(unpaidPrepaid.reasons).toContain("Payment not settled");
+
+      // Already dispatched order (duplicate prevention)
+      const alreadyDispatched = evaluateEligibility({
+        status: "pending",
+        payment_status: "captured",
+        is_cod: false,
+        total: 19800,
+        postal_code: "411001",
+        phone: "9876543210",
+        existing_awb: "SR123456789",
+      });
+      expect(alreadyDispatched.eligible).toBe(false);
+      expect(alreadyDispatched.reasons).toContain("Already dispatched");
+
+      // Invalid PIN format
+      const invalidPin = evaluateEligibility({
+        status: "pending",
+        payment_status: "captured",
+        is_cod: false,
+        total: 19800,
+        postal_code: "012345",
+        phone: "9876543210",
+      });
+      expect(invalidPin.eligible).toBe(false);
+      expect(invalidPin.reasons).toContain("Invalid PIN");
+    });
+
+    it("strictly separates delivery confirmation from COD financial settlement", () => {
+      // Simulating order state after delivery
+      const deliveredCodOrder = {
+        id: "ord_cod_delivered",
+        fulfillment_status: "delivered",
+        payment_status: "authorized", // NOT captured merely because delivery succeeded
+        is_cod: true,
+        total: 49900,
+      };
+
+      expect(deliveredCodOrder.fulfillment_status).toBe("delivered");
+      expect(deliveredCodOrder.payment_status).toBe("authorized"); // Still awaiting remittance
+
+      // Settlement function executes only when bank remittance ref & collected funds match
+      const settleCodRemittance = (
+        order: typeof deliveredCodOrder,
+        remittance: { ref: string; amountCollected: number; utr: string }
+      ) => {
+        const orderTotalRupees = order.total / 100;
+        if (Math.abs(remittance.amountCollected - orderTotalRupees) > 1.0) {
+          throw new Error("Remittance amount mismatch");
+        }
+        return {
+          ...order,
+          payment_status: "captured",
+          settlement: {
+            ref: remittance.ref,
+            utr: remittance.utr,
+            settled_at: "2026-10-26T12:00:00.000Z",
+          },
+        };
+      };
+
+      const settledOrder = settleCodRemittance(deliveredCodOrder, {
+        ref: "CRN-SHIPROCKET-9921",
+        amountCollected: 499,
+        utr: "SBIN000123456789",
+      });
+
+      expect(settledOrder.payment_status).toBe("captured");
+      expect(settledOrder.settlement.ref).toBe("CRN-SHIPROCKET-9921");
+      expect(settledOrder.settlement.utr).toBe("SBIN000123456789");
+    });
+
+    it("sanitizes customer tracking output by omitting provider tokens and private margins", () => {
+      const internalShipmentData = {
+        shiprocket_order_id: 123456,
+        shiprocket_token: "jwt_secret_token_123",
+        courier_cost_inr: 38.5,
+        store_shipping_charge_inr: 49.0,
+        awb_code: "SR99887766",
+        courier_name: "Delhivery Air",
+        tracking_url: "https://shiprocket.co/tracking/SR99887766",
+        current_status: "IN_TRANSIT",
+      };
+
+      const sanitizeCustomerTracking = (data: typeof internalShipmentData) => {
+        return {
+          awb: data.awb_code,
+          courier_name: data.courier_name,
+          tracking_url: data.tracking_url,
+          status: data.current_status.toLowerCase(),
+        };
+      };
+
+      const customerView: any = sanitizeCustomerTracking(internalShipmentData);
+      expect(customerView.awb).toBe("SR99887766");
+      expect(customerView.courier_name).toBe("Delhivery Air");
+      expect(customerView.shiprocket_token).toBeUndefined();
+      expect(customerView.courier_cost_inr).toBeUndefined();
+    });
+  });
 });

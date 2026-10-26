@@ -653,6 +653,17 @@ To prevent catastrophic inventory loss from RTO in live plant shipments:
 - **Tracking & Webhooks:**
   - Shiprocket webhooks push tracking status changes to `/api/hooks/shiprocket`.
   - Backend subscriber maps Shiprocket statuses (`PICKED_UP`, `IN_TRANSIT`, `OUT_FOR_DELIVERY`, `DELIVERED`, `RTO_INITIATED`) directly to the Medusa Fulfillment entity.
+- **Controlled Administrative Shipment Dispatch:**
+  - Admin eligibility evaluation (`GET /admin/orders/:id/shipment`) validates payment status (or COD ₹5,000 threshold), 6-digit Indian PIN code format, mobile phone validity, line items, and perishable live plant packing guardrails before dispatch.
+  - Authorized dispatch action (`POST /admin/orders/:id/shipment`) invokes Medusa v2 `createOrderFulfillmentWorkflow` and `createOrderShipmentWorkflow` with built-in idempotency to prevent duplicate courier bookings and double-billing.
+  - Shipping label retrieval (`GET /admin/orders/:id/shipment/label`) and carrier status reconciliation (`POST /admin/orders/:id/shipment/reconcile`) provide store managers with one-click dispatch verification.
+- **COD Settlement vs Courier Delivery Separation:**
+  - Courier delivery marks physical fulfillment as delivered, but does NOT mark COD orders as paid.
+  - Bank remittance reconciliation (`POST /admin/payments/cod/reconcile`) captures the COD payment upon verified bank settlement/UTR audit, recording courier fee deductions and net settlement immutably on the order.
+- **Sanitized Customer Tracking Experience:**
+  - Authenticated and guest order tracking (`GET /store/orders/:id/tracking`) enforces strict order ownership checks via middleware.
+  - Returns a sanitized botanical tracking timeline, courier AWB links, and real-time perishable moisture-shield status (e.g. hydration/sphagnum wrap state) without exposing internal provider tokens or margins.
+  - Integrated into customer order confirmation (`/order/confirmed/[id]`) and account order history (`/account/orders/[id]`) via the accessible `ShipmentTracker` component.
 
 ---
 

@@ -302,11 +302,15 @@ export async function verifyRazorpayPayment(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
+    const publishableKey =
+      process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_STORE_PUBLISHABLE_KEY ||
+      ''
     const res = await fetch(`${backendUrl}/store/payment/razorpay/verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-publishable-api-key': process.env.NEXT_PUBLIC_STORE_PUBLISHABLE_KEY || '',
+        'x-publishable-api-key': publishableKey,
       },
       body: JSON.stringify({
         cart_id: cartId,

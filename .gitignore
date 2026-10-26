@@ -38,6 +38,11 @@ Thumbs.db
 # Test coverage
 coverage/
 
+# Database backups
+backups/
+*.sql.gz
+*.sql
+
 # IDE / Editor
 .idea/
 .vscode/*

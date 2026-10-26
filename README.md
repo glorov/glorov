@@ -178,4 +178,6 @@ See the complete [Production Deployment Guide](file:///Users/sourav/Developer/WE
 | [**Implementation Roadmap & Audit**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/implementation-roadmap.md) | Granular 30-task engineering roadmap with evidence-backed completion status. |
 | [**Security Audit & Remediations**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/security-audit.md) | Security audit report verifying mitigations SEC-01 through SEC-09. |
 | [**Integration Inventory**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/integration-inventory.md) | Comprehensive inventory of backend APIs, storefront routes, and webhooks. |
+| [**Database Performance & Integrity Audit**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/database-performance-and-integrity.md) | Query benchmarks, relation optimizations, connection pooling, and decimal safety. |
+| [**Backup Strategy & Disaster Recovery**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/disaster-recovery.md) | RPO/RTO objectives, 10-step safe recovery runbook, automated backup verification. |
 | [**End-to-End Test Plan**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/e2e-test-plan.md) | Test cases, fixtures, and verification procedures. |

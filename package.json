@@ -20,6 +20,9 @@
     "storefront:build": "turbo build --filter=@glorov/storefront",
     "db:up": "docker compose up -d postgres redis",
     "db:down": "docker compose down",
+    "db:backup": "./scripts/db-backup.sh",
+    "db:restore": "./scripts/db-restore.sh",
+    "db:backup:verify": "./scripts/db-backup-verify.sh",
     "smoke:test": "node scripts/smoke-test.mjs"
   },
   "pnpm": {

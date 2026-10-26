@@ -367,4 +367,6 @@ pnpm smoke:test http://localhost:9000 http://localhost:3000
 | [`docs/production-deployment.md`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/production-deployment.md) | Docker Compose and Caddy Blue/Green zero-downtime deployment guide. |
 | [`docs/integration-inventory.md`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/integration-inventory.md) | Exhaustive catalog of all internal and external API integrations. |
 | [`docs/e2e-test-plan.md`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/e2e-test-plan.md) | Quality assurance test specifications and verification runs. |
+| [`docs/database-performance-and-integrity.md`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/database-performance-and-integrity.md) | Database query benchmarks, field projections, connection pooling, and decimal safety. |
+| [`docs/disaster-recovery.md`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/disaster-recovery.md) | Disaster recovery policy, RPO/RTO objectives, 10-step safe recovery runbook. |
 | [`docs/decisions/`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/decisions/) | Architecture Decision Records (ADR-0001 through ADR-0006). |

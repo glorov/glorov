@@ -356,4 +356,98 @@ describe("Medusa Store API & Catalog Integration Tests", () => {
       expect(verifyDelData.products).toHaveLength(0);
     }
   });
+
+  describe("Product Discovery, Search, and Sorting via Store API", () => {
+    it("GET /store/products?q=tomato returns matching tomato seeds and excludes unrelated specimens", async () => {
+      const res = await fetch(`${BACKEND_URL}/store/products?q=tomato`, {
+        headers: storeHeaders,
+      });
+      expect(res.status).toBe(200);
+
+      const data = await res.json();
+      expect(data.products).toBeDefined();
+      expect(data.products.length).toBeGreaterThanOrEqual(1);
+
+      const allMatch = data.products.every(
+        (p: { title: string; handle: string; description?: string }) =>
+          p.title.toLowerCase().includes("tomato") ||
+          p.handle.toLowerCase().includes("tomato") ||
+          (p.description && p.description.toLowerCase().includes("tomato"))
+      );
+      expect(allMatch).toBe(true);
+
+      const hasSnakePlant = data.products.some(
+        (p: { handle: string }) => p.handle === "snake-plant-golden-hahnii"
+      );
+      expect(hasSnakePlant).toBe(false);
+    });
+
+    it("GET /store/products?q=marigold returns marigold seeds", async () => {
+      const res = await fetch(`${BACKEND_URL}/store/products?q=marigold`, {
+        headers: storeHeaders,
+      });
+      expect(res.status).toBe(200);
+
+      const data = await res.json();
+      expect(data.products.length).toBeGreaterThanOrEqual(1);
+      expect(data.products[0].title.toLowerCase()).toContain("marigold");
+    });
+
+    it("GET /store/products?order=-created_at returns products sorted with newest first", async () => {
+      const res = await fetch(`${BACKEND_URL}/store/products?order=-created_at&limit=10`, {
+        headers: storeHeaders,
+      });
+      expect(res.status).toBe(200);
+
+      const data = await res.json();
+      expect(data.products.length).toBeGreaterThanOrEqual(2);
+
+      for (let i = 0; i < data.products.length - 1; i++) {
+        const timeA = new Date(data.products[i].created_at).getTime();
+        const timeB = new Date(data.products[i + 1].created_at).getTime();
+        expect(timeA).toBeGreaterThanOrEqual(timeB);
+      }
+    });
+
+    it("GET /store/products?category_id[]={id} filters catalog by category branch", async () => {
+      // 1. Get vegetable seeds category ID
+      const catRes = await fetch(`${BACKEND_URL}/store/product-categories`, {
+        headers: storeHeaders,
+      });
+      const catData = await catRes.json();
+      const vegCategory = catData.product_categories.find(
+        (c: { handle: string }) => c.handle === "vegetable-seeds"
+      );
+      expect(vegCategory).toBeDefined();
+
+      // 2. Fetch products for vegetable seeds category
+      const res = await fetch(
+        `${BACKEND_URL}/store/products?category_id[]=${vegCategory.id}&fields=*categories`,
+        { headers: storeHeaders }
+      );
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.products.length).toBeGreaterThanOrEqual(1);
+
+      // Verify each returned product belongs to vegetable seeds
+      for (const p of data.products) {
+        const hasVegCategory = p.categories.some(
+          (c: { id: string }) => c.id === vegCategory.id
+        );
+        expect(hasVegCategory).toBe(true);
+      }
+    });
+
+    it("Store API search returns empty array for nonexistent botanical queries gracefully without errors", async () => {
+      const res = await fetch(
+        `${BACKEND_URL}/store/products?q=nonexistentbotanicalvarietyxyz999`,
+        { headers: storeHeaders }
+      );
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.products).toBeDefined();
+      expect(data.products).toHaveLength(0);
+      expect(data.count).toBe(0);
+    });
+  });
 });

@@ -15,6 +15,10 @@ import {
   getCategoryHierarchyIds,
   getProductLowestPriceINR,
   getProductStockSummary,
+  calculateRelevanceScore,
+  filterCatalogProducts,
+  sortCatalogProducts,
+  extractCatalogFacets,
 } from '../catalog'
 
 describe('Storefront Catalog & Inventory Helpers', () => {
@@ -569,6 +573,357 @@ describe('Storefront Catalog & Inventory Helpers', () => {
       expect(summary.hasStock).toBe(true)
       expect(summary.status).toBe('low_stock')
       expect(summary.totalStock).toBe(5)
+    })
+  })
+
+  describe('Product Search, Filtering, and Sorting Helpers', () => {
+    const mockCatalogProducts = [
+      {
+        id: 'prod_tomato',
+        title: 'Tomato Seeds (Desi / Pusa Ruby)',
+        handle: 'tomato-seeds-desi',
+        description: 'Heirloom Indian tomato with balanced acidity and high yield.',
+        status: 'published' as const,
+        thumbnail: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea',
+        created_at: '2026-01-10T10:00:00.000Z',
+        categories: [
+          { id: 'cat_veg', name: 'Vegetable Seeds', handle: 'vegetable-seeds' },
+        ],
+        metadata: {
+          common_name: 'Desi Tomato / Tamatar',
+          botanical_name: 'Solanum lycopersicum',
+          seed_type: 'Heirloom / Open-Pollinated',
+          variety: 'Pusa Ruby',
+          season: 'kharif' as const,
+          sunlight: 'full_sun' as const,
+        },
+        variants: [
+          {
+            id: 'v_tom_20',
+            title: '20 Seeds',
+            sku: 'GLR-SD-TOM-020',
+            manage_inventory: true,
+            allow_backorder: false,
+            inventory_quantity: 150,
+            prices: [{ id: 'p_1', currency_code: 'inr', amount: 4900 }], // ₹49
+          },
+          {
+            id: 'v_tom_100',
+            title: '100 Seeds',
+            sku: 'GLR-SD-TOM-100',
+            manage_inventory: true,
+            allow_backorder: false,
+            inventory_quantity: 0,
+            prices: [{ id: 'p_2', currency_code: 'inr', amount: 17900 }], // ₹179
+          },
+        ],
+      },
+      {
+        id: 'prod_marigold',
+        title: 'Marigold Seeds (Pusa Narangi Gainda)',
+        handle: 'marigold-seeds-pusa-narangi',
+        description: 'Vibrant orange marigold flowers for garlands and festive pest deterrence.',
+        status: 'published' as const,
+        thumbnail: 'https://images.unsplash.com/photo-1597848212624-a19eb35e2651',
+        created_at: '2026-01-20T10:00:00.000Z',
+        categories: [
+          { id: 'cat_flower', name: 'Flower Seeds', handle: 'flower-seeds' },
+        ],
+        metadata: {
+          common_name: 'Marigold / Gainda',
+          botanical_name: 'Tagetes erecta',
+          seed_type: 'Open-Pollinated',
+          variety: 'Pusa Narangi',
+          season: 'all_season' as const,
+        },
+        variants: [
+          {
+            id: 'v_mari_50',
+            title: '50 Seeds',
+            sku: 'GLR-SD-MAR-050',
+            manage_inventory: true,
+            allow_backorder: false,
+            inventory_quantity: 80,
+            prices: [{ id: 'p_3', currency_code: 'inr', amount: 3900 }], // ₹39
+          },
+        ],
+      },
+      {
+        id: 'prod_tulsi',
+        title: 'Krishna Tulsi Seeds (Holy Basil)',
+        handle: 'krishna-tulsi-seeds',
+        description: 'Sacred purple-tinged Krishna Tulsi revered in Indian Ayurveda.',
+        status: 'published' as const,
+        thumbnail: null,
+        created_at: '2026-02-01T10:00:00.000Z',
+        categories: [
+          { id: 'cat_herb', name: 'Herb Seeds', handle: 'herb-seeds' },
+        ],
+        metadata: {
+          common_name: 'Krishna Tulsi / Holy Basil',
+          botanical_name: 'Ocimum tenuiflorum',
+          seed_type: 'Heirloom',
+          variety: 'Shyam / Krishna Tulsi',
+          season: 'all_season' as const,
+        },
+        variants: [
+          {
+            id: 'v_tul_100',
+            title: '100 Seeds',
+            sku: 'GLR-SD-TUL-100',
+            manage_inventory: true,
+            allow_backorder: false,
+            inventory_quantity: 60,
+            prices: [{ id: 'p_4', currency_code: 'inr', amount: 4500 }], // ₹45
+          },
+        ],
+      },
+      {
+        id: 'prod_snake_plant',
+        title: 'Snake Plant Golden Hahnii (Sansevieria)',
+        handle: 'snake-plant-golden-hahnii',
+        description: 'Air-purifying variegated dwarf snake plant in nursery pot.',
+        status: 'published' as const,
+        thumbnail: null,
+        created_at: '2026-03-01T10:00:00.000Z',
+        categories: [
+          { id: 'cat_indoor', name: 'Indoor Plants', handle: 'indoor-plants' },
+        ],
+        metadata: {
+          common_name: 'Snake Plant',
+          botanical_name: 'Sansevieria trifasciata',
+          seed_type: 'Live Botanical Specimen',
+          season: 'all_season' as const,
+          is_perishable: true,
+        },
+        variants: [
+          {
+            id: 'v_sp_4in',
+            title: '4-inch Nursery Pot',
+            sku: 'GLR-PL-SNK-004',
+            manage_inventory: true,
+            allow_backorder: false,
+            inventory_quantity: 25,
+            prices: [{ id: 'p_5', currency_code: 'inr', amount: 19900 }], // ₹199
+          },
+        ],
+      },
+      {
+        id: 'prod_coriander',
+        title: 'Coriander Seeds (Pusa Haritima)',
+        handle: 'coriander-seeds-rabi',
+        description: 'Late-bolting Indian dhaniya seeds with lush aromatic foliage.',
+        status: 'published' as const,
+        thumbnail: null,
+        created_at: '2026-04-01T10:00:00.000Z',
+        categories: [
+          { id: 'cat_veg', name: 'Vegetable Seeds', handle: 'vegetable-seeds' },
+        ],
+        metadata: {
+          common_name: 'Desi Dhaniya / Coriander',
+          botanical_name: 'Coriandrum sativum',
+          seed_type: 'Certified Organic',
+          variety: 'Pusa Haritima',
+          season: 'rabi' as const,
+        },
+        variants: [
+          {
+            id: 'v_cor_50',
+            title: '50 Seeds',
+            sku: 'GLR-SD-COR-050',
+            manage_inventory: true,
+            allow_backorder: false,
+            inventory_quantity: 0, // Out of stock
+            prices: [{ id: 'p_6', currency_code: 'inr', amount: 3500 }], // ₹35
+          },
+        ],
+      },
+    ]
+
+    describe('calculateRelevanceScore', () => {
+      it('awards highest score for exact title match', () => {
+        const score = calculateRelevanceScore(mockCatalogProducts[0], 'Tomato Seeds (Desi / Pusa Ruby)')
+        expect(score).toBeGreaterThanOrEqual(100)
+      })
+
+      it('awards high score for title prefix and variety match', () => {
+        const score1 = calculateRelevanceScore(mockCatalogProducts[0], 'Tomato')
+        const score2 = calculateRelevanceScore(mockCatalogProducts[0], 'Pusa Ruby')
+        expect(score1).toBeGreaterThan(0)
+        expect(score2).toBeGreaterThan(0)
+      })
+
+      it('matches common Indian vernacular names', () => {
+        const score = calculateRelevanceScore(mockCatalogProducts[0], 'Tamatar')
+        expect(score).toBeGreaterThan(0)
+      })
+
+      it('returns 0 for empty or non-matching query', () => {
+        expect(calculateRelevanceScore(mockCatalogProducts[0], '')).toBe(0)
+        expect(calculateRelevanceScore(mockCatalogProducts[0], '   ')).toBe(0)
+        expect(calculateRelevanceScore(mockCatalogProducts[0], 'Xylophone')).toBe(0)
+      })
+    })
+
+    describe('filterCatalogProducts', () => {
+      it('returns all products when no filters are applied', () => {
+        const result = filterCatalogProducts(mockCatalogProducts, {})
+        expect(result).toHaveLength(mockCatalogProducts.length)
+      })
+
+      it('filters products by free-text search query (q)', () => {
+        const result = filterCatalogProducts(mockCatalogProducts, { q: 'tomato' })
+        expect(result).toHaveLength(1)
+        expect(result[0].id).toBe('prod_tomato')
+
+        const hindiResult = filterCatalogProducts(mockCatalogProducts, { q: 'dhaniya' })
+        expect(hindiResult).toHaveLength(1)
+        expect(hindiResult[0].id).toBe('prod_coriander')
+      })
+
+      it('filters products by category handle', () => {
+        const vegResult = filterCatalogProducts(mockCatalogProducts, { category: 'vegetable-seeds' })
+        expect(vegResult).toHaveLength(2)
+        expect(vegResult.map((p) => p.id)).toEqual(['prod_tomato', 'prod_coriander'])
+
+        const herbResult = filterCatalogProducts(mockCatalogProducts, { category: 'herb-seeds' })
+        expect(herbResult).toHaveLength(1)
+        expect(herbResult[0].id).toBe('prod_tulsi')
+      })
+
+      it('filters products by botanical seed/plant type', () => {
+        const heirloomResult = filterCatalogProducts(mockCatalogProducts, { seed_type: 'heirloom' })
+        expect(heirloomResult).toHaveLength(2) // Tomato & Tulsi
+        expect(heirloomResult.map((p) => p.id)).toContain('prod_tomato')
+        expect(heirloomResult.map((p) => p.id)).toContain('prod_tulsi')
+
+        const liveResult = filterCatalogProducts(mockCatalogProducts, { seed_type: 'live' })
+        expect(liveResult).toHaveLength(1)
+        expect(liveResult[0].id).toBe('prod_snake_plant')
+      })
+
+      it('filters products by sowing season', () => {
+        // Kharif: matches Kharif products and All Season products
+        const kharifResult = filterCatalogProducts(mockCatalogProducts, { season: 'kharif' })
+        expect(kharifResult.map((p) => p.id)).toContain('prod_tomato')
+        expect(kharifResult.map((p) => p.id)).toContain('prod_marigold') // all_season
+        expect(kharifResult.map((p) => p.id)).not.toContain('prod_coriander') // rabi only
+
+        // Rabi: matches Coriander and All Season products
+        const rabiResult = filterCatalogProducts(mockCatalogProducts, { season: 'rabi' })
+        expect(rabiResult.map((p) => p.id)).toContain('prod_coriander')
+        expect(rabiResult.map((p) => p.id)).not.toContain('prod_tomato')
+      })
+
+      it('filters products by price range (INR)', () => {
+        // Under ₹40: Coriander (₹35) & Marigold (₹39)
+        const under40 = filterCatalogProducts(mockCatalogProducts, { max_price: 40 })
+        expect(under40.map((p) => p.id)).toEqual(['prod_marigold', 'prod_coriander'])
+
+        // Between ₹40 and ₹50: Tomato (₹49) & Tulsi (₹45)
+        const midPrice = filterCatalogProducts(mockCatalogProducts, { min_price: 40, max_price: 50 })
+        expect(midPrice.map((p) => p.id)).toEqual(['prod_tomato', 'prod_tulsi'])
+
+        // Above ₹100: Snake Plant (₹199)
+        const above100 = filterCatalogProducts(mockCatalogProducts, { min_price: 100 })
+        expect(above100.map((p) => p.id)).toEqual(['prod_snake_plant'])
+      })
+
+      it('filters products by in-stock availability', () => {
+        const inStock = filterCatalogProducts(mockCatalogProducts, { in_stock: true })
+        // Coriander has stock 0; all others have stock > 0
+        expect(inStock).toHaveLength(4)
+        expect(inStock.map((p) => p.id)).not.toContain('prod_coriander')
+      })
+
+      it('filters products by packet size / variant title', () => {
+        const size20 = filterCatalogProducts(mockCatalogProducts, { packet_size: '20 Seeds' })
+        expect(size20).toHaveLength(1)
+        expect(size20[0].id).toBe('prod_tomato')
+
+        const potSize = filterCatalogProducts(mockCatalogProducts, { packet_size: '4-inch' })
+        expect(potSize).toHaveLength(1)
+        expect(potSize[0].id).toBe('prod_snake_plant')
+      })
+
+      it('combines multiple filters correctly', () => {
+        // Vegetable seeds + in stock + under ₹100
+        const combined = filterCatalogProducts(mockCatalogProducts, {
+          category: 'vegetable-seeds',
+          in_stock: true,
+          max_price: 100,
+        })
+        expect(combined).toHaveLength(1)
+        expect(combined[0].id).toBe('prod_tomato')
+      })
+
+      it('returns empty array when filter criteria match nothing without crashing', () => {
+        const result = filterCatalogProducts(mockCatalogProducts, {
+          q: 'nonexistent-variety-xyz',
+          min_price: 1000,
+        })
+        expect(result).toEqual([])
+      })
+    })
+
+    describe('sortCatalogProducts', () => {
+      it('sorts by price: low to high (price_asc)', () => {
+        const sorted = sortCatalogProducts(mockCatalogProducts, 'price_asc')
+        // ₹35 (Coriander), ₹39 (Marigold), ₹45 (Tulsi), ₹49 (Tomato), ₹199 (Snake Plant)
+        const titles = sorted.map((p) => p.title)
+        expect(titles[0]).toContain('Coriander')
+        expect(titles[1]).toContain('Marigold')
+        expect(titles[4]).toContain('Snake Plant')
+      })
+
+      it('sorts by price: high to low (price_desc)', () => {
+        const sorted = sortCatalogProducts(mockCatalogProducts, 'price_desc')
+        const titles = sorted.map((p) => p.title)
+        expect(titles[0]).toContain('Snake Plant') // ₹199
+        expect(titles[titles.length - 1]).toContain('Coriander') // ₹35
+      })
+
+      it('sorts by newest arrivals (newest)', () => {
+        const sorted = sortCatalogProducts(mockCatalogProducts, 'newest')
+        expect(sorted[0].id).toBe('prod_coriander') // 2026-04-01
+        expect(sorted[1].id).toBe('prod_snake_plant') // 2026-03-01
+        expect(sorted[sorted.length - 1].id).toBe('prod_tomato') // 2026-01-10
+      })
+
+      it('sorts alphabetically (title_asc and title_desc)', () => {
+        const asc = sortCatalogProducts(mockCatalogProducts, 'title_asc')
+        expect(asc[0].title).toBe('Coriander Seeds (Pusa Haritima)')
+
+        const desc = sortCatalogProducts(mockCatalogProducts, 'title_desc')
+        expect(desc[0].title).toBe('Tomato Seeds (Desi / Pusa Ruby)')
+      })
+
+      it('sorts by relevance when searching (relevance)', () => {
+        const sorted = sortCatalogProducts(mockCatalogProducts, 'relevance', 'tulsi')
+        expect(sorted[0].id).toBe('prod_tulsi')
+      })
+    })
+
+    describe('extractCatalogFacets', () => {
+      it('dynamically computes facet counts from catalog products', () => {
+        const facets = extractCatalogFacets(mockCatalogProducts)
+
+        expect(facets.totalCount).toBe(5)
+        expect(facets.inStockCount).toBe(4)
+        expect(facets.outOfStockCount).toBe(1)
+
+        expect(facets.priceRange.minRupees).toBe(35)
+        expect(facets.priceRange.maxRupees).toBe(199)
+
+        const categoryHandles = facets.categories.map((c) => c.value)
+        expect(categoryHandles).toContain('vegetable-seeds')
+        expect(categoryHandles).toContain('flower-seeds')
+        expect(categoryHandles).toContain('herb-seeds')
+
+        const seedTypes = facets.seedTypes.map((s) => s.value)
+        expect(seedTypes).toContain('Heirloom / Open-Pollinated')
+        expect(seedTypes).toContain('Live Botanical Specimen')
+      })
     })
   })
 })

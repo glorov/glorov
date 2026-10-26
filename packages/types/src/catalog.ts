@@ -69,6 +69,8 @@ export interface StoreCatalogProduct {
   subtitle?: string | null
   status: 'draft' | 'proposed' | 'published' | 'rejected'
   thumbnail: string | null
+  created_at?: string
+  updated_at?: string
   images?: { id: string; url: string }[]
   options?: StoreCatalogProductOption[]
   variants?: StoreCatalogVariant[]
@@ -85,4 +87,29 @@ export interface StoreProductFilterParams {
   handle?: string
   q?: string
   fields?: string
+  order?: string
 }
+
+export type CatalogSortOption =
+  | 'featured'
+  | 'relevance'
+  | 'price_asc'
+  | 'price_desc'
+  | 'newest'
+  | 'title_asc'
+  | 'title_desc'
+
+export interface CatalogDiscoveryQuery {
+  q?: string
+  category?: string
+  seed_type?: string
+  season?: string
+  min_price?: number
+  max_price?: number
+  in_stock?: boolean
+  packet_size?: string
+  sort?: CatalogSortOption
+  page?: number
+  limit?: number
+}
+

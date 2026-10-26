@@ -3,13 +3,15 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronRight, FolderTree, Sprout } from 'lucide-react'
+import type { CatalogSortOption } from '@glorov/types'
 import {
   getStoreCatalogProducts,
   getStoreCatalogCategories,
   findCategoryByHandle,
   getCategoryHierarchyIds,
-  getProductLowestPriceINR,
-  getProductStockSummary,
+  filterCatalogProducts,
+  sortCatalogProducts,
+  extractCatalogFacets,
 } from '@/lib/catalog'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 import { CatalogFilters } from '@/components/catalog/CatalogFilters'
@@ -22,9 +24,15 @@ interface CategoryPageProps {
     category: string[]
   }>
   searchParams: Promise<{
+    q?: string
+    seed_type?: string
+    season?: string
+    min_price?: string
+    max_price?: string
+    in_stock?: string
+    packet_size?: string
     sort?: string
     page?: string
-    in_stock?: string
   }>
 }
 
@@ -61,8 +69,18 @@ export default async function CategoryPage({
   const resolvedSearchParams = await searchParams
 
   const currentSlug = categorySlugs[categorySlugs.length - 1]
-  const sort = resolvedSearchParams.sort || 'featured'
+  const q = resolvedSearchParams.q?.trim() || undefined
+  const seedTypeParam = resolvedSearchParams.seed_type?.trim() || undefined
+  const seasonParam = resolvedSearchParams.season?.trim() || undefined
+  const packetSizeParam = resolvedSearchParams.packet_size?.trim() || undefined
+  const minPriceParam = resolvedSearchParams.min_price
+    ? Math.max(0, parseInt(resolvedSearchParams.min_price, 10))
+    : undefined
+  const maxPriceParam = resolvedSearchParams.max_price
+    ? Math.max(0, parseInt(resolvedSearchParams.max_price, 10))
+    : undefined
   const inStockOnly = resolvedSearchParams.in_stock === 'true'
+  const sort = (resolvedSearchParams.sort as CatalogSortOption) || 'featured'
   const page = Math.max(1, parseInt(resolvedSearchParams.page || '1', 10) || 1)
   const pageSize = 12
 
@@ -74,7 +92,6 @@ export default async function CategoryPage({
   const targetCategory = findCategoryByHandle(categories, currentSlug)
 
   if (!targetCategory) {
-    // If category does not exist in Medusa, return 404
     notFound()
   }
 
@@ -83,37 +100,34 @@ export default async function CategoryPage({
 
   // 4. Fetch products under this category branch
   const productsRes = await getStoreCatalogProducts({
+    q,
     category_id: categoryIds,
     limit: 100,
   })
 
-  let allProducts = productsRes.success ? productsRes.products : []
+  const rawProducts = productsRes.success ? productsRes.products : []
 
-  // 5. In-Stock Filter
-  if (inStockOnly) {
-    allProducts = allProducts.filter((p) => getProductStockSummary(p).hasStock)
-  }
+  // 5. Extract facets
+  const facets = extractCatalogFacets(rawProducts)
 
-  // 6. Sorting
-  if (sort === 'price_asc') {
-    allProducts = [...allProducts].sort((a, b) => {
-      const priceA = getProductLowestPriceINR(a).minPricePaise ?? Infinity
-      const priceB = getProductLowestPriceINR(b).minPricePaise ?? Infinity
-      return priceA - priceB
-    })
-  } else if (sort === 'price_desc') {
-    allProducts = [...allProducts].sort((a, b) => {
-      const priceA = getProductLowestPriceINR(a).minPricePaise ?? -Infinity
-      const priceB = getProductLowestPriceINR(b).minPricePaise ?? -Infinity
-      return priceB - priceA
-    })
-  } else if (sort === 'title_asc') {
-    allProducts = [...allProducts].sort((a, b) => a.title.localeCompare(b.title))
-  }
+  // 6. Apply filters
+  const filteredProducts = filterCatalogProducts(rawProducts, {
+    q,
+    category: targetCategory.handle,
+    seed_type: seedTypeParam,
+    season: seasonParam,
+    min_price: minPriceParam,
+    max_price: maxPriceParam,
+    in_stock: inStockOnly,
+    packet_size: packetSizeParam,
+  })
 
-  const totalCount = allProducts.length
+  // 7. Sort products
+  const sortedProducts = sortCatalogProducts(filteredProducts, sort, q)
+
+  const totalCount = sortedProducts.length
   const totalPages = Math.ceil(totalCount / pageSize)
-  const paginatedProducts = allProducts.slice((page - 1) * pageSize, page * pageSize)
+  const paginatedProducts = sortedProducts.slice((page - 1) * pageSize, page * pageSize)
 
   // Subcategories
   const subcategories = targetCategory.category_children || []
@@ -178,14 +192,26 @@ export default async function CategoryPage({
         selectedCategoryHandle={targetCategory.handle}
         currentSort={sort}
         totalCount={totalCount}
-        basePath="/store"
+        basePath={`/categories/${categorySlugs.join('/')}`}
+        facets={facets}
+        activeFilters={{
+          q,
+          category: targetCategory.handle,
+          seed_type: seedTypeParam,
+          season: seasonParam,
+          min_price: minPriceParam,
+          max_price: maxPriceParam,
+          in_stock: inStockOnly,
+          packet_size: packetSizeParam,
+          sort,
+        }}
       />
 
       {/* Product Grid */}
       <ProductGrid
         products={paginatedProducts}
-        emptyMessage={`No products found in the "${targetCategory.name}" category.`}
-        resetHref="/store"
+        emptyMessage={`No specimens found matching your criteria in the "${targetCategory.name}" category.`}
+        resetHref={`/categories/${categorySlugs.join('/')}`}
       />
 
       {/* Pagination */}
@@ -194,8 +220,14 @@ export default async function CategoryPage({
         totalPages={totalPages}
         baseUrl={`/categories/${categorySlugs.join('/')}`}
         searchParams={{
-          sort: sort !== 'featured' ? sort : undefined,
+          q,
+          seed_type: seedTypeParam,
+          season: seasonParam,
+          min_price: minPriceParam !== undefined ? minPriceParam.toString() : undefined,
+          max_price: maxPriceParam !== undefined ? maxPriceParam.toString() : undefined,
           in_stock: inStockOnly ? 'true' : undefined,
+          packet_size: packetSizeParam,
+          sort: sort !== 'featured' ? sort : undefined,
         }}
       />
     </div>

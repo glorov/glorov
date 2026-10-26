@@ -3,8 +3,14 @@ import { Header } from '@/components/common/Header'
 import { Footer } from '@/components/common/Footer'
 import './globals.css'
 
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://glorov.in'
+
 export const metadata: Metadata = {
-  title: 'GLOROV — Indian Seeds & Live Plants | Pan-India Botanical Nursery',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'GLOROV — Indian Seeds & Live Plants | Pan-India Botanical Nursery',
+    template: '%s | GLOROV Botanicals',
+  },
   description:
     'Buy high-viability garden seeds, outdoor & indoor live potted plants, planters, and organic potting mixes online in India. Pan-India dispatch from our Pune nursery hub.',
   keywords: [
@@ -17,13 +23,36 @@ export const metadata: Metadata = {
     'GLOROV',
   ],
   authors: [{ name: 'GLOROV Botanicals' }],
+  creator: 'GLOROV Botanicals',
+  publisher: 'GLOROV Botanicals',
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: 'GLOROV — Indian Seeds & Live Plants',
     description:
       'High-viability seeds & resilient indoor live plants shipped in protective root-safe transit packaging.',
+    url: siteUrl,
     type: 'website',
     locale: 'en_IN',
-    siteName: 'GLOROV',
+    siteName: 'GLOROV Botanicals',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GLOROV — Indian Seeds & Live Plants',
+    description:
+      'High-viability seeds & resilient indoor live plants shipped in protective root-safe transit packaging.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 }
 

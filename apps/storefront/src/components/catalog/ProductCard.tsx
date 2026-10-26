@@ -75,7 +75,6 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               priority={priority}
-              unoptimized
               onError={() => setImageError(true)}
               className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
             />

@@ -45,7 +45,6 @@ export function ProductGallery({ title, thumbnail, images = [] }: ProductGallery
               fill
               priority
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
-              unoptimized
               onError={() => setLoadError(true)}
               className="object-cover object-center transition-all duration-300 group-hover:scale-102"
             />
@@ -121,7 +120,6 @@ export function ProductGallery({ title, thumbnail, images = [] }: ProductGallery
                   alt=""
                   fill
                   sizes="80px"
-                  unoptimized
                   className="object-cover object-center"
                 />
               </button>

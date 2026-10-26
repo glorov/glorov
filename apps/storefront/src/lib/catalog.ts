@@ -126,42 +126,71 @@ export async function getStoreCatalogProducts(
   }
 }
 
+// In-flight request deduplication and short-TTL memoization for public catalog reads
+const productHandleCache = new Map<
+  string,
+  { timestamp: number; promise: Promise<CatalogProductResponse> }
+>()
+
+let categoriesCache: {
+  timestamp: number
+  promise: Promise<CatalogCategoriesResponse>
+} | null = null
+
+const CATALOG_CACHE_TTL_MS = 15000 // 15 seconds short-lived cache for fresh inventory & pricing
+
+export function clearCatalogCache(): void {
+  productHandleCache.clear()
+  categoriesCache = null
+}
+
 /**
  * Fetch a single product by handle with complete variant pricing, inventory,
- * and parsed seed/plant metadata.
+ * and parsed seed/plant metadata. Deduplicates concurrent calls during SSR/metadata generation.
  */
 export async function getStoreCatalogProductByHandle(
   handle: string
 ): Promise<CatalogProductResponse> {
-  try {
-    const res = await medusaClient.store.product.list({
-      handle,
-      fields: STORE_CATALOG_DEFAULT_FIELDS,
-      limit: 1,
-    })
+  const now = Date.now()
+  const cached = productHandleCache.get(handle)
+  if (cached && now - cached.timestamp < CATALOG_CACHE_TTL_MS) {
+    return cached.promise
+  }
 
-    const product = (res.products?.[0] as unknown as StoreCatalogProduct) || undefined
-    if (!product) {
+  const promise = (async () => {
+    try {
+      const res = await medusaClient.store.product.list({
+        handle,
+        fields: STORE_CATALOG_DEFAULT_FIELDS,
+        limit: 1,
+      })
+
+      const product = (res.products?.[0] as unknown as StoreCatalogProduct) || undefined
+      if (!product) {
+        return {
+          success: false,
+          error: `Product with handle "${handle}" not found`,
+        }
+      }
+
+      const seedMetadata = parseSeedMetadata(product.metadata)
+
+      return {
+        success: true,
+        product,
+        seedMetadata,
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to retrieve product'
       return {
         success: false,
-        error: `Product with handle "${handle}" not found`,
+        error: message,
       }
     }
+  })()
 
-    const seedMetadata = parseSeedMetadata(product.metadata)
-
-    return {
-      success: true,
-      product,
-      seedMetadata,
-    }
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to retrieve product'
-    return {
-      success: false,
-      error: message,
-    }
-  }
+  productHandleCache.set(handle, { timestamp: now, promise })
+  return promise
 }
 
 /**
@@ -202,25 +231,36 @@ export async function getStoreCatalogProductById(
 
 /**
  * Fetch active product categories hierarchy from Medusa Store API.
+ * Deduplicates concurrent calls during SSR/metadata generation.
  */
 export async function getStoreCatalogCategories(): Promise<CatalogCategoriesResponse> {
-  try {
-    const res = await medusaClient.store.category.list({
-      fields: '*category_children',
-    })
-
-    return {
-      success: true,
-      categories: (res.product_categories as unknown as StoreCatalogCategory[]) || [],
-    }
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to retrieve categories'
-    return {
-      success: false,
-      categories: [],
-      error: message,
-    }
+  const now = Date.now()
+  if (categoriesCache && now - categoriesCache.timestamp < CATALOG_CACHE_TTL_MS) {
+    return categoriesCache.promise
   }
+
+  const promise = (async () => {
+    try {
+      const res = await medusaClient.store.category.list({
+        fields: '*category_children',
+      })
+
+      return {
+        success: true,
+        categories: (res.product_categories as unknown as StoreCatalogCategory[]) || [],
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to retrieve categories'
+      return {
+        success: false,
+        categories: [],
+        error: message,
+      }
+    }
+  })()
+
+  categoriesCache = { timestamp: now, promise }
+  return promise
 }
 
 /**

@@ -41,6 +41,7 @@ export async function generateMetadata({
 }: CategoryPageProps): Promise<Metadata> {
   const { category: categorySlugs } = await params
   const currentSlug = categorySlugs[categorySlugs.length - 1]
+  const canonicalPath = `/categories/${categorySlugs.join('/')}`
 
   const categoriesRes = await getStoreCatalogCategories()
   const categories = categoriesRes.success ? categoriesRes.categories : []
@@ -48,16 +49,40 @@ export async function generateMetadata({
 
   if (!category) {
     return {
-      title: 'Botanical Category | GLOROV',
+      title: 'Botanical Category Not Found',
       description: 'Explore Indian seeds, live indoor plants, and gardening supplies.',
+      alternates: {
+        canonical: canonicalPath,
+      },
+      robots: {
+        index: false,
+        follow: true,
+      },
     }
   }
 
+  const title = `${category.name} — Indian Seeds & Plants`
+  const description =
+    category.description ||
+    `Buy authentic ${category.name.toLowerCase()} online at GLOROV with reliable delivery across India.`
+
   return {
-    title: `${category.name} — Indian Seeds & Plants | GLOROV`,
-    description:
-      category.description ||
-      `Buy ${category.name.toLowerCase()} online at GLOROV with reliable delivery across India.`,
+    title,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      title: `${category.name} — Indian Seeds & Plants | GLOROV Botanicals`,
+      description,
+      url: canonicalPath,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title: `${category.name} — Indian Seeds & Plants | GLOROV Botanicals`,
+      description,
+    },
   }
 }
 

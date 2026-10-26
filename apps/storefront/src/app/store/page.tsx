@@ -20,9 +20,25 @@ import { Button } from '@/components/ui/button'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Botanical Store — Pure Seeds & Potted Live Plants | GLOROV',
+  title: 'Botanical Store — Pure Seeds & Potted Live Plants',
   description:
     'Browse our comprehensive catalog of verified Indian vegetable seeds, flower seeds, medicinal herbs, and climate-hardened live plants.',
+  alternates: {
+    canonical: '/store',
+  },
+  openGraph: {
+    title: 'Botanical Store — Pure Seeds & Potted Live Plants | GLOROV Botanicals',
+    description:
+      'Browse our comprehensive catalog of verified Indian vegetable seeds, flower seeds, medicinal herbs, and climate-hardened live plants.',
+    url: '/store',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Botanical Store — Pure Seeds & Potted Live Plants | GLOROV Botanicals',
+    description:
+      'Browse our comprehensive catalog of verified Indian vegetable seeds, flower seeds, medicinal herbs, and climate-hardened live plants.',
+  },
 }
 
 interface StorePageProps {

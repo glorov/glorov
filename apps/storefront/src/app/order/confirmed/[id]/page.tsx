@@ -1,4 +1,5 @@
 import React from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
@@ -33,6 +34,18 @@ interface OrderConfirmedPageProps {
   params: Promise<{
     id: string
   }>
+}
+
+export const metadata: Metadata = {
+  title: 'Order Confirmation',
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 }
 
 export default async function OrderConfirmedPage({ params }: OrderConfirmedPageProps) {

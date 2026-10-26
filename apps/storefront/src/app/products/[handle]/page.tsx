@@ -31,27 +31,54 @@ export async function generateMetadata({
 }: ProductPageProps): Promise<Metadata> {
   const { handle } = await params
   const res = await getStoreCatalogProductByHandle(handle)
+  const canonicalPath = `/products/${handle}`
 
   if (!res.success || !res.product) {
     return {
-      title: 'Botanical Product Not Found | GLOROV',
+      title: 'Botanical Product Not Found',
       description: 'The requested botanical variety or seed packet could not be found.',
+      alternates: {
+        canonical: canonicalPath,
+      },
+      robots: {
+        index: false,
+        follow: false,
+      },
     }
   }
 
   const product = res.product
   const botanicalName = res.seedMetadata?.botanical_name
   const commonName = res.seedMetadata?.common_name
+  const title = `${product.title}${botanicalName ? ` (${botanicalName})` : ''}`
+  const description =
+    product.description ||
+    `Buy authentic ${product.title}${commonName ? ` (${commonName})` : ''} online with protective botanical packaging dispatched from our Pune nursery hub across India.`
+
+  const imageUrls = [
+    ...(product.thumbnail ? [product.thumbnail] : []),
+    ...(product.images?.map((img) => img.url).filter(Boolean) || []),
+  ]
+  const uniqueImages = Array.from(new Set(imageUrls))
 
   return {
-    title: `${product.title} ${botanicalName ? `(${botanicalName})` : ''} | GLOROV Seeds & Plants`,
-    description:
-      product.description ||
-      `Buy authentic ${product.title}${commonName ? ` (${commonName})` : ''} online with protective botanical packaging dispatched from our Pune nursery hub across India.`,
+    title,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
-      title: product.title,
-      description: product.description || '',
-      images: product.thumbnail ? [{ url: product.thumbnail }] : [],
+      title: `${title} | GLOROV Botanicals`,
+      description,
+      url: canonicalPath,
+      type: 'website',
+      images: uniqueImages.map((url) => ({ url, alt: product.title })),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | GLOROV Botanicals`,
+      description,
+      images: uniqueImages.length > 0 ? [uniqueImages[0]] : undefined,
     },
   }
 }
@@ -73,32 +100,78 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const stockSummary = getProductStockSummary(product)
   const defaultVariant = product.variants?.[0]
 
+  const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://glorov.in'
+  const canonicalProductUrl = `${siteUrl}/products/${product.handle}`
+
+  const productImages = [
+    ...(product.thumbnail ? [product.thumbnail] : []),
+    ...(product.images?.map((img) => img.url).filter(Boolean) || []),
+  ]
+  const uniqueProductImages = Array.from(new Set(productImages))
+
+  // Map individual variants into verified Schema.org Offer instances
+  const offers = (product.variants && product.variants.length > 0)
+    ? product.variants.map((v) => {
+        const inrPrice = v.prices?.find((p) => p.currency_code?.toLowerCase() === 'inr')
+        const priceVal = inrPrice
+          ? (inrPrice.amount / 100).toFixed(2)
+          : lowestPrice.minPricePaise
+            ? (lowestPrice.minPricePaise / 100).toFixed(2)
+            : undefined
+        const hasVariantStock =
+          typeof v.inventory_quantity === 'number'
+            ? v.inventory_quantity > 0
+            : stockSummary.hasStock
+
+        return {
+          '@type': 'Offer',
+          sku: v.sku || undefined,
+          name: v.title || undefined,
+          priceCurrency: 'INR',
+          price: priceVal,
+          availability: hasVariantStock
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+          itemCondition: 'https://schema.org/NewCondition',
+          url: canonicalProductUrl,
+          seller: {
+            '@type': 'Organization',
+            name: 'GLOROV Botanicals',
+          },
+        }
+      })
+    : {
+        '@type': 'Offer',
+        priceCurrency: 'INR',
+        price: lowestPrice.minPricePaise
+          ? (lowestPrice.minPricePaise / 100).toFixed(2)
+          : undefined,
+        availability: stockSummary.hasStock
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
+        itemCondition: 'https://schema.org/NewCondition',
+        url: canonicalProductUrl,
+        seller: {
+          '@type': 'Organization',
+          name: 'GLOROV Botanicals',
+        },
+      }
+
   // JSON-LD Structured Data for Search Engine Optimization
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.title,
     description: product.description || undefined,
-    image: product.thumbnail ? [product.thumbnail] : undefined,
+    image: uniqueProductImages.length > 0 ? uniqueProductImages : undefined,
     sku: defaultVariant?.sku || undefined,
     category: category?.name || undefined,
+    url: canonicalProductUrl,
     brand: {
       '@type': 'Brand',
       name: 'GLOROV',
     },
-    offers: {
-      '@type': 'Offer',
-      priceCurrency: 'INR',
-      price: lowestPrice.minPricePaise ? (lowestPrice.minPricePaise / 100).toFixed(2) : undefined,
-      availability: stockSummary.hasStock
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/OutOfStock',
-      itemCondition: 'https://schema.org/NewCondition',
-      seller: {
-        '@type': 'Organization',
-        name: 'GLOROV Botanicals',
-      },
-    },
+    offers: Array.isArray(offers) && offers.length === 1 ? offers[0] : offers,
   }
 
   // Fetch related products from the same category or general catalog

@@ -11,6 +11,7 @@ import {
   selectShippingMethod,
   updateCartCustomerAndAddress,
   completeCartCheckout,
+  verifyRazorpayPayment,
   type StoreCart,
   type StoreShippingOption,
   type StoreOrder,
@@ -313,11 +314,14 @@ export async function updateDeliveryAddressAction(input: {
 }
 
 /**
- * Place the order by completing the active cart.
+ * Place the order by completing the active cart with chosen payment provider:
+ * - 'pp_razorpay_razorpay': Razorpay Indian online payments (UPI, Cards, Net Banking)
+ * - 'pp_cod_cod': Cash on Delivery (physically collected at doorstep)
+ * - 'pp_system_default': Fallback pre-production authorization
  * Clears the active cart cookie upon successful placement.
  */
 export async function completeOrderAction(
-  providerId: string = 'pp_system_default'
+  providerId: string = 'pp_razorpay_razorpay'
 ): Promise<{
   success: boolean
   orderId?: string
@@ -349,6 +353,27 @@ export async function completeOrderAction(
     }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Order checkout failed'
+    return { success: false, error: message }
+  }
+}
+
+/**
+ * Server-side cryptographic signature verification for Razorpay checkout success.
+ */
+export async function verifyRazorpayPaymentAction(
+  razorpayOrderId: string,
+  razorpayPaymentId: string,
+  razorpaySignature: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const cartId = await getCartIdFromCookie()
+    if (!cartId) {
+      return { success: false, error: 'No active cart found for payment verification' }
+    }
+
+    return await verifyRazorpayPayment(cartId, razorpayOrderId, razorpayPaymentId, razorpaySignature)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to verify payment signature'
     return { success: false, error: message }
   }
 }

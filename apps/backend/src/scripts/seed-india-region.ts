@@ -10,6 +10,7 @@ import {
   createStockLocationsWorkflow,
   createTaxRegionsWorkflow,
   linkSalesChannelsToApiKeyWorkflow,
+  updateRegionsWorkflow,
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
 
@@ -92,11 +93,17 @@ export default async function seedIndiaRegion({ container }: ExecArgs) {
     fields: ["id", "name", "currency_code", "countries.iso_2"],
   });
 
-  const hasIndiaRegion = existingRegions.some(
+  const indiaRegion = existingRegions.find(
     (r) => r.currency_code === "inr" || r.name.toLowerCase() === "india"
   );
 
-  if (!hasIndiaRegion) {
+  const indianPaymentProviders = [
+    "pp_system_default",
+    "pp_razorpay_razorpay",
+    "pp_cod_cod",
+  ];
+
+  if (!indiaRegion) {
     logger.info("Creating India region (Currency: INR, Country: IN)...");
     await createRegionsWorkflow(container).run({
       input: {
@@ -105,13 +112,26 @@ export default async function seedIndiaRegion({ container }: ExecArgs) {
             name: "India",
             currency_code: "inr",
             countries: ["in"],
-            payment_providers: ["pp_system_default"],
+            payment_providers: indianPaymentProviders,
           },
         ],
       },
     });
   } else {
-    logger.info("India region already exists.");
+    logger.info("Updating India region payment providers (Razorpay & COD)...");
+    try {
+      await updateRegionsWorkflow(container).run({
+        input: {
+          selector: { id: indiaRegion.id },
+          update: {
+            payment_providers: indianPaymentProviders,
+          },
+        },
+      });
+      logger.info("Linked Razorpay and COD payment providers to India region.");
+    } catch (e: unknown) {
+      logger.warn(`Region payment providers update skipped: ${e}`);
+    }
   }
 
   // Clean up non-Indian regions (e.g. template Europe region) so India is the default

@@ -292,6 +292,43 @@ export async function completeCartCheckout(
 }
 
 /**
+ * Server-side cryptographic signature verification for Razorpay checkout success.
+ */
+export async function verifyRazorpayPayment(
+  cartId: string,
+  razorpayOrderId: string,
+  razorpayPaymentId: string,
+  razorpaySignature: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
+    const res = await fetch(`${backendUrl}/store/payment/razorpay/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-publishable-api-key': process.env.NEXT_PUBLIC_STORE_PUBLISHABLE_KEY || '',
+      },
+      body: JSON.stringify({
+        cart_id: cartId,
+        razorpay_order_id: razorpayOrderId,
+        razorpay_payment_id: razorpayPaymentId,
+        razorpay_signature: razorpaySignature,
+      }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      return { success: false, error: data.error || 'Payment signature verification failed' }
+    }
+    return { success: true }
+  } catch (err: unknown) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Network error verifying payment',
+    }
+  }
+}
+
+/**
  * Retrieve placed order by ID for the confirmation page.
  * Passes customer auth token if provided to authenticate ownership.
  */

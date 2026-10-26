@@ -13,7 +13,6 @@ import {
   AlertCircle,
   Loader2,
   Sprout,
-  Info,
 } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import {
@@ -85,6 +84,9 @@ export default function CheckoutPage() {
   // Shipping & flow states
   const [shippingOptions, setShippingOptions] = useState<StoreShippingOption[]>([])
   const [selectedOptionId, setSelectedOptionId] = useState<string>('')
+  const [paymentProvider, setPaymentProvider] = useState<
+    'pp_razorpay_razorpay' | 'pp_cod_cod' | 'pp_system_default'
+  >('pp_razorpay_razorpay')
   const [isOptionsLoading, setIsOptionsLoading] = useState<boolean>(false)
   const [isSavingAddress, setIsSavingAddress] = useState<boolean>(false)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -279,8 +281,15 @@ export default function CheckoutPage() {
       }
     }
 
+    // Validate COD eligibility
+    if (paymentProvider === 'pp_cod_cod' && (cart?.total || 0) > 500000) {
+      setFormError('Cash on Delivery is limited to orders up to ₹5,000. Please select Razorpay online payment.')
+      setIsSubmitting(false)
+      return
+    }
+
     try {
-      const res = await completeOrderAction('pp_system_default')
+      const res = await completeOrderAction(paymentProvider)
       if (res.success && res.orderId) {
         await clearCart()
         router.push(`/order/confirmed/${res.orderId}`)
@@ -678,51 +687,130 @@ export default function CheckoutPage() {
             )}
           </section>
 
-          {/* STEP 3: Payment Method Boundary & Architecture Notice */}
+          {/* STEP 3: Payment Method Selection */}
           <section className="rounded-xl border border-border bg-card p-6 shadow-xs">
             <div className="flex items-center gap-2.5 pb-4 border-b border-border mb-6">
               <div className="h-7 w-7 rounded-full bg-botanical-800 text-white flex items-center justify-center text-xs font-bold">
                 3
               </div>
               <h2 className="text-lg font-bold text-botanical-950">
-                Payment Method &amp; Order Finalization
+                Indian Payment Method
               </h2>
             </div>
 
-            <div className="space-y-4">
-              {/* Active System Verification Provider */}
-              <div className="p-4 rounded-xl border border-emerald-300 bg-emerald-50/50 flex items-start justify-between gap-4">
+            <div className="space-y-3">
+              {/* Option 1: Razorpay Indian Online Payments (Recommended) */}
+              <label
+                onClick={() => setPaymentProvider('pp_razorpay_razorpay')}
+                className={`flex items-start justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                  paymentProvider === 'pp_razorpay_razorpay'
+                    ? 'border-botanical-600 bg-botanical-50/50 shadow-xs'
+                    : 'border-border hover:border-earth-300 bg-background'
+                }`}
+              >
                 <div className="flex items-start gap-3">
-                  <CreditCard className="h-5 w-5 text-emerald-700 flex-shrink-0 mt-0.5" />
+                  <input
+                    type="radio"
+                    name="payment_provider"
+                    value="pp_razorpay_razorpay"
+                    checked={paymentProvider === 'pp_razorpay_razorpay'}
+                    onChange={() => setPaymentProvider('pp_razorpay_razorpay')}
+                    className="mt-1 h-4 w-4 text-botanical-700 focus:ring-botanical-600 border-border"
+                  />
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-emerald-950">
-                        Pre-production Order Authorization
+                      <span className="font-bold text-sm text-botanical-950">
+                        Razorpay Secure Online Payment
                       </span>
-                      <Badge className="bg-emerald-700 text-white text-[10px] py-0 px-1.5">
-                        Active Sandbox Flow
+                      <Badge variant="botanical" className="text-[10px] py-0 px-1.5">
+                        Recommended
                       </Badge>
                     </div>
-                    <p className="text-xs text-emerald-800 mt-1 leading-relaxed">
-                      Native Medusa workflow will authorize this order and reserve seed &amp; plant inventory at the Pune Central Nursery Hub without charging live customer funds.
+                    <p className="text-xs text-muted-foreground mt-1">
+                      UPI (Google Pay, PhonePe, Paytm, BHIM), Credit/Debit Cards, &amp; Net Banking
+                    </p>
+                    <p className="text-[11px] text-emerald-800 font-medium mt-1">
+                      ⚡ Instant payment confirmation &amp; priority nursery dispatch
                     </p>
                   </div>
                 </div>
-              </div>
+                <CreditCard className="h-5 w-5 text-botanical-700 flex-shrink-0 mt-0.5" />
+              </label>
 
-              {/* Architectural Notice: Future Indian Payment Providers */}
-              <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/60 text-xs text-amber-900 space-y-2">
-                <div className="flex items-center gap-1.5 font-bold text-amber-950">
-                  <Info className="h-4 w-4 text-amber-700" />
-                  <span>Future Indian Payment Boundaries Prepared</span>
+              {/* Option 2: Cash on Delivery (COD) */}
+              <label
+                onClick={() => setPaymentProvider('pp_cod_cod')}
+                className={`flex items-start justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                  paymentProvider === 'pp_cod_cod'
+                    ? 'border-botanical-600 bg-botanical-50/50 shadow-xs'
+                    : 'border-border hover:border-earth-300 bg-background'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <input
+                    type="radio"
+                    name="payment_provider"
+                    value="pp_cod_cod"
+                    checked={paymentProvider === 'pp_cod_cod'}
+                    onChange={() => setPaymentProvider('pp_cod_cod')}
+                    className="mt-1 h-4 w-4 text-botanical-700 focus:ring-botanical-600 border-border"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-botanical-950">
+                        Cash on Delivery (COD)
+                      </span>
+                      <Badge variant="outline" className="text-[10px] py-0 px-1.5 text-earth-800 border-earth-300">
+                        Doorstep Cash
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Pay cash to courier executive upon delivery. Please keep exact change ready.
+                    </p>
+                    {grandTotal > 500000 && (
+                      <p className="text-[11px] text-amber-700 font-medium mt-1">
+                        ⚠️ COD is restricted to orders up to ₹5,000. For higher values, please select Razorpay.
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <p className="leading-relaxed">
-                  <strong>Razorpay Integration Point:</strong> Webhook-verified UPI, Cards, and Netbanking will trigger <code className="font-mono bg-amber-100 px-1 rounded">capturePaymentWorkflow</code> upon customer return. Orders will remain pending until trusted webhook receipt.
-                </p>
-                <p className="leading-relaxed">
-                  <strong>Cash on Delivery (COD):</strong> Restricted to non-perishable seed batches for orders between ₹299–₹2500, marked as <code className="font-mono bg-amber-100 px-1 rounded">payment_status: unpaid</code> until cash collection by courier.
-                </p>
-              </div>
+                <Truck className="h-5 w-5 text-earth-700 flex-shrink-0 mt-0.5" />
+              </label>
+
+              {/* Option 3: Pre-production Sandbox Authorization (Testing) */}
+              <label
+                onClick={() => setPaymentProvider('pp_system_default')}
+                className={`flex items-start justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                  paymentProvider === 'pp_system_default'
+                    ? 'border-botanical-600 bg-botanical-50/50 shadow-xs'
+                    : 'border-border hover:border-earth-300 bg-background'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <input
+                    type="radio"
+                    name="payment_provider"
+                    value="pp_system_default"
+                    checked={paymentProvider === 'pp_system_default'}
+                    onChange={() => setPaymentProvider('pp_system_default')}
+                    className="mt-1 h-4 w-4 text-botanical-700 focus:ring-botanical-600 border-border"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-botanical-950">
+                        Sandbox Test Authorization
+                      </span>
+                      <Badge className="bg-earth-200 text-earth-900 text-[10px] py-0 px-1.5 border-0">
+                        Developer Mode
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Simulates order placement and inventory reservation without connecting to third-party payment gateways.
+                    </p>
+                  </div>
+                </div>
+                <ShieldCheck className="h-5 w-5 text-botanical-600 flex-shrink-0 mt-0.5" />
+              </label>
             </div>
           </section>
         </div>
@@ -813,7 +901,7 @@ export default function CheckoutPage() {
             {/* Place Order Action */}
             <Button
               onClick={handlePlaceOrder}
-              disabled={isSubmitting || isSavingAddress}
+              disabled={isSubmitting || isSavingAddress || (paymentProvider === 'pp_cod_cod' && grandTotal > 500000)}
               variant="botanical"
               size="lg"
               className="w-full rounded-xl py-6 font-bold text-base shadow-lg gap-2"
@@ -821,11 +909,21 @@ export default function CheckoutPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>Processing Order Workflow...</span>
+                  <span>Processing Payment...</span>
+                </>
+              ) : paymentProvider === 'pp_razorpay_razorpay' ? (
+                <>
+                  <span>Pay {formatINR(grandTotal)} with Razorpay</span>
+                  <ArrowRight className="h-5 w-5" />
+                </>
+              ) : paymentProvider === 'pp_cod_cod' ? (
+                <>
+                  <span>Place COD Order ({formatINR(grandTotal)})</span>
+                  <ArrowRight className="h-5 w-5" />
                 </>
               ) : (
                 <>
-                  <span>Place Order ({formatINR(grandTotal)})</span>
+                  <span>Authorize Order ({formatINR(grandTotal)})</span>
                   <ArrowRight className="h-5 w-5" />
                 </>
               )}

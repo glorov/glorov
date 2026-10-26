@@ -51,6 +51,34 @@ export default defineConfig({
         ],
       },
     },
+    {
+      resolve: "@medusajs/medusa/payment",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/payment-razorpay",
+            id: "razorpay",
+            options: {
+              key_id: process.env.RAZORPAY_KEY_ID,
+              key_secret: process.env.RAZORPAY_KEY_SECRET,
+              webhook_secret: process.env.RAZORPAY_WEBHOOK_SECRET,
+              auto_capture: true,
+              mock_mode:
+                process.env.RAZORPAY_MOCK_MODE === "true" ||
+                !process.env.RAZORPAY_KEY_ID ||
+                process.env.NODE_ENV === "test",
+            },
+          },
+          {
+            resolve: "./src/modules/payment-cod",
+            id: "cod",
+            options: {
+              max_amount: Number(process.env.COD_MAX_AMOUNT_PAISE) || 500000,
+            },
+          },
+        ],
+      },
+    },
   ],
 })
 

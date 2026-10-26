@@ -15,6 +15,7 @@ import {
   selectShippingMethod,
   updateCartCustomerAndAddress,
   completeCartCheckout,
+  verifyRazorpayPayment,
   type StoreCart,
   type StoreShippingOption,
   type StoreOrder,
@@ -401,6 +402,90 @@ describe('Storefront Cart & Checkout System Unit Tests', () => {
         { provider_id: 'pp_system_default' }
       )
       expect(medusaClient.store.cart.complete).toHaveBeenCalledWith('cart_ready')
+    })
+
+    it('initiates payment session with pp_razorpay_razorpay for online payments', async () => {
+      const validCart = {
+        id: 'cart_rzp',
+        items: [{ id: 'item_1', unit_price: 4900, quantity: 1 }],
+        shipping_address: { address_1: 'Plot 4, MG Road' },
+        shipping_methods: [{ id: 'sm_1', amount: 4900 }],
+      }
+
+      vi.mocked(medusaClient.store.cart.retrieve).mockResolvedValueOnce({
+        cart: validCart as unknown as StoreCart,
+      })
+      vi.mocked(medusaClient.store.payment.initiatePaymentSession).mockResolvedValueOnce({
+        payment_collection: {
+          id: 'pc_rzp',
+          currency_code: 'inr',
+          amount: 9800,
+          status: 'not_paid',
+          payment_providers: [],
+        },
+      } as Awaited<ReturnType<typeof medusaClient.store.payment.initiatePaymentSession>>)
+      vi.mocked(medusaClient.store.cart.complete).mockResolvedValueOnce({
+        type: 'order',
+        order: { id: 'order_rzp_1', display_id: 101 } as unknown as StoreOrder,
+      })
+
+      const res = await completeCartCheckout('cart_rzp', 'pp_razorpay_razorpay')
+      expect(res.success).toBe(true)
+      expect(medusaClient.store.payment.initiatePaymentSession).toHaveBeenCalledWith(
+        validCart,
+        { provider_id: 'pp_razorpay_razorpay' }
+      )
+    })
+
+    it('initiates payment session with pp_cod_cod for Cash on Delivery', async () => {
+      const validCart = {
+        id: 'cart_cod',
+        items: [{ id: 'item_1', unit_price: 4900, quantity: 1 }],
+        shipping_address: { address_1: 'Plot 4, MG Road' },
+        shipping_methods: [{ id: 'sm_1', amount: 4900 }],
+      }
+
+      vi.mocked(medusaClient.store.cart.retrieve).mockResolvedValueOnce({
+        cart: validCart as unknown as StoreCart,
+      })
+      vi.mocked(medusaClient.store.payment.initiatePaymentSession).mockResolvedValueOnce({
+        payment_collection: {
+          id: 'pc_cod',
+          currency_code: 'inr',
+          amount: 9800,
+          status: 'not_paid',
+          payment_providers: [],
+        },
+      } as Awaited<ReturnType<typeof medusaClient.store.payment.initiatePaymentSession>>)
+      vi.mocked(medusaClient.store.cart.complete).mockResolvedValueOnce({
+        type: 'order',
+        order: { id: 'order_cod_1', display_id: 102 } as unknown as StoreOrder,
+      })
+
+      const res = await completeCartCheckout('cart_cod', 'pp_cod_cod')
+      expect(res.success).toBe(true)
+      expect(medusaClient.store.payment.initiatePaymentSession).toHaveBeenCalledWith(
+        validCart,
+        { provider_id: 'pp_cod_cod' }
+      )
+    })
+
+    it('verifies Razorpay payment signature via server API', async () => {
+      const globalFetch = global.fetch
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, verified: true }),
+      } as unknown as Response)
+
+      const verifyRes = await verifyRazorpayPayment(
+        'cart_123',
+        'order_123',
+        'pay_123',
+        'sig_123'
+      )
+      expect(verifyRes.success).toBe(true)
+
+      global.fetch = globalFetch
     })
 
     it('returns order idempotently without re-initiating payment when cart is already completed', async () => {

@@ -368,5 +368,109 @@ describe('Shiprocket Fulfillment Provider Unit Tests', () => {
       )
       expect(retrievedDocs).toHaveLength(1)
     })
+
+    it('17. Caches serviceability lookups with short-lived TTL and clears on request', async () => {
+      ShiprocketClient.clearServiceabilityCache()
+      const client = new ShiprocketClient({ mock_mode: true })
+
+      const firstCheck = await client.checkServiceability({ deliveryPostcode: '560001' })
+      expect(firstCheck.serviceable).toBe(true)
+      expect(firstCheck.status).toBe('confirmed')
+
+      // Second check should be served from memory cache
+      const secondCheck = await client.checkServiceability({ deliveryPostcode: '560001' })
+      expect(secondCheck).toBe(firstCheck) // exact object reference from cache
+
+      // Clearing cache forces fresh lookup
+      ShiprocketClient.clearServiceabilityCache()
+      const thirdCheck = await client.checkServiceability({ deliveryPostcode: '560001' })
+      expect(thirdCheck).not.toBe(firstCheck)
+      expect(thirdCheck.pincode).toBe('560001')
+    })
+
+    it('18. Explicitly marks unserviceable and invalid PINs with status "rejected"', async () => {
+      const client = new ShiprocketClient({ mock_mode: true })
+
+      // Invalid format
+      const invalidRes = await client.checkServiceability({ deliveryPostcode: '012345' })
+      expect(invalidRes.status).toBe('rejected')
+      expect(invalidRes.serviceable).toBe(false)
+      expect(invalidRes.prepaid_eligible).toBe(false)
+      expect(invalidRes.cod_eligible).toBe(false)
+      expect(invalidRes.cod_restriction_reason).toBe('invalid_format')
+
+      // Unserviceable prefix
+      const unserviceableRes = await client.checkServiceability({ deliveryPostcode: '999123' })
+      expect(unserviceableRes.status).toBe('rejected')
+      expect(unserviceableRes.serviceable).toBe(false)
+      expect(unserviceableRes.prepaid_eligible).toBe(false)
+      expect(unserviceableRes.cod_eligible).toBe(false)
+      expect(unserviceableRes.cod_restriction_reason).toBe('out_of_service_area')
+    })
+
+    it('19. Accurately reports "undetermined" status on external provider failure', async () => {
+      // Create client in live mode with mocked request method that throws timeout
+      const liveClient = new ShiprocketClient({
+        mock_mode: false,
+        email: 'test@example.com',
+        password: 'password',
+      })
+      ;(liveClient as any).cachedToken = 'valid_token'
+      ;(liveClient as any).tokenExpiresAt = Date.now() + 100000
+
+      // Mock request to throw a timeout / 503 error
+      jest.spyOn(liveClient as any, 'request').mockRejectedValueOnce(
+        new Error('Shiprocket API gateway timed out after 5000ms')
+      )
+
+      const result = await liveClient.checkServiceability({
+        deliveryPostcode: '411001',
+        skipCache: true,
+      })
+
+      // Must be undetermined, NOT serviceable=true with fake delivery date
+      expect(result.status).toBe('undetermined')
+      expect(result.serviceable).toBe(false)
+      expect(result.prepaid_eligible).toBe(false)
+      expect(result.cod_eligible).toBe(false)
+      expect(result.cod_restriction_reason).toBe('provider_unavailable')
+      expect(result.message).toContain('logistics provider issue')
+    })
+
+    it('20. Distinguishes delivery serviceability from COD eligibility for remote corridors', async () => {
+      const client = new ShiprocketClient({ mock_mode: true })
+
+      // Andaman & Nicobar PIN 744101
+      const islandRes = await client.checkServiceability({ deliveryPostcode: '744101' })
+      expect(islandRes.serviceable).toBe(true)
+      expect(islandRes.status).toBe('confirmed')
+      expect(islandRes.prepaid_eligible).toBe(true)
+      // COD restricted for remote botanical transit corridor
+      expect(islandRes.cod_available).toBe(false)
+      expect(islandRes.cod_eligible).toBe(false)
+      expect(islandRes.cod_restriction_reason).toBe('remote_corridor')
+      expect(islandRes.rate_inr).toBe(129)
+      expect(islandRes.rate_source).toBe('configured_estimate')
+    })
+
+    it('21. Prevents shipping price tampering by calculating canonical prices server-side', async () => {
+      // Test standard shipping calculation: server ignores any client-supplied price
+      const standardPrice = await service.calculatePrice(
+        { id: 'shiprocket-standard' } as any,
+        { option_code: 'shiprocket-standard', client_tampered_price: 1 } as any,
+        { shipping_address: { postal_code: '411001' } } as any
+      )
+      // Canonical standard rate is ₹49 (4900 paise)
+      expect(standardPrice.calculated_amount).toBe(4900)
+
+      // Test express shipping calculation
+      const expressPrice = await service.calculatePrice(
+        { id: 'shiprocket-express' } as any,
+        { option_code: 'shiprocket-express', client_tampered_price: 10 } as any,
+        { shipping_address: { postal_code: '411001' } } as any
+      )
+      // Canonical express rate is ₹99 (9900 paise) or calculated live paise
+      expect(expressPrice.calculated_amount).toBeGreaterThanOrEqual(4900)
+    })
   })
 })

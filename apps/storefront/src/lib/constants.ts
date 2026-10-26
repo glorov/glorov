@@ -43,6 +43,13 @@ export const MAX_COD_ORDER_AMOUNT_INR = 2500
 export const FREE_SHIPPING_THRESHOLD_INR = 499
 
 /**
+ * Pincode Serviceability & Logistics Constants
+ */
+export const PINCODE_STORAGE_KEY = 'glorov_delivery_pincode'
+export const DEFAULT_ORIGIN_PINCODE = '411001'
+export const DEFAULT_ORIGIN_HUB = 'Pune Central Nursery Hub'
+
+/**
  * Harmonized System of Nomenclature (HSN) for India GST
  */
 export const HSN_CODES = {

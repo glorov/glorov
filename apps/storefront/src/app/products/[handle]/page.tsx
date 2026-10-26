@@ -13,6 +13,7 @@ import { ProductGallery } from '@/components/catalog/ProductGallery'
 import { VariantSelector } from '@/components/catalog/VariantSelector'
 import { BotanicalSpecs } from '@/components/catalog/BotanicalSpecs'
 import { ProductTrustAndPolicies } from '@/components/catalog/ProductTrustAndPolicies'
+import { PincodeChecker } from '@/components/shipping/PincodeChecker'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -221,6 +222,15 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
           {/* Interactive Variant Selection, Pricing & Cart Integration */}
           <VariantSelector product={product} />
+
+          {/* Indian Destination PIN Serviceability Checker */}
+          <div className="pt-2">
+            <PincodeChecker
+              isPerishable={isPerishable}
+              weightKg={isSeed ? 0.25 : 1.0}
+              compact={false}
+            />
+          </div>
         </div>
       </div>
 

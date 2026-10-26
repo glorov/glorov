@@ -24,6 +24,15 @@ export class ShiprocketClient {
   private cachedToken: string | null = null
   private tokenExpiresAt = 0
 
+  private static readonly serviceabilityCache = new Map<
+    string,
+    { result: PincodeServiceabilityCheckResult; expiresAt: number }
+  >()
+
+  public static clearServiceabilityCache(): void {
+    ShiprocketClient.serviceabilityCache.clear()
+  }
+
   constructor(options?: ShiprocketModuleOptions) {
     this.email = options?.email || process.env.SHIPROCKET_EMAIL
     this.password = options?.password || process.env.SHIPROCKET_PASSWORD
@@ -201,38 +210,72 @@ export class ShiprocketClient {
   }
 
   /**
-   * Check delivery PIN code serviceability, courier options, and COD availability.
+   * Check delivery PIN code serviceability, courier options, rate estimation, and COD availability.
+   * Includes short-lived caching (10 min TTL) to avoid redundant third-party API calls.
    */
   public async checkServiceability(params: {
     deliveryPostcode: string
     pickupPostcode?: string
     weightKg?: number
     cod?: boolean
+    declaredValueInr?: number
+    skipCache?: boolean
   }): Promise<PincodeServiceabilityCheckResult> {
     const deliveryPin = params.deliveryPostcode.trim()
     const pickupPin = (params.pickupPostcode || this.pickupPincode).trim()
     const weight = params.weightKg || 0.5
     const isCod = params.cod ? 1 : 0
+    const declaredValue = params.declaredValueInr || 0
 
     // Validate 6-digit Indian PIN code format
     if (!/^[1-9][0-9]{5}$/.test(deliveryPin)) {
       return {
         pincode: deliveryPin,
         serviceable: false,
+        status: 'rejected',
+        prepaid_eligible: false,
         cod_available: false,
-        message: 'Invalid 6-digit Indian PIN code format',
+        cod_eligible: false,
+        cod_restriction_reason: 'invalid_format',
+        message: 'Invalid 6-digit Indian PIN code format. Must be 6 digits and cannot start with 0.',
       }
+    }
+
+    const cacheKey = `${deliveryPin}:${pickupPin}:${weight}:${isCod}:${declaredValue}`
+    if (!params.skipCache) {
+      const cached = ShiprocketClient.serviceabilityCache.get(cacheKey)
+      if (cached && Date.now() < cached.expiresAt) {
+        return cached.result
+      }
+    }
+
+    const setCache = (
+      result: PincodeServiceabilityCheckResult,
+      ttlMs = 10 * 60 * 1000
+    ): PincodeServiceabilityCheckResult => {
+      if (ShiprocketClient.serviceabilityCache.size > 1000) {
+        ShiprocketClient.serviceabilityCache.clear()
+      }
+      ShiprocketClient.serviceabilityCache.set(cacheKey, {
+        result,
+        expiresAt: Date.now() + ttlMs,
+      })
+      return result
     }
 
     if (this.mockMode) {
       // Deterministic mock behavior: PINs starting with 999 or 000 are unserviceable
       if (deliveryPin.startsWith('999') || deliveryPin.startsWith('000')) {
-        return {
+        return setCache({
           pincode: deliveryPin,
           serviceable: false,
+          status: 'rejected',
+          prepaid_eligible: false,
           cod_available: false,
+          cod_eligible: false,
+          cod_restriction_reason: 'out_of_service_area',
           message: 'Delivery is currently unavailable to this PIN code region.',
-        }
+        })
       }
 
       // Check tier/region based on PIN prefix
@@ -256,23 +299,29 @@ export class ShiprocketClient {
             ? 'Assam / North East'
             : 'Jammu & Kashmir'
 
-        return {
+        return setCache({
           pincode: deliveryPin,
           serviceable: true,
+          status: 'confirmed',
           city: remoteCity,
           state: remoteState,
+          prepaid_eligible: true,
           cod_available: false, // COD restricted for remote botanical corridors
+          cod_eligible: false,
+          cod_restriction_reason: 'remote_corridor',
           estimated_days: 5,
           courier_name: 'Delhivery Priority Air',
           rate_inr: 129,
+          rate_source: 'configured_estimate',
           message:
             'Serviceable via Remote Transit Corridor (5-6 business days). Live plants require express care.',
-        }
+        })
       }
 
-      return {
+      return setCache({
         pincode: deliveryPin,
         serviceable: true,
+        status: 'confirmed',
         city: deliveryPin.startsWith('411')
           ? 'Pune'
           : deliveryPin.startsWith('560')
@@ -289,23 +338,32 @@ export class ShiprocketClient {
             : deliveryPin.startsWith('11')
               ? 'Delhi'
               : 'India',
+        prepaid_eligible: true,
         cod_available: true,
+        cod_eligible: true,
+        cod_restriction_reason: null,
         estimated_days: isMetro ? 2 : 4,
         courier_name: isMetro ? 'Delhivery Air Botanical Express' : 'BlueDart Surface Delivery',
         rate_inr: isMetro ? 49 : 79,
+        rate_source: 'configured_estimate',
         message: isMetro
           ? 'Serviceable via Express Botanical Air Corridor (2 business days)'
           : 'Serviceable via Standard Botanical Surface Transit (3-5 business days)',
-      }
+      })
     }
 
     try {
-      const query = new URLSearchParams({
+      const queryParams: Record<string, string> = {
         pickup_postcode: pickupPin,
         delivery_postcode: deliveryPin,
         weight: weight.toString(),
         cod: isCod.toString(),
-      })
+      }
+      if (declaredValue > 0) {
+        queryParams.declared_value = declaredValue.toString()
+      }
+
+      const query = new URLSearchParams(queryParams)
 
       const res = await this.request<ShiprocketServiceabilityResponse>(
         `/courier/serviceability?${query.toString()}`
@@ -313,12 +371,16 @@ export class ShiprocketClient {
 
       const couriers = res.data?.available_courier_companies || []
       if (couriers.length === 0) {
-        return {
+        return setCache({
           pincode: deliveryPin,
           serviceable: false,
+          status: 'rejected',
+          prepaid_eligible: false,
           cod_available: false,
+          cod_eligible: false,
+          cod_restriction_reason: 'no_courier_available',
           message: 'No active courier partners service this PIN code.',
-        }
+        })
       }
 
       // Pick top-rated or lowest-rate courier
@@ -328,25 +390,36 @@ export class ShiprocketClient {
           ? topCourier.estimated_delivery_days
           : parseInt(String(topCourier.estimated_delivery_days), 10) || 3
 
-      return {
+      const isCourierCod = topCourier.cod === 1
+
+      return setCache({
         pincode: deliveryPin,
         serviceable: true,
-        cod_available: topCourier.cod === 1,
+        status: 'confirmed',
+        prepaid_eligible: true,
+        cod_available: isCourierCod,
+        cod_eligible: isCourierCod,
+        cod_restriction_reason: isCourierCod ? null : 'courier_cod_disabled',
         estimated_days: estDays,
         courier_name: topCourier.courier_name,
         rate_inr: topCourier.rate,
+        rate_source: 'live_courier',
         message: `Serviceable via ${topCourier.courier_name} (${estDays} business days)`,
-      }
+      })
     } catch (err: unknown) {
-      // In live mode, fallback gracefully if Shiprocket rate check fails
+      const errMsg = err instanceof Error ? err.message : 'Provider serviceability lookup failed'
+      // When live provider fails or times out, report undetermined status
+      // Do NOT invent a fake successful estimate
       return {
         pincode: deliveryPin,
-        serviceable: true,
-        cod_available: true,
-        estimated_days: 3,
-        courier_name: 'Standard Indian Logistics Partner',
-        rate_inr: 49,
-        message: 'Standard delivery estimate applied',
+        serviceable: false,
+        status: 'undetermined',
+        prepaid_eligible: false,
+        cod_available: false,
+        cod_eligible: false,
+        cod_restriction_reason: 'provider_unavailable',
+        rate_source: 'configured_estimate',
+        message: `Serviceability check could not be determined due to logistics provider issue: ${errMsg}`,
       }
     }
   }

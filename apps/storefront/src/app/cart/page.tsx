@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatINR } from '@/lib/utils'
 import { FREE_SHIPPING_THRESHOLD_INR } from '@/lib/constants'
+import { PincodeChecker } from '@/components/shipping/PincodeChecker'
 
 export default function CartPage() {
   const {
@@ -41,6 +42,16 @@ export default function CartPage() {
   const cartTotal = cart?.total || Math.max(0, subtotal - discountTotal + shippingTotal + taxTotal)
   const subtotalINR = subtotal / 100
   const freeShippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD_INR - subtotalINR)
+
+  const hasPerishable = items.some(
+    (item) =>
+      item.product_title?.toLowerCase().includes('plant') ||
+      item.variant_title?.toLowerCase().includes('pot')
+  )
+  const cartWeightKg = Math.max(
+    0.25,
+    items.reduce((acc, item) => acc + (item.quantity || 1) * 0.2, 0)
+  )
 
   if (isLoading && items.length === 0) {
     return (
@@ -313,6 +324,14 @@ export default function CartPage() {
                 </span>
               </div>
             </div>
+
+            {/* Pincode Serviceability & Speed Check */}
+            <PincodeChecker
+              compact={true}
+              isPerishable={hasPerishable}
+              weightKg={cartWeightKg}
+              declaredValueInr={subtotalINR}
+            />
 
             <Button
               asChild

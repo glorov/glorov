@@ -1,4 +1,4 @@
-name: GLOROV Monorepo CI
+name: GLOROV Monorepo CI & Quality Engineering Suite
 
 on:
   push:
@@ -11,14 +11,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Lint, Typecheck, Test & Build
+  quality:
+    name: Lint, Typecheck & Unit Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js LTS
+      - name: Setup Node.js 20.x
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
@@ -41,17 +41,139 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies
+      - name: Install dependencies (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
       - name: Type check all workspaces
-        run: pnpm typecheck
+        run: pnpm turbo typecheck
 
       - name: Lint all packages
-        run: pnpm lint
+        run: pnpm turbo lint
 
-      - name: Run unit test suites
-        run: pnpm test
+      - name: Run storefront and backend unit tests
+        run: pnpm turbo test
 
-      - name: Build production artifacts
-        run: pnpm build
+  integration:
+    name: Backend HTTP Integration & Critical Regressions
+    runs-on: ubuntu-latest
+    needs: [quality]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test_postgres_password
+          POSTGRES_DB: glorov_medusa_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://postgres:test_postgres_password@localhost:5432/glorov_medusa_test
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: supersecret_ci_test_jwt_secret_32chars_long!
+      COOKIE_SECRET: supersecret_ci_test_cookie_secret_32chars!
+      STORE_PUBLISHABLE_KEY: pk_2d4629ab032f218451f992310351db37f7adcc4ea53d3cfa5fc2c95864b717cf
+      RAZORPAY_KEY_ID: rzp_test_ci_mock_key_id
+      RAZORPAY_KEY_SECRET: rzp_test_ci_mock_key_secret
+      RAZORPAY_WEBHOOK_SECRET: mock_razorpay_webhook_secret_dev
+      RAZORPAY_MOCK_MODE: "true"
+      SHIPROCKET_WEBHOOK_TOKEN: test_shiprocket_token_2026
+      SHIPROCKET_MOCK_MODE: "true"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Medusa database migrations
+        run: pnpm --filter @glorov/backend db:migrate
+
+      - name: Seed Indian botanical region & test catalog
+        run: |
+          pnpm --filter @glorov/backend exec npx tsx src/scripts/seed-india-region.ts || true
+
+      - name: Build backend artifacts
+        run: pnpm --filter @glorov/backend build
+
+      - name: Start Medusa backend server for integration tests
+        run: |
+          pnpm --filter @glorov/backend start &
+          # Wait for health check endpoint to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:9000/health | grep -q "OK"; then
+              echo "Medusa backend is ready!"
+              break
+            fi
+            echo "Waiting for backend on port 9000... (attempt $i/30)"
+            sleep 2
+          done
+
+      - name: Run all 9 Backend HTTP Integration Test Suites
+        run: pnpm --filter @glorov/backend test:integration:http
+
+  build:
+    name: Production Build Verification
+    runs-on: ubuntu-latest
+    needs: [quality, integration]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all packages & apps
+        run: pnpm turbo build

@@ -52,16 +52,16 @@ export function Hero({ backendOnline }: HeroProps = {}) {
             {/* Key Assurance Indicators */}
             <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border/60 max-w-lg mx-auto lg:mx-0 text-left">
               <div>
-                <p className="text-2xl font-bold text-botanical-900">90%+</p>
-                <p className="text-xs text-muted-foreground font-medium">Lab-Tested Germination</p>
+                <p className="text-2xl font-bold text-botanical-900">Desi</p>
+                <p className="text-xs text-muted-foreground font-medium">Heirloom Varieties</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-botanical-900">24k+</p>
-                <p className="text-xs text-muted-foreground font-medium">Indian PIN Codes</p>
+                <p className="text-2xl font-bold text-botanical-900">Pune Hub</p>
+                <p className="text-xs text-muted-foreground font-medium">Pan-India Dispatch</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-botanical-900">48h</p>
-                <p className="text-xs text-muted-foreground font-medium">Express Courier Route</p>
+                <p className="text-2xl font-bold text-botanical-900">Express</p>
+                <p className="text-xs text-muted-foreground font-medium">Air Route Available</p>
               </div>
             </div>
           </div>
@@ -74,14 +74,10 @@ export function Hero({ backendOnline }: HeroProps = {}) {
                   <Badge variant="warning" className="text-xs">
                     Root-Safe Packing
                   </Badge>
-                  {backendOnline ? (
-                    <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                      Medusa v2 Online
-                    </span>
-                  ) : (
-                    <span className="text-xs font-semibold text-botanical-700">GLOROV Direct Nursery</span>
-                  )}
+                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full flex items-center gap-1.5">
+                    <span className={`h-1.5 w-1.5 rounded-full ${backendOnline !== false ? 'bg-emerald-600 animate-pulse' : 'bg-amber-500'}`} />
+                    Pune Propagation Hub
+                  </span>
                 </div>
 
                 <div className="h-56 rounded-xl bg-botanical-900/5 border border-dashed border-botanical-300 flex flex-col items-center justify-center p-6 text-center text-botanical-900 space-y-3">
@@ -89,16 +85,16 @@ export function Hero({ backendOnline }: HeroProps = {}) {
                     <Sprout className="h-8 w-8" />
                   </div>
                   <div>
-                    <h2 className="font-bold text-base text-botanical-900">Live Plant Transit Shield™</h2>
+                    <h2 className="font-bold text-base text-botanical-900">Botanical Transit Packaging</h2>
                     <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                      Hydro-gel root coco-peat wraps protect foliage vitality for up to 6 days of interstate transit.
+                      Moisture-retaining root coco-peat wraps and ventilated crates protect foliage vitality during transit.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-background/80 border text-xs text-muted-foreground">
                   <ShieldCheck className="h-4 w-4 text-botanical-600 shrink-0" />
-                  <span>Doorstep transit inspection guarantee on every live delivery.</span>
+                  <span>Protective transit packaging designed for interstate travel across India.</span>
                 </div>
               </div>
             </div>

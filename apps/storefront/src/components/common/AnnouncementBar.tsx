@@ -17,9 +17,9 @@ export function AnnouncementBar() {
           <span>Free Express Shipping on Seed Orders Above ₹499</span>
         </div>
         <div className="hidden lg:flex items-center gap-3 text-[11px] text-botanical-300">
-          <span>100% Viability Guarantee</span>
+          <span>Carefully Packaged Botanicals</span>
           <span className="text-botanical-600">•</span>
-          <span>GST-Compliant Invoicing</span>
+          <span>Agricultural Seeds (HSN 1209)</span>
         </div>
       </div>
     </aside>

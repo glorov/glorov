@@ -6,7 +6,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'GLOROV — Indian Seeds & Live Plants | Pan-India Botanical Nursery',
   description:
-    'Buy high-viability garden seeds, outdoor & indoor live potted plants, planters, and organic potting mixes online in India. Safe transit guarantee across 24,000+ PIN codes.',
+    'Buy high-viability garden seeds, outdoor & indoor live potted plants, planters, and organic potting mixes online in India. Pan-India dispatch from our Pune nursery hub.',
   keywords: [
     'seeds india',
     'buy plants online',

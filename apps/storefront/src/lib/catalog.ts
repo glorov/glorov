@@ -231,3 +231,138 @@ export function getVariantPriceINR(variant: StoreCatalogVariant): string {
   }
   return formatINR(inrPrice.amount, true)
 }
+
+/**
+ * Recursively flatten a category hierarchy into a single list.
+ */
+export function flattenCategories(
+  categories: StoreCatalogCategory[]
+): StoreCatalogCategory[] {
+  const result: StoreCatalogCategory[] = []
+  const seenIds = new Set<string>()
+
+  function recurse(list: StoreCatalogCategory[]) {
+    for (const item of list) {
+      if (!seenIds.has(item.id)) {
+        seenIds.add(item.id)
+        result.push(item)
+      }
+      if (item.category_children && item.category_children.length > 0) {
+        recurse(item.category_children)
+      }
+    }
+  }
+  recurse(categories)
+  return result
+}
+
+/**
+ * Find a category by handle anywhere in a hierarchical category tree.
+ */
+export function findCategoryByHandle(
+  categories: StoreCatalogCategory[],
+  handle: string
+): StoreCatalogCategory | undefined {
+  for (const cat of categories) {
+    if (cat.handle === handle) {
+      return cat
+    }
+    if (cat.category_children && cat.category_children.length > 0) {
+      const found = findCategoryByHandle(cat.category_children, handle)
+      if (found) return found
+    }
+  }
+  return undefined
+}
+
+/**
+ * Collect a category's ID and all its descendants' IDs.
+ * Used for querying products in a parent category (e.g. "seeds" queries "seeds", "vegetable-seeds", etc.).
+ */
+export function getCategoryHierarchyIds(category: StoreCatalogCategory): string[] {
+  const ids: string[] = [category.id]
+  if (category.category_children && category.category_children.length > 0) {
+    for (const child of category.category_children) {
+      ids.push(...getCategoryHierarchyIds(child))
+    }
+  }
+  return ids
+}
+
+/**
+ * Determine the lowest price in INR for a product across its variants.
+ */
+export function getProductLowestPriceINR(product: StoreCatalogProduct): {
+  minPricePaise: number | null
+  formatted: string
+  hasMultiplePrices: boolean
+} {
+  const variants = product.variants || []
+  const prices: number[] = []
+
+  for (const v of variants) {
+    const inrPrice = v.prices?.find((p) => p.currency_code.toLowerCase() === 'inr')
+    if (inrPrice && typeof inrPrice.amount === 'number') {
+      prices.push(inrPrice.amount)
+    }
+  }
+
+  if (prices.length === 0) {
+    return {
+      minPricePaise: null,
+      formatted: 'Price on request',
+      hasMultiplePrices: false,
+    }
+  }
+
+  const minPrice = Math.min(...prices)
+  const maxPrice = Math.max(...prices)
+  const hasMultiplePrices = minPrice !== maxPrice
+
+  return {
+    minPricePaise: minPrice,
+    formatted: hasMultiplePrices ? `From ${formatINR(minPrice, true)}` : formatINR(minPrice, true),
+    hasMultiplePrices,
+  }
+}
+
+/**
+ * Determine overall stock status for a product based on its variants.
+ */
+export function getProductStockSummary(product: StoreCatalogProduct): {
+  hasStock: boolean
+  totalStock: number
+  status: 'in_stock' | 'low_stock' | 'out_of_stock'
+} {
+  const variants = product.variants || []
+  if (variants.length === 0) {
+    return { hasStock: true, totalStock: 0, status: 'in_stock' }
+  }
+
+  let totalAvailable = 0
+  let anyAvailable = false
+  let allTracked = true
+
+  for (const v of variants) {
+    const avail = getVariantStockAvailability(v)
+    if (!avail.manageInventory) {
+      allTracked = false
+      anyAvailable = true
+    } else {
+      totalAvailable += avail.availableQuantity
+      if (avail.isAvailable) {
+        anyAvailable = true
+      }
+    }
+  }
+
+  if (!allTracked || anyAvailable) {
+    if (allTracked && totalAvailable <= 10 && totalAvailable > 0) {
+      return { hasStock: true, totalStock: totalAvailable, status: 'low_stock' }
+    }
+    return { hasStock: true, totalStock: totalAvailable, status: 'in_stock' }
+  }
+
+  return { hasStock: false, totalStock: 0, status: 'out_of_stock' }
+}
+

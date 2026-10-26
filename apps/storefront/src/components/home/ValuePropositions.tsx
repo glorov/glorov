@@ -6,25 +6,25 @@ const VALUES = [
     icon: ThermometerSnowflake,
     title: 'Climate-Hardened Nursery Plants',
     description:
-      'Our live plants undergo outdoor hardening in Indian temperature cycles before transit, reducing thermal shock upon arrival.',
+      'Our live plants undergo outdoor hardening in Indian temperature cycles before transit, reducing shock upon arrival.',
   },
   {
     icon: Sparkles,
-    title: '90%+ Seed Germination Tested',
+    title: 'High-Viability Desi Seeds',
     description:
-      'Every seed lot is batch-tested for germination viability under ambient tropical humidity conditions. No expired or dead seed packets.',
+      'Carefully harvested and stored Indian heirloom seeds calibrated for domestic home gardening across seasons.',
   },
   {
     icon: MapPin,
-    title: '24,000+ PIN Code Direct Routing',
+    title: 'Pan-India Direct Delivery',
     description:
-      'Integrated multi-courier express dispatch ensuring sensitive botanical parcels avoid multi-day transit hub bottlenecks.',
+      'Direct dispatch from our central Pune nursery with standard ground and express air transit options.',
   },
   {
     icon: Shield,
-    title: 'Zero-Risk Transit Guarantee',
+    title: 'Protective Botanical Packaging',
     description:
-      'If any botanical arrives wilted or damaged in transit, share a photo within 24 hours for an immediate free replacement or refund.',
+      'Ventilated crates and moisture-retaining coco-peat root wraps ensure live foliage arrives healthy and hydrated.',
   },
 ]
 

@@ -66,8 +66,8 @@ export default function CartPage() {
         </p>
         <div className="mt-8 flex flex-wrap gap-4 justify-center">
           <Button asChild variant="botanical" size="lg" className="rounded-full shadow-md gap-2">
-            <Link href="/#catalog">
-              <span>Browse Seed Catalog</span>
+            <Link href="/store">
+              <span>Browse Botanical Store</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -91,12 +91,12 @@ export default function CartPage() {
             </Badge>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Prices validated by Medusa backend engine. Certified germination &amp; live plant guarantee.
+            Prices validated by Medusa backend engine. Direct dispatch from our Pune nursery hub.
           </p>
         </div>
 
         <Button asChild variant="ghost" size="sm" className="self-start sm:self-auto text-xs text-botanical-700 hover:text-botanical-800">
-          <Link href="/#catalog">← Continue Shopping</Link>
+          <Link href="/store">← Continue Shopping</Link>
         </Button>
       </div>
 
@@ -330,7 +330,7 @@ export default function CartPage() {
             <div className="pt-2 border-t border-earth-100 space-y-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-botanical-700 flex-shrink-0" />
-                <span>100% Non-GMO, Tested High-Germination Seeds</span>
+                <span>Heirloom Desi cultivars &amp; climate-hardened live plants</span>
               </div>
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-botanical-700 flex-shrink-0" />

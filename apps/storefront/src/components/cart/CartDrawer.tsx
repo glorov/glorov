@@ -104,7 +104,7 @@ export function CartDrawer() {
                   variant="botanical"
                   className="rounded-full mt-2"
                 >
-                  <Link href="/#catalog">Explore Seed Catalog</Link>
+                  <Link href="/store">Explore Botanical Store</Link>
                 </Button>
               </div>
             ) : (

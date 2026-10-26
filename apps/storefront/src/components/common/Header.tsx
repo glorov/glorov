@@ -1,36 +1,45 @@
-import React from 'react'
+'use client'
+
+import React, { useState } from 'react'
 import Link from 'next/link'
-import { Leaf, Search, User } from 'lucide-react'
+import { Leaf, Search, User, X } from 'lucide-react'
 import { AnnouncementBar } from './AnnouncementBar'
 import { MobileNav } from './MobileNav'
+import { SearchInput } from './SearchInput'
 import { CartNavButton } from '@/components/cart/CartNavButton'
 import { Button } from '@/components/ui/button'
 
 const NAV_LINKS = [
+  { href: '/store', label: 'All Products' },
   { href: '/categories/seeds', label: 'Seeds' },
   { href: '/categories/live-plants', label: 'Live Plants' },
-  { href: '/categories/planters', label: 'Planters' },
-  { href: '/categories/plant-care', label: 'Soil & Care' },
+  { href: '/categories/planters-pots', label: 'Planters & Pots' },
 ]
 
 export function Header() {
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 relative">
       <AnnouncementBar />
-      <div className="container mx-auto flex h-16 items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="container mx-auto flex h-16 items-center justify-between gap-2 sm:gap-4 px-4 sm:px-6">
         {/* Left: Mobile Nav & Brand Logo */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <MobileNav />
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="h-9 w-9 rounded-lg bg-botanical-700 flex items-center justify-center text-white shadow-sm group-hover:bg-botanical-800 transition-colors">
-              <Leaf className="h-5 w-5 text-emerald-200" />
+          <Link
+            href="/"
+            className="flex items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 rounded-lg p-0.5"
+            aria-label="GLOROV Homepage"
+          >
+            <div className="h-9 w-9 rounded-lg bg-botanical-700 flex items-center justify-center text-white shadow-xs group-hover:bg-botanical-800 transition-colors shrink-0">
+              <Leaf className="h-5 w-5 text-emerald-200" aria-hidden="true" />
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold tracking-tight text-xl text-botanical-900 leading-none">
+              <span className="font-black tracking-tight text-xl text-botanical-950 leading-none">
                 GLOROV
               </span>
-              <span className="text-[10px] uppercase tracking-widest text-botanical-600 font-semibold leading-tight">
-                Botanicals & Seeds
+              <span className="text-[10px] uppercase tracking-widest text-botanical-700 font-bold leading-tight">
+                Botanicals &amp; Seeds
               </span>
             </div>
           </Link>
@@ -39,13 +48,13 @@ export function Header() {
         {/* Center: Desktop Navigation */}
         <nav
           aria-label="Main Navigation"
-          className="hidden lg:flex items-center gap-8 text-sm font-medium"
+          className="hidden lg:flex items-center gap-7 text-sm font-medium"
         >
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-foreground/80 hover:text-botanical-700 transition-colors py-1 relative hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-[2px] hover:after:bg-botanical-600"
+              className="text-foreground/85 hover:text-botanical-700 transition-colors py-1 relative hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-[2px] hover:after:bg-botanical-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 rounded-sm"
             >
               {link.label}
             </Link>
@@ -53,16 +62,31 @@ export function Header() {
         </nav>
 
         {/* Right: Actions (Search, Account, Cart) */}
-        <div className="flex items-center gap-2">
-          {/* Quick Search trigger */}
-          <div className="hidden sm:flex relative items-center">
-            <input
-              type="search"
-              placeholder="Search seeds, plants, pots..."
-              className="w-48 xl:w-64 h-9 rounded-full border border-border bg-earth-50/70 pl-8 pr-3 text-xs focus:outline-none focus:ring-1 focus:ring-botanical-600 focus:bg-background transition-all"
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Desktop Search input */}
+          <div className="hidden sm:block">
+            <SearchInput
+              id="desktop-header-search"
+              className="w-44 md:w-56 xl:w-72"
             />
-            <Search className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
           </div>
+
+          {/* Mobile Search Toggle Button */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+            className="sm:hidden text-foreground/80 hover:text-botanical-700"
+            aria-label={mobileSearchOpen ? 'Close search' : 'Open search'}
+            aria-expanded={mobileSearchOpen}
+          >
+            {mobileSearchOpen ? (
+              <X className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Search className="h-5 w-5" aria-hidden="true" />
+            )}
+          </Button>
 
           {/* Account Icon */}
           <Button
@@ -72,7 +96,7 @@ export function Header() {
             className="text-foreground/80 hover:text-botanical-700"
           >
             <Link href="/account" aria-label="Customer Account">
-              <User className="h-5 w-5" />
+              <User className="h-5 w-5" aria-hidden="true" />
             </Link>
           </Button>
 
@@ -80,6 +104,17 @@ export function Header() {
           <CartNavButton />
         </div>
       </div>
+
+      {/* Expandable Mobile Search Bar */}
+      {mobileSearchOpen && (
+        <div className="sm:hidden px-4 pb-3 pt-1 border-t border-border bg-background animate-in slide-in-from-top duration-150">
+          <SearchInput
+            id="mobile-header-search"
+            autoFocus
+            onSearchSubmitted={() => setMobileSearchOpen(false)}
+          />
+        </div>
+      )}
     </header>
   )
 }

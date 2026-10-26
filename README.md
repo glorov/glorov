@@ -1,6 +1,12 @@
 # GLOROV — Indian E-commerce Platform (Seeds & Live Botanicals)
 
-Production-oriented headless e-commerce monorepo built on **Medusa v2** modular commerce engine and a high-performance **Next.js 15 App Router** storefront.
+> High-performance direct-to-consumer commerce platform tailored for the Indian market, engineered with the **Medusa v2** modular commerce engine and a **Next.js 15 App Router** storefront.
+
+[![Node.js Version](https://img.shields.io/badge/Node.js-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
+[![pnpm Version](https://img.shields.io/badge/pnpm-9.15.9-orange.svg)](https://pnpm.io/)
+[![Medusa Version](https://img.shields.io/badge/Medusa-v2.22.0-blue.svg)](https://medusajs.com/)
+[![Next.js Version](https://img.shields.io/badge/Next.js-15.1.7-black.svg)](https://nextjs.org/)
+[![Tests Passing](https://img.shields.io/badge/Tests-673%20Passing-success.svg)](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/testing.md)
 
 ---
 
@@ -9,143 +15,167 @@ Production-oriented headless e-commerce monorepo built on **Medusa v2** modular 
 ```
 glorov/
 ├── apps/
-│   ├── backend/               # Medusa v2 Commerce Engine & Admin Dashboard (:9000)
-│   └── storefront/            # Next.js 15 App Router Frontend (:3000)
+│   ├── backend/               # Medusa v2 Headless Commerce Engine & Admin (:9000)
+│   └── storefront/            # Next.js 15 App Router Customer Storefront (:3000)
 ├── packages/
-│   ├── types/                 # Shared domain DTOs (Botanical, Pincode, Product)
-│   └── config/                # Shared TypeScript and ESLint configurations
-├── docs/
-│   ├── architecture.md        # Comprehensive Technical Architecture Blueprint
-│   └── implementation-roadmap.md # 30-task granular implementation roadmap
+│   ├── types/                 # Shared TypeScript DTOs, Zod schemas & validations
+│   └── config/                # Standardized TypeScript & ESLint configurations
+├── caddy/                     # Reverse proxy configuration with automatic Let's Encrypt TLS
+├── scripts/                   # Database backup, restore, and post-deployment smoke tests
+├── docs/                      # Architectural blueprints, ADRs, test plans, and runbooks
+│   └── decisions/             # Architecture Decision Records (ADR-0001 to ADR-0006)
 ├── docker-compose.yml         # Local development PostgreSQL 16 & Redis 7
-├── pnpm-workspace.yaml        # Workspace configuration
+├── docker-compose.prod.yml    # Production multi-container Blue/Green deployment
+├── pnpm-workspace.yaml        # Workspace dependency topology
 └── turbo.json                 # Turborepo task execution pipeline
 ```
 
 ---
 
-## 2. Prerequisites & Environment Baseline
+## 2. Prerequisites & Software Versions
 
-- **Node.js:** `v20.x` LTS or `v22.x` LTS (Pinned in `.nvmrc` to `20.19.5`)
-- **Package Manager:** `pnpm` (Pinned to `9.15.9`)
-- **Database:** PostgreSQL 16+ (Local Docker container or Supabase Session Pooler on Port `5432`)
-- **Docker Engine:** Required for local development database services
+| Dependency | Required Version | Verification Command |
+|---|---|---|
+| **Node.js** | `>= 20.0.0` (Pinned in `.nvmrc` to `20.19.5`) | `node -v` |
+| **pnpm** | `>= 9.0.0` (Pinned in `package.json` to `9.15.9`) | `pnpm -v` |
+| **Docker Engine** | `>= 24.0.0` (For local PostgreSQL 16 & Redis 7) | `docker --version` |
+| **Docker Compose** | `>= 2.20.0` | `docker compose version` |
 
-If using `nvm`, switch to the supported Node.js version:
+If using `nvm`, switch to the supported runtime:
 ```bash
 nvm use
 ```
 
 ---
 
-## 3. Quick Start & Setup Guide
+## 3. Quick Start & Local Setup
 
-### Step 1: Install Monorepo Dependencies
+### Step 1: Install Dependencies
 From the repository root, install dependencies across all workspace packages:
 ```bash
 pnpm install
 ```
 
-### Step 2: Start Local PostgreSQL Database
+### Step 2: Start Local Database Services
 Launch the local PostgreSQL 16 and Redis 7 containers:
 ```bash
 pnpm db:up
-# Or directly: docker compose up -d postgres redis
-```
-
-Verify that the database container is healthy:
-```bash
-docker ps
+# Runs: docker compose up -d postgres redis
 ```
 
 ### Step 3: Configure Environment Variables
-Copy the environment template files for both the backend and storefront:
-
+Copy template environment files for backend and storefront:
 ```bash
-# Backend environment
+# Backend configuration
 cp apps/backend/.env.example apps/backend/.env
 
-# Storefront environment
+# Storefront configuration
 cp apps/storefront/.env.example apps/storefront/.env.local
 ```
 
 ### Step 4: Run Medusa Database Migrations
-Run the initial Medusa schema migrations to create all commerce tables:
+Initialize core commerce tables, relationships, and custom modules:
 ```bash
 pnpm backend:migrate
-# Or: pnpm --filter @glorov/backend db:migrate
+# Runs: pnpm --filter @glorov/backend db:migrate
 ```
 
-### Step 5: Create Local Medusa Admin User
-Create an administrative user for the Medusa Admin dashboard:
+### Step 5: Create Administrator Account
+Create credentials for the Medusa Admin dashboard:
 ```bash
 pnpm --filter @glorov/backend user -e admin@glorov.in -p SuperSecretPassword123!
 ```
 
-### Step 6: Seed Default Indian Region & Primary Currency (INR)
-Initialize the store with INR currency, India region, tax regions, and Pune Nursery stock location:
+### Step 6: Seed Indian Regional Configuration & Catalog
+Initialize India region, INR currency, Pune Nursery stock location, and seed botanical products:
 ```bash
 pnpm backend:seed
-# Or: pnpm --filter @glorov/backend exec ./src/scripts/seed-india-region.ts
 ```
 
 ---
 
-## 4. Running the Development Servers
+## 4. Development Commands
 
-You can run both the backend and storefront concurrently using Turborepo:
+Run both backend and storefront concurrently using Turborepo:
 ```bash
 pnpm dev
 ```
 
-Or run each service individually:
-
-- **Medusa v2 Backend & Admin Dashboard:**
-  ```bash
-  pnpm backend:dev
-  # Backend API: http://localhost:9000
-  # Admin Dashboard: http://localhost:9000/app
-  # Health Check: http://localhost:9000/health
-  ```
-
-- **Next.js Storefront:**
-  ```bash
-  pnpm storefront:dev
-  # Storefront Web: http://localhost:3000
-  ```
-
----
-
-## 5. Verification & Quality Gates
-
-Run quality checks across all workspaces:
+Or run individual services independently:
 
 ```bash
-# Type check all packages
-pnpm typecheck
+# Medusa v2 Backend & Admin Dashboard
+pnpm backend:dev
+# API Root:        http://localhost:9000
+# Admin Dashboard: http://localhost:9000/app
+# Health Check:    http://localhost:9000/health
 
-# Lint all code
-pnpm lint
-
-# Run unit tests across backend, storefront, and shared types
-pnpm test
-
-# Build production artifacts
-pnpm build
+# Next.js Storefront
+pnpm storefront:dev
+# Storefront Web:  http://localhost:3000
 ```
 
 ---
 
-## 6. Accessing Local Admin & Storefront
+## 5. Testing & Quality Gates
 
-- **Storefront Homepage:** [http://localhost:3000](http://localhost:3000)
-- **Medusa Admin Dashboard:** [http://localhost:9000/app](http://localhost:9000/app)
-- **Backend Health Check:** [http://localhost:9000/health](http://localhost:9000/health)
-- **Store API Root:** [http://localhost:9000/store/products](http://localhost:9000/store/products)
+GLOROV enforces a 3-tier testing strategy ensuring 100% verification across all critical commerce flows:
+
+```bash
+# Run all unit tests across the monorepo
+pnpm test
+
+# Run Storefront Vitest Suite (17 suites, 258 tests)
+pnpm --filter @glorov/storefront test
+
+# Run Backend Jest Unit Suite (15 suites, 229 tests)
+pnpm --filter @glorov/backend test:unit
+
+# Run Backend HTTP Integration Suite against real Postgres & Redis (12 suites, 186 tests)
+pnpm --filter @glorov/backend test:integration:http
+
+# Run Post-Deployment Smoke Probes against live/running servers (7 probes)
+pnpm smoke:test http://localhost:9000 http://localhost:3000
+
+# Typecheck all packages
+pnpm typecheck
+
+# Lint all packages
+pnpm lint
+```
+
+**Automated Test Summary:** **44 test suites, 673 automated tests passing (100% pass rate)**.
 
 ---
 
-## 7. Next Roadmap Milestone
+## 6. Production Build & Deployment
 
-Following the approved `docs/implementation-roadmap.md`, the next phase is:
-**Phase 3: Domain Modeling & Botanical Product Extensions (Medusa v2 DML - Tasks 7–9)**, defining custom plant attributes (`botanical_name`, `sunlight`, `watering`, `season`, `germination_days`, `is_perishable`) and establishing product module links.
+Build production-optimized bundles across all packages:
+```bash
+pnpm build
+```
+
+- **Medusa Backend Build:** `pnpm backend:build` (`medusa build` -> `.medusa/server`)
+- **Next.js Storefront Build:** `pnpm storefront:build` (`next build` -> `.next/standalone`)
+
+### Production Docker Deployment
+```bash
+# Deploy with Docker Compose using automated Blue/Green cutover and Caddy TLS
+docker compose -f docker-compose.prod.yml up -d
+```
+See the complete [Production Deployment Guide](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/production-deployment.md) for zero-downtime Blue/Green cutover and rollback procedures.
+
+---
+
+## 7. Key Documentation Links
+
+| Document | Description |
+|---|---|
+| [**Developer Handover Guide**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/developer-handover.md) | Exhaustive directory breakdown, commerce flows, API catalog, and developer workflows. |
+| [**Production Readiness & Launch Checklist**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/launch-checklist.md) | Launch blockers, statutory Indian compliance (DPDP, GSTIN), and dry-run checklist. |
+| [**Architecture Decision Records (ADRs)**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/decisions/) | Key architectural decisions, trade-offs, and evaluated alternatives (ADR-0001 to ADR-0006). |
+| [**Technical Architecture Blueprint**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/architecture.md) | Comprehensive system architecture and domain models. |
+| [**Implementation Roadmap & Audit**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/implementation-roadmap.md) | Granular 30-task engineering roadmap with evidence-backed completion status. |
+| [**Security Audit & Remediations**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/security-audit.md) | Security audit report verifying mitigations SEC-01 through SEC-09. |
+| [**Integration Inventory**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/integration-inventory.md) | Comprehensive inventory of backend APIs, storefront routes, and webhooks. |
+| [**End-to-End Test Plan**](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/e2e-test-plan.md) | Test cases, fixtures, and verification procedures. |

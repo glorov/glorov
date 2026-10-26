@@ -6,7 +6,7 @@
 [![pnpm Version](https://img.shields.io/badge/pnpm-9.15.9-orange.svg)](https://pnpm.io/)
 [![Medusa Version](https://img.shields.io/badge/Medusa-v2.22.0-blue.svg)](https://medusajs.com/)
 [![Next.js Version](https://img.shields.io/badge/Next.js-15.1.7-black.svg)](https://nextjs.org/)
-[![Tests Passing](https://img.shields.io/badge/Tests-673%20Passing-success.svg)](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/testing.md)
+[![Tests Passing](https://img.shields.io/badge/Tests-681%20Passing-success.svg)](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/testing.md)
 
 ---
 
@@ -128,7 +128,7 @@ pnpm test
 # Run Storefront Vitest Suite (17 suites, 258 tests)
 pnpm --filter @glorov/storefront test
 
-# Run Backend Jest Unit Suite (15 suites, 229 tests)
+# Run Backend Jest Unit Suite (16 suites, 237 tests)
 pnpm --filter @glorov/backend test:unit
 
 # Run Backend HTTP Integration Suite against real Postgres & Redis (12 suites, 186 tests)
@@ -144,7 +144,7 @@ pnpm typecheck
 pnpm lint
 ```
 
-**Automated Test Summary:** **44 test suites, 673 automated tests passing (100% pass rate)**.
+**Automated Test Summary:** **45 test suites, 681 automated tests passing (100% pass rate)**.
 
 ---
 

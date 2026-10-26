@@ -5,7 +5,7 @@
 > **Tech Stack:** Medusa v2 Commerce Engine + Next.js 15 App Router + PostgreSQL 16 + Redis 7 + Caddy TLS  
 > **Primary Currency:** Indian Rupee (INR — ₹)  
 > **Primary Fulfillment Location:** Pune Central Nursery Hub, Maharashtra (PIN 411001)  
-> **Last Verified:** October 2026 (44 test suites, 673 automated tests passing)
+> **Last Verified:** October 2026 (45 test suites, 681 automated tests passing)
 
 ---
 
@@ -322,7 +322,7 @@ pnpm test
 # Run Storefront Vitest suite specifically (258 tests)
 pnpm --filter @glorov/storefront test
 
-# Run Backend Jest unit tests specifically (229 tests)
+# Run Backend Jest unit tests specifically (16 suites, 237 tests)
 pnpm --filter @glorov/backend test:unit
 
 # Run Backend HTTP Integration tests against real Postgres & Redis (186 tests)
@@ -369,4 +369,77 @@ pnpm smoke:test http://localhost:9000 http://localhost:3000
 | [`docs/e2e-test-plan.md`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/e2e-test-plan.md) | Quality assurance test specifications and verification runs. |
 | [`docs/database-performance-and-integrity.md`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/database-performance-and-integrity.md) | Database query benchmarks, field projections, connection pooling, and decimal safety. |
 | [`docs/disaster-recovery.md`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/disaster-recovery.md) | Disaster recovery policy, RPO/RTO objectives, 10-step safe recovery runbook. |
+| [`docs/release-verification-report.md`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/release-verification-report.md) | Release candidate v1.0.0-rc.1 verification report, bug audit, and 681 test metrics. |
 | [`docs/decisions/`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/decisions/) | Architecture Decision Records (ADR-0001 through ADR-0006). |
+
+---
+
+## 8. Feature Completion Matrix
+
+| Feature | Status | Evidence | Remaining action |
+|---|---|---|---|
+| **Product catalog** | **Complete and verified** | [`apps/storefront/src/lib/catalog.ts`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/storefront/src/lib/catalog.ts), [`seed-catalog.ts`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/src/scripts/seed-catalog.ts), [`catalog-and-variants.unit.spec.ts`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/src/__tests__/catalog-and-variants.unit.spec.ts) | Merchant catalog expansion and high-resolution botanical photography. |
+| **Product variants and inventory** | **Complete and verified** | Multi-packet variants (`20 Seeds`, `50 Seeds`, `100 Seeds`), [`inventory-concurrency.spec.ts`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/integration-tests/http/inventory-concurrency.spec.ts) (6-thread stress test) | Physical inventory count audit at Pune Hub upon initial operational stocking. |
+| **Cart and checkout** | **Complete and verified** | [`checkout/page.tsx`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/storefront/src/app/checkout/page.tsx), [`cart-checkout-order.spec.ts`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/integration-tests/http/cart-checkout-order.spec.ts), [`customer-journeys.test.tsx`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/storefront/src/__tests__/customer-journeys.test.tsx) | Map production domain and configure live HTTPS on hosting platform. |
+| **Online payments (Razorpay)** | **Implemented & verified in test/mock mode (Blocked for production activation)** | [`payment-razorpay`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/src/modules/payment-razorpay), [`razorpay-provider.unit.spec.ts`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/src/__tests__/razorpay-provider.unit.spec.ts), [`payment-integration.spec.ts`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/integration-tests/http/payment-integration.spec.ts) | Merchant must input live KYC credentials (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`) and set `RAZORPAY_MOCK_MODE=false`. |
+| **Cash on Delivery (COD)** | **Complete and verified** | [`payment-cod`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/src/modules/payment-cod), ₹5,000 ceiling, [`cod-provider.unit.spec.ts`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/src/__tests__/cod-provider.unit.spec.ts), `/admin/payments/cod/reconcile` | Operational courier cash remittance reconciliation procedure. |
+| **Shipping and tracking** | **Implemented & verified in test/mock mode (Blocked for production activation)** | [`fulfillment-shiprocket`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/src/modules/fulfillment-shiprocket), 6-digit Indian PIN validator, fallback rates, [`shipping-and-fulfillment.spec.ts`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/integration-tests/http/shipping-and-fulfillment.spec.ts) | Merchant must supply live Shiprocket API credentials, recharge shipping wallet, and set `SHIPROCKET_MOCK_MODE=false`. |
+| **Customer accounts** | **Complete and verified** | [`apps/storefront/src/app/account/*`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/storefront/src/app/account), Scrypt password hashing, session cookies, [`customer-auth-orders.spec.ts`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/integration-tests/http/customer-auth-orders.spec.ts) | None (fully functional for guest and registered users). |
+| **Admin operations** | **Complete and verified** | Medusa Admin v2 dashboard (`/app`), botanical widgets, order triage ([`/admin/orders/:id/return-inventory-triage`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/src/api/admin/orders/[id]/return-inventory-triage/route.ts)), CSV importer | Provision distinct operational admin user accounts with role separation. |
+| **Email notifications** | **Implemented & verified in test/mock mode (Blocked for production activation)** | [`notification-email`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/src/modules/notification-email), Nodemailer provider, [`notification-templates.unit.spec.ts`](file:///Users/sourav/Developer/WEB/top-projects/glorov/apps/backend/src/__tests__/notification-templates.unit.spec.ts), event subscribers | Merchant must supply production corporate SMTP/SES credentials and set `NOTIFICATION_MOCK_MODE=false`. |
+| **Security and recovery** | **Complete and verified** | SEC-01 to SEC-09 active, `validateProductionConfig`, `validateStorefrontEnv`, [`scripts/db-backup.sh`](file:///Users/sourav/Developer/WEB/top-projects/glorov/scripts/db-backup.sh), [`scripts/db-restore.sh`](file:///Users/sourav/Developer/WEB/top-projects/glorov/scripts/db-restore.sh) | Schedule automated cron backup on production database host. |
+| **Production deployment** | **Complete and verified** | [`docker-compose.prod.yml`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docker-compose.prod.yml), Caddy reverse proxy, zero-downtime Blue/Green scripts, 7/7 smoke test probes | Deploy container topology to staging/production VM or PaaS with production DNS. |
+
+---
+
+## 9. Operational Checklists
+
+### 9.1 Before Launch Checklist
+- [ ] **Production Environment Variables:** Execute `validateProductionConfig()` on the production server. Verify `JWT_SECRET` and `COOKIE_SECRET` are 32+ byte random hex strings. Verify no development placeholders exist.
+- [ ] **Third-Party Account Activation:**
+  - Input live Razorpay API keys (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`) and verify KYC status.
+  - Input live Shiprocket credentials (`SHIPROCKET_EMAIL`, `SHIPROCKET_PASSWORD`, `SHIPROCKET_WEBHOOK_TOKEN`), verify Pune pickup address, and recharge wallet.
+  - Input live corporate SMTP credentials (AWS SES, SendGrid, or Google Workspace) and verify SPF/DKIM DNS records.
+  - Toggle all mock flags to `false`: `RAZORPAY_MOCK_MODE=false`, `SHIPROCKET_MOCK_MODE=false`, `NOTIFICATION_MOCK_MODE=false`.
+- [ ] **Production Database & Migrations:** Verify PostgreSQL 16 is accessible on port 5432 with SSL enabled. Execute `pnpm backend:migrate` and seed regional data with `pnpm backend:seed`.
+- [ ] **Domain, HTTPS & Network Security:** Verify DNS A/CNAME records point to Caddy reverse proxy or PaaS. Confirm Let's Encrypt TLS certificate is active. Confirm CORS origins in `STORE_CORS` and `ADMIN_CORS` match production domains (no wildcards).
+- [ ] **Live Dry-Run Transaction:** Conduct one live end-to-end purchase using real Razorpay checkout (e.g. ₹1 test item). Verify order placement, stock decrement, customer confirmation email, and Shiprocket order creation.
+- [ ] **Backup Readiness:** Run `./scripts/db-backup.sh` to generate a fresh baseline dump. Verify integrity using `./scripts/db-backup-verify.sh`.
+- [ ] **Statutory & Customer Policy Review:** Ensure business owner and legal counsel have reviewed and approved public Terms of Service, Privacy Policy under the Digital Personal Data Protection (DPDP) Act 2023, Return/Cancellation SLA, and Grievance Officer contact details. *(Note: This technical audit does not constitute statutory, tax, or legal compliance certification).*
+
+### 9.2 Daily Operations Checklist
+- [ ] **Order Review:** Check Medusa Admin dashboard (`/app`) for new orders, uncaptured COD orders, or failed payment sessions.
+- [ ] **Logistics & Delivery Tracking:** Review Shiprocket panel for consignments pending pickup at Pune Hub. Monitor in-transit packages and investigate Non-Delivery Reports (NDR) or RTO alerts.
+- [ ] **Inventory Reconciliation:** Review low-stock variant notifications in Medusa Admin. Perform spot-checks comparing physical seed packets and live plants in Pune Nursery to system levels.
+- [ ] **Observability & Error Monitoring:** Review Pino structured logs for 5xx server errors or webhook processing failures. Check `/store/health` and `/api/health` probes.
+
+### 9.3 Ongoing Maintenance Checklist
+- [ ] **Automated Backup Verification:** Execute `./scripts/db-backup-verify.sh` weekly against an ephemeral target database to prove backup recoverability.
+- [ ] **Security & Dependency Updates:** Run `pnpm audit` monthly to inspect vulnerabilities in npm packages. Apply security patches promptly.
+- [ ] **Database Performance & Capacity:** Monitor PostgreSQL disk utilization, index cache hit ratio, and connection pool saturation. Run `VACUUM ANALYZE` periodically on order and cart tables.
+- [ ] **Regression Verification:** Run `pnpm test` and `pnpm --filter @glorov/backend test:integration:http` prior to deploying any code modifications to production.
+
+---
+
+## 10. Prioritized Future Improvements Roadmap
+
+### Priority 0: Production Launch Prerequisites (Immediate)
+- **BLK-01: Razorpay Live Credentials:** Merchant must complete business KYC and supply live API keys.
+- **BLK-02: Shiprocket Live Credentials & Wallet:** Merchant must recharge shipping wallet and configure Pune nursery pickup hub.
+- **BLK-03: Corporate SMTP Account:** Provision corporate email sending credentials (e.g., AWS SES in Mumbai region).
+- **BLK-04: Domain DNS & TLS:** Configure production DNS records for `glorov.in` and `api.glorov.in`.
+
+### Priority 1: Near-Term Enhancements (Post-Launch 30–60 Days)
+- **WhatsApp Business Notifications:** Integrate WhatsApp Business API (via Interakt or Gupshup) for real-time delivery milestone updates.
+- **Automated S3 Offsite Backups:** Implement a daily cron task uploading compressed PostgreSQL dumps from `scripts/db-backup.sh` to an Amazon S3 bucket in Mumbai (`ap-south-1`) with a 90-day lifecycle rule.
+- **Abandoned Cart Recovery:** Configure a scheduled BullMQ background worker sending an automated recovery email 2 hours after cart abandonment.
+
+### Priority 2: Operational Scale & Logistics (60–120 Days)
+- **Multi-Hub Fulfillment:** Introduce a North India satellite distribution hub (Delhi NCR) to reduce live plant transit times for northern states to under 24 hours.
+- **Search Engine Optimization & Typo Tolerance:** Integrate MeiliSearch or Algolia for instant typo-tolerant botanical search and filter suggestions.
+- **B2B Bulk Nursery Ordering:** Add wholesale tier pricing and bulk CSV order entry for landscapers, commercial nurseries, and agricultural institutions.
+
+### Priority 3: Long-Term Platform Expansions (Post-6 Months)
+- **Regional Language Localization:** Implement Hindi (`hi-IN`) and Marathi (`mr-IN`) storefront localization using `react-i18next`.
+- **Botanical Loyalty Program:** Implement seed reward points earned on purchases, redeemable for rare heirloom seed varieties.
+- **Native Mobile Application:** Cross-platform React Native / Expo application for iOS and Android reusing `@glorov/types`.

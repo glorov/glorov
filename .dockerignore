@@ -1,0 +1,16 @@
+node_modules
+.pnpm-store
+.next
+.turbo
+.medusa
+dist
+out
+*.log
+.git
+.github
+docs
+.DS_Store
+*.pem
+.env
+.env.local
+.env.*.local

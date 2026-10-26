@@ -19,7 +19,8 @@
     "storefront:dev": "turbo dev --filter=@glorov/storefront",
     "storefront:build": "turbo build --filter=@glorov/storefront",
     "db:up": "docker compose up -d postgres redis",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "smoke:test": "node scripts/smoke-test.mjs"
   },
   "pnpm": {
     "overrides": {

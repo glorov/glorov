@@ -1,0 +1,66 @@
+# ==============================================================================
+# GLOROV Production Caddy Configuration
+# Handles automated Let's Encrypt SSL, security headers, compression, and reverse proxying
+# ==============================================================================
+
+# Global options
+{
+    email care@glorov.in
+    admin off
+}
+
+# 1. Apex and Storefront Domain
+glorov.in, www.glorov.in {
+    encode gzip zstd
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=(self)"
+        -Server
+    }
+
+    # Redirect www to apex
+    @www host www.glorov.in
+    handle @www {
+        redir https://glorov.in{uri} permanent
+    }
+
+    # Reverse proxy to Next.js storefront container
+    reverse_proxy storefront:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+
+# 2. Medusa v2 Backend API Domain
+api.glorov.in {
+    encode gzip zstd
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "no-referrer-when-downgrade"
+        -Server
+    }
+
+    # Body size limits (Allow up to 25MB for CSV product import, 10MB default)
+    request_body {
+        max_size 25MB
+    }
+
+    # Reverse proxy to Medusa v2 backend container
+    reverse_proxy backend:9000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

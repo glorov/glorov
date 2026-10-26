@@ -56,6 +56,47 @@ describe("Application Security & Hardening Invariant Unit Tests", () => {
       }).toThrow(MedusaError);
     });
 
+    it("throws MedusaError in production when mock modes are enabled", () => {
+      expect(() => {
+        validateProductionConfig({
+          NODE_ENV: "production",
+          DATABASE_URL: "postgresql://postgres:pass@localhost:5432/db",
+          REDIS_URL: "redis://localhost:6379",
+          JWT_SECRET: "a-very-secure-production-jwt-secret-string-32-chars",
+          COOKIE_SECRET: "a-very-secure-production-cookie-secret-string-32-chars",
+          STORE_CORS: "https://glorov.in",
+          ADMIN_CORS: "https://admin.glorov.in",
+          RAZORPAY_MOCK_MODE: "true",
+        });
+      }).toThrow(/RAZORPAY_MOCK_MODE/);
+
+      expect(() => {
+        validateProductionConfig({
+          NODE_ENV: "production",
+          DATABASE_URL: "postgresql://postgres:pass@localhost:5432/db",
+          REDIS_URL: "redis://localhost:6379",
+          JWT_SECRET: "a-very-secure-production-jwt-secret-string-32-chars",
+          COOKIE_SECRET: "a-very-secure-production-cookie-secret-string-32-chars",
+          STORE_CORS: "https://glorov.in",
+          ADMIN_CORS: "https://admin.glorov.in",
+          SHIPROCKET_MOCK_MODE: "true",
+        });
+      }).toThrow(/SHIPROCKET_MOCK_MODE/);
+
+      expect(() => {
+        validateProductionConfig({
+          NODE_ENV: "production",
+          DATABASE_URL: "postgresql://postgres:pass@localhost:5432/db",
+          REDIS_URL: "redis://localhost:6379",
+          JWT_SECRET: "a-very-secure-production-jwt-secret-string-32-chars",
+          COOKIE_SECRET: "a-very-secure-production-cookie-secret-string-32-chars",
+          STORE_CORS: "https://glorov.in",
+          ADMIN_CORS: "https://admin.glorov.in",
+          NOTIFICATION_MOCK_MODE: "true",
+        });
+      }).toThrow(/NOTIFICATION_MOCK_MODE/);
+    });
+
     it("passes cleanly in production when all security requirements are satisfied", () => {
       expect(() => {
         validateProductionConfig({

@@ -27,8 +27,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
   const { cart_id, razorpay_order_id, razorpay_payment_id, razorpay_signature } = parseResult.data
 
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || 'test_razorpay_key_secret'
   const isProduction = process.env.NODE_ENV === 'production'
+  const keySecret = process.env.RAZORPAY_KEY_SECRET || (!isProduction ? 'test_razorpay_key_secret' : '')
   const isMock =
     !isProduction &&
     (process.env.NODE_ENV === 'test' || process.env.RAZORPAY_MOCK_MODE === 'true')

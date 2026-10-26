@@ -47,10 +47,18 @@ function verifySignature(
  */
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER)
+  const isProduction = process.env.NODE_ENV === 'production'
   const webhookSecret =
     process.env.RAZORPAY_WEBHOOK_SECRET ||
     process.env.RAZORPAY_KEY_SECRET ||
-    'test_razorpay_webhook_secret'
+    (!isProduction ? 'test_razorpay_webhook_secret' : '')
+
+  if (!webhookSecret && isProduction) {
+    logger.error('Razorpay webhook rejected: RAZORPAY_WEBHOOK_SECRET is not configured in production')
+    return res.status(500).json({
+      error: 'Server configuration error: missing webhook secret',
+    })
+  }
 
   const signature =
     (req.headers['x-razorpay-signature'] as string) ||

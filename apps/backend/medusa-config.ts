@@ -31,6 +31,27 @@ export function validateProductionConfig(env: NodeJS.ProcessEnv = process.env): 
     )
   }
 
+  if (env.RAZORPAY_MOCK_MODE === "true") {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "Security Violation: RAZORPAY_MOCK_MODE must never be enabled in production."
+    )
+  }
+
+  if (env.SHIPROCKET_MOCK_MODE === "true") {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "Security Violation: SHIPROCKET_MOCK_MODE must never be enabled in production."
+    )
+  }
+
+  if (env.NOTIFICATION_MOCK_MODE === "true") {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "Security Violation: NOTIFICATION_MOCK_MODE must never be enabled in production."
+    )
+  }
+
   if (missing.length > 0) {
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,

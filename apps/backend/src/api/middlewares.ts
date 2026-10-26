@@ -98,6 +98,13 @@ export default defineMiddlewares({
         authenticate('customer', ['session', 'bearer']),
       ],
     },
+    {
+      method: ['POST'],
+      matcher: '/admin/products/csv-import*',
+      middlewares: [
+        authenticate('user', ['session', 'bearer']),
+      ],
+    },
   ],
 })
 

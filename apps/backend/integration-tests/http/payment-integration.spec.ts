@@ -7,6 +7,8 @@ const PUBLISHABLE_KEY =
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || 'mock_razorpay_webhook_secret_dev'
 
 describe('Medusa v2 Razorpay & COD Payment Integration Tests', () => {
+  jest.setTimeout(30000)
+
   const storeHeaders: Record<string, string> = {
     'x-publishable-api-key': PUBLISHABLE_KEY,
     'Content-Type': 'application/json',

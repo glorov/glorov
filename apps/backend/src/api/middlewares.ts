@@ -1,6 +1,25 @@
 import { defineMiddlewares, authenticate } from '@medusajs/framework/http'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import type { MedusaRequest, MedusaResponse, MedusaNextFunction } from '@medusajs/framework/http'
+import { createRateLimiter } from './middlewares/rate-limiter'
+
+const pincodeRateLimiter = createRateLimiter({
+  action: 'pincode_check',
+  limit: 120,
+  windowSeconds: 60,
+})
+
+const razorpayVerifyRateLimiter = createRateLimiter({
+  action: 'razorpay_verify',
+  limit: 60,
+  windowSeconds: 60,
+})
+
+const csvImportRateLimiter = createRateLimiter({
+  action: 'csv_import',
+  limit: 30,
+  windowSeconds: 60,
+})
 
 /**
  * Validates that an authenticated customer only retrieves their own orders.
@@ -99,10 +118,21 @@ export default defineMiddlewares({
       ],
     },
     {
+      method: ['GET'],
+      matcher: '/store/pincode-check',
+      middlewares: [pincodeRateLimiter],
+    },
+    {
+      method: ['POST'],
+      matcher: '/store/payment/razorpay/verify',
+      middlewares: [razorpayVerifyRateLimiter],
+    },
+    {
       method: ['POST'],
       matcher: '/admin/products/csv-import*',
       middlewares: [
         authenticate('user', ['session', 'bearer']),
+        csvImportRateLimiter,
       ],
     },
   ],

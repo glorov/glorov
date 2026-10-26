@@ -9,6 +9,7 @@ import {
   requestPasswordResetAction,
   getCurrentCustomerAction,
 } from '@/lib/customer-actions'
+import { getSafeRedirectUrl } from '@/lib/security'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
@@ -16,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/account'
+  const callbackUrl = getSafeRedirectUrl(searchParams.get('callbackUrl'), '/account')
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

@@ -1,11 +1,23 @@
 import type { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
+import crypto from 'crypto'
 import {
   markOrderFulfillmentAsDeliveredWorkflow,
   createOrderShipmentWorkflow,
   cancelOrderFulfillmentWorkflow,
 } from '@medusajs/medusa/core-flows'
 import type { ShiprocketWebhookPayload } from '../../../modules/fulfillment-shiprocket/types'
+
+/**
+ * Constant-time token comparison to prevent side-channel timing attacks.
+ */
+function safeCompareTokens(a: string, b: string): boolean {
+  if (typeof a !== 'string' || typeof b !== 'string') return false
+  const bufA = Buffer.from(a, 'utf8')
+  const bufB = Buffer.from(b, 'utf8')
+  if (bufA.length !== bufB.length) return false
+  return crypto.timingSafeEqual(bufA, bufB)
+}
 
 /**
  * Normalize incoming status from Shiprocket payloads.
@@ -72,18 +84,27 @@ export const POST = async (
 ): Promise<void> => {
   const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER)
 
-  // 1. Webhook Authenticity Verification
+  // 1. Webhook Authenticity Verification (Fail-closed in production, constant-time compare)
+  const isProduction = process.env.NODE_ENV === 'production'
   const configuredToken =
     process.env.SHIPROCKET_WEBHOOK_TOKEN ||
     process.env.SHIPROCKET_WEBHOOK_SECRET
-  if (configuredToken) {
+
+  if (!configuredToken) {
+    if (isProduction) {
+      logger.error('Shiprocket webhook rejected: SHIPROCKET_WEBHOOK_TOKEN is not configured in production')
+      res.status(500).json({ message: 'Server configuration error' })
+      return
+    }
+  } else {
+    // In production, reject tokens passed in query parameters to prevent access-log leakage
     const receivedToken =
       (req.headers['x-api-key'] as string) ||
       (req.headers['x-shiprocket-token'] as string) ||
-      (req.query?.token as string)
+      (!isProduction ? (req.query?.token as string) : undefined)
 
-    if (!receivedToken || receivedToken !== configuredToken) {
-      logger.warn('Unauthorized Shiprocket webhook attempt rejected: invalid token')
+    if (!receivedToken || !safeCompareTokens(receivedToken, configuredToken)) {
+      logger.warn('Unauthorized Shiprocket webhook attempt rejected: invalid or missing token')
       res.status(401).json({
         message: 'Unauthorized: Invalid Shiprocket webhook token or signature',
       })

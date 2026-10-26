@@ -15,10 +15,11 @@ function verifySignature(
     return false
   }
 
-  // Allow mock test signatures in test or development mode
+  // Allow mock test signatures strictly in test or non-production development mode
+  const isProduction = process.env.NODE_ENV === 'production'
   if (
-    process.env.NODE_ENV === 'test' ||
-    process.env.RAZORPAY_MOCK_MODE === 'true'
+    !isProduction &&
+    (process.env.NODE_ENV === 'test' || process.env.RAZORPAY_MOCK_MODE === 'true')
   ) {
     if (signature === 'mock_wh_sig_valid' || signature === 'valid_mock_signature') {
       return true

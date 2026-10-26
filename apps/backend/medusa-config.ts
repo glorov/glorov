@@ -1,6 +1,45 @@
-import { loadEnv, defineConfig } from "@medusajs/framework/utils"
+import { loadEnv, defineConfig, MedusaError } from "@medusajs/framework/utils"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
+
+/**
+ * Validates that production environments fail safely when required secrets are missing or insecure.
+ */
+export function validateProductionConfig(env: NodeJS.ProcessEnv = process.env): void {
+  if (env.NODE_ENV !== "production") return
+
+  const missing: string[] = []
+  if (!env.DATABASE_URL) missing.push("DATABASE_URL")
+  if (!env.REDIS_URL) missing.push("REDIS_URL")
+
+  const jwtSecret = env.JWT_SECRET || ""
+  if (!jwtSecret || jwtSecret.includes("dev") || jwtSecret.length < 32) {
+    missing.push("JWT_SECRET (must be >= 32 characters and non-dev)")
+  }
+
+  const cookieSecret = env.COOKIE_SECRET || ""
+  if (!cookieSecret || cookieSecret.includes("dev") || cookieSecret.length < 32) {
+    missing.push("COOKIE_SECRET (must be >= 32 characters and non-dev)")
+  }
+
+  const storeCors = env.STORE_CORS || ""
+  const adminCors = env.ADMIN_CORS || ""
+  if (storeCors.includes("*") || adminCors.includes("*")) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "Security Violation: Wildcard CORS origins are forbidden in production."
+    )
+  }
+
+  if (missing.length > 0) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      `Fatal Security Error: Missing or insecure production configuration variables: ${missing.join(", ")}`
+    )
+  }
+}
+
+validateProductionConfig()
 
 export default defineConfig({
   projectConfig: {

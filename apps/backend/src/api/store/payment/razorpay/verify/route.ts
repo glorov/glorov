@@ -1,29 +1,37 @@
 import type { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import crypto from 'crypto'
+import { z } from '@medusajs/framework/zod'
+
+const RazorpayVerifySchema = z.object({
+  cart_id: z.string().min(5).max(128),
+  razorpay_order_id: z.string().min(5).max(128),
+  razorpay_payment_id: z.string().min(5).max(128),
+  razorpay_signature: z.string().min(10).max(256),
+})
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER)
-  const body = req.body as {
-    cart_id?: string
-    razorpay_order_id?: string
-    razorpay_payment_id?: string
-    razorpay_signature?: string
-  }
 
-  const { cart_id, razorpay_order_id, razorpay_payment_id, razorpay_signature } = body || {}
-
-  if (!cart_id || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+  // 1. Zod Input Validation
+  const parseResult = RazorpayVerifySchema.safeParse(req.body)
+  if (!parseResult.success) {
+    const errorDetails = parseResult.error.issues
+      .map((i) => `${i.path.join('.')}: ${i.message}`)
+      .join(', ')
     return res.status(400).json({
       success: false,
-      error: 'Missing required verification fields (cart_id, razorpay_order_id, razorpay_payment_id, razorpay_signature)',
+      error: `Missing required verification fields or invalid payload: ${errorDetails}`,
     })
   }
 
+  const { cart_id, razorpay_order_id, razorpay_payment_id, razorpay_signature } = parseResult.data
+
   const keySecret = process.env.RAZORPAY_KEY_SECRET || 'test_razorpay_key_secret'
+  const isProduction = process.env.NODE_ENV === 'production'
   const isMock =
-    process.env.NODE_ENV === 'test' ||
-    process.env.RAZORPAY_MOCK_MODE === 'true'
+    !isProduction &&
+    (process.env.NODE_ENV === 'test' || process.env.RAZORPAY_MOCK_MODE === 'true')
 
   let isValid = false
   if (isMock && (razorpay_signature.startsWith('mock_sig_') || razorpay_signature === 'valid_mock_signature')) {

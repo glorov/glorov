@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Leaf, Lock, Mail, User, Phone, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
 import { registerCustomerAction, getCurrentCustomerAction } from '@/lib/customer-actions'
+import { getSafeRedirectUrl } from '@/lib/security'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
@@ -12,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/account'
+  const callbackUrl = getSafeRedirectUrl(searchParams.get('callbackUrl'), '/account')
 
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')

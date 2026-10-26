@@ -58,9 +58,15 @@ The following matrix categorizes all operational requirements into native Medusa
 | **Logistics** | Shiprocket Fulfillment & AWB Tracking | **Custom Extension** | Modular Shiprocket provider (`shiprocket_shiprocket`) and custom `OrderLogisticsWidget.tsx` displaying AWB, courier partner, and tracking link. |
 | **Logistics** | Seed Dispatch Quality Checklist | **Custom Admin Extension** | Built-in packaging verification checklist in `OrderLogisticsWidget.tsx` (moisture seal, desiccant, planting guide insert, lot date). |
 | **Payments** | Payment Status & Reconciliation | **Native & Custom** | Decoupled payment inspection. Distinct alerts for Prepaid (Razorpay online) vs Cash on Delivery (courier cash collection required). |
-| **Orders** | Cancellations & Stock Release | **Native Medusa v2** | Native `POST /admin/orders/:id/cancel` immediately cancels payment collection and releases reserved inventory at Pune Hub. |
+| **Orders** | Cancellations & Stock Release | **Native Medusa v2** | Native `cancelOrderWorkflow` via `POST /store/orders/:id/cancel` and `POST /admin/orders/:id/cancel`. Immediately cancels payment collection, coordinates active Shiprocket shipment cancellation, and releases reserved inventory. |
+| **Returns** | Customer Return Requests & Review | **Custom Workflow** | Customers submit claims via `POST /store/orders/:id/return-request` with botanical return reasons; store managers review and approve/reject via `POST /admin/orders/:id/return-requests/:request_id/review` and `OrderLogisticsWidget.tsx`. |
+| **Refunds** | Prepaid Gateway Refunds (Razorpay) | **Native Medusa v2** | `POST /admin/orders/:id/refund` executes `refundPaymentWorkflow` after verifying captured status, amount ceiling, and idempotency. |
+| **Refunds** | COD Direct Bank Transfer Payouts | **Custom Workflow** | `POST /admin/payments/cod/refund` rejects automated card/UPI gateway rails for COD, enforcing verified Indian bank details and confirmed bank UTR. |
+| **Inventory** | Botanical Return Inventory Triage | **Custom Workflow** | `POST /admin/orders/:id/return-inventory-triage` ensures only unopened sealed seeds are restocked to Pune Hub, while perishable live plants are quarantined or written off. |
 | **Staff & Security** | User Management & Staff Invites | **Native Medusa v2** | Add staff members via `/app/settings/users` and `/admin/invites`. |
 | **Staff & Security** | Granular RBAC Permissions | **Future Work** | Role-based permission policies (e.g. Nursery Packing staff vs Finance/Admin managers) planned for v2.1. |
+
+> See [Order Operations & Return Workflows](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/order-operations.md) for full operational procedures, state matrices, and botanical triage rules.
 
 ---
 

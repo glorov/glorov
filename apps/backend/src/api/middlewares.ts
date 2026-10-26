@@ -21,6 +21,18 @@ const csvImportRateLimiter = createRateLimiter({
   windowSeconds: 60,
 })
 
+const orderCancelRateLimiter = createRateLimiter({
+  action: 'order_cancel',
+  limit: 30,
+  windowSeconds: 60,
+})
+
+const returnRequestRateLimiter = createRateLimiter({
+  action: 'return_request',
+  limit: 30,
+  windowSeconds: 60,
+})
+
 /**
  * Validates that an authenticated customer only retrieves their own orders.
  * Prevents horizontal privilege escalation where changing the order ID allows
@@ -74,6 +86,26 @@ const validateOrderOwnership = async (
     } else {
       // Case 2: Guest checkout order
       // Allow unauthenticated guests to view their order (e.g. order confirmation page).
+      // For mutating actions (cancellation, return requests), require email verification to prevent unauthorized state tampering.
+      if (req.method !== 'GET') {
+        const providedEmail =
+          (req.body as any)?.email ||
+          (req.body as any)?.order_email ||
+          req.headers['x-order-email']
+        if (!authContext?.actor_id) {
+          if (
+            !providedEmail ||
+            String(providedEmail).trim().toLowerCase() !== String(order.email || '').toLowerCase()
+          ) {
+            res.status(401).json({
+              message:
+                'Authentication or matching order email verification is required to cancel or return a guest order',
+            })
+            return
+          }
+        }
+      }
+
       // If the caller is an authenticated customer with a different email, prevent access.
       if (authContext?.actor_id && order.email) {
         const { data: customers } = await query.graph({
@@ -112,6 +144,28 @@ export default defineMiddlewares({
     },
     {
       method: ['POST'],
+      matcher: '/store/orders/:id/cancel',
+      middlewares: [
+        authenticate('customer', ['session', 'bearer'], {
+          allowUnauthenticated: true,
+        }),
+        validateOrderOwnership,
+        orderCancelRateLimiter,
+      ],
+    },
+    {
+      method: ['GET', 'POST'],
+      matcher: '/store/orders/:id/return-request',
+      middlewares: [
+        authenticate('customer', ['session', 'bearer'], {
+          allowUnauthenticated: true,
+        }),
+        validateOrderOwnership,
+        returnRequestRateLimiter,
+      ],
+    },
+    {
+      method: ['POST'],
       matcher: '/store/customers/me/password',
       middlewares: [
         authenticate('customer', ['session', 'bearer']),
@@ -143,8 +197,36 @@ export default defineMiddlewares({
       ],
     },
     {
+      method: ['GET', 'POST'],
+      matcher: '/admin/orders/:id/return-requests*',
+      middlewares: [
+        authenticate('user', ['session', 'bearer']),
+      ],
+    },
+    {
+      method: ['POST'],
+      matcher: '/admin/orders/:id/refund*',
+      middlewares: [
+        authenticate('user', ['session', 'bearer']),
+      ],
+    },
+    {
+      method: ['POST'],
+      matcher: '/admin/orders/:id/return-inventory-triage*',
+      middlewares: [
+        authenticate('user', ['session', 'bearer']),
+      ],
+    },
+    {
       method: ['POST'],
       matcher: '/admin/payments/cod/reconcile*',
+      middlewares: [
+        authenticate('user', ['session', 'bearer']),
+      ],
+    },
+    {
+      method: ['POST'],
+      matcher: '/admin/payments/cod/refund*',
       middlewares: [
         authenticate('user', ['session', 'bearer']),
       ],
@@ -161,4 +243,5 @@ export default defineMiddlewares({
     },
   ],
 })
+
 

@@ -169,17 +169,53 @@ export class CodPaymentProviderService extends AbstractPaymentProvider<CodModule
   }
 
   /**
-   * Handles refund or cash adjustment for COD.
+   * Handles refund for Cash on Delivery.
+   * Strictly enforces that uncaptured COD orders cannot be refunded (no cash was collected),
+   * and captured COD orders require an explicitly designed bank transfer (NEFT/IMPS) process
+   * with customer bank details and confirmed bank UTR reference.
+   * Prevents fake automated refunds on physical cash transactions.
    */
   public async refundPayment(
     input: RefundPaymentInput
   ): Promise<RefundPaymentOutput> {
     const sessionData = (input.data || {}) as Record<string, unknown>
+    const isCaptured =
+      sessionData.cash_collected === true || sessionData.status === 'captured'
+
+    if (!isCaptured) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_ALLOWED,
+        'Cannot refund an uncaptured Cash on Delivery order. Cash was never collected or reconciled.'
+      )
+    }
+
+    // Verify explicit bank transfer / payout confirmation reference
+    const inputAny = input as any
+    const payoutData =
+      inputAny?.context?.payout ||
+      sessionData?.payout ||
+      inputAny?.data?.payout ||
+      {}
+    const bankUtr =
+      payoutData.bank_utr ||
+      (sessionData as any).bank_utr ||
+      inputAny.bank_utr ||
+      inputAny?.data?.bank_utr
+
+    if (!bankUtr) {
+      throw new MedusaError(
+        MedusaError.Types.NOT_ALLOWED,
+        'Cash on Delivery refunds cannot be processed automatically via gateway rails. An explicit bank transfer (NEFT/IMPS) with verified customer bank account details and confirmed bank UTR reference is required.'
+      )
+    }
+
     return {
       data: {
         ...sessionData,
         status: 'refunded',
         refunded_amount: this.convertToPaise(input.amount),
+        bank_utr: bankUtr,
+        payout_reference: bankUtr,
         refunded_at: new Date().toISOString(),
       },
     }

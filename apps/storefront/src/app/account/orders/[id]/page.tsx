@@ -14,13 +14,20 @@ import {
   Sprout,
 } from 'lucide-react'
 
-import { getCustomerOrderAction, getCurrentCustomerAction } from '@/lib/customer-actions'
+import {
+  getCustomerOrderAction,
+  getCurrentCustomerAction,
+  getOrderReturnRequestsAction,
+} from '@/lib/customer-actions'
 import { AccountNav } from '@/components/account/AccountNav'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatINR } from '@/lib/utils'
 import { ShipmentTracker } from '@/components/shipping/ShipmentTracker'
+import { OrderCancellationButton } from '@/components/orders/OrderCancellationButton'
+import { OrderReturnRequestModal } from '@/components/orders/OrderReturnRequestModal'
+import { OrderReturnStatusSection } from '@/components/orders/OrderReturnStatusSection'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,6 +83,9 @@ export default async function CustomerOrderDetailsPage({ params }: OrderDetailsP
     )
   }
 
+  const returnRes = await getOrderReturnRequestsAction(id)
+  const returnRequests = returnRes.success ? returnRes.return_requests : []
+
   const items = order.items || []
   const shippingAddress = order.shipping_address
   const shippingMethods = order.shipping_methods || []
@@ -116,6 +126,23 @@ export default async function CustomerOrderDetailsPage({ params }: OrderDetailsP
         <AccountNav />
 
         <div className="flex-1 w-full space-y-6">
+          {/* Canceled Order Alert Banner */}
+          {order.status === 'canceled' && (
+            <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/70 text-xs text-rose-950 flex items-start gap-3">
+              <ShieldAlert className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-bold text-sm text-rose-900">This order has been canceled</p>
+                <p className="text-rose-800">
+                  All reserved inventory has been returned to available stock at Pune Central Nursery Hub,
+                  and uncaptured payments or payment collections have been canceled.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Customer Return Requests & Refund Progress */}
+          <OrderReturnStatusSection returnRequests={returnRequests} />
+
           {/* Live Shipment Tracking Card */}
           <ShipmentTracker orderId={order.id} />
 
@@ -163,6 +190,34 @@ export default async function CustomerOrderDetailsPage({ params }: OrderDetailsP
                   <CreditCard className="mr-1.5 h-3.5 w-3.5" />
                   Payment: {order.payment_status || 'Authorized'}
                 </Badge>
+
+                {order.status === 'canceled' && (
+                  <Badge variant="outline" className="bg-rose-50 text-rose-800 border-rose-200 text-xs py-1">
+                    Status: Canceled
+                  </Badge>
+                )}
+
+                {/* Cancellation & Return Action Triggers */}
+                <OrderCancellationButton
+                  orderId={order.id}
+                  displayId={order.display_id}
+                  status={order.status}
+                  fulfillmentStatus={order.fulfillment_status}
+                />
+
+                <OrderReturnRequestModal
+                  orderId={order.id}
+                  displayId={order.display_id}
+                  status={order.status}
+                  fulfillmentStatus={order.fulfillment_status}
+                  items={items.map((it) => ({
+                    id: it.id,
+                    title: it.title,
+                    variant_title: it.variant_title,
+                    quantity: it.quantity,
+                    unit_price: it.unit_price,
+                  }))}
+                />
               </div>
             </CardHeader>
 

@@ -15,7 +15,11 @@ import {
   requestPasswordReset,
   updateCustomerPassword,
   resetCustomerPassword,
+  cancelOrder,
+  submitReturnRequest,
+  getOrderReturnRequests,
   type StoreCustomer,
+  type CustomerReturnRequest,
 } from './customer'
 import {
   setCustomerTokenCookie,
@@ -31,12 +35,16 @@ import {
   customerAddressInputSchema,
   customerPasswordUpdateSchema,
   customerPasswordResetSchema,
+  orderCancellationSchema,
+  orderReturnRequestSchema,
   type CustomerRegistrationInput,
   type CustomerLoginInput,
   type CustomerProfileUpdateInput,
   type CustomerAddressInput,
   type CustomerPasswordUpdateInput,
   type CustomerPasswordResetInput,
+  type OrderCancellationInput,
+  type OrderReturnRequestInput,
 } from '@glorov/types'
 import type { StoreOrder } from './cart'
 
@@ -366,4 +374,69 @@ export async function resetCustomerPasswordAction(
     return { success: false, error: message }
   }
 }
+
+/**
+ * Cancel an eligible customer order.
+ */
+export async function cancelCustomerOrderAction(
+  orderId: string,
+  input?: OrderCancellationInput
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    const token = await getCustomerToken()
+    const parsed = orderCancellationSchema.safeParse(input || {})
+    const reason = parsed.success ? parsed.data.reason : undefined
+    return await cancelOrder(orderId, token, reason)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Cancellation failed'
+    return { success: false, error: message }
+  }
+}
+
+/**
+ * Submit return request for eligible items in an order.
+ */
+export async function submitReturnRequestAction(
+  orderId: string,
+  input: OrderReturnRequestInput
+): Promise<{
+  success: boolean
+  return_request?: CustomerReturnRequest
+  message?: string
+  error?: string
+}> {
+  try {
+    const token = await getCustomerToken()
+    const parseResult = orderReturnRequestSchema.safeParse(input)
+    if (!parseResult.success) {
+      const firstError = parseResult.error.errors[0]?.message || 'Invalid return request data'
+      return { success: false, error: firstError }
+    }
+
+    return await submitReturnRequest(orderId, parseResult.data, token)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Return request submission failed'
+    return { success: false, error: message }
+  }
+}
+
+/**
+ * Get return requests submitted for an order.
+ */
+export async function getOrderReturnRequestsAction(
+  orderId: string
+): Promise<{
+  success: boolean
+  return_requests: CustomerReturnRequest[]
+  error?: string
+}> {
+  try {
+    const token = await getCustomerToken()
+    return await getOrderReturnRequests(orderId, token)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch return requests'
+    return { success: false, return_requests: [], error: message }
+  }
+}
+
 

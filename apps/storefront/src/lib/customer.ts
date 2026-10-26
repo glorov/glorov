@@ -5,6 +5,7 @@ import type {
   CustomerLoginInput,
   CustomerProfileUpdateInput,
   CustomerAddressInput,
+  OrderReturnRequestInput,
 } from '@glorov/types'
 import type { StoreOrder } from './cart'
 
@@ -609,4 +610,114 @@ export async function resetCustomerPassword(
     return { success: false, error: message }
   }
 }
+
+export interface CustomerReturnRequest {
+  id: string
+  created_at: string
+  status: 'pending_review' | 'approved' | 'rejected'
+  items: Array<{
+    line_item_id: string
+    title: string
+    variant_title?: string
+    sku?: string
+    quantity: number
+    reason: string
+  }>
+  customer_notes?: string | null
+  seller_decision?: {
+    decision: 'approved' | 'rejected'
+    decided_at: string
+    customer_note?: string | null
+    decision_notes?: string | null
+    return_action?: string | null
+    return_shipping_required?: boolean
+  } | null
+  refund_status: 'not_applicable' | 'pending' | 'refunded' | 'rejected'
+  refund_amount_inr?: number | null
+}
+
+/**
+ * Cancel an eligible customer order.
+ */
+export async function cancelOrder(
+  orderId: string,
+  token?: string | null,
+  reason?: string
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    const activeToken = token || (await getCustomerToken())
+    const res = await fetch(`${MEDUSA_BACKEND_URL}/store/orders/${orderId}/cancel`, {
+      method: 'POST',
+      headers: getStoreHeaders(activeToken),
+      body: JSON.stringify({ reason: reason || 'Customer requested cancellation' }),
+      cache: 'no-store',
+    })
+
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      return { success: false, error: data.message || 'Failed to cancel order' }
+    }
+
+    return { success: true, message: data.message }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error cancelling order'
+    return { success: false, error: message }
+  }
+}
+
+/**
+ * Submit a return request for eligible items in an order.
+ */
+export async function submitReturnRequest(
+  orderId: string,
+  data: OrderReturnRequestInput,
+  token?: string | null
+): Promise<{ success: boolean; return_request?: CustomerReturnRequest; message?: string; error?: string }> {
+  try {
+    const activeToken = token || (await getCustomerToken())
+    const res = await fetch(`${MEDUSA_BACKEND_URL}/store/orders/${orderId}/return-request`, {
+      method: 'POST',
+      headers: getStoreHeaders(activeToken),
+      body: JSON.stringify(data),
+      cache: 'no-store',
+    })
+
+    const resData = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      return { success: false, error: resData.message || 'Failed to submit return request' }
+    }
+
+    return { success: true, return_request: resData.return_request, message: resData.message }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error submitting return request'
+    return { success: false, error: message }
+  }
+}
+
+/**
+ * Retrieve customer return requests for an order.
+ */
+export async function getOrderReturnRequests(
+  orderId: string,
+  token?: string | null
+): Promise<{ success: boolean; return_requests: CustomerReturnRequest[]; error?: string }> {
+  try {
+    const activeToken = token || (await getCustomerToken())
+    const res = await fetch(`${MEDUSA_BACKEND_URL}/store/orders/${orderId}/return-request`, {
+      headers: getStoreHeaders(activeToken),
+      cache: 'no-store',
+    })
+
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      return { success: false, return_requests: [], error: data.message || 'Failed to fetch return requests' }
+    }
+
+    return { success: true, return_requests: data.return_requests || [] }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error retrieving return requests'
+    return { success: false, return_requests: [], error: message }
+  }
+}
+
 

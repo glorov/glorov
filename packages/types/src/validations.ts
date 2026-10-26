@@ -166,4 +166,120 @@ export const customerAddressInputSchema = z.object({
 
 export type CustomerAddressInput = z.infer<typeof customerAddressInputSchema>;
 
+/**
+ * Order Cancellation Schema
+ */
+export const orderCancellationSchema = z.object({
+  reason: z.string().trim().min(1, "Cancellation reason is required").default("Customer requested cancellation"),
+  customer_note: z.string().trim().optional(),
+  email: z.string().trim().toLowerCase().email().optional(),
+  order_email: z.string().trim().toLowerCase().email().optional(),
+});
+
+export type OrderCancellationInput = z.infer<typeof orderCancellationSchema>;
+
+/**
+ * Return Request Item Schema
+ */
+export const returnReasonEnum = z.enum([
+  "damaged_in_transit",
+  "defective_quality",
+  "wrong_item",
+  "expired_viability",
+  "changed_mind_unopened",
+  "other",
+]);
+
+export type ReturnReason = z.infer<typeof returnReasonEnum>;
+
+export const orderReturnItemSchema = z.object({
+  line_item_id: z.string().min(1, "Line item ID is required"),
+  quantity: z.number().int().positive("Return quantity must be at least 1"),
+  reason: returnReasonEnum,
+  customer_note: z.string().trim().optional(),
+});
+
+export type OrderReturnItemInput = z.infer<typeof orderReturnItemSchema>;
+
+export const orderReturnRequestSchema = z.object({
+  items: z.array(orderReturnItemSchema).min(1, "At least one item must be selected for return"),
+  customer_notes: z.string().trim().optional(),
+  email: z.string().trim().toLowerCase().email().optional(),
+  order_email: z.string().trim().toLowerCase().email().optional(),
+});
+
+export type OrderReturnRequestInput = z.infer<typeof orderReturnRequestSchema>;
+
+/**
+ * Admin Review Return Request Schema
+ */
+export const adminReturnReviewSchema = z.object({
+  decision: z.enum(["approved", "rejected"]),
+  decision_notes: z.string().trim().min(1, "Decision notes are required"),
+  customer_note: z.string().trim().optional(),
+  return_action: z.enum(["approve_with_refund", "approve_exchange", "reject"]).default("approve_with_refund"),
+  refund_amount_inr: z.number().positive().optional(),
+  return_shipping_required: z.boolean().default(false),
+});
+
+export type AdminReturnReviewInput = z.infer<typeof adminReturnReviewSchema>;
+
+/**
+ * Admin Refund Execution Schema
+ */
+export const adminRefundSchema = z.object({
+  payment_id: z.string().optional(),
+  amount_inr: z.number().positive("Refund amount must be positive"),
+  reason: z.string().trim().default("Customer return or order adjustment"),
+  note: z.string().trim().optional(),
+  idempotency_key: z.string().trim().optional(),
+});
+
+export type AdminRefundInput = z.infer<typeof adminRefundSchema>;
+
+/**
+ * Admin COD Refund Schema (Bank Transfer UTR)
+ */
+export const adminCodRefundSchema = z.object({
+  order_id: z.string().min(1, "Order ID is required"),
+  amount_inr: z.number().positive("Refund amount must be positive"),
+  bank_account_number: z.string().trim().min(8, "Valid bank account number is required"),
+  bank_ifsc: z.string().trim().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "Valid 11-character Indian IFSC code required (e.g. HDFC0001234)"),
+  account_holder_name: z.string().trim().min(2, "Account holder name is required"),
+  bank_name: z.string().trim().optional(),
+  bank_utr: z.string().trim().min(6, "Valid bank UTR / NEFT reference number is required"),
+  payout_date: z.string().trim().optional(),
+  reason: z.string().trim().default("COD Order return settlement"),
+});
+
+export type AdminCodRefundInput = z.infer<typeof adminCodRefundSchema>;
+
+/**
+ * Botanical Return Inventory Triage Schema
+ */
+export const returnConditionEnum = z.enum([
+  "unopened_sealed_seeds",
+  "damaged_unsellable",
+  "perishable_spoilage",
+  "quarantine_salvage",
+]);
+
+export type ReturnCondition = z.infer<typeof returnConditionEnum>;
+
+export const inventoryTriageItemSchema = z.object({
+  line_item_id: z.string().min(1, "Line item ID is required"),
+  quantity: z.number().int().positive("Quantity must be at least 1"),
+  condition: returnConditionEnum,
+  restock: z.boolean().default(false),
+  notes: z.string().trim().optional(),
+});
+
+export const returnInventoryTriageSchema = z.object({
+  items: z.array(inventoryTriageItemSchema).min(1, "At least one item required for triage"),
+  triage_notes: z.string().trim().optional(),
+});
+
+export type ReturnInventoryTriageInput = z.infer<typeof returnInventoryTriageSchema>;
+
+
 

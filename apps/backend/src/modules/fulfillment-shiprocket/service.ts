@@ -378,16 +378,37 @@ export class ShiprocketFulfillmentService extends AbstractFulfillmentProviderSer
 
   /**
    * Cancel an order and shipment in Shiprocket.
+   * Ensures provider cancellation failures are never swallowed, preventing
+   * fulfillments from being falsely marked as cancelled in Medusa.
    */
   async cancelFulfillment(data: Record<string, unknown>): Promise<any> {
     const srOrderId = data?.shiprocket_order_id as string | number | undefined
     if (srOrderId) {
       try {
-        await this.client.cancelOrder([srOrderId])
+        const res = await this.client.cancelOrder([srOrderId])
+        const statusCode =
+          res && typeof res.status === 'number'
+            ? res.status
+            : res && typeof (res as any).status_code === 'number'
+              ? (res as any).status_code
+              : null
+
+        if (statusCode !== null && statusCode !== 200 && statusCode !== 204) {
+          throw new MedusaError(
+            MedusaError.Types.UNEXPECTED_STATE,
+            `Shiprocket courier rejected shipment cancellation for order ${srOrderId}: ${res.message || 'Courier cancellation declined'}`
+          )
+        }
       } catch (err: unknown) {
-        this.logger_?.warn?.(
+        this.logger_?.error?.(
           `Shiprocket order cancellation failed for ID ${srOrderId}: ${err}`
         )
+        throw (err instanceof MedusaError
+          ? err
+          : new MedusaError(
+              MedusaError.Types.UNEXPECTED_STATE,
+              `Shiprocket order cancellation failed: ${err instanceof Error ? err.message : String(err)}`
+            ))
       }
     }
     return {

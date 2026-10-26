@@ -41,8 +41,11 @@ export async function checkBackendHealth(
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
-    const requestHeaders = {
+    const requestHeaders: Record<string, string> = {
       'x-correlation-id': cid,
+    }
+    if (MEDUSA_PUBLISHABLE_KEY && MEDUSA_PUBLISHABLE_KEY.trim()) {
+      requestHeaders['x-publishable-api-key'] = MEDUSA_PUBLISHABLE_KEY.trim()
     }
 
     // Attempt rich /store/health endpoint first, fallback to /health
@@ -53,7 +56,7 @@ export async function checkBackendHealth(
         signal: controller.signal,
         cache: 'no-store',
       })
-      if (res.status === 404) {
+      if (res.status === 404 || res.status === 400) {
         res = await fetch(`${MEDUSA_BACKEND_URL}/health`, {
           headers: requestHeaders,
           signal: controller.signal,

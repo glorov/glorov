@@ -464,7 +464,8 @@ All software features and tests are 100% implemented and verified:
 - ✅ **Security Mitigations:** SEC-01 through SEC-09 verified (anti-IDOR, timing attacks, rate limiting, strict CSP, CORS wildcard prohibition).
 - ✅ **Storefront UX & SEO:** Responsive across mobile/tablet/desktop, WCAG 2.1 AA contrast, JSON-LD schemas, sitemap.xml, robots.txt.
 - ✅ **Observability:** Pino structured JSON logging, correlation ID tracing, sensitive PII redaction, deep health probes (`/health`, `/store/health`).
-- ✅ **Automated Tests:** 44 test suites, 673 automated tests passing with 100% pass rate.
+- ✅ **Automated Tests:** 45 test suites, 681 automated tests passing with 100% pass rate.
+- ✅ **Release Candidate:** Verified in `docs/release-verification-report.md` (v1.0.0-rc.1, 7/7 post-deployment smoke probes passing, zero release-blocking bugs).
 
 #### B. Blocked on Business Owner (Third-Party & Legal Scope)
 The technical integration is complete, but real commercial transactions require business owner inputs:

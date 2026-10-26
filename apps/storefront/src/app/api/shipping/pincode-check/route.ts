@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isValidIndianPincode, cleanPincode } from '@/lib/shipping'
+import { extractOrGenerateCorrelationId } from '@glorov/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +14,14 @@ const PUBLISHABLE_KEY =
   'pk_2d4629ab032f218451f992310351db37f7adcc4ea53d3cfa5fc2c95864b717cf'
 
 export async function GET(request: NextRequest) {
+  const correlationId = extractOrGenerateCorrelationId(
+    request.headers.get('x-correlation-id') || request.headers.get('x-request-id')
+  )
+
+  const responseHeaders = {
+    'x-correlation-id': correlationId,
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams
     const pincode = searchParams.get('pincode') || ''
@@ -30,7 +39,7 @@ export async function GET(request: NextRequest) {
           cod_eligible: false,
           message: 'PIN code query parameter is required.',
         },
-        { status: 400 }
+        { status: 400, headers: responseHeaders }
       )
     }
 
@@ -48,7 +57,7 @@ export async function GET(request: NextRequest) {
           message:
             'Invalid 6-digit Indian PIN code format. Must be 6 digits and cannot start with 0.',
         },
-        { status: 400 }
+        { status: 400, headers: responseHeaders }
       )
     }
 
@@ -74,6 +83,7 @@ export async function GET(request: NextRequest) {
         {
           headers: {
             'x-publishable-api-key': PUBLISHABLE_KEY,
+            'x-correlation-id': correlationId,
             Accept: 'application/json',
           },
           signal: controller.signal,
@@ -95,7 +105,7 @@ export async function GET(request: NextRequest) {
             cod_eligible: false,
             message: data.message || 'Serviceability verification failed at gateway.',
           },
-          { status: backendRes.status }
+          { status: backendRes.status, headers: responseHeaders }
         )
       }
 
@@ -120,6 +130,7 @@ export async function GET(request: NextRequest) {
         {
           status: 200,
           headers: {
+            ...responseHeaders,
             'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
           },
         }
@@ -141,7 +152,7 @@ export async function GET(request: NextRequest) {
           ? 'Logistics serviceability lookup timed out. Please retry shortly.'
           : 'Serviceability service temporarily unavailable.',
       },
-      { status: 503 }
+      { status: 503, headers: responseHeaders }
     )
   }
 }

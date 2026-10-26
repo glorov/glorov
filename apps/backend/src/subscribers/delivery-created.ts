@@ -1,6 +1,7 @@
 import type { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { maskEmail } from '../modules/notification-email/utils/email-validator'
+import { withBoundedRetry } from '../utils/async-retry'
 
 /**
  * Subscriber: delivery.created
@@ -86,35 +87,52 @@ export default async function deliveryCreatedHandler({
 
     const idempotencyKey = `notif:delivery-created:${targetOrder.id}:${fulfillmentId || 'delivered'}`
 
-    await notificationModule.createNotifications({
-      to: targetOrder.email,
-      channel: 'email',
-      template: 'delivery-completed',
-      data: {
-        order_id: targetOrder.id,
-        display_id: targetOrder.display_id,
-        delivered_at: targetFulfillment?.delivered_at || new Date(),
-        customer_name: targetOrder.shipping_address?.first_name
-          ? `${targetOrder.shipping_address.first_name} ${targetOrder.shipping_address.last_name || ''}`.trim()
-          : undefined,
-        delivery: {
-          id: fulfillmentId || 'delivery',
-          delivered_at: targetFulfillment?.delivered_at || new Date(),
-          order: {
-            id: targetOrder.id,
+    const retryResult = await withBoundedRetry(
+      async () => {
+        return await notificationModule.createNotifications({
+          to: targetOrder.email,
+          channel: 'email',
+          template: 'delivery-completed',
+          data: {
+            order_id: targetOrder.id,
             display_id: targetOrder.display_id,
+            delivered_at: targetFulfillment?.delivered_at || new Date(),
+            customer_name: targetOrder.shipping_address?.first_name
+              ? `${targetOrder.shipping_address.first_name} ${targetOrder.shipping_address.last_name || ''}`.trim()
+              : undefined,
+            delivery: {
+              id: fulfillmentId || 'delivery',
+              delivered_at: targetFulfillment?.delivered_at || new Date(),
+              order: {
+                id: targetOrder.id,
+                display_id: targetOrder.display_id,
+              },
+            },
           },
-        },
+          trigger_type: 'delivery.created',
+          resource_id: targetOrder.id,
+          resource_type: 'order',
+          idempotency_key: idempotencyKey,
+        })
       },
-      trigger_type: 'delivery.created',
-      resource_id: targetOrder.id,
-      resource_type: 'order',
-      idempotency_key: idempotencyKey,
-    })
-
-    logger.info(
-      `[DeliveryCreatedSubscriber] Queued delivery confirmation for ${maskEmail(targetOrder.email)} (Order: #${targetOrder.display_id || targetOrder.id})`
+      {
+        subscriberName: 'DeliveryCreatedSubscriber',
+        eventName: 'delivery.created',
+        resourceId: targetOrder.id,
+        resourceType: 'order',
+        container,
+      }
     )
+
+    if (retryResult.success) {
+      logger.info(
+        `[DeliveryCreatedSubscriber] Queued delivery confirmation for ${maskEmail(targetOrder.email)} (Order: #${targetOrder.display_id || targetOrder.id})`
+      )
+    } else {
+      logger.error(
+        `[DeliveryCreatedSubscriber] Failed to dispatch delivery notification: ${retryResult.error?.message || 'Delivery failed'}`
+      )
+    }
   } catch (error: any) {
     logger.error(
       `[DeliveryCreatedSubscriber] Failed to dispatch delivery notification: ${error.message}`

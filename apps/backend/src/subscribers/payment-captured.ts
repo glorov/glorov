@@ -1,6 +1,7 @@
 import type { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { maskEmail } from '../modules/notification-email/utils/email-validator'
+import { withBoundedRetry } from '../utils/async-retry'
 
 /**
  * Subscriber: payment.captured
@@ -98,34 +99,51 @@ export default async function paymentCapturedHandler({
 
     const idempotencyKey = `notif:payment-captured:${targetOrder.id}:${paymentId || 'captured'}`
 
-    await notificationModule.createNotifications({
-      to: targetOrder.email,
-      channel: 'email',
-      template: 'payment-captured',
-      data: {
-        order_id: targetOrder.id,
-        display_id: targetOrder.display_id,
-        amount: targetPayment?.amount || targetOrder.total,
-        payment: {
-          id: paymentId || 'captured_payment',
-          amount: targetPayment?.amount || targetOrder.total,
-          provider_id: targetPayment?.provider_id || 'razorpay',
-          order: {
-            id: targetOrder.id,
+    const retryResult = await withBoundedRetry(
+      async () => {
+        return await notificationModule.createNotifications({
+          to: targetOrder.email,
+          channel: 'email',
+          template: 'payment-captured',
+          data: {
+            order_id: targetOrder.id,
             display_id: targetOrder.display_id,
-            total: targetOrder.total,
+            amount: targetPayment?.amount || targetOrder.total,
+            payment: {
+              id: paymentId || 'captured_payment',
+              amount: targetPayment?.amount || targetOrder.total,
+              provider_id: targetPayment?.provider_id || 'razorpay',
+              order: {
+                id: targetOrder.id,
+                display_id: targetOrder.display_id,
+                total: targetOrder.total,
+              },
+            },
           },
-        },
+          trigger_type: 'payment.captured',
+          resource_id: targetOrder.id,
+          resource_type: 'order',
+          idempotency_key: idempotencyKey,
+        })
       },
-      trigger_type: 'payment.captured',
-      resource_id: targetOrder.id,
-      resource_type: 'order',
-      idempotency_key: idempotencyKey,
-    })
-
-    logger.info(
-      `[PaymentCapturedSubscriber] Queued payment confirmation for ${maskEmail(targetOrder.email)} (Order: #${targetOrder.display_id || targetOrder.id})`
+      {
+        subscriberName: 'PaymentCapturedSubscriber',
+        eventName: 'payment.captured',
+        resourceId: targetOrder.id,
+        resourceType: 'order',
+        container,
+      }
     )
+
+    if (retryResult.success) {
+      logger.info(
+        `[PaymentCapturedSubscriber] Queued payment confirmation for ${maskEmail(targetOrder.email)} (Order: #${targetOrder.display_id || targetOrder.id})`
+      )
+    } else {
+      logger.error(
+        `[PaymentCapturedSubscriber] Failed to dispatch payment receipt for payment ${paymentId}: ${retryResult.error?.message || 'Delivery failed'}`
+      )
+    }
   } catch (error: any) {
     logger.error(
       `[PaymentCapturedSubscriber] Failed to dispatch payment receipt for payment ${paymentId}: ${error.message}`

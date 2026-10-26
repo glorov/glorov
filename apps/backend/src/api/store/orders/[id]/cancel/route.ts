@@ -5,6 +5,7 @@ import {
   cancelOrderFulfillmentWorkflow,
 } from '@medusajs/medusa/core-flows'
 import { orderCancellationSchema } from '@glorov/types'
+import { sendSanitizedError } from '../../../../../utils/error-handler'
 
 interface OrderFulfillment {
   id: string
@@ -188,12 +189,7 @@ export const POST = async (
       status: 'canceled',
     })
   } catch (error: unknown) {
-    const errMsg =
-      error instanceof Error ? error.message : 'Order cancellation failed'
-    logger.error(`Error cancelling Order ${orderId}: ${errMsg}`)
-    res.status(500).json({
-      success: false,
-      message: errMsg,
-    })
+    logger.error(`Error cancelling Order ${orderId}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    sendSanitizedError(res, error, 500, { order_id: orderId })
   }
 }

@@ -1,6 +1,7 @@
 import type { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { maskEmail } from '../modules/notification-email/utils/email-validator'
+import { withBoundedRetry } from '../utils/async-retry'
 
 /**
  * Subscriber: payment.failed
@@ -61,27 +62,43 @@ export default async function paymentFailedHandler({
       ? `notif:payment-failed:${orderId}${errorSuffix}`
       : `notif:payment-failed:${recipientEmail}:${amount || 'na'}${errorSuffix}`
 
-
-    await notificationModule.createNotifications({
-      to: recipientEmail,
-      channel: 'email',
-      template: 'payment-failed',
-      data: {
-        order_id: orderId,
-        display_id: displayId,
-        amount: amount,
-        error_code: data?.error_code,
-        error_description: data?.error_description,
+    const retryResult = await withBoundedRetry(
+      async () => {
+        return await notificationModule.createNotifications({
+          to: recipientEmail,
+          channel: 'email',
+          template: 'payment-failed',
+          data: {
+            order_id: orderId,
+            display_id: displayId,
+            amount: amount,
+            error_code: data?.error_code,
+            error_description: data?.error_description,
+          },
+          trigger_type: 'payment.failed',
+          resource_id: orderId || null,
+          resource_type: 'order',
+          idempotency_key: idempotencyKey,
+        })
       },
-      trigger_type: 'payment.failed',
-      resource_id: orderId || null,
-      resource_type: 'order',
-      idempotency_key: idempotencyKey,
-    })
-
-    logger.info(
-      `[PaymentFailedSubscriber] Queued payment failure notification for ${maskEmail(recipientEmail)}`
+      {
+        subscriberName: 'PaymentFailedSubscriber',
+        eventName: 'payment.failed',
+        resourceId: orderId || recipientEmail,
+        resourceType: 'order',
+        container,
+      }
     )
+
+    if (retryResult.success) {
+      logger.info(
+        `[PaymentFailedSubscriber] Queued payment failure notification for ${maskEmail(recipientEmail)}`
+      )
+    } else {
+      logger.error(
+        `[PaymentFailedSubscriber] Failed to dispatch payment failure alert: ${retryResult.error?.message || 'Delivery failed'}`
+      )
+    }
   } catch (error: any) {
     logger.error(
       `[PaymentFailedSubscriber] Failed to dispatch payment failure alert: ${error.message}`

@@ -2,6 +2,7 @@ import type { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { refundPaymentWorkflow } from '@medusajs/medusa/core-flows'
 import { adminCodRefundSchema } from '@glorov/types'
+import { sendSanitizedError } from '../../../../../utils/error-handler'
 
 /**
  * POST /admin/payments/cod/refund
@@ -226,11 +227,7 @@ export const POST = async (
       remaining_eligible_inr: eligibleRefundInr - amount_inr,
     })
   } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : 'COD refund failed'
-    logger.error(`Error processing COD refund for Order ${order_id}: ${errMsg}`)
-    res.status(500).json({
-      success: false,
-      message: errMsg,
-    })
+    logger.error(`Error processing COD refund for Order ${order_id}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    sendSanitizedError(res, error, 500, { order_id })
   }
 }

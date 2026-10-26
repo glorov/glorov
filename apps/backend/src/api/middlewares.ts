@@ -2,6 +2,8 @@ import { defineMiddlewares, authenticate } from '@medusajs/framework/http'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import type { MedusaRequest, MedusaResponse, MedusaNextFunction } from '@medusajs/framework/http'
 import { createRateLimiter } from './middlewares/rate-limiter'
+import { requestCorrelationMiddleware } from './middlewares/request-correlation'
+import { sendSanitizedError } from '../utils/error-handler'
 
 const pincodeRateLimiter = createRateLimiter({
   action: 'pincode_check',
@@ -133,6 +135,10 @@ const validateOrderOwnership = async (
 export default defineMiddlewares({
   routes: [
     {
+      matcher: /.*/,
+      middlewares: [requestCorrelationMiddleware],
+    },
+    {
       method: ['GET'],
       matcher: '/store/orders/:id',
       middlewares: [
@@ -241,7 +247,26 @@ export default defineMiddlewares({
         validateOrderOwnership,
       ],
     },
+    {
+      method: ['GET'],
+      matcher: '/admin/health/metrics',
+      middlewares: [
+        authenticate('user', ['session', 'bearer']),
+      ],
+    },
   ],
+  errorHandler: (
+    error: any,
+    req: MedusaRequest,
+    res: MedusaResponse,
+    _next: MedusaNextFunction
+  ) => {
+    sendSanitizedError(res, error, {
+      req,
+      operation: `${req.method} ${req.baseUrl || ''}${req.path || ''}`,
+    })
+  },
 })
+
 
 

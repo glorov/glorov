@@ -1,6 +1,7 @@
 import type { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { maskEmail } from '../modules/notification-email/utils/email-validator'
+import { withBoundedRetry } from '../utils/async-retry'
 
 /**
  * Subscriber: shipment.created
@@ -139,40 +140,57 @@ export default async function shipmentCreatedHandler({
     const idempotencyKey = `notif:shipment-created:${targetOrder.id}:${fulfillmentId || trackingNumber || 'shipment'}`
 
 
-    await notificationModule.createNotifications({
-      to: targetOrder.email,
-      channel: 'email',
-      template: 'shipment-created',
-      data: {
-        order_id: targetOrder.id,
-        display_id: targetOrder.display_id,
-        tracking_number: trackingNumber,
-        tracking_url: trackingUrl,
-        carrier,
-        customer_name: targetOrder.shipping_address?.first_name
-          ? `${targetOrder.shipping_address.first_name} ${targetOrder.shipping_address.last_name || ''}`.trim()
-          : undefined,
-        shipment: {
-          id: fulfillmentId || 'shipment',
-          tracking_number: trackingNumber,
-          tracking_url: trackingUrl,
-          carrier,
-          items: shipmentItems,
-          order: {
-            id: targetOrder.id,
+    const retryResult = await withBoundedRetry(
+      async () => {
+        return await notificationModule.createNotifications({
+          to: targetOrder.email,
+          channel: 'email',
+          template: 'shipment-created',
+          data: {
+            order_id: targetOrder.id,
             display_id: targetOrder.display_id,
+            tracking_number: trackingNumber,
+            tracking_url: trackingUrl,
+            carrier,
+            customer_name: targetOrder.shipping_address?.first_name
+              ? `${targetOrder.shipping_address.first_name} ${targetOrder.shipping_address.last_name || ''}`.trim()
+              : undefined,
+            shipment: {
+              id: fulfillmentId || 'shipment',
+              tracking_number: trackingNumber,
+              tracking_url: trackingUrl,
+              carrier,
+              items: shipmentItems,
+              order: {
+                id: targetOrder.id,
+                display_id: targetOrder.display_id,
+              },
+            },
           },
-        },
+          trigger_type: 'shipment.created',
+          resource_id: targetOrder.id,
+          resource_type: 'order',
+          idempotency_key: idempotencyKey,
+        })
       },
-      trigger_type: 'shipment.created',
-      resource_id: targetOrder.id,
-      resource_type: 'order',
-      idempotency_key: idempotencyKey,
-    })
-
-    logger.info(
-      `[ShipmentCreatedSubscriber] Queued shipment notification for ${maskEmail(targetOrder.email)} (Order: #${targetOrder.display_id || targetOrder.id}, AWB: ${trackingNumber || 'N/A'})`
+      {
+        subscriberName: 'ShipmentCreatedSubscriber',
+        eventName: 'shipment.created',
+        resourceId: targetOrder.id,
+        resourceType: 'order',
+        container,
+      }
     )
+
+    if (retryResult.success) {
+      logger.info(
+        `[ShipmentCreatedSubscriber] Queued shipment notification for ${maskEmail(targetOrder.email)} (Order: #${targetOrder.display_id || targetOrder.id}, AWB: ${trackingNumber || 'N/A'})`
+      )
+    } else {
+      logger.error(
+        `[ShipmentCreatedSubscriber] Failed to dispatch shipment email: ${retryResult.error?.message || 'Delivery failed'}`
+      )
+    }
   } catch (error: any) {
     logger.error(
       `[ShipmentCreatedSubscriber] Failed to dispatch shipment email: ${error.message}`

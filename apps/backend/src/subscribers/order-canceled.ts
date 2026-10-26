@@ -1,6 +1,7 @@
 import type { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { maskEmail } from '../modules/notification-email/utils/email-validator'
+import { withBoundedRetry } from '../utils/async-retry'
 
 /**
  * Subscriber: order.canceled
@@ -42,31 +43,48 @@ export default async function orderCanceledHandler({
 
     const idempotencyKey = `notif:order-canceled:${order.id}`
 
-    await notificationModule.createNotifications({
-      to: order.email,
-      channel: 'email',
-      template: 'order-canceled',
-      data: {
-        order: {
-          id: order.id,
-          display_id: order.display_id,
-          total: order.total,
-        },
-        order_id: order.id,
-        display_id: order.display_id,
-        customer_name: order.shipping_address?.first_name
-          ? `${order.shipping_address.first_name} ${order.shipping_address.last_name || ''}`.trim()
-          : undefined,
+    const retryResult = await withBoundedRetry(
+      async () => {
+        return await notificationModule.createNotifications({
+          to: order.email,
+          channel: 'email',
+          template: 'order-canceled',
+          data: {
+            order: {
+              id: order.id,
+              display_id: order.display_id,
+              total: order.total,
+            },
+            order_id: order.id,
+            display_id: order.display_id,
+            customer_name: order.shipping_address?.first_name
+              ? `${order.shipping_address.first_name} ${order.shipping_address.last_name || ''}`.trim()
+              : undefined,
+          },
+          trigger_type: 'order.canceled',
+          resource_id: order.id,
+          resource_type: 'order',
+          idempotency_key: idempotencyKey,
+        })
       },
-      trigger_type: 'order.canceled',
-      resource_id: order.id,
-      resource_type: 'order',
-      idempotency_key: idempotencyKey,
-    })
-
-    logger.info(
-      `[OrderCanceledSubscriber] Queued cancellation notification for ${maskEmail(order.email)} (Order: #${order.display_id || order.id})`
+      {
+        subscriberName: 'OrderCanceledSubscriber',
+        eventName: 'order.canceled',
+        resourceId: order.id,
+        resourceType: 'order',
+        container,
+      }
     )
+
+    if (retryResult.success) {
+      logger.info(
+        `[OrderCanceledSubscriber] Queued cancellation notification for ${maskEmail(order.email)} (Order: #${order.display_id || order.id})`
+      )
+    } else {
+      logger.error(
+        `[OrderCanceledSubscriber] Failed to dispatch order cancellation email for ${orderId}: ${retryResult.error?.message || 'Delivery failed'}`
+      )
+    }
   } catch (error: any) {
     logger.error(
       `[OrderCanceledSubscriber] Failed to dispatch order cancellation email for ${orderId}: ${error.message}`

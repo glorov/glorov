@@ -2,6 +2,7 @@ import type { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { refundPaymentWorkflow } from '@medusajs/medusa/core-flows'
 import { adminRefundSchema } from '@glorov/types'
+import { sendSanitizedError } from '../../../../../utils/error-handler'
 
 /**
  * POST /admin/orders/:id/refund
@@ -249,11 +250,7 @@ export const POST = async (
       audit: refundAuditEntry,
     })
   } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : 'Refund execution failed'
-    logger.error(`Error processing refund for Order ${orderId}: ${errMsg}`)
-    res.status(500).json({
-      success: false,
-      message: errMsg,
-    })
+    logger.error(`Error processing refund for Order ${orderId}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    sendSanitizedError(res, error, 500, { order_id: orderId })
   }
 }

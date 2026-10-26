@@ -1,6 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { orderReturnRequestSchema } from '@glorov/types'
+import { sendSanitizedError } from '../../../../../utils/error-handler'
 
 interface OrderItem {
   id: string
@@ -109,8 +110,7 @@ export const GET = async (
       return_requests: returnRequests,
     })
   } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : 'Failed to retrieve return requests'
-    res.status(500).json({ message: errMsg })
+    sendSanitizedError(res, error, 500, { order_id: orderId })
   }
 }
 
@@ -308,11 +308,7 @@ export const POST = async (
       },
     })
   } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : 'Failed to submit return request'
-    logger.error(`Error submitting return request for Order ${orderId}: ${errMsg}`)
-    res.status(500).json({
-      success: false,
-      message: errMsg,
-    })
+    logger.error(`Error submitting return request for Order ${orderId}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    sendSanitizedError(res, error, 500, { order_id: orderId })
   }
 }

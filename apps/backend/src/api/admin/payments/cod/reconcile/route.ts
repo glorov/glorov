@@ -1,6 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { capturePaymentWorkflow } from '@medusajs/medusa/core-flows'
+import { sendSanitizedError } from '../../../../../utils/error-handler'
 
 interface CodReconciliationPayload {
   order_id: string
@@ -155,8 +156,7 @@ export const POST = async (
       settlement_record: settlementAudit,
     })
   } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : 'COD reconciliation failed'
-    logger.error(`Error in COD reconciliation for Order ${order_id}: ${errMsg}`)
-    res.status(500).json({ message: errMsg })
+    logger.error(`Error in COD reconciliation for Order ${order_id}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    sendSanitizedError(res, error, 500, { order_id })
   }
 }

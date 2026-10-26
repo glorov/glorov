@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { CUSTOMER_COOKIE_NAME } from '@/lib/constants'
+import { extractOrGenerateCorrelationId } from '@glorov/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,10 +18,21 @@ export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  const correlationId = extractOrGenerateCorrelationId(
+    request.headers.get('x-correlation-id') || request.headers.get('x-request-id')
+  )
+
+  const responseHeaders = {
+    'x-correlation-id': correlationId,
+  }
+
   try {
     const { id: orderId } = await context.params
     if (!orderId) {
-      return NextResponse.json({ message: 'Order ID is required' }, { status: 400 })
+      return NextResponse.json(
+        { message: 'Order ID is required' },
+        { status: 400, headers: responseHeaders }
+      )
     }
 
     const cookieStore = await cookies()
@@ -28,6 +40,7 @@ export async function GET(
 
     const headers: Record<string, string> = {
       'x-publishable-api-key': PUBLISHABLE_KEY,
+      'x-correlation-id': correlationId,
       Accept: 'application/json',
     }
 
@@ -53,7 +66,7 @@ export async function GET(
             success: false,
             message: data.message || 'Tracking details not available',
           },
-          { status: response.status }
+          { status: response.status, headers: responseHeaders }
         )
       }
 
@@ -65,6 +78,7 @@ export async function GET(
         {
           status: 200,
           headers: {
+            ...responseHeaders,
             'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
           },
         }
@@ -81,7 +95,7 @@ export async function GET(
           ? 'Tracking gateway query timed out. Please try again shortly.'
           : 'Tracking service temporarily unavailable.',
       },
-      { status: 503 }
+      { status: 503, headers: responseHeaders }
     )
   }
 }

@@ -1,5 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { InventoryReconciler } from "../../../../../modules/csv-import/inventory-reconciler";
+import { sendSanitizedError } from "../../../../../utils/error-handler";
 
 const MAX_CSV_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
@@ -43,8 +44,6 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
     res.status(200).json({ reconciliation });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Failed to generate inventory reconciliation report";
-    res.status(500).json({ message });
+    sendSanitizedError(res, error, 500);
   }
 };

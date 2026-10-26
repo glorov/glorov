@@ -1,6 +1,7 @@
 import type { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { maskEmail } from '../modules/notification-email/utils/email-validator'
+import { withBoundedRetry } from '../utils/async-retry'
 
 /**
  * Subscriber: payment.refunded
@@ -125,39 +126,55 @@ export default async function paymentRefundedHandler({
 
     const idempotencyKey = `notif:payment-refunded:${targetOrder.id}:${finalRefundId}`
 
-    await notificationModule.createNotifications({
-      to: targetOrder.email,
-      channel: 'email',
-      template: 'refund-processed',
-      data: {
-        order_id: targetOrder.id,
-        display_id: targetOrder.display_id,
-        amount: finalRefundAmount,
-        refund_id: finalRefundId,
-        reason: resolvedReason,
-        customer_name: targetOrder.shipping_address?.first_name
-          ? `${targetOrder.shipping_address.first_name} ${targetOrder.shipping_address.last_name || ''}`.trim()
-          : undefined,
-        refund: {
-          id: finalRefundId,
-          amount: finalRefundAmount,
-          reason: resolvedReason,
-          order: {
-            id: targetOrder.id,
+    const retryResult = await withBoundedRetry(
+      async () => {
+        return await notificationModule.createNotifications({
+          to: targetOrder.email,
+          channel: 'email',
+          template: 'refund-processed',
+          data: {
+            order_id: targetOrder.id,
             display_id: targetOrder.display_id,
+            amount: finalRefundAmount,
+            refund_id: finalRefundId,
+            reason: resolvedReason,
+            customer_name: targetOrder.shipping_address?.first_name
+              ? `${targetOrder.shipping_address.first_name} ${targetOrder.shipping_address.last_name || ''}`.trim()
+              : undefined,
+            refund: {
+              id: finalRefundId,
+              amount: finalRefundAmount,
+              reason: resolvedReason,
+              order: {
+                id: targetOrder.id,
+                display_id: targetOrder.display_id,
+              },
+            },
           },
-        },
+          trigger_type: 'payment.refunded',
+          resource_id: targetOrder.id,
+          resource_type: 'order',
+          idempotency_key: idempotencyKey,
+        })
       },
-      trigger_type: 'payment.refunded',
-      resource_id: targetOrder.id,
-      resource_type: 'order',
-      idempotency_key: idempotencyKey,
-    })
-
-
-    logger.info(
-      `[PaymentRefundedSubscriber] Queued refund notification for ${maskEmail(targetOrder.email)} (Order: #${targetOrder.display_id || targetOrder.id})`
+      {
+        subscriberName: 'PaymentRefundedSubscriber',
+        eventName: 'payment.refunded',
+        resourceId: targetOrder.id,
+        resourceType: 'order',
+        container,
+      }
     )
+
+    if (retryResult.success) {
+      logger.info(
+        `[PaymentRefundedSubscriber] Queued refund notification for ${maskEmail(targetOrder.email)} (Order: #${targetOrder.display_id || targetOrder.id})`
+      )
+    } else {
+      logger.error(
+        `[PaymentRefundedSubscriber] Failed to dispatch refund notification: ${retryResult.error?.message || 'Delivery failed'}`
+      )
+    }
   } catch (error: any) {
     logger.error(
       `[PaymentRefundedSubscriber] Failed to dispatch refund notification: ${error.message}`

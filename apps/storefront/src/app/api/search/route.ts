@@ -4,21 +4,33 @@ import {
   getProductLowestPriceINR,
   getProductStockSummary,
 } from '@/lib/catalog'
+import { extractOrGenerateCorrelationId } from '@glorov/types'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
+  const correlationId = extractOrGenerateCorrelationId(
+    request.headers.get('x-correlation-id') || request.headers.get('x-request-id')
+  )
+
+  const responseHeaders = {
+    'x-correlation-id': correlationId,
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams
     const q = searchParams.get('q')?.trim() || ''
     const limit = Math.min(10, Math.max(1, parseInt(searchParams.get('limit') || '5', 10) || 5))
 
     if (!q) {
-      return NextResponse.json({
-        success: true,
-        count: 0,
-        products: [],
-      })
+      return NextResponse.json(
+        {
+          success: true,
+          count: 0,
+          products: [],
+        },
+        { headers: responseHeaders }
+      )
     }
 
     const products = await searchStorefrontProducts(q, limit)
@@ -51,19 +63,22 @@ export async function GET(request: NextRequest) {
       },
       {
         headers: {
+          ...responseHeaders,
           'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
         },
       }
     )
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Search error'
+    const message = error instanceof Error && error.message.length < 100
+      ? error.message
+      : 'Search service temporarily unavailable'
     return NextResponse.json(
       {
         success: false,
         error: message,
         products: [],
       },
-      { status: 500 }
+      { status: 500, headers: responseHeaders }
     )
   }
 }

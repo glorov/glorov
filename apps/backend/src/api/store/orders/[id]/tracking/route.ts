@@ -1,6 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import { ShiprocketClient } from '../../../../../modules/fulfillment-shiprocket/client'
+import { sendSanitizedError } from '../../../../../utils/error-handler'
 
 interface SafeTrackingScan {
   date: string
@@ -191,7 +192,6 @@ export const GET = async (
       scans,
     })
   } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : 'Error retrieving order tracking'
-    res.status(500).json({ message: errMsg })
+    sendSanitizedError(res, error, 500, { order_id: orderId })
   }
 }

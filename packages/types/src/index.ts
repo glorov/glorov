@@ -2,6 +2,7 @@ export * from './botanical'
 export * from './catalog'
 export * from './pincode'
 export * from './validations'
+export * from './observability'
 
 export interface GlorovProductPreview {
   id: string

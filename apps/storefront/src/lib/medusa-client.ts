@@ -1,4 +1,5 @@
 import Medusa from '@medusajs/js-sdk'
+import { extractOrGenerateCorrelationId } from '@glorov/types'
 
 export const MEDUSA_BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000'
@@ -23,6 +24,7 @@ export interface BackendHealthResult {
   latencyMs?: number
   message: string
   status?: number
+  correlationId?: string
 }
 
 /**
@@ -30,17 +32,45 @@ export interface BackendHealthResult {
  * Verifies connectivity to the Medusa v2 backend and reports latency.
  */
 export async function checkBackendHealth(
-  timeoutMs: number = 3000
+  timeoutMs: number = 3000,
+  correlationId?: string
 ): Promise<BackendHealthResult> {
+  const cid = extractOrGenerateCorrelationId(correlationId)
   const startTime = Date.now()
   try {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
-    const res = await fetch(`${MEDUSA_BACKEND_URL}/health`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
+    const requestHeaders = {
+      'x-correlation-id': cid,
+    }
+
+    // Attempt rich /store/health endpoint first, fallback to /health
+    let res: Response
+    try {
+      res = await fetch(`${MEDUSA_BACKEND_URL}/store/health`, {
+        headers: requestHeaders,
+        signal: controller.signal,
+        cache: 'no-store',
+      })
+      if (res.status === 404) {
+        res = await fetch(`${MEDUSA_BACKEND_URL}/health`, {
+          headers: requestHeaders,
+          signal: controller.signal,
+          cache: 'no-store',
+        })
+      }
+    } catch (fetchErr) {
+      // If controller aborted, rethrow
+      if (controller.signal.aborted) throw fetchErr
+      // Otherwise try classic /health as fallback
+      res = await fetch(`${MEDUSA_BACKEND_URL}/health`, {
+        headers: requestHeaders,
+        signal: controller.signal,
+        cache: 'no-store',
+      })
+    }
+
     clearTimeout(timeoutId)
     const latencyMs = Date.now() - startTime
 
@@ -50,6 +80,7 @@ export async function checkBackendHealth(
         latencyMs,
         status: res.status,
         message: 'Medusa v2 backend is online and healthy',
+        correlationId: cid,
       }
     }
     return {
@@ -57,6 +88,7 @@ export async function checkBackendHealth(
       latencyMs,
       status: res.status,
       message: `Backend returned status ${res.status}: ${res.statusText}`,
+      correlationId: cid,
     }
   } catch (error: unknown) {
     const latencyMs = Date.now() - startTime
@@ -66,6 +98,7 @@ export async function checkBackendHealth(
       healthy: false,
       latencyMs,
       message: `Could not connect to backend at ${MEDUSA_BACKEND_URL} (${errorMsg})`,
+      correlationId: cid,
     }
   }
 }

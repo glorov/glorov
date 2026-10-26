@@ -28,6 +28,11 @@ export default function ErrorBoundary({
         <p className="text-xs text-muted-foreground leading-relaxed">
           We encountered an unexpected error while loading this botanical page. Please try refreshing or return to the home sanctuary.
         </p>
+        {error.digest && (
+          <p className="text-[11px] text-muted-foreground font-mono bg-muted/40 px-2 py-1 rounded inline-block">
+            Support Reference: <span className="text-foreground">{error.digest}</span>
+          </p>
+        )}
       </div>
       <div className="flex items-center gap-3 pt-2">
         <Button onClick={() => reset()} variant="botanical" className="gap-2">

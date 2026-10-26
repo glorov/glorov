@@ -1,5 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { ProductCsvImportService } from "../../../../../modules/csv-import/import-service";
+import { sendSanitizedError } from "../../../../../utils/error-handler";
 
 const MAX_CSV_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
@@ -51,7 +52,6 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
     res.status(200).json({ result });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to execute CSV import";
-    res.status(500).json({ message });
+    sendSanitizedError(res, error, 500);
   }
 };

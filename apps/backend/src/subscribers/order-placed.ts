@@ -1,6 +1,7 @@
 import type { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { maskEmail } from '../modules/notification-email/utils/email-validator'
+import { withBoundedRetry } from '../utils/async-retry'
 
 /**
  * Subscriber: order.placed
@@ -61,37 +62,53 @@ export default async function orderPlacedHandler({
 
     const idempotencyKey = `notif:order-placed:${order.id}`
 
-    await notificationModule.createNotifications({
-      to: order.email,
-      channel: 'email',
-      template: 'order-placed',
-      data: {
-        order: {
-          id: order.id,
-          display_id: order.display_id,
-          email: order.email,
-          currency_code: order.currency_code,
-          total: order.total,
-          subtotal: order.subtotal,
-          shipping_total: order.shipping_total,
-          tax_total: order.tax_total,
-          discount_total: order.discount_total,
-          items: order.items,
-          shipping_address: order.shipping_address,
-          created_at: order.created_at,
-        },
+    const retryResult = await withBoundedRetry(
+      async () => {
+        return await notificationModule.createNotifications({
+          to: order.email,
+          channel: 'email',
+          template: 'order-placed',
+          data: {
+            order: {
+              id: order.id,
+              display_id: order.display_id,
+              email: order.email,
+              currency_code: order.currency_code,
+              total: order.total,
+              subtotal: order.subtotal,
+              shipping_total: order.shipping_total,
+              tax_total: order.tax_total,
+              discount_total: order.discount_total,
+              items: order.items,
+              shipping_address: order.shipping_address,
+              created_at: order.created_at,
+            },
+          },
+          trigger_type: 'order.placed',
+          resource_id: order.id,
+          resource_type: 'order',
+          idempotency_key: idempotencyKey,
+        })
       },
-      trigger_type: 'order.placed',
-      resource_id: order.id,
-      resource_type: 'order',
-      idempotency_key: idempotencyKey,
-    })
-
-    logger.info(
-      `[OrderPlacedSubscriber] Successfully queued order confirmation for ${maskEmail(order.email)} (Order: #${order.display_id || order.id})`
+      {
+        subscriberName: 'OrderPlacedSubscriber',
+        eventName: 'order.placed',
+        resourceId: order.id,
+        resourceType: 'order',
+        container,
+      }
     )
+
+    if (retryResult.success) {
+      logger.info(
+        `[OrderPlacedSubscriber] Successfully queued order confirmation for ${maskEmail(order.email)} (Order: #${order.display_id || order.id})`
+      )
+    } else {
+      logger.error(
+        `[OrderPlacedSubscriber] Failed to dispatch order confirmation for order ${orderId}: ${retryResult.error?.message || 'Delivery failed'}`
+      )
+    }
   } catch (error: any) {
-    // Non-blocking resilience: notification failure must never crash or block order placement
     logger.error(
       `[OrderPlacedSubscriber] Failed to dispatch order confirmation for order ${orderId}: ${error.message}`
     )

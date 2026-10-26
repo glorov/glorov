@@ -194,7 +194,7 @@ export function VariantSelector({ product }: VariantSelectorProps) {
           aria-label="Product Variants and Packet Sizes"
           className="grid grid-cols-2 sm:grid-cols-3 gap-2.5"
         >
-          {variants.map((v) => {
+          {variants.map((v, vIdx) => {
             const isSelected = v.id === selectedVariantId
             const vAvail = getVariantStockAvailability(v)
             const vPrice = getVariantPriceINR(v)
@@ -204,10 +204,27 @@ export function VariantSelector({ product }: VariantSelectorProps) {
                 key={v.id}
                 type="button"
                 role="radio"
+                tabIndex={isSelected ? 0 : -1}
                 aria-checked={isSelected}
                 aria-label={`${v.title} - ${vPrice}${!vAvail.isAvailable ? ' - Sold Out' : ''}`}
                 onClick={() => handleVariantChange(v.id)}
-                className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 cursor-pointer ${
+                onKeyDown={(e) => {
+                  let nextIdx = vIdx
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault()
+                    nextIdx = (vIdx + 1) % variants.length
+                  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault()
+                    nextIdx = (vIdx - 1 + variants.length) % variants.length
+                  }
+                  if (nextIdx !== vIdx) {
+                    handleVariantChange(variants[nextIdx].id)
+                    const parent = e.currentTarget.parentElement
+                    const radios = parent?.querySelectorAll<HTMLButtonElement>('[role="radio"]')
+                    radios?.[nextIdx]?.focus()
+                  }
+                }}
+                className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 cursor-pointer min-h-[44px] ${
                   isSelected
                     ? 'border-botanical-700 bg-botanical-50/80 ring-1 ring-botanical-700 shadow-xs'
                     : 'border-border bg-background hover:border-botanical-300 hover:bg-earth-50/40'
@@ -237,26 +254,41 @@ export function VariantSelector({ product }: VariantSelectorProps) {
         </div>
       </div>
 
+      {/* Screen Reader Live Region for Variant and Stock Changes */}
+      <div className="sr-only" aria-live="polite" role="status">
+        {selectedVariant
+          ? `Selected variant ${selectedVariant.title}, price ${priceFormatted}, ${
+              availability.isAvailable ? 'In stock' : 'Out of stock'
+            }`
+          : ''}
+      </div>
+
       {/* 3. Quantity & Add to Cart Actions */}
       <div className="space-y-4 pt-2">
         <div className="flex items-center gap-4">
-          <label htmlFor="variant-quantity" className="text-xs font-bold uppercase tracking-wider text-botanical-900 shrink-0">
+          <span id="variant-quantity-label" className="text-xs font-bold uppercase tracking-wider text-botanical-900 shrink-0">
             Quantity:
-          </label>
+          </span>
 
-          <div className="flex items-center border border-border rounded-lg bg-background shadow-xs">
+          <div
+            role="group"
+            aria-labelledby="variant-quantity-label"
+            className="flex items-center border border-border rounded-lg bg-background shadow-xs overflow-hidden"
+          >
             <button
               type="button"
               onClick={() => handleQuantityChange(-1)}
               disabled={quantity <= 1 || !availability.isAvailable || isAdding}
-              className="p-2 hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+              className="h-9 w-9 flex items-center justify-center hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-botanical-600"
               aria-label="Decrease quantity"
             >
               <Minus className="h-3.5 w-3.5" />
             </button>
             <span
               id="variant-quantity"
-              className="px-4 text-sm font-bold text-botanical-950 min-w-[2.5rem] text-center select-none"
+              aria-live="polite"
+              aria-atomic="true"
+              className="px-3 text-sm font-bold text-botanical-950 min-w-[2.5rem] text-center select-none"
             >
               {quantity}
             </span>
@@ -268,7 +300,7 @@ export function VariantSelector({ product }: VariantSelectorProps) {
                 quantity >= maxAvailable ||
                 isAdding
               }
-              className="p-2 hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+              className="h-9 w-9 flex items-center justify-center hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-botanical-600"
               aria-label="Increase quantity"
             >
               <Plus className="h-3.5 w-3.5" />

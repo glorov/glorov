@@ -40,6 +40,24 @@ export function OrderReturnRequestModal({
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
+  // Manage body scroll lock and Escape key dismiss
+  React.useEffect(() => {
+    if (!isOpen) return
+    const origOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = origOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen])
+
   // Eligibility:
   // Can only request return for delivered/shipped/completed orders, and NOT canceled.
   const isCanceled = status === 'canceled'
@@ -113,11 +131,21 @@ export function OrderReturnRequestModal({
       </Button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="return-dialog-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsOpen(false)
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+        >
           <div className="bg-card w-full max-w-lg rounded-2xl p-6 shadow-xl border border-border space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-2.5 text-foreground">
               <RotateCcw className="h-5 w-5 text-botanical-700 shrink-0" />
-              <h3 className="text-lg font-bold">Request Return / Claim (Order #{displayId || orderId})</h3>
+              <h3 id="return-dialog-title" className="text-lg font-bold">
+                Request Return / Claim (Order #{displayId || orderId})
+              </h3>
             </div>
 
             <p className="text-xs text-muted-foreground leading-relaxed">

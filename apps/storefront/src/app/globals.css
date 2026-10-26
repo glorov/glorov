@@ -20,7 +20,7 @@
     --secondary-foreground: 151 45% 20%;
 
     --muted: 42 20% 94%;
-    --muted-foreground: 150 10% 40%;
+    --muted-foreground: 150 14% 33%;
 
     --accent: 38 70% 92%;
     --accent-foreground: 28 80% 25%;
@@ -43,6 +43,10 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 }
 

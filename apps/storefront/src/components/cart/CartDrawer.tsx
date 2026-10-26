@@ -32,13 +32,36 @@ export function CartDrawer() {
     clearError,
   } = useCart()
 
+  // Handle Escape key listener and body scroll locking
+  React.useEffect(() => {
+    if (!isDrawerOpen) return
+    const origOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeDrawer()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = origOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isDrawerOpen, closeDrawer])
+
   if (!isDrawerOpen) return null
 
   const items = cart?.items || []
   const subtotal = cart?.item_subtotal || cart?.subtotal || 0
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0 z-50 overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cart-drawer-title"
+    >
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
@@ -46,13 +69,13 @@ export function CartDrawer() {
         aria-hidden="true"
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
         <div className="w-screen max-w-md bg-background shadow-2xl flex flex-col border-l border-border">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-earth-50/50">
             <div className="flex items-center gap-2">
               <ShoppingBag className="h-5 w-5 text-botanical-700" />
-              <h2 className="font-bold text-lg text-botanical-950">
+              <h2 id="cart-drawer-title" className="font-bold text-lg text-botanical-950">
                 Your Botanical Cart ({totalItems})
               </h2>
             </div>
@@ -160,24 +183,24 @@ export function CartDrawer() {
 
                         {/* Quantity Controls & Delete */}
                         <div className="flex items-center justify-between mt-2 pt-2 border-t border-earth-100">
-                          <div className="flex items-center border border-border rounded-md bg-background">
+                          <div className="flex items-center border border-border rounded-md bg-background overflow-hidden">
                             <button
                               type="button"
                               onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)}
                               disabled={isMutating}
-                              className="p-1 hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                              className="h-8 w-8 flex items-center justify-center hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 disabled:opacity-50"
                               aria-label="Decrease quantity"
                             >
                               <Minus className="h-3.5 w-3.5" />
                             </button>
-                            <span className="px-2.5 text-xs font-semibold text-botanical-950 min-w-[1.75rem] text-center">
+                            <span className="px-2 text-xs font-semibold text-botanical-950 min-w-[1.75rem] text-center select-none">
                               {item.quantity}
                             </span>
                             <button
                               type="button"
                               onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
                               disabled={isMutating}
-                              className="p-1 hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                              className="h-8 w-8 flex items-center justify-center hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 disabled:opacity-50"
                               aria-label="Increase quantity"
                             >
                               <Plus className="h-3.5 w-3.5" />
@@ -188,7 +211,7 @@ export function CartDrawer() {
                             type="button"
                             onClick={() => removeItem(item.id)}
                             disabled={isMutating}
-                            className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1 p-1 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                            className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1 p-1.5 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                             <span className="hidden sm:inline">Remove</span>

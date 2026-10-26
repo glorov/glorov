@@ -35,7 +35,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const isSeed = categoryHandle.includes('seed') || (!isPerishable && !categoryHandle.includes('plant'))
 
   return (
-    <Card className="flex flex-col justify-between hover:shadow-md hover:border-botanical-300 transition-all duration-200 group overflow-hidden bg-card border-border/80">
+    <Card className="flex flex-col justify-between hover:shadow-botanical hover:border-botanical-300 transition-all duration-200 group overflow-hidden bg-card border-border/80 rounded-2xl">
       <CardHeader className="p-4 pb-2 space-y-2.5">
         {/* Top Badges */}
         <div className="flex items-center justify-between gap-2">

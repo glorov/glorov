@@ -44,10 +44,18 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className="min-h-screen flex flex-col font-sans bg-background text-foreground antialiased selection:bg-botanical-200 selection:text-botanical-950">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-botanical-800 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-botanical-500 font-semibold text-xs transition-all"
+        >
+          Skip to main content
+        </a>
         <CartProvider>
           <Header />
           <CartDrawer />
-          <main className="flex-1">{children}</main>
+          <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
+            {children}
+          </main>
           <Footer />
         </CartProvider>
       </body>

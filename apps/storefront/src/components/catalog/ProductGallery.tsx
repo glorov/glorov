@@ -77,7 +77,7 @@ export function ProductGallery({ title, thumbnail, images = [] }: ProductGallery
         <div
           role="tablist"
           aria-label="Product Image Thumbnails"
-          className="flex gap-3 overflow-x-auto pb-2 scrollbar-none"
+          className="flex gap-2.5 sm:gap-3 overflow-x-auto pb-2 scrollbar-none"
         >
           {allImages.map((img, idx) => {
             const isSelected = idx === activeIndex
@@ -86,13 +86,31 @@ export function ProductGallery({ title, thumbnail, images = [] }: ProductGallery
                 key={idx}
                 type="button"
                 role="tab"
+                tabIndex={isSelected ? 0 : -1}
                 aria-selected={isSelected}
                 aria-label={`View photo ${idx + 1} of ${allImages.length} for ${title}`}
                 onClick={() => {
                   setActiveIndex(idx)
                   setLoadError(false)
                 }}
-                className={`relative h-18 w-18 sm:h-20 sm:w-20 rounded-xl overflow-hidden border-2 shrink-0 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 ${
+                onKeyDown={(e) => {
+                  let nextIdx = idx
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault()
+                    nextIdx = (idx + 1) % allImages.length
+                  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault()
+                    nextIdx = (idx - 1 + allImages.length) % allImages.length
+                  }
+                  if (nextIdx !== idx) {
+                    setActiveIndex(nextIdx)
+                    setLoadError(false)
+                    const parent = e.currentTarget.parentElement
+                    const tabs = parent?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+                    tabs?.[nextIdx]?.focus()
+                  }
+                }}
+                className={`relative h-16 w-16 sm:h-20 sm:w-20 rounded-xl overflow-hidden border-2 shrink-0 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 cursor-pointer ${
                   isSelected
                     ? 'border-botanical-700 ring-2 ring-botanical-600/30 shadow-xs scale-102'
                     : 'border-border/60 hover:border-botanical-400 opacity-70 hover:opacity-100'

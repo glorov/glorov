@@ -32,8 +32,11 @@ export function AccountNav() {
   }
 
   return (
-    <nav className="flex flex-col gap-1 w-full md:w-64 shrink-0 bg-card p-3 rounded-xl border shadow-sm">
-      <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <nav
+      aria-label="Account navigation"
+      className="flex flex-row md:flex-col gap-1.5 w-full md:w-64 shrink-0 bg-card p-2 md:p-3 rounded-xl border shadow-xs overflow-x-auto scrollbar-none items-center md:items-stretch"
+    >
+      <div className="hidden md:block px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Account Navigation
       </div>
       {NAV_ITEMS.map((item) => {
@@ -47,28 +50,29 @@ export function AccountNav() {
           <Link
             key={item.href}
             href={item.href}
+            aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+              'flex items-center gap-2.5 px-3 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-medium transition-colors whitespace-nowrap shrink-0 min-h-[40px]',
               isActive
-                ? 'bg-botanical-700 text-white shadow-sm'
+                ? 'bg-botanical-700 text-white shadow-2xs'
                 : 'text-foreground/80 hover:bg-muted hover:text-foreground'
             )}
           >
-            <Icon className="h-4 w-4 shrink-0" />
+            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>{item.label}</span>
           </Link>
         )
       })}
 
-      <div className="my-2 border-t border-border" />
+      <div className="hidden md:block my-2 border-t border-border" />
 
       <Button
         variant="ghost"
         disabled={isLoggingOut}
         onClick={handleLogout}
-        className="w-full justify-start gap-3 px-3 py-2.5 h-auto text-destructive hover:bg-destructive/10 hover:text-destructive text-sm font-medium"
+        className="shrink-0 md:w-full justify-start gap-2.5 px-3 py-2 md:py-2.5 h-auto text-destructive hover:bg-destructive/10 hover:text-destructive text-xs md:text-sm font-medium whitespace-nowrap min-h-[40px]"
       >
-        <LogOut className="h-4 w-4 shrink-0" />
+        <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span>{isLoggingOut ? 'Logging out...' : 'Sign Out'}</span>
       </Button>
     </nav>

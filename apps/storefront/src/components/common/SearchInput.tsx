@@ -62,16 +62,23 @@ function SearchInputInner({
     }
   }, [urlQuery, initialQuery])
 
-  // Click outside to dismiss dropdown
+  // Click or focus outside to dismiss dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false)
       }
     }
+    function handleFocusOutside(event: FocusEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('focusin', handleFocusOutside)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('focusin', handleFocusOutside)
     }
   }, [])
 
@@ -218,8 +225,20 @@ function SearchInputInner({
           aria-autocomplete="list"
           aria-controls={isOpen ? `${id}-suggestions` : undefined}
           aria-expanded={isOpen}
+          aria-activedescendant={
+            selectedIndex >= 0 && suggestions[selectedIndex]
+              ? `${id}-option-${selectedIndex}`
+              : undefined
+          }
           className={`w-full h-9 rounded-full border border-border bg-earth-50/80 pl-9 pr-14 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-botanical-600 focus:bg-background transition-all ${inputClassName}`}
         />
+
+        {/* Screen Reader Live Region for Search Results */}
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          {isOpen && suggestions.length > 0
+            ? `${suggestions.length} botanical suggestions found. Use arrow keys to navigate.`
+            : ''}
+        </div>
 
         <div className="absolute right-2.5 flex items-center gap-1">
           {isLoading && (
@@ -233,7 +252,7 @@ function SearchInputInner({
             <button
               type="button"
               onClick={handleClear}
-              className="p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-earth-200 transition-colors"
+              className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full hover:bg-earth-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600"
               aria-label="Clear search query"
             >
               <X className="h-3 w-3" />
@@ -265,6 +284,7 @@ function SearchInputInner({
                   return (
                     <li
                       key={item.id}
+                      id={`${id}-option-${index}`}
                       role="option"
                       aria-selected={isSelected}
                       className={`transition-colors ${

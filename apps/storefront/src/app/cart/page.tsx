@@ -42,6 +42,10 @@ export default function CartPage() {
   const cartTotal = cart?.total || Math.max(0, subtotal - discountTotal + shippingTotal + taxTotal)
   const subtotalINR = subtotal / 100
   const freeShippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD_INR - subtotalINR)
+  const freeShippingPercent = Math.min(
+    100,
+    Math.max(0, Math.round((subtotalINR / FREE_SHIPPING_THRESHOLD_INR) * 100))
+  )
 
   const hasPerishable = items.some(
     (item) =>
@@ -112,24 +116,44 @@ export default function CartPage() {
       </div>
 
       {/* Free Shipping Meter */}
-      <div className="my-6 p-4 rounded-xl border border-botanical-200 bg-botanical-50/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-botanical-600 text-white flex items-center justify-center flex-shrink-0">
-            <Truck className="h-5 w-5" />
+      <div className="my-6 p-4 sm:p-5 rounded-2xl border border-botanical-200 bg-botanical-50/70 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-botanical-600 text-white flex items-center justify-center flex-shrink-0">
+              <Truck className="h-5 w-5" />
+            </div>
+            <div>
+              {freeShippingRemaining === 0 ? (
+                <p className="text-sm font-bold text-botanical-950 flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-amber-500 fill-amber-500" />
+                  <span>You qualify for FREE Standard Delivery across India!</span>
+                </p>
+              ) : (
+                <p className="text-sm font-semibold text-botanical-950">
+                  Add <span className="font-bold text-botanical-800">{formatINR(freeShippingRemaining * 100)}</span> more of gardening supplies for <span className="font-bold text-botanical-800">FREE delivery</span>!
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">Standard dispatch threshold is ₹{FREE_SHIPPING_THRESHOLD_INR}.</p>
+            </div>
           </div>
-          <div>
-            {freeShippingRemaining === 0 ? (
-              <p className="text-sm font-bold text-botanical-950 flex items-center gap-1.5">
-                <Sparkles className="h-4 w-4 text-amber-500 fill-amber-500" />
-                <span>You qualify for FREE Standard Delivery across India!</span>
-              </p>
-            ) : (
-              <p className="text-sm font-semibold text-botanical-950">
-                Add <span className="font-bold text-botanical-800">{formatINR(freeShippingRemaining * 100)}</span> more of gardening supplies for <span className="font-bold text-botanical-800">FREE delivery</span>!
-              </p>
-            )}
-            <p className="text-xs text-muted-foreground">Standard dispatch threshold is ₹{FREE_SHIPPING_THRESHOLD_INR}.</p>
-          </div>
+          <span className="text-xs font-bold text-botanical-800 bg-botanical-100/80 px-2.5 py-1 rounded-full self-start sm:self-auto border border-botanical-200/50">
+            {freeShippingPercent}% Unlocked
+          </span>
+        </div>
+
+        {/* Visual Progress Bar */}
+        <div
+          role="progressbar"
+          aria-valuenow={freeShippingPercent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`Free delivery progress: ${freeShippingPercent}%`}
+          className="mt-3.5 w-full bg-botanical-200/60 rounded-full h-2.5 overflow-hidden"
+        >
+          <div
+            className="bg-botanical-600 h-2.5 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${freeShippingPercent}%` }}
+          />
         </div>
       </div>
 
@@ -216,24 +240,24 @@ export default function CartPage() {
                       {/* Quantity Modifier */}
                       <div className="sm:col-span-2 flex items-center justify-between sm:justify-center gap-2">
                         <span className="sm:hidden text-xs text-muted-foreground">Quantity:</span>
-                        <div className="flex items-center border border-border rounded-lg bg-background shadow-xs">
+                        <div className="flex items-center border border-border rounded-lg bg-background shadow-xs overflow-hidden">
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)}
                             disabled={isMutating}
-                            className="p-1.5 hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                            className="h-9 w-9 flex items-center justify-center hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 disabled:opacity-50"
                             aria-label="Decrease quantity"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
-                          <span className="px-3 text-xs font-bold text-botanical-950 min-w-[2rem] text-center">
+                          <span className="px-2 text-xs font-bold text-botanical-950 min-w-[2.25rem] text-center select-none">
                             {item.quantity}
                           </span>
                           <button
                             type="button"
                             onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
                             disabled={isMutating}
-                            className="p-1.5 hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                            className="h-9 w-9 flex items-center justify-center hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 disabled:opacity-50"
                             aria-label="Increase quantity"
                           >
                             <Plus className="h-3.5 w-3.5" />
@@ -245,7 +269,7 @@ export default function CartPage() {
                           type="button"
                           onClick={() => removeItem(item.id)}
                           disabled={isMutating}
-                          className="sm:hidden text-red-600 p-1.5 hover:bg-red-50 rounded"
+                          className="sm:hidden text-red-600 h-9 w-9 flex items-center justify-center hover:bg-red-50 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors"
                           aria-label="Remove item"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -263,7 +287,7 @@ export default function CartPage() {
                             type="button"
                             onClick={() => removeItem(item.id)}
                             disabled={isMutating}
-                            className="hidden sm:inline-flex items-center gap-1 text-[11px] text-red-600 hover:text-red-700 mt-1 hover:underline disabled:opacity-50"
+                            className="hidden sm:inline-flex items-center gap-1 text-[11px] text-red-600 hover:text-red-700 mt-1 hover:underline disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded px-1"
                           >
                             <Trash2 className="h-3 w-3" />
                             <span>Remove</span>

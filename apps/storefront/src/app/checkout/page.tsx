@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Loader2,
   Sprout,
+  Edit3,
 } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import {
@@ -81,6 +82,11 @@ export default function CheckoutPage() {
   const [phone, setPhone] = useState('')
   const [customer, setCustomer] = useState<StoreCustomer | null>(null)
 
+  // Validation & UI state
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [isEditingAddress, setIsEditingAddress] = useState<boolean>(false)
+  const isPlacingOrderRef = React.useRef<boolean>(false)
+
   // Shipping & flow states
   const [shippingOptions, setShippingOptions] = useState<StoreShippingOption[]>([])
   const [selectedOptionId, setSelectedOptionId] = useState<string>('')
@@ -93,6 +99,16 @@ export default function CheckoutPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [addressSaved, setAddressSaved] = useState<boolean>(false)
 
+  const clearFieldError = (fieldName: string) => {
+    if (fieldErrors[fieldName]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev }
+        delete next[fieldName]
+        return next
+      })
+    }
+  }
+
   const applySavedAddress = (addr: StoreCustomerAddress) => {
     setFirstName(addr.first_name || '')
     setLastName(addr.last_name || '')
@@ -102,6 +118,8 @@ export default function CheckoutPage() {
     setProvince(addr.province || 'Maharashtra')
     setPostalCode(addr.postal_code || '')
     if (addr.phone) setPhone(addr.phone)
+    setFieldErrors({})
+    setIsEditingAddress(false)
     if (
       cart?.shipping_address?.address_1 === addr.address_1 &&
       cart?.shipping_address?.postal_code === addr.postal_code
@@ -180,33 +198,44 @@ export default function CheckoutPage() {
   const taxTotal = cart?.tax_total || 0
   const grandTotal = cart?.total || Math.max(0, subtotal - discountTotal + shippingTotal + taxTotal)
 
-  // Handle saving customer details & address
-  const handleSaveAddress = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // Validate and save customer details & delivery address
+  const validateAndSaveAddress = async (): Promise<boolean> => {
     setFormError(null)
 
-    // Basic frontend format guards (also validated with Zod on server)
+    const errors: Record<string, string> = {}
+
+    // Field-level format guards
     if (!email || !email.includes('@')) {
-      setFormError('Please enter a valid email address.')
-      return
+      errors.email = 'Please enter a valid email address.'
     }
-    if (!firstName.trim() || !lastName.trim()) {
-      setFormError('First and last name are required.')
-      return
+    if (!firstName.trim()) {
+      errors.firstName = 'First name is required.'
+    }
+    if (!lastName.trim()) {
+      errors.lastName = 'Last name is required.'
     }
     if (!address1.trim() || address1.trim().length < 5) {
-      setFormError('Please enter a full delivery street address (at least 5 characters).')
-      return
+      errors.address1 = 'Please enter full house/flat no. and street address (at least 5 characters).'
     }
-    if (!/^[1-9][0-9]{5}$/.test(postalCode.trim())) {
-      setFormError('Please enter a valid 6-digit Indian PIN code (e.g. 411001, 560001).')
-      return
+    const cleanPostal = postalCode.replace(/\D/g, '')
+    if (!/^[1-9][0-9]{5}$/.test(cleanPostal)) {
+      errors.postalCode = 'Please enter a valid 6-digit Indian PIN code (e.g. 411001, 560001).'
     }
-    const cleanPhone = phone.replace(/\D/g, '').slice(-10)
+    if (!city.trim()) {
+      errors.city = 'City / District is required.'
+    }
+    const digits = phone.replace(/\D/g, '')
+    const cleanPhone = digits.length > 10 && digits.startsWith('91') ? digits.slice(-10) : digits.slice(-10)
     if (!/^[6-9][0-9]{9}$/.test(cleanPhone)) {
-      setFormError('Please enter a valid 10-digit Indian mobile number.')
-      return
+      errors.phone = 'Please enter a valid 10-digit Indian mobile number (starting with 6, 7, 8, or 9).'
     }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      setFormError('Please resolve the required fields highlighted below.')
+      return false
+    }
+    setFieldErrors({})
 
     setIsSavingAddress(true)
     try {
@@ -219,7 +248,7 @@ export default function CheckoutPage() {
           address_2: address2.trim() || undefined,
           city: city.trim(),
           province: province.trim(),
-          postal_code: postalCode.trim(),
+          postal_code: cleanPostal,
           phone: cleanPhone,
           country_code: 'in',
         },
@@ -227,6 +256,7 @@ export default function CheckoutPage() {
 
       if (res.success) {
         setAddressSaved(true)
+        setIsEditingAddress(false)
         // Refresh available shipping options now that address is recorded
         const optionsRes = await getCartShippingOptionsAction()
         if (optionsRes.success && optionsRes.options.length > 0) {
@@ -236,14 +266,23 @@ export default function CheckoutPage() {
           await selectShippingMethodAction(targetOpt)
         }
         await refreshCart()
+        return true
       } else {
         setFormError(res.error || 'Failed to save address details')
+        return false
       }
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : 'Error saving address')
+      return false
     } finally {
       setIsSavingAddress(false)
     }
+  }
+
+  // Handle explicit Save & Continue submit
+  const handleSaveAddress = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await validateAndSaveAddress()
   }
 
   // Handle shipping selection change
@@ -258,16 +297,18 @@ export default function CheckoutPage() {
     }
   }
 
-  // Handle final order completion
+  // Handle final order completion with double-submission prevention
   const handlePlaceOrder = async () => {
-    setFormError(null)
-    setIsSubmitting(true)
+    if (isPlacingOrderRef.current || isSubmitting) return
 
-    // Ensure address is saved
-    if (!cart?.shipping_address?.address_1) {
-      setFormError('Please fill and save your delivery address first.')
-      setIsSubmitting(false)
-      return
+    setFormError(null)
+
+    // Ensure address is validated and saved if not yet saved or currently being edited
+    if (!addressSaved || isEditingAddress || !cart?.shipping_address?.address_1) {
+      const savedOk = await validateAndSaveAddress()
+      if (!savedOk) {
+        return
+      }
     }
 
     // Ensure shipping method is applied
@@ -276,17 +317,18 @@ export default function CheckoutPage() {
         await selectShippingMethodAction(selectedOptionId)
       } else {
         setFormError('Please select a shipping method before placing order.')
-        setIsSubmitting(false)
         return
       }
     }
 
     // Validate COD eligibility
-    if (paymentProvider === 'pp_cod_cod' && (cart?.total || 0) > 500000) {
+    if (paymentProvider === 'pp_cod_cod' && grandTotal > 500000) {
       setFormError('Cash on Delivery is limited to orders up to ₹5,000. Please select Razorpay online payment.')
-      setIsSubmitting(false)
       return
     }
+
+    isPlacingOrderRef.current = true
+    setIsSubmitting(true)
 
     try {
       const res = await completeOrderAction(paymentProvider)
@@ -296,10 +338,12 @@ export default function CheckoutPage() {
       } else {
         setFormError(res.error || 'Order completion failed. Please verify your items.')
         setIsSubmitting(false)
+        isPlacingOrderRef.current = false
       }
     } catch (err: unknown) {
       setFormError(err instanceof Error ? err.message : 'Error placing order')
       setIsSubmitting(false)
+      isPlacingOrderRef.current = false
     }
   }
 
@@ -346,8 +390,24 @@ export default function CheckoutPage() {
         <div className="my-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <span className="font-semibold">Checkout Validation Notice: </span>
+            <span className="font-semibold">Checkout Notice: </span>
             <span>{formError}</span>
+            {formError.includes('Cash on Delivery is limited') && (
+              <div className="mt-2.5">
+                <Button
+                  type="button"
+                  variant="botanical"
+                  size="sm"
+                  onClick={() => {
+                    setPaymentProvider('pp_razorpay_razorpay')
+                    setFormError(null)
+                  }}
+                  className="rounded-lg text-xs"
+                >
+                  Switch to Razorpay Online Payment &amp; Proceed
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -367,245 +427,428 @@ export default function CheckoutPage() {
                 </h2>
               </div>
               {addressSaved && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   Address Saved
                 </span>
               )}
             </div>
 
-            {customer ? (
-              <div className="mb-5 p-3 rounded-lg bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
-                <div className="text-xs">
-                  <span className="text-muted-foreground">Logged in as: </span>
-                  <span className="font-bold text-foreground">
-                    {customer.first_name} {customer.last_name}
-                  </span>
-                  <span className="text-muted-foreground ml-1">({customer.email})</span>
-                </div>
-                <Link
-                  href="/account"
-                  className="text-xs font-semibold text-botanical-700 hover:underline"
-                >
-                  My Account
-                </Link>
-              </div>
-            ) : (
-              <div className="mb-5 p-3 rounded-lg bg-muted/40 border border-border flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">
-                  Already have an account? Log in to use your saved addresses.
-                </span>
-                <Link
-                  href="/account/login?callbackUrl=/checkout"
-                  className="font-bold text-botanical-700 hover:underline shrink-0 ml-2"
-                >
-                  Sign In
-                </Link>
-              </div>
-            )}
-
-            {customer && customer.addresses.length > 0 && (
-              <div className="mb-5 space-y-2">
-                <label className="block text-xs font-bold text-botanical-900">
-                  Select from Saved Delivery Addresses
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {customer.addresses.map((saved) => {
-                    const isSelected =
-                      address1 === saved.address_1 && postalCode === saved.postal_code
-
-                    return (
-                      <button
-                        key={saved.id}
-                        type="button"
-                        onClick={() => applySavedAddress(saved)}
-                        className={`p-3 rounded-lg border text-left text-xs transition-all ${
-                          isSelected
-                            ? 'border-botanical-600 bg-botanical-50/50 ring-1 ring-botanical-600'
-                            : 'border-border bg-background hover:bg-muted/30'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between font-semibold text-foreground mb-1">
-                          <span>{saved.address_name || `${saved.first_name}'s Address`}</span>
-                          {saved.is_default_shipping && (
-                            <span className="text-[10px] text-botanical-700 bg-botanical-100 px-1.5 py-0.5 rounded font-medium">
-                              Default
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-muted-foreground truncate">{saved.address_1}</p>
-                        <p className="text-muted-foreground">
-                          {saved.city}, {saved.postal_code}
-                        </p>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveAddress} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-botanical-900 mb-1">
-                  Email Address (for order tracking &amp; GST invoice) *
-                </label>
-
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. priya.sharma@example.com"
-                  className="w-full h-10 px-3.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-botanical-900 mb-1">
-                    First Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="First name"
-                    className="w-full h-10 px-3.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-botanical-900 mb-1">
-                    Last Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Last name"
-                    className="w-full h-10 px-3.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-botanical-900 mb-1">
-                  Flat / House No., Apartment &amp; Building Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={address1}
-                  onChange={(e) => setAddress1(e.target.value)}
-                  placeholder="e.g. Flat 302, Palm Groves"
-                  className="w-full h-10 px-3.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-botanical-900 mb-1">
-                  Street, Area, Landmark (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={address2}
-                  onChange={(e) => setAddress2(e.target.value)}
-                  placeholder="e.g. Near Rose Garden, MG Road"
-                  className="w-full h-10 px-3.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-botanical-900 mb-1">
-                    PIN Code (6 Digits) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={6}
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                    placeholder="e.g. 411001"
-                    className="w-full h-10 px-3.5 rounded-lg border border-border bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
-                  />
+            {/* Collapsed view when address is saved and not actively being edited */}
+            {addressSaved && !isEditingAddress ? (
+              <div className="p-4 rounded-xl border border-emerald-200/80 bg-emerald-50/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-sm text-botanical-950">
+                      {firstName} {lastName}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-mono">
+                      (+91 {phone})
+                    </span>
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full">
+                      Verified for Courier Delivery
+                    </span>
+                  </div>
+                  <p className="text-xs text-botanical-900">
+                    {address1}
+                    {address2 ? `, ${address2}` : ''}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {city}, {province} — <span className="font-mono font-bold text-botanical-950">{postalCode}</span>
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Order confirmation &amp; live tracking: <span className="font-medium text-foreground">{email}</span>
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-botanical-900 mb-1">
-                    City / District *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="e.g. Pune"
-                    className="w-full h-10 px-3.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-botanical-900 mb-1">
-                    State / UT *
-                  </label>
-                  <select
-                    value={province}
-                    onChange={(e) => setProvince(e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
-                  >
-                    {INDIAN_STATES.map((st) => (
-                      <option key={st} value={st}>
-                        {st}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-botanical-900 mb-1">
-                  10-Digit Mobile Phone (for courier delivery coordination) *
-                </label>
-                <div className="flex">
-                  <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-border bg-earth-100 text-xs font-bold text-botanical-900">
-                    +91
-                  </span>
-                  <input
-                    type="tel"
-                    required
-                    maxLength={10}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="9876543210"
-                    className="flex-1 h-10 px-3.5 rounded-r-lg border border-border bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end">
                 <Button
-                  type="submit"
-                  disabled={isSavingAddress}
-                  variant="botanical"
+                  type="button"
+                  variant="outline"
                   size="sm"
-                  className="rounded-lg gap-2"
+                  onClick={() => setIsEditingAddress(true)}
+                  className="rounded-lg text-xs font-semibold shrink-0 gap-1.5 border-emerald-300 text-emerald-900 hover:bg-emerald-100/60"
                 >
-                  {isSavingAddress ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Validating Address...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Save &amp; Continue</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </>
-                  )}
+                  <Edit3 className="h-3.5 w-3.5" />
+                  <span>Edit Address</span>
                 </Button>
               </div>
-            </form>
+            ) : (
+              <>
+                {customer ? (
+                  <div className="mb-5 p-3 rounded-lg bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
+                    <div className="text-xs">
+                      <span className="text-muted-foreground">Logged in as: </span>
+                      <span className="font-bold text-foreground">
+                        {customer.first_name} {customer.last_name}
+                      </span>
+                      <span className="text-muted-foreground ml-1">({customer.email})</span>
+                    </div>
+                    <Link
+                      href="/account"
+                      className="text-xs font-semibold text-botanical-700 hover:underline"
+                    >
+                      My Account
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="mb-5 p-3 rounded-lg bg-muted/40 border border-border flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      Already have an account? Log in to use your saved addresses.
+                    </span>
+                    <Link
+                      href="/account/login?callbackUrl=/checkout"
+                      className="font-bold text-botanical-700 hover:underline shrink-0 ml-2"
+                    >
+                      Sign In
+                    </Link>
+                  </div>
+                )}
+
+                {customer && customer.addresses.length > 0 && (
+                  <div className="mb-5 space-y-2">
+                    <label className="block text-xs font-bold text-botanical-900">
+                      Select from Saved Delivery Addresses
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {customer.addresses.map((saved) => {
+                        const isSelected =
+                          address1 === saved.address_1 && postalCode === saved.postal_code
+
+                        return (
+                          <button
+                            key={saved.id}
+                            type="button"
+                            onClick={() => applySavedAddress(saved)}
+                            className={`p-3 rounded-lg border text-left text-xs transition-all ${
+                              isSelected
+                                ? 'border-botanical-600 bg-botanical-50/50 ring-1 ring-botanical-600'
+                                : 'border-border bg-background hover:bg-muted/30'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between font-semibold text-foreground mb-1">
+                              <span>{saved.address_name || `${saved.first_name}'s Address`}</span>
+                              {saved.is_default_shipping && (
+                                <span className="text-[10px] text-botanical-700 bg-botanical-100 px-1.5 py-0.5 rounded font-medium">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-muted-foreground truncate">{saved.address_1}</p>
+                            <p className="text-muted-foreground">
+                              {saved.city}, {saved.postal_code}
+                            </p>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <form onSubmit={handleSaveAddress} className="space-y-6">
+                  {/* Group 1: Contact Details */}
+                  <div className="space-y-4">
+                    <div className="pb-1 border-b border-border/60">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Contact Details
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="checkout-email" className="block text-xs font-bold text-botanical-900 mb-1">
+                          Email Address (for order tracking &amp; GST invoice) *
+                        </label>
+                        <input
+                          id="checkout-email"
+                          type="email"
+                          autoComplete="email"
+                          required
+                          value={email}
+                          aria-invalid={!!fieldErrors.email}
+                          aria-describedby={fieldErrors.email ? 'checkout-email-error' : undefined}
+                          onChange={(e) => {
+                            setEmail(e.target.value)
+                            clearFieldError('email')
+                          }}
+                          placeholder="e.g. priya.sharma@example.com"
+                          className={`w-full h-10 px-3.5 rounded-lg border ${
+                            fieldErrors.email
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-border focus:ring-botanical-600'
+                          } bg-background text-sm focus:outline-none focus:ring-2 transition`}
+                        />
+                        {fieldErrors.email && (
+                          <p id="checkout-email-error" className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="checkout-phone" className="block text-xs font-bold text-botanical-900 mb-1">
+                          10-Digit Mobile Phone (for delivery coordination) *
+                        </label>
+                        <div className="flex">
+                          <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-border bg-earth-100 text-xs font-bold text-botanical-900">
+                            +91
+                          </span>
+                          <input
+                            id="checkout-phone"
+                            type="tel"
+                            autoComplete="tel-national"
+                            inputMode="numeric"
+                            required
+                            maxLength={15}
+                            value={phone}
+                            aria-invalid={!!fieldErrors.phone}
+                            aria-describedby={fieldErrors.phone ? 'checkout-phone-error' : undefined}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/\D/g, '')
+                              const sanitized = raw.length > 10 && raw.startsWith('91') ? raw.slice(-10) : raw.slice(0, 10)
+                              setPhone(sanitized)
+                              clearFieldError('phone')
+                            }}
+                            placeholder="9876543210"
+                            className={`flex-1 h-10 px-3.5 rounded-r-lg border ${
+                              fieldErrors.phone
+                                ? 'border-red-500 focus:ring-red-500'
+                                : 'border-border focus:ring-botanical-600'
+                            } bg-background text-sm font-mono focus:outline-none focus:ring-2 transition`}
+                          />
+                        </div>
+                        {fieldErrors.phone && (
+                          <p id="checkout-phone-error" className="text-xs text-red-600 mt-1">{fieldErrors.phone}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Group 2: Delivery Address */}
+                  <div className="space-y-4">
+                    <div className="pb-1 border-b border-border/60">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Delivery Address
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="checkout-first-name" className="block text-xs font-bold text-botanical-900 mb-1">
+                          First Name *
+                        </label>
+                        <input
+                          id="checkout-first-name"
+                          type="text"
+                          autoComplete="given-name"
+                          required
+                          value={firstName}
+                          aria-invalid={!!fieldErrors.firstName}
+                          aria-describedby={fieldErrors.firstName ? 'checkout-first-name-error' : undefined}
+                          onChange={(e) => {
+                            setFirstName(e.target.value)
+                            clearFieldError('firstName')
+                          }}
+                          placeholder="First name"
+                          className={`w-full h-10 px-3.5 rounded-lg border ${
+                            fieldErrors.firstName
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-border focus:ring-botanical-600'
+                          } bg-background text-sm focus:outline-none focus:ring-2 transition`}
+                        />
+                        {fieldErrors.firstName && (
+                          <p id="checkout-first-name-error" className="text-xs text-red-600 mt-1">{fieldErrors.firstName}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="checkout-last-name" className="block text-xs font-bold text-botanical-900 mb-1">
+                          Last Name *
+                        </label>
+                        <input
+                          id="checkout-last-name"
+                          type="text"
+                          autoComplete="family-name"
+                          required
+                          value={lastName}
+                          aria-invalid={!!fieldErrors.lastName}
+                          aria-describedby={fieldErrors.lastName ? 'checkout-last-name-error' : undefined}
+                          onChange={(e) => {
+                            setLastName(e.target.value)
+                            clearFieldError('lastName')
+                          }}
+                          placeholder="Last name"
+                          className={`w-full h-10 px-3.5 rounded-lg border ${
+                            fieldErrors.lastName
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-border focus:ring-botanical-600'
+                          } bg-background text-sm focus:outline-none focus:ring-2 transition`}
+                        />
+                        {fieldErrors.lastName && (
+                          <p id="checkout-last-name-error" className="text-xs text-red-600 mt-1">{fieldErrors.lastName}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="checkout-address-1" className="block text-xs font-bold text-botanical-900 mb-1">
+                        Flat / House No., Apartment &amp; Building Name *
+                      </label>
+                      <input
+                        id="checkout-address-1"
+                        type="text"
+                        autoComplete="address-line1"
+                        required
+                        value={address1}
+                        aria-invalid={!!fieldErrors.address1}
+                        aria-describedby={fieldErrors.address1 ? 'checkout-address-1-error' : undefined}
+                        onChange={(e) => {
+                          setAddress1(e.target.value)
+                          clearFieldError('address1')
+                        }}
+                        placeholder="e.g. Flat 302, Palm Groves"
+                        className={`w-full h-10 px-3.5 rounded-lg border ${
+                          fieldErrors.address1
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-border focus:ring-botanical-600'
+                        } bg-background text-sm focus:outline-none focus:ring-2 transition`}
+                      />
+                      {fieldErrors.address1 && (
+                        <p id="checkout-address-1-error" className="text-xs text-red-600 mt-1">{fieldErrors.address1}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label htmlFor="checkout-address-2" className="block text-xs font-bold text-botanical-900 mb-1">
+                        Street, Area, Landmark (Optional)
+                      </label>
+                      <input
+                        id="checkout-address-2"
+                        type="text"
+                        autoComplete="address-line2"
+                        value={address2}
+                        onChange={(e) => setAddress2(e.target.value)}
+                        placeholder="e.g. Near Rose Garden, MG Road"
+                        className="w-full h-10 px-3.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label htmlFor="checkout-postal-code" className="block text-xs font-bold text-botanical-900 mb-1">
+                          PIN Code (6 Digits) *
+                        </label>
+                        <input
+                          id="checkout-postal-code"
+                          type="text"
+                          autoComplete="postal-code"
+                          inputMode="numeric"
+                          required
+                          maxLength={8}
+                          value={postalCode}
+                          aria-invalid={!!fieldErrors.postalCode}
+                          aria-describedby={fieldErrors.postalCode ? 'checkout-postal-code-error' : undefined}
+                          onChange={(e) => {
+                            const clean = e.target.value.replace(/\D/g, '').slice(0, 6)
+                            setPostalCode(clean)
+                            clearFieldError('postalCode')
+                          }}
+                          placeholder="e.g. 411001"
+                          className={`w-full h-10 px-3.5 rounded-lg border ${
+                            fieldErrors.postalCode
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-border focus:ring-botanical-600'
+                          } bg-background text-sm font-mono focus:outline-none focus:ring-2 transition`}
+                        />
+                        {fieldErrors.postalCode && (
+                          <p id="checkout-postal-code-error" className="text-xs text-red-600 mt-1">{fieldErrors.postalCode}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="checkout-city" className="block text-xs font-bold text-botanical-900 mb-1">
+                          City / District *
+                        </label>
+                        <input
+                          id="checkout-city"
+                          type="text"
+                          autoComplete="address-level2"
+                          required
+                          value={city}
+                          aria-invalid={!!fieldErrors.city}
+                          aria-describedby={fieldErrors.city ? 'checkout-city-error' : undefined}
+                          onChange={(e) => {
+                            setCity(e.target.value)
+                            clearFieldError('city')
+                          }}
+                          placeholder="e.g. Pune"
+                          className={`w-full h-10 px-3.5 rounded-lg border ${
+                            fieldErrors.city
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-border focus:ring-botanical-600'
+                          } bg-background text-sm focus:outline-none focus:ring-2 transition`}
+                        />
+                        {fieldErrors.city && (
+                          <p id="checkout-city-error" className="text-xs text-red-600 mt-1">{fieldErrors.city}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="checkout-province" className="block text-xs font-bold text-botanical-900 mb-1">
+                          State / UT *
+                        </label>
+                        <select
+                          id="checkout-province"
+                          autoComplete="address-level1"
+                          value={province}
+                          onChange={(e) => setProvince(e.target.value)}
+                          className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
+                        >
+                          {INDIAN_STATES.map((st) => (
+                            <option key={st} value={st}>
+                              {st}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-end gap-3">
+                    {isEditingAddress && addressSaved && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setIsEditingAddress(false)
+                          setFieldErrors({})
+                        }}
+                        className="rounded-lg text-xs"
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                    <Button
+                      type="submit"
+                      disabled={isSavingAddress}
+                      variant="botanical"
+                      size="sm"
+                      className="rounded-lg gap-2"
+                    >
+                      {isSavingAddress ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Validating Address...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Save &amp; Continue</span>
+                          <ArrowRight className="h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </>
+            )}
           </section>
 
           {/* STEP 2: Shipping Method Selection */}
@@ -768,9 +1011,24 @@ export default function CheckoutPage() {
                       Pay cash to courier executive upon delivery. Please keep exact change ready.
                     </p>
                     {grandTotal > 500000 && (
-                      <p className="text-[11px] text-amber-700 font-medium mt-1">
-                        ⚠️ COD is restricted to orders up to ₹5,000. For higher values, please select Razorpay.
-                      </p>
+                      <div className="mt-2.5 p-2.5 rounded-lg bg-amber-50 border border-amber-200">
+                        <p className="text-[11px] text-amber-800 font-medium">
+                          ⚠️ COD is restricted to orders up to ₹5,000. For higher values, please select Razorpay.
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setPaymentProvider('pp_razorpay_razorpay')
+                            setFormError(null)
+                          }}
+                          className="mt-1.5 h-7 text-xs font-semibold text-botanical-800 border-botanical-300 hover:bg-botanical-50"
+                        >
+                          Switch to Razorpay Online Payment
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -856,6 +1114,43 @@ export default function CheckoutPage() {
                 </li>
               ))}
             </ul>
+
+            {/* Route & Payment Overview */}
+            <div className="space-y-2 text-xs border-t border-border pt-4">
+              <div className="flex justify-between items-center text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Truck className="h-3.5 w-3.5 text-botanical-700" />
+                  <span>Shipping Route:</span>
+                </span>
+                <span className="font-semibold text-botanical-950 truncate max-w-[170px]">
+                  {shippingOptions.find((o) => o.id === selectedOptionId)?.name || 'Standard Fulfillment'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <CreditCard className="h-3.5 w-3.5 text-botanical-700" />
+                  <span>Payment Mode:</span>
+                </span>
+                <span className="font-semibold text-botanical-950">
+                  {paymentProvider === 'pp_razorpay_razorpay'
+                    ? 'Razorpay (Online)'
+                    : paymentProvider === 'pp_cod_cod'
+                    ? 'Cash on Delivery'
+                    : 'Sandbox Mode'}
+                </span>
+              </div>
+              {addressSaved && city && postalCode && (
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Delivering to:</span>
+                  </span>
+                  <span className="font-semibold text-botanical-950">
+                    {city}, {postalCode}
+                  </span>
+                </div>
+              )}
+            </div>
 
             {/* Calculations Breakdown */}
             <div className="space-y-2.5 text-sm border-t border-border pt-4">

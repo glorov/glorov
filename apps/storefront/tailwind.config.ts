@@ -10,9 +10,13 @@ const config: Config = {
   theme: {
     container: {
       center: true,
-      padding: '1.5rem',
+      padding: {
+        DEFAULT: '1rem',
+        sm: '1.5rem',
+        lg: '2rem',
+      },
       screens: {
-        '2xl': '1400px',
+        '2xl': '1360px',
       },
     },
     extend: {
@@ -80,6 +84,11 @@ const config: Config = {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      boxShadow: {
+        botanical: '0 4px 20px -2px rgba(37, 94, 58, 0.08)',
+        'botanical-lg': '0 10px 30px -4px rgba(37, 94, 58, 0.12)',
+        subtle: '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03)',
       },
     },
   },

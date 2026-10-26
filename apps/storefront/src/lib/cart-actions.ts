@@ -17,6 +17,8 @@ import {
 } from './cart'
 import { CART_COOKIE_NAME, CART_COOKIE_MAX_AGE } from './constants'
 import { indianAddressSchema, type IndianAddressInput } from '@glorov/types'
+import { getCustomerToken } from './auth-session'
+import { associateCartWithCustomer, getCurrentCustomer } from './customer'
 
 /**
  * Server-side helper to read the cart ID cookie
@@ -26,6 +28,7 @@ async function getCartIdFromCookie(): Promise<string | null> {
   const cookie = cookieStore.get(CART_COOKIE_NAME)
   return cookie?.value || null
 }
+
 
 /**
  * Server-side helper to store the cart ID cookie
@@ -44,13 +47,14 @@ async function setCartIdCookie(cartId: string): Promise<void> {
 /**
  * Server-side helper to clear the cart ID cookie
  */
-async function clearCartIdCookie(): Promise<void> {
+export async function clearCartIdCookie(): Promise<void> {
   const cookieStore = await cookies()
   cookieStore.delete(CART_COOKIE_NAME)
 }
 
 /**
  * Get the current active cart or create a new one.
+ * Enforces cart-to-customer ownership isolation to prevent cross-customer data leakage.
  */
 export async function getOrInitializeCartAction(): Promise<{
   success: boolean
@@ -59,10 +63,37 @@ export async function getOrInitializeCartAction(): Promise<{
 }> {
   try {
     const existingId = await getCartIdFromCookie()
+    const customerToken = await getCustomerToken()
+
     if (existingId) {
       const res = await getCart(existingId)
       if (res.success && res.data && !res.data.completed_at) {
-        return { success: true, cart: res.data }
+        // If cart has a customer_id, verify it matches the current visitor
+        if (res.data.customer_id) {
+          if (!customerToken) {
+            // Unauthenticated guest cannot inherit a registered customer's cart
+            await clearCartIdCookie()
+          } else {
+            const cust = await getCurrentCustomer(customerToken)
+            if (!cust.success || !cust.data || cust.data.id !== res.data.customer_id) {
+              // Cart belongs to a different customer account; clear and reinitialize
+              await clearCartIdCookie()
+            } else {
+              return { success: true, cart: res.data }
+            }
+          }
+        } else {
+          // Guest cart: if visitor is authenticated, associate guest cart to customer
+          if (customerToken) {
+            const cust = await getCurrentCustomer(customerToken)
+            if (cust.success && cust.data?.email) {
+              await associateCartWithCustomer(existingId, cust.data.email, customerToken)
+              const refreshed = await getCart(existingId)
+              return { success: true, cart: refreshed.data || res.data }
+            }
+          }
+          return { success: true, cart: res.data }
+        }
       }
     }
 
@@ -72,8 +103,16 @@ export async function getOrInitializeCartAction(): Promise<{
       return { success: false, error: createRes.error || 'Failed to create cart' }
     }
 
+    if (customerToken && createRes.data?.id) {
+      const cust = await getCurrentCustomer(customerToken)
+      if (cust.success && cust.data?.email) {
+        await associateCartWithCustomer(createRes.data.id, cust.data.email, customerToken)
+      }
+    }
+
     await setCartIdCookie(createRes.data.id)
     return { success: true, cart: createRes.data }
+
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Cart initialization failed'
     return { success: false, error: message }
@@ -258,8 +297,15 @@ export async function updateDeliveryAddressAction(input: {
       return { success: false, error: updateRes.error }
     }
 
+    // If customer is authenticated, attach cart to customer actor
+    const customerToken = await getCustomerToken()
+    if (customerToken) {
+      await associateCartWithCustomer(cartId, trimmedEmail, customerToken)
+    }
+
     const refreshed = await getCart(cartId)
     return { success: true, cart: refreshed.data }
+
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Error saving address'
     return { success: false, error: message }
@@ -284,7 +330,8 @@ export async function completeOrderAction(
       return { success: false, error: 'No active cart found to complete' }
     }
 
-    const completeRes = await completeCartCheckout(cartId, providerId)
+    const customerToken = await getCustomerToken()
+    const completeRes = await completeCartCheckout(cartId, providerId, customerToken)
     if (!completeRes.success || !completeRes.order) {
       return {
         success: false,

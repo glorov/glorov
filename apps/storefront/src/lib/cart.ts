@@ -207,9 +207,16 @@ export async function updateCartCustomerAndAddress(
  */
 export async function completeCartCheckout(
   cartId: string,
-  providerId: string = 'pp_system_default'
+  providerId: string = 'pp_system_default',
+  token?: string | null
 ): Promise<CompleteOrderResult> {
   try {
+    const customHeaders: Record<string, string> = {}
+    if (token) {
+      customHeaders['Authorization'] = `Bearer ${token}`
+    }
+    const headers = Object.keys(customHeaders).length > 0 ? customHeaders : undefined
+
     // 1. Retrieve latest cart state
     const cartRes = await getCart(cartId)
     if (!cartRes.success || !cartRes.data) {
@@ -219,7 +226,9 @@ export async function completeCartCheckout(
 
     // If cart is already completed, Medusa v2 complete() returns the order idempotently
     if (cart.completed_at) {
-      const completeRes = await medusaClient.store.cart.complete(cartId)
+      const completeRes = headers
+        ? await medusaClient.store.cart.complete(cartId, undefined, headers)
+        : await medusaClient.store.cart.complete(cartId)
       if (completeRes.type === 'order') {
         return {
           success: true,
@@ -242,12 +251,25 @@ export async function completeCartCheckout(
     }
 
     // 2. Initiate payment session
-    await medusaClient.store.payment.initiatePaymentSession(cart, {
-      provider_id: providerId,
-    })
+    if (headers) {
+      await medusaClient.store.payment.initiatePaymentSession(
+        cart,
+        {
+          provider_id: providerId,
+        },
+        undefined,
+        headers
+      )
+    } else {
+      await medusaClient.store.payment.initiatePaymentSession(cart, {
+        provider_id: providerId,
+      })
+    }
 
     // 3. Complete cart checkout
-    const completeRes = await medusaClient.store.cart.complete(cartId)
+    const completeRes = headers
+      ? await medusaClient.store.cart.complete(cartId, undefined, headers)
+      : await medusaClient.store.cart.complete(cartId)
 
     if (completeRes.type === 'order') {
       return {
@@ -271,15 +293,32 @@ export async function completeCartCheckout(
 
 /**
  * Retrieve placed order by ID for the confirmation page.
+ * Passes customer auth token if provided to authenticate ownership.
  */
 export async function getOrder(
-  orderId: string
+  orderId: string,
+  token?: string | null
 ): Promise<{ success: boolean; order?: StoreOrder; error?: string }> {
   try {
-    const res = await medusaClient.store.order.retrieve(orderId, {
-      fields:
-        '*items,*items.variant,*shipping_address,*shipping_methods,*summary,*payment_collections',
-    })
+    const customHeaders: Record<string, string> = {}
+    if (token) {
+      customHeaders['Authorization'] = `Bearer ${token}`
+    }
+    const headers = Object.keys(customHeaders).length > 0 ? customHeaders : undefined
+
+    const res = headers
+      ? await medusaClient.store.order.retrieve(
+          orderId,
+          {
+            fields:
+              '*items,*items.variant,*shipping_address,*shipping_methods,*summary,*payment_collections',
+          },
+          headers
+        )
+      : await medusaClient.store.order.retrieve(orderId, {
+          fields:
+            '*items,*items.variant,*shipping_address,*shipping_methods,*summary,*payment_collections',
+        })
     return { success: true, order: res.order }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to retrieve order'

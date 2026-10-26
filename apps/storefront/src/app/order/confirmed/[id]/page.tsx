@@ -12,6 +12,7 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import { getOrder } from '@/lib/cart'
+import { getCustomerToken } from '@/lib/auth-session'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatINR } from '@/lib/utils'
@@ -35,8 +36,9 @@ interface OrderConfirmedPageProps {
 
 export default async function OrderConfirmedPage({ params }: OrderConfirmedPageProps) {
   const { id } = await params
+  const customerToken = await getCustomerToken()
 
-  const { success, order, error } = await getOrder(id)
+  const { success, order, error } = await getOrder(id, customerToken)
 
   if (!success || !order) {
     return (

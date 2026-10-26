@@ -26,6 +26,9 @@ import type { StoreShippingOption } from '@/lib/cart'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatINR } from '@/lib/utils'
+import { getCurrentCustomerAction } from '@/lib/customer-actions'
+import type { StoreCustomer, StoreCustomerAddress } from '@/lib/customer'
+
 
 const INDIAN_STATES = [
   'Andhra Pradesh',
@@ -77,6 +80,7 @@ export default function CheckoutPage() {
   const [province, setProvince] = useState('Maharashtra')
   const [postalCode, setPostalCode] = useState('')
   const [phone, setPhone] = useState('')
+  const [customer, setCustomer] = useState<StoreCustomer | null>(null)
 
   // Shipping & flow states
   const [shippingOptions, setShippingOptions] = useState<StoreShippingOption[]>([])
@@ -86,6 +90,46 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [addressSaved, setAddressSaved] = useState<boolean>(false)
+
+  const applySavedAddress = (addr: StoreCustomerAddress) => {
+    setFirstName(addr.first_name || '')
+    setLastName(addr.last_name || '')
+    setAddress1(addr.address_1 || '')
+    setAddress2(addr.address_2 || '')
+    setCity(addr.city || '')
+    setProvince(addr.province || 'Maharashtra')
+    setPostalCode(addr.postal_code || '')
+    if (addr.phone) setPhone(addr.phone)
+    if (
+      cart?.shipping_address?.address_1 === addr.address_1 &&
+      cart?.shipping_address?.postal_code === addr.postal_code
+    ) {
+      setAddressSaved(true)
+    } else {
+      setAddressSaved(false)
+    }
+  }
+
+  // Load customer profile and saved addresses if authenticated
+  useEffect(() => {
+    async function loadCustomerProfile() {
+      const res = await getCurrentCustomerAction()
+      if (res.success && res.customer) {
+        setCustomer(res.customer)
+        if (!email && res.customer.email) {
+          setEmail(res.customer.email)
+        }
+        const defaultAddr =
+          res.customer.addresses.find((a) => a.is_default_shipping) || res.customer.addresses[0]
+        if (defaultAddr && !firstName && !address1) {
+          applySavedAddress(defaultAddr)
+        }
+      }
+    }
+    loadCustomerProfile()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
 
   // Populate from existing cart data if available
   useEffect(() => {
@@ -321,11 +365,82 @@ export default function CheckoutPage() {
               )}
             </div>
 
+            {customer ? (
+              <div className="mb-5 p-3 rounded-lg bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
+                <div className="text-xs">
+                  <span className="text-muted-foreground">Logged in as: </span>
+                  <span className="font-bold text-foreground">
+                    {customer.first_name} {customer.last_name}
+                  </span>
+                  <span className="text-muted-foreground ml-1">({customer.email})</span>
+                </div>
+                <Link
+                  href="/account"
+                  className="text-xs font-semibold text-botanical-700 hover:underline"
+                >
+                  My Account
+                </Link>
+              </div>
+            ) : (
+              <div className="mb-5 p-3 rounded-lg bg-muted/40 border border-border flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">
+                  Already have an account? Log in to use your saved addresses.
+                </span>
+                <Link
+                  href="/account/login?callbackUrl=/checkout"
+                  className="font-bold text-botanical-700 hover:underline shrink-0 ml-2"
+                >
+                  Sign In
+                </Link>
+              </div>
+            )}
+
+            {customer && customer.addresses.length > 0 && (
+              <div className="mb-5 space-y-2">
+                <label className="block text-xs font-bold text-botanical-900">
+                  Select from Saved Delivery Addresses
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {customer.addresses.map((saved) => {
+                    const isSelected =
+                      address1 === saved.address_1 && postalCode === saved.postal_code
+
+                    return (
+                      <button
+                        key={saved.id}
+                        type="button"
+                        onClick={() => applySavedAddress(saved)}
+                        className={`p-3 rounded-lg border text-left text-xs transition-all ${
+                          isSelected
+                            ? 'border-botanical-600 bg-botanical-50/50 ring-1 ring-botanical-600'
+                            : 'border-border bg-background hover:bg-muted/30'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between font-semibold text-foreground mb-1">
+                          <span>{saved.address_name || `${saved.first_name}'s Address`}</span>
+                          {saved.is_default_shipping && (
+                            <span className="text-[10px] text-botanical-700 bg-botanical-100 px-1.5 py-0.5 rounded font-medium">
+                              Default
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-muted-foreground truncate">{saved.address_1}</p>
+                        <p className="text-muted-foreground">
+                          {saved.city}, {saved.postal_code}
+                        </p>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSaveAddress} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-botanical-900 mb-1">
                   Email Address (for order tracking &amp; GST invoice) *
                 </label>
+
                 <input
                   type="email"
                   required

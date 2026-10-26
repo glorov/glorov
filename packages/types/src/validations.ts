@@ -87,3 +87,82 @@ export const seedVariantMetadataSchema = z.object({
 }).passthrough();
 
 export type SeedVariantMetadataInput = z.infer<typeof seedVariantMetadataSchema>;
+
+export const optionalIndianPhoneSchema = z
+  .string()
+  .trim()
+  .optional()
+  .refine(
+    (val) => !val || /^[6-9][0-9]{9}$/.test(val),
+    "Please enter a valid 10-digit Indian mobile number (starts with 6-9)"
+  )
+  .or(z.literal(""));
+
+/**
+ * Customer Authentication & Profile Schemas
+ */
+export const customerRegistrationSchema = z.object({
+  first_name: z.string().trim().min(1, "First name is required"),
+  last_name: z.string().trim().min(1, "Last name is required"),
+  email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  phone: optionalIndianPhoneSchema,
+});
+
+export type CustomerRegistrationInput = z.infer<typeof customerRegistrationSchema>;
+
+export const customerLoginSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export type CustomerLoginInput = z.infer<typeof customerLoginSchema>;
+
+export const customerProfileUpdateSchema = z.object({
+  first_name: z.string().trim().min(1, "First name is required"),
+  last_name: z.string().trim().min(1, "Last name is required"),
+  phone: optionalIndianPhoneSchema,
+  company_name: z.string().trim().optional().or(z.literal("")),
+});
+
+export type CustomerProfileUpdateInput = z.infer<typeof customerProfileUpdateSchema>;
+
+export const customerPasswordUpdateSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirm_password: z.string().min(8, "Confirm password must be at least 8 characters"),
+}).refine((data) => data.password === data.confirm_password, {
+  message: "Passwords do not match",
+  path: ["confirm_password"],
+});
+
+export type CustomerPasswordUpdateInput = z.infer<typeof customerPasswordUpdateSchema>;
+
+export const customerPasswordResetSchema = z.object({
+  token: z.string().trim().min(1, "Reset token is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirm_password: z.string().min(8, "Confirm password must be at least 8 characters"),
+}).refine((data) => data.password === data.confirm_password, {
+  message: "Passwords do not match",
+  path: ["confirm_password"],
+});
+
+export type CustomerPasswordResetInput = z.infer<typeof customerPasswordResetSchema>;
+
+export const customerAddressInputSchema = z.object({
+  address_name: z.string().trim().optional(),
+  first_name: z.string().trim().min(1, "First name is required"),
+  last_name: z.string().trim().min(1, "Last name is required"),
+  address_1: z.string().trim().min(5, "Flat/House No. and Street address are required"),
+  address_2: z.string().trim().optional(),
+  city: z.string().trim().min(2, "City is required"),
+  province: z.string().trim().min(2, "State/Province is required"),
+  postal_code: indianPincodeSchema,
+  phone: indianPhoneSchema,
+  country_code: z.literal("in").default("in"),
+  is_default_shipping: z.boolean().optional(),
+  is_default_billing: z.boolean().optional(),
+});
+
+export type CustomerAddressInput = z.infer<typeof customerAddressInputSchema>;
+
+

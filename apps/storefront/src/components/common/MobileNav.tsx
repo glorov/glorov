@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X, Sprout, Leaf, Flower2, Container, ShieldCheck } from 'lucide-react'
+import { Menu, X, Sprout, Leaf, Flower2, Container, ShieldCheck, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const NAV_ITEMS = [
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/categories/flowering', label: 'Flowering & Outdoor', icon: Flower2 },
   { href: '/categories/planters', label: 'Pots & Planters', icon: Container },
   { href: '/categories/plant-care', label: 'Organic Care & Mix', icon: ShieldCheck },
+  { href: '/account', label: 'My Account & Orders', icon: User },
 ]
 
 export function MobileNav() {

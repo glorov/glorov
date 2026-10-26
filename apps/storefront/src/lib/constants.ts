@@ -24,6 +24,18 @@ export const CART_COOKIE_NAME = 'glorov_cart_id'
 export const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
 
 /**
+ * Cookie key for storing the customer authentication JWT token.
+ * Secure, HTTP-only cookie to ensure private credentials remain out of client logs.
+ */
+export const CUSTOMER_COOKIE_NAME = 'glorov_customer_token'
+
+/**
+ * Customer session cookie lifetime: 30 days
+ */
+export const CUSTOMER_COOKIE_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
+
+
+/**
  * Indian Commerce Compliance & Thresholds
  */
 export const MIN_COD_ORDER_AMOUNT_INR = 299

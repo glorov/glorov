@@ -603,6 +603,29 @@ export default async function seedCatalog({ container }: ExecArgs) {
     }
   }
 
+  // Ensure all products are linked to default shipping profile
+  try {
+    const { data: profiles } = await query.graph({
+      entity: "shipping_profile",
+      fields: ["id", "type"],
+    });
+    const defaultProfile = profiles.find((p) => p.type === "default") || profiles[0];
+    if (defaultProfile) {
+      const { data: allProds } = await query.graph({
+        entity: "product",
+        fields: ["id"],
+      });
+      const prodLinks = allProds.map((p) => ({
+        [Modules.PRODUCT]: { product_id: p.id },
+        [Modules.FULFILLMENT]: { shipping_profile_id: defaultProfile.id },
+      }));
+      await link.create(prodLinks);
+      logger.info(`Linked ${prodLinks.length} products to default shipping profile (${defaultProfile.id})`);
+    }
+  } catch (e) {
+    logger.info(`Product shipping profile link skipped or already active: ${e}`);
+  }
+
   // Remove test-tomato if present
   const { data: testProds } = await query.graph({
     entity: "product",

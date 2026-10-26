@@ -191,7 +191,159 @@ export default async function seedIndiaRegion({ container }: ExecArgs) {
     logger.warn(`Stock location link to sales channel already active or skipped: ${e}`);
   }
 
-  // 6. Ensure Publishable API Key exists and is linked to the Sales Channel
+  // 6. Ensure Fulfillment Provider & Service Zones for India
+  const {
+    createLocationFulfillmentSetWorkflow,
+    createServiceZonesWorkflow,
+    createShippingOptionsWorkflow,
+  } = await import("@medusajs/medusa/core-flows");
+  const { ShippingOptionPriceType, RuleOperator } = await import("@medusajs/framework/utils");
+
+  try {
+    await link.create([
+      {
+        [Modules.STOCK_LOCATION]: { stock_location_id: puneLocationId },
+        [Modules.FULFILLMENT]: { fulfillment_provider_id: "manual_manual" },
+      },
+    ]);
+    logger.info("Linked Pune stock location to manual_manual fulfillment provider.");
+  } catch (e: unknown) {
+    logger.warn(`Stock location fulfillment provider link skipped or active: ${e}`);
+  }
+
+  const { data: existingFulfillmentSets } = await query.graph({
+    entity: "fulfillment_set",
+    fields: ["id", "name", "type", "service_zones.*", "service_zones.geo_zones.*"],
+  });
+
+  let puneFulfillmentSet = existingFulfillmentSets.find((fs) => fs.name.includes("Pune"));
+  if (!puneFulfillmentSet) {
+    logger.info("Creating fulfillment set for Pune location...");
+    await createLocationFulfillmentSetWorkflow(container).run({
+      input: {
+        location_id: puneLocationId,
+        fulfillment_set_data: {
+          name: "Pune Central Nursery Delivery",
+          type: "shipping",
+        },
+      },
+    });
+    const { data: updatedSets } = await query.graph({
+      entity: "fulfillment_set",
+      fields: ["id", "name", "type", "service_zones.*", "service_zones.geo_zones.*"],
+    });
+    puneFulfillmentSet = updatedSets.find((fs) => fs.name.includes("Pune"));
+  }
+
+  let indiaServiceZone: any = puneFulfillmentSet?.service_zones?.find(
+    (sz: any) => sz.name.includes("India") || sz.geo_zones?.some((gz: any) => gz.country_code === "in")
+  );
+
+  if (!indiaServiceZone && puneFulfillmentSet) {
+    logger.info("Creating India Domestic Zone...");
+    const { result } = await createServiceZonesWorkflow(container).run({
+      input: {
+        data: [
+          {
+            fulfillment_set_id: puneFulfillmentSet.id,
+            name: "India Domestic Delivery",
+            geo_zones: [
+              {
+                type: "country",
+                country_code: "in",
+              },
+            ],
+          },
+        ],
+      },
+    });
+    indiaServiceZone = result[0];
+  }
+
+  // 7. Ensure Default Shipping Profile & Shipping Options for India
+  const { data: profiles } = await query.graph({
+    entity: "shipping_profile",
+    fields: ["id", "name", "type"],
+  });
+  const defaultProfile = profiles.find((p) => p.type === "default") || profiles[0];
+
+  if (indiaServiceZone && defaultProfile) {
+    const { data: existingOptions } = await query.graph({
+      entity: "shipping_option",
+      fields: ["id", "name", "service_zone_id"],
+    });
+
+    const hasStandard = existingOptions.some((o) => o.name.includes("Standard Delivery"));
+    const hasExpress = existingOptions.some((o) => o.name.includes("Express Botanical Delivery"));
+
+    const optionsToCreate: any[] = [];
+    if (!hasStandard) {
+      optionsToCreate.push({
+        name: "Standard Delivery (India)",
+        service_zone_id: indiaServiceZone.id,
+        shipping_profile_id: defaultProfile.id,
+        provider_id: "manual_manual",
+        price_type: ShippingOptionPriceType.FLAT,
+        type: {
+          label: "Standard Delivery",
+          description: "Standard surface delivery across India (3-5 business days)",
+          code: "standard",
+        },
+        prices: [{ currency_code: "inr", amount: 4900 }],
+        rules: [
+          { operator: RuleOperator.IN, attribute: "is_return", value: ["false"] },
+          { operator: RuleOperator.IN, attribute: "enabled_in_store", value: ["true"] },
+        ],
+      });
+    }
+
+    if (!hasExpress) {
+      optionsToCreate.push({
+        name: "Express Botanical Delivery (Air)",
+        service_zone_id: indiaServiceZone.id,
+        shipping_profile_id: defaultProfile.id,
+        provider_id: "manual_manual",
+        price_type: ShippingOptionPriceType.FLAT,
+        type: {
+          label: "Express Botanical Delivery",
+          description: "Priority air transit for live plants & perishable seeds (1-2 business days)",
+          code: "express",
+        },
+        prices: [{ currency_code: "inr", amount: 9900 }],
+        rules: [
+          { operator: RuleOperator.IN, attribute: "is_return", value: ["false"] },
+          { operator: RuleOperator.IN, attribute: "enabled_in_store", value: ["true"] },
+        ],
+      });
+    }
+
+    if (optionsToCreate.length > 0) {
+      logger.info(`Creating ${optionsToCreate.length} Indian shipping options...`);
+      await createShippingOptionsWorkflow(container).run({
+        input: optionsToCreate,
+      });
+    }
+
+    // Link existing products to default shipping profile
+    const { data: allProds } = await query.graph({
+      entity: "product",
+      fields: ["id"],
+    });
+    if (allProds.length > 0) {
+      try {
+        const prodLinks = allProds.map((p) => ({
+          [Modules.PRODUCT]: { product_id: p.id },
+          [Modules.FULFILLMENT]: { shipping_profile_id: defaultProfile.id },
+        }));
+        await link.create(prodLinks);
+        logger.info(`Linked ${prodLinks.length} products to default shipping profile.`);
+      } catch (e: unknown) {
+        logger.info(`Product shipping profile link skipped or active: ${e}`);
+      }
+    }
+  }
+
+  // 8. Ensure Publishable API Key exists and is linked to the Sales Channel
   const { data: apiKeys } = await query.graph({
     entity: "api_key",
     fields: ["id", "token", "title", "type"],

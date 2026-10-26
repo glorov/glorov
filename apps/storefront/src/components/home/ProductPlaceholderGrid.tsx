@@ -6,8 +6,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatINR } from '@/lib/utils'
 
+import { AddToCartButton } from '@/components/cart/AddToCartButton'
+
 interface ProductPreviewItem {
   id: string
+  variantId?: string
   title: string
   botanicalName: string
   category: 'seeds' | 'plants' | 'planters' | 'care'
@@ -23,6 +26,7 @@ interface ProductPreviewItem {
 const FEATURED_PRODUCTS: ProductPreviewItem[] = [
   {
     id: 'prod-001',
+    variantId: 'variant_01M5TY5X6NG1JSFXP50NNKS3J8', // Tomato Seeds 20 Seeds
     title: 'Desi Pusa Ruby Tomato Seeds',
     botanicalName: 'Solanum lycopersicum',
     category: 'seeds',
@@ -36,11 +40,12 @@ const FEATURED_PRODUCTS: ProductPreviewItem[] = [
   },
   {
     id: 'prod-002',
+    variantId: 'variant_01M5TY5XJ5YBJ2G7K92KKH3S2E', // Snake plant 4-inch
     title: 'Golden Hahnii Sansevieria (Snake Plant)',
     botanicalName: 'Sansevieria trifasciata',
     category: 'plants',
     categoryLabel: 'Live Potted Plant',
-    pricePaise: 24900, // ₹249
+    pricePaise: 19900, // ₹199
     isPerishable: true,
     sunlight: 'Low to Indirect Light',
     germination: 'Air Purifying',
@@ -48,11 +53,12 @@ const FEATURED_PRODUCTS: ProductPreviewItem[] = [
   },
   {
     id: 'prod-003',
+    variantId: 'variant_01M5TY5XBZ34B05GGCQ2ZSDEES', // Marigold 50 Seeds
     title: 'African Marigold Giant Yellow Seeds',
     botanicalName: 'Tagetes erecta',
     category: 'seeds',
     categoryLabel: 'Flower Seeds',
-    pricePaise: 6900, // ₹69
+    pricePaise: 3900, // ₹39
     isPerishable: false,
     sunlight: 'Direct Sunlight',
     sowingSeason: 'Monsoon / Winter',
@@ -61,15 +67,16 @@ const FEATURED_PRODUCTS: ProductPreviewItem[] = [
   },
   {
     id: 'prod-004',
-    title: 'Zanzibar Gem (ZZ Plant)',
-    botanicalName: 'Zamioculcas zamiifolia',
-    category: 'plants',
-    categoryLabel: 'Live Potted Plant',
-    pricePaise: 38900, // ₹389
-    isPerishable: true,
-    sunlight: 'Low Light Tolerant',
-    germination: 'Ultra Resilient',
-    description: 'Glossy foliage plant surviving minimal watering schedules in air-conditioned apartments.',
+    variantId: 'variant_01M5TY5XFCFX45YG239PKMFPH6', // Krishna Tulsi 100 Seeds
+    title: 'Krishna Tulsi Holy Basil Seeds',
+    botanicalName: 'Ocimum tenuiflorum',
+    category: 'seeds',
+    categoryLabel: 'Pure Seed Packet',
+    pricePaise: 4500, // ₹45
+    isPerishable: false,
+    sunlight: 'Full Sun to Partial',
+    germination: 'High Germination',
+    description: 'Sacred purple-tinged medicinal basil with potent anti-microbial aroma and high germination.',
   },
 ]
 
@@ -194,11 +201,19 @@ export function ProductPlaceholderGrid() {
               </CardContent>
 
               <CardFooter className="p-4 pt-0">
-                <Button asChild variant="botanical" size="sm" className="w-full">
-                  <Link href={`/products/${product.id}`}>
-                    Select Variant / Size
-                  </Link>
-                </Button>
+                {product.variantId ? (
+                  <AddToCartButton
+                    variantId={product.variantId}
+                    label="Add to Botanical Cart"
+                    className="w-full"
+                  />
+                ) : (
+                  <Button asChild variant="botanical" size="sm" className="w-full">
+                    <Link href={`/products/${product.id}`}>
+                      Select Variant / Size
+                    </Link>
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}

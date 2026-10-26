@@ -33,6 +33,9 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
+import { CartProvider } from '@/context/CartContext'
+import { CartDrawer } from '@/components/cart/CartDrawer'
+
 export default function RootLayout({
   children,
 }: {
@@ -41,9 +44,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className="min-h-screen flex flex-col font-sans bg-background text-foreground antialiased selection:bg-botanical-200 selection:text-botanical-950">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <CartProvider>
+          <Header />
+          <CartDrawer />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   )

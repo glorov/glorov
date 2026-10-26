@@ -1,8 +1,9 @@
 import React from 'react'
 import Link from 'next/link'
-import { Leaf, Search, ShoppingBag, User } from 'lucide-react'
+import { Leaf, Search, User } from 'lucide-react'
 import { AnnouncementBar } from './AnnouncementBar'
 import { MobileNav } from './MobileNav'
+import { CartNavButton } from '@/components/cart/CartNavButton'
 import { Button } from '@/components/ui/button'
 
 const NAV_LINKS = [
@@ -76,20 +77,7 @@ export function Header() {
           </Button>
 
           {/* Cart Icon with Counter */}
-          <Button
-            asChild
-            variant="botanical"
-            size="sm"
-            className="relative gap-1.5 rounded-full px-3"
-          >
-            <Link href="/cart" aria-label="Shopping Cart">
-              <ShoppingBag className="h-4 w-4" />
-              <span className="hidden sm:inline text-xs font-semibold">Cart</span>
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-botanical-950">
-                0
-              </span>
-            </Link>
-          </Button>
+          <CartNavButton />
         </div>
       </div>
     </header>

@@ -11,7 +11,7 @@
     "dev": "medusa develop",
     "lint": "medusa lint",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "medusa db:migrate",
+    "db:migrate": "medusa db:migrate --skip-search --execute-safe-links",
     "db:create": "medusa db:create",
     "user": "medusa user",
     "test": "pnpm test:unit",

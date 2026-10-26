@@ -174,21 +174,21 @@ export default async function seedIndiaRegion({ container }: ExecArgs) {
     });
     puneLocationId = newLocation.id;
 
-    // Link location to sales channel
-    try {
-      await link.create({
-        [Modules.STOCK_LOCATION]: {
-          stock_location_id: puneLocationId,
-        },
-        [Modules.SALES_CHANNEL]: {
-          sales_channel_id: defaultSalesChannelId,
-        },
-      });
-    } catch (e: unknown) {
-      logger.warn(`Stock location link already exists or skipped: ${e}`);
-    }
   } else {
     puneLocationId = existingPune.id;
+  }
+
+  // Ensure stock location is linked to the sales channel
+  try {
+    const { linkSalesChannelsToStockLocationWorkflow } = await import("@medusajs/medusa/core-flows");
+    await linkSalesChannelsToStockLocationWorkflow(container).run({
+      input: {
+        id: puneLocationId,
+        add: [defaultSalesChannelId],
+      },
+    });
+  } catch (e: unknown) {
+    logger.warn(`Stock location link to sales channel already active or skipped: ${e}`);
   }
 
   // 6. Ensure Publishable API Key exists and is linked to the Sales Channel

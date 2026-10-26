@@ -2,14 +2,17 @@ import React from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ChevronRight, Sprout, Leaf } from 'lucide-react'
+import { ChevronRight, Sprout, Leaf, Tag } from 'lucide-react'
 import {
   getStoreCatalogProductByHandle,
   getStoreCatalogProducts,
+  getProductLowestPriceINR,
+  getProductStockSummary,
 } from '@/lib/catalog'
 import { ProductGallery } from '@/components/catalog/ProductGallery'
 import { VariantSelector } from '@/components/catalog/VariantSelector'
 import { BotanicalSpecs } from '@/components/catalog/BotanicalSpecs'
+import { ProductTrustAndPolicies } from '@/components/catalog/ProductTrustAndPolicies'
 import { ProductCard } from '@/components/catalog/ProductCard'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -37,12 +40,13 @@ export async function generateMetadata({
 
   const product = res.product
   const botanicalName = res.seedMetadata?.botanical_name
+  const commonName = res.seedMetadata?.common_name
 
   return {
     title: `${product.title} ${botanicalName ? `(${botanicalName})` : ''} | GLOROV Seeds & Plants`,
     description:
       product.description ||
-      `Buy ${product.title} online with protective botanical packaging dispatched from our Pune nursery hub across India.`,
+      `Buy authentic ${product.title}${commonName ? ` (${commonName})` : ''} online with protective botanical packaging dispatched from our Pune nursery hub across India.`,
     openGraph: {
       title: product.title,
       description: product.description || '',
@@ -64,6 +68,38 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const isPerishable = Boolean(seedMetadata?.is_perishable)
   const isSeed = !isPerishable && (!category?.handle || !category.handle.includes('plant'))
 
+  const lowestPrice = getProductLowestPriceINR(product)
+  const stockSummary = getProductStockSummary(product)
+  const defaultVariant = product.variants?.[0]
+
+  // JSON-LD Structured Data for Search Engine Optimization
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description || undefined,
+    image: product.thumbnail ? [product.thumbnail] : undefined,
+    sku: defaultVariant?.sku || undefined,
+    category: category?.name || undefined,
+    brand: {
+      '@type': 'Brand',
+      name: 'GLOROV',
+    },
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'INR',
+      price: lowestPrice.minPricePaise ? (lowestPrice.minPricePaise / 100).toFixed(2) : undefined,
+      availability: stockSummary.hasStock
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      itemCondition: 'https://schema.org/NewCondition',
+      seller: {
+        '@type': 'Organization',
+        name: 'GLOROV Botanicals',
+      },
+    },
+  }
+
   // Fetch related products from the same category or general catalog
   const relatedRes = await getStoreCatalogProducts({
     category_id: category ? [category.id] : undefined,
@@ -75,6 +111,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-12">
+      {/* Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Breadcrumb Navigation */}
       <nav
         aria-label="Breadcrumb"
@@ -117,7 +159,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
         {/* Right Column: Title, Botanical Metadata, Variant Selector, Add to Cart (6 cols) */}
         <div className="lg:col-span-6 space-y-6">
-          {/* Category & Perishable Badges */}
+          {/* Category, Perishable, and Fiscal Badges */}
           <div className="flex items-center gap-2 flex-wrap">
             <Badge
               variant={isSeed ? 'botanical' : 'earth'}
@@ -136,18 +178,33 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 Air Express Transit Required
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-xs font-medium text-emerald-800 bg-emerald-50 border-emerald-200 py-1 px-2.5">
+              <Badge
+                variant="outline"
+                className="text-xs font-medium text-emerald-800 bg-emerald-50 border-emerald-200 py-1 px-2.5"
+              >
                 Standard Pan-India Shipping
               </Badge>
             )}
+
+            <Badge
+              variant="outline"
+              className="text-xs font-medium text-muted-foreground border-border/80 bg-earth-50/70 py-1 px-2"
+            >
+              <Tag className="h-3 w-3 mr-1 text-botanical-700" aria-hidden="true" />
+              <span>{isSeed ? 'GST 0% Exempt (HSN 1209)' : 'GST 5% (Live Plant HSN 0602)'}</span>
+            </Badge>
           </div>
 
           {/* Botanical Taxonomy Subtitle & Title */}
-          <div className="space-y-1">
-            {seedMetadata?.botanical_name && (
-              <p className="text-sm font-serif italic text-muted-foreground">
-                {seedMetadata.botanical_name}
-                {seedMetadata.common_name ? ` • ${seedMetadata.common_name}` : ''}
+          <div className="space-y-1.5">
+            {(seedMetadata?.botanical_name || seedMetadata?.common_name) && (
+              <p className="text-xs sm:text-sm font-serif italic text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                {seedMetadata.botanical_name && (
+                  <span className="font-semibold text-botanical-900">{seedMetadata.botanical_name}</span>
+                )}
+                {seedMetadata.botanical_name && seedMetadata.common_name && <span>•</span>}
+                {seedMetadata.common_name && <span>{seedMetadata.common_name}</span>}
+                {seedMetadata.variety && <span>({seedMetadata.variety})</span>}
               </p>
             )}
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-botanical-950 tracking-tight leading-tight">
@@ -157,12 +214,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
           {/* Description */}
           {product.description && (
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
               {product.description}
             </p>
           )}
 
-          {/* Interactive Variant Selection & Cart Integration */}
+          {/* Interactive Variant Selection, Pricing & Cart Integration */}
           <VariantSelector product={product} />
         </div>
       </div>
@@ -170,6 +227,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       {/* Botanical Specifications & Cultivation Guidelines Section */}
       <div className="pt-8 border-t border-border">
         <BotanicalSpecs metadata={seedMetadata} />
+      </div>
+
+      {/* Customer Information, Logistics & Store Policies Section */}
+      <div className="pt-8 border-t border-border">
+        <ProductTrustAndPolicies
+          isPerishable={isPerishable}
+          categoryName={category?.name || (isSeed ? 'Seeds' : 'Plants')}
+        />
       </div>
 
       {/* Related Products Carousel / Grid */}

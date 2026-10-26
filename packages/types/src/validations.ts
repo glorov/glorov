@@ -70,6 +70,7 @@ export const seedMetadataSchema = z.object({
   watering: z.enum(["daily", "alternate_days", "weekly", "dry"]).nullish(),
   season: z.enum(["kharif", "rabi", "zaid", "all_season"]).nullish(),
   difficulty: z.enum(["beginner", "intermediate", "expert"]).nullish(),
+  days_to_harvest: z.string().trim().min(1).nullish(),
   planting_instructions: z.string().trim().min(1).nullish(),
   packaging_notes: z.string().trim().min(1).nullish(),
   is_perishable: z.boolean().default(false),

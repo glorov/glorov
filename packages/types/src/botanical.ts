@@ -21,6 +21,7 @@ export interface SeedMetadata {
   watering?: PlantWatering
   season?: SowingSeason
   difficulty?: PlantDifficulty
+  days_to_harvest?: string
   planting_instructions?: string
   packaging_notes?: string
   is_perishable?: boolean
@@ -140,6 +141,12 @@ export function parseSeedMetadata(rawMetadata: unknown): SeedMetadata {
     watering: typeof meta.watering === 'string' ? (meta.watering as PlantWatering) : undefined,
     season: typeof meta.season === 'string' ? (meta.season as SowingSeason) : undefined,
     difficulty: typeof meta.difficulty === 'string' ? (meta.difficulty as PlantDifficulty) : undefined,
+    days_to_harvest:
+      typeof meta.days_to_harvest === 'string' && meta.days_to_harvest.trim()
+        ? meta.days_to_harvest.trim()
+        : typeof meta.estimated_days_to_harvest === 'string' && meta.estimated_days_to_harvest.trim()
+        ? meta.estimated_days_to_harvest.trim()
+        : undefined,
     planting_instructions:
       typeof meta.planting_instructions === 'string' && meta.planting_instructions.trim() ? meta.planting_instructions.trim() : undefined,
     packaging_notes: typeof meta.packaging_notes === 'string' && meta.packaging_notes.trim() ? meta.packaging_notes.trim() : undefined,

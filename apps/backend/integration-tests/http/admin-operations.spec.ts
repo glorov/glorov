@@ -441,7 +441,7 @@ describe("Medusa v2 Admin Operations and Order Management Integration Tests", ()
     });
 
     it("step 4: store owner searches orders by display ID or customer email natively", async () => {
-      const searchRes = await fetch(`${BACKEND_URL}/admin/orders?q=ops.review@glorov.in`, {
+      const searchRes = await fetch(`${BACKEND_URL}/admin/orders?q=ops.review@glorov.in&limit=50&order=-created_at`, {
         headers: adminHeaders,
       });
       expect(searchRes.status).toBe(200);

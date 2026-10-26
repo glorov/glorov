@@ -23,4 +23,34 @@ export default defineConfig({
         : {}),
     },
   },
+  modules: [
+    {
+      resolve: "@medusajs/medusa/fulfillment",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/medusa/fulfillment-manual",
+            id: "manual",
+          },
+          {
+            resolve: "./src/modules/fulfillment-shiprocket",
+            id: "shiprocket",
+            options: {
+              email: process.env.SHIPROCKET_EMAIL,
+              password: process.env.SHIPROCKET_PASSWORD,
+              webhook_token: process.env.SHIPROCKET_WEBHOOK_TOKEN,
+              pickup_pincode: process.env.SHIPROCKET_PICKUP_PINCODE || "411001",
+              pickup_location_name:
+                process.env.SHIPROCKET_PICKUP_LOCATION || "Pune Central Nursery Hub",
+              mock_mode:
+                process.env.SHIPROCKET_MOCK_MODE === "true" ||
+                !process.env.SHIPROCKET_EMAIL ||
+                process.env.NODE_ENV === "test",
+            },
+          },
+        ],
+      },
+    },
+  ],
 })
+

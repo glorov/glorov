@@ -205,8 +205,12 @@ export default async function seedIndiaRegion({ container }: ExecArgs) {
         [Modules.STOCK_LOCATION]: { stock_location_id: puneLocationId },
         [Modules.FULFILLMENT]: { fulfillment_provider_id: "manual_manual" },
       },
+      {
+        [Modules.STOCK_LOCATION]: { stock_location_id: puneLocationId },
+        [Modules.FULFILLMENT]: { fulfillment_provider_id: "shiprocket_shiprocket" },
+      },
     ]);
-    logger.info("Linked Pune stock location to manual_manual fulfillment provider.");
+    logger.info("Linked Pune stock location to manual_manual & shiprocket_shiprocket fulfillment providers.");
   } catch (e: unknown) {
     logger.warn(`Stock location fulfillment provider link skipped or active: ${e}`);
   }
@@ -273,8 +277,10 @@ export default async function seedIndiaRegion({ container }: ExecArgs) {
       fields: ["id", "name", "service_zone_id"],
     });
 
-    const hasStandard = existingOptions.some((o) => o.name.includes("Standard Delivery"));
-    const hasExpress = existingOptions.some((o) => o.name.includes("Express Botanical Delivery"));
+    const hasStandard = existingOptions.some((o) => o.name === "Standard Delivery (India)");
+    const hasExpress = existingOptions.some((o) => o.name === "Express Botanical Delivery (Air)");
+    const hasSrStandard = existingOptions.some((o) => o.name.includes("Shiprocket Standard"));
+    const hasSrExpress = existingOptions.some((o) => o.name.includes("Shiprocket Express"));
 
     const optionsToCreate: any[] = [];
     if (!hasStandard) {
@@ -308,6 +314,48 @@ export default async function seedIndiaRegion({ container }: ExecArgs) {
           label: "Express Botanical Delivery",
           description: "Priority air transit for live plants & perishable seeds (1-2 business days)",
           code: "express",
+        },
+        prices: [{ currency_code: "inr", amount: 9900 }],
+        rules: [
+          { operator: RuleOperator.IN, attribute: "is_return", value: ["false"] },
+          { operator: RuleOperator.IN, attribute: "enabled_in_store", value: ["true"] },
+        ],
+      });
+    }
+
+    if (!hasSrStandard) {
+      optionsToCreate.push({
+        name: "Shiprocket Standard Delivery (Surface)",
+        service_zone_id: indiaServiceZone.id,
+        shipping_profile_id: defaultProfile.id,
+        provider_id: "shiprocket_shiprocket",
+        price_type: ShippingOptionPriceType.FLAT,
+        data: { option_code: "shiprocket-standard" },
+        type: {
+          label: "Shiprocket Standard Surface",
+          description: "Eco-friendly surface delivery via Shiprocket network across India",
+          code: "shiprocket-standard",
+        },
+        prices: [{ currency_code: "inr", amount: 4900 }],
+        rules: [
+          { operator: RuleOperator.IN, attribute: "is_return", value: ["false"] },
+          { operator: RuleOperator.IN, attribute: "enabled_in_store", value: ["true"] },
+        ],
+      });
+    }
+
+    if (!hasSrExpress) {
+      optionsToCreate.push({
+        name: "Shiprocket Express Botanical Delivery (Air)",
+        service_zone_id: indiaServiceZone.id,
+        shipping_profile_id: defaultProfile.id,
+        provider_id: "shiprocket_shiprocket",
+        price_type: ShippingOptionPriceType.FLAT,
+        data: { option_code: "shiprocket-express" },
+        type: {
+          label: "Shiprocket Express Air",
+          description: "Priority air transit with moisture-shield packaging for live plants",
+          code: "shiprocket-express",
         },
         prices: [{ currency_code: "inr", amount: 9900 }],
         rules: [

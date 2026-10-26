@@ -345,6 +345,16 @@ classDiagram
    - Built using Medusa v2 Data Modeling Language (DML) via `model.define(...)`.
    - Stores specific botanical data: `botanical_name`, `sunlight_requirement` (Full Sun, Partial Shade, Low Light), `watering_schedule` (Daily, Alternate Days, Weekly), `difficulty_level` (Beginner, Intermediate, Expert), `sowing_season` (Kharif, Rabi, Zaid, All-Year), and `germination_days`.
    - Linked to Medusa's core Product entity via Medusa Module Links (`defineLink`).
+5. **Customer Notification & Email Provider (`modules/notification-email`)**:
+   - Extends `AbstractNotificationProviderService` from `@medusajs/framework/utils`.
+   - Dual-mode delivery engine: standard SMTP via `nodemailer` for production, and in-memory `MockEmailTransport` for deterministic, zero-network automated testing and staging.
+   - Eight transactional botanical email templates with plain-text alternatives: `order-placed` (order confirmation with itemized breakdown and INR pricing), `payment-captured` (payment confirmation with transaction reference), `payment-failed` (non-accusatory failure alert with retry link), `order-canceled` (cancellation with refund schedule), `refund-processed` (accurate refund amount with banking clearance timeline), `shipment-created` (courier partner, AWB, safe tracking link, live plant transit acclimation guide), `tracking-updated` (active courier tracking link and botanical delivery advisory), and `delivery-completed` (unboxing steps and plant acclimation care).
+   - Event-driven subscribers in `src/subscribers/` listening to `order.placed`, `payment.captured`, `payment.failed`, `order.canceled`, `payment.refunded`, `shipment.created`, `tracking.updated`, and `delivery.created`.
+   - Deterministic idempotency key tracking (`notif:${event}:${id}`) ensuring deduplication across repeated webhooks or re-runs without timestamp drift.
+   - Non-blocking failure isolation ensuring transient email provider errors never abort or block core checkout, payment capture, or fulfillment workflows.
+   - Respect for Medusa workflow `no_notification` flags to support silent administrative operations.
+   - Privacy-preserving recipient validation (RFC 5322 regex, anti-CRLF injection) and log masking (`maskEmail`).
+
 
 ### 6.3 Backend Configuration Pattern (`medusa-config.ts`)
 ```typescript

@@ -170,6 +170,23 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       logger.warn(
         `Razorpay payment failed for order ${orderId || razorpayOrderId}: ${payment?.error_description || 'Unknown reason'}`
       )
+
+      try {
+        const eventBus = req.scope.resolve(Modules.EVENT_BUS)
+        await eventBus.emit({
+          name: 'payment.failed',
+          data: {
+            order_id: targetOrder?.id || orderId || undefined,
+            customer_email: targetOrder?.email || payment?.email,
+            amount: amount,
+            error_code: payment?.error_code,
+            error_description: payment?.error_description,
+          },
+        })
+      } catch (emitErr: any) {
+        logger.warn(`Could not emit payment.failed event: ${emitErr.message}`)
+      }
+
       return res.status(200).json({
         received: true,
         action_taken: 'payment_failure_recorded',

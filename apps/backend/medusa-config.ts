@@ -118,6 +118,34 @@ export default defineConfig({
         ],
       },
     },
+    {
+      resolve: "@medusajs/medusa/notification",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/notification-email",
+            id: "email-notification",
+            options: {
+              channels: ["email"],
+              from: process.env.NOTIFICATION_FROM_EMAIL || "orders@glorov.in",
+              from_name: process.env.NOTIFICATION_FROM_NAME || "GLOROV Botanical Garden",
+              reply_to: process.env.NOTIFICATION_REPLY_TO || "care@glorov.in",
+              smtp: {
+                host: process.env.SMTP_HOST,
+                port: Number(process.env.SMTP_PORT) || 587,
+                secure: process.env.SMTP_SECURE === "true",
+                user: process.env.SMTP_USER,
+                password: process.env.SMTP_PASSWORD,
+              },
+              mock_mode:
+                process.env.NOTIFICATION_MOCK_MODE === "true" ||
+                process.env.NODE_ENV === "test" ||
+                !process.env.SMTP_HOST,
+            },
+          },
+        ],
+      },
+    },
   ],
 })
 

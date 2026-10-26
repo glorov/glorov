@@ -59,9 +59,11 @@ BACKEND UNIT TESTS (Jest + @swc/jest)
   src/__tests__/cod-provider.unit.spec.ts                 6    Unit          Cash on Delivery authorization lifecycle
   src/__tests__/health.unit.spec.ts                       2    Unit          Healthcheck route responsiveness
   src/__tests__/csv-import.unit.spec.ts                  12    Unit          CSV parser, delimiter handling, schema
-  src/__tests__/catalog-and-variants.unit.spec.ts        15    Unit          Seed attributes, germination specs
+  src/__tests__/notification-templates.unit.spec.ts      18    Unit          8 email templates, BigNumber INR format, missing data
+  src/__tests__/notification-provider.unit.spec.ts       12    Unit          RFC 5322 validation, privacy mask, retry, delivery attempt audit
+  src/__tests__/notification-subscribers.unit.spec.ts    15    Unit          8 subscribers, deterministic idempotency, partial refunds, no_notif
   --------------------------------------------------------------------------------------
-  Backend Unit Subtotal                                 116    100% PASS
+  Backend Unit Subtotal                                 170    100% PASS
 
 BACKEND HTTP INTEGRATION & REGRESSIONS (Jest against Medusa v2 Engine)
   cart-checkout-order.spec.ts                             9    HTTP Int      Cart lifecycle, line items, order place
@@ -74,11 +76,12 @@ BACKEND HTTP INTEGRATION & REGRESSIONS (Jest against Medusa v2 Engine)
   product-csv-import.spec.ts                             11    HTTP Int      Preview & validation, 5MB ceiling
   security-audit.spec.ts                                 20    HTTP Int      401 admin access, timing attacks, rate limits
   --------------------------------------------------------------------------------------
-  Backend Integration Subtotal                          128    100% PASS
+  Backend Integration Subtotal                          140    100% PASS
 ========================================================================================
-TOTAL MONOREPO AUTOMATED TEST COVERAGE                  372    100% PASS
+TOTAL MONOREPO AUTOMATED TEST COVERAGE                  514    100% PASS
 ========================================================================================
 ```
+
 
 ---
 

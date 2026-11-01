@@ -70,6 +70,10 @@ export function validateProductionConfig(env: NodeJS.ProcessEnv = process.env): 
 validateProductionConfig()
 
 export default defineConfig({
+  admin: {
+    backendUrl: process.env.MEDUSA_BACKEND_URL || "http://20.244.48.139/medusa",
+    disable: false,
+  },
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: process.env.REDIS_URL,

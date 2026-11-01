@@ -79,7 +79,7 @@
   margin-bottom: 0.5rem;
 }
 
-/* Top-Left Floating Promotional / Material Badge */
+/* Top-Left Floating Botanical Tag Badge (Capsule style matching user's reference) */
 .badgeContainer {
   position: absolute;
   top: 10px;
@@ -88,75 +88,62 @@
   align-items: center;
   pointer-events: none;
   z-index: 5;
-  gap: 0.5rem;
 }
 
-.categoryBadge {
+.tagBadge {
   font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif);
   font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  padding: 3.5px 9px;
-  border-radius: var(--radius-pill, 9999px);
-  background-color: var(--ugaoo-yellow-badge, #ffd51f);
-  color: var(--ugaoo-text-dark, #042018);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  text-transform: capitalize;
-}
-
-.cutBadge {
-  font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif);
-  font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   padding: 4px 10px;
   border-radius: var(--radius-pill, 9999px);
-  background-color: var(--ugaoo-maroon, #93113a);
-  color: #ffffff;
-  display: flex;
+  background-color: var(--top-tag-dark-blue, #0c2340);
+  color: var(--top-tag-text-white, #ffffff);
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  box-shadow: 0 2px 6px rgba(147, 17, 58, 0.25);
-  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 2px 8px rgba(12, 35, 64, 0.3);
+  line-height: 1.2;
 }
 
-.badgeIcon {
-  color: #ffd029;
+.tagIcon {
+  color: #ffd51f; /* Golden-amber lightning bolt */
+  flex-shrink: 0;
 }
 
-/* Floating Frosted Rating Badge with Transparency & High Contrast (Bottom-Left) */
+/* Floating Frosted Glassy Rating Badge with High Contrast & Blur (Bottom-Left) */
 .ratingBadge {
   position: absolute;
   bottom: 10px;
   left: 10px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 6px;
-  padding: 3.5px 8px;
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 4px 9px;
   display: inline-flex;
   align-items: center;
-  gap: 4.5px;
+  gap: 5px;
   z-index: 5;
   pointer-events: none;
-  transition: background-color var(--transition-fast, 150ms ease), border-color var(--transition-fast, 150ms ease);
+  transition: all var(--transition-fast, 150ms ease);
 }
 
 .card:hover .ratingBadge {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16), inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
 .ratingScore {
   font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif);
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 800;
-  color: #042018; /* Deep botanical forest dark for maximum contrast */
+  color: #111827; /* Rich black-charcoal */
   line-height: 1;
 }
 
@@ -164,17 +151,19 @@
   color: #008c4b; /* Vibrant emerald green star */
   font-size: 11px;
   line-height: 1;
+  display: inline-flex;
 }
 
 .ratingDivider {
-  color: rgba(4, 32, 24, 0.3);
+  color: rgba(0, 0, 0, 0.22);
   font-size: 11px;
   line-height: 1;
+  font-weight: 400;
 }
 
 .ratingCount {
   font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif);
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   color: #374151; /* High-contrast dark charcoal */
   line-height: 1;
@@ -347,28 +336,34 @@
   color: var(--ugaoo-sale-red, #d93025);
 }
 
-/* Circular Quick Add Bag Button */
-.bagButton {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  border-radius: 50%;
-  background-color: var(--ugaoo-green, #0a4c36);
-  color: #ffffff;
-  border: none;
-  display: flex;
+/* Add To Cart Pill Button (Matching Reference Image) */
+.addToCartBtn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill, 9999px);
+  background-color: var(--ugaoo-green-dark, #042018);
+  color: #ffffff;
+  font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
   cursor: pointer;
-  transition: transform 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
-  box-shadow: 0 3px 8px rgba(10, 76, 54, 0.25);
-  flex-shrink: 0;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(4, 32, 24, 0.22);
+  transition: all var(--transition-fast, 150ms ease);
 }
 
-.bagButton:hover {
-  background-color: var(--ugaoo-green-accent, #008c4b);
-  transform: scale(1.06);
-  box-shadow: 0 4px 12px rgba(10, 76, 54, 0.35);
+.addToCartBtn:hover {
+  background-color: var(--ugaoo-green, #0a4c36);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(4, 32, 24, 0.32);
+}
+
+.addToCartBtn:active {
+  transform: translateY(0);
 }
 
 .bagSpinner {
@@ -380,9 +375,10 @@
   font-weight: 700;
   color: #78716c;
   background-color: #f5f5f4;
-  padding: 6px 10px;
+  padding: 7px 14px;
   border-radius: 9999px;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .srOnly {
@@ -421,9 +417,9 @@
   .currentPrice {
     font-size: 15px;
   }
-  .bagButton {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
+  .addToCartBtn {
+    padding: 6px 12px;
+    font-size: 11px;
+    gap: 4px;
   }
 }

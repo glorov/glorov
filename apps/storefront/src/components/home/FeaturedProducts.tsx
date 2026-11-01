@@ -4,7 +4,7 @@ import { FeaturedProductsClient } from './FeaturedProductsClient'
 
 export async function FeaturedProducts() {
   const response = await getStoreCatalogProducts({
-    limit: 24,
+    limit: 60,
     fields: STORE_CATALOG_LISTING_FIELDS,
   })
   const products = response.success ? response.products : []

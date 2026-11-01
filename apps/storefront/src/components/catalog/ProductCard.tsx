@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Sprout, Leaf, ShoppingBag, Check, Loader2, Zap, ShieldCheck } from 'lucide-react'
+import { Sprout, Leaf, Check, Loader2, Zap, ShieldCheck } from 'lucide-react'
 import type { StoreCatalogProduct } from '@glorov/types'
 import {
   getProductLowestPriceINR,
@@ -16,6 +16,149 @@ import styles from './ProductCard.module.css'
 interface ProductCardProps {
   product: StoreCatalogProduct
   priority?: boolean
+}
+
+/**
+ * Derives an authentic, descriptive botanical badge matching the reference design.
+ * e.g., 'Culinary Herb', 'Desi Vegetable', 'Air Purifier', 'Festive Bloom'.
+ */
+export function getProductDisplayTag(product: StoreCatalogProduct): string {
+  const metadata = (product.metadata || {}) as Record<string, unknown>
+  const handle = (product.handle || '').toLowerCase()
+  const title = (product.title || '').toLowerCase()
+  const categoryHandle = (product.categories?.[0]?.handle || '').toLowerCase()
+  const subCategory = typeof metadata.subCategory === 'string' ? metadata.subCategory.toLowerCase() : ''
+  const tags = Array.isArray(metadata.tags)
+    ? (metadata.tags as string[]).map((t) => String(t).toLowerCase())
+    : []
+
+  // Check explicit promotional badge if meaningful
+  const rawBadges = Array.isArray(metadata.badges)
+    ? (metadata.badges as unknown[]).map(String)
+    : typeof metadata.badge === 'string'
+    ? [metadata.badge]
+    : typeof metadata.tag === 'string'
+    ? [metadata.tag]
+    : []
+  if (rawBadges.length > 0 && rawBadges[0].trim()) {
+    const custom = rawBadges[0].trim()
+    const lower = custom.toLowerCase()
+    if (!['retail-store', 'top-200-sku', 'flash', 'buy3', 'b2g1', 'score:100'].includes(lower)) {
+      return custom
+    }
+  }
+
+  // Culinary / Herb varieties (e.g. Arugula, Basil, Mint, Coriander, Thyme, etc.)
+  if (
+    tags.includes('herb-seeds') ||
+    tags.includes('herb') ||
+    tags.includes('culinary') ||
+    tags.includes('aroma') ||
+    handle.includes('arugula') ||
+    handle.includes('basil') ||
+    handle.includes('tulsi') ||
+    handle.includes('coriander') ||
+    handle.includes('mint') ||
+    handle.includes('oregano') ||
+    handle.includes('thyme') ||
+    handle.includes('rosemary') ||
+    handle.includes('methi') ||
+    handle.includes('palak') ||
+    handle.includes('spinach') ||
+    title.includes('arugula') ||
+    title.includes('basil') ||
+    title.includes('coriander') ||
+    title.includes('tulsi') ||
+    title.includes('herb') ||
+    title.includes('mint')
+  ) {
+    return 'Culinary Herb'
+  }
+
+  // Air Purifying Foliage
+  if (
+    tags.includes('air-purifying') ||
+    handle.includes('snake-plant') ||
+    handle.includes('peace-lily') ||
+    handle.includes('zz-plant') ||
+    handle.includes('spider-plant') ||
+    handle.includes('areca') ||
+    title.includes('peace lily') ||
+    title.includes('snake plant') ||
+    title.includes('areca palm') ||
+    title.includes('spider plant') ||
+    title.includes('zz plant')
+  ) {
+    return 'Air Purifier'
+  }
+
+  // Flowering Blooms
+  if (
+    tags.includes('flowering-plants') ||
+    categoryHandle.includes('flower') ||
+    subCategory.includes('flower') ||
+    handle.includes('flower') ||
+    handle.includes('marigold') ||
+    handle.includes('zinnia') ||
+    handle.includes('cosmos') ||
+    handle.includes('aster') ||
+    handle.includes('petunia') ||
+    handle.includes('sunflower') ||
+    handle.includes('morning-glory') ||
+    handle.includes('dahlia') ||
+    handle.includes('anthurium') ||
+    title.includes('marigold') ||
+    title.includes('flower') ||
+    title.includes('petunia') ||
+    title.includes('dahlia') ||
+    title.includes('anthurium')
+  ) {
+    return 'Festive Bloom'
+  }
+
+  // Desi Vegetables
+  if (
+    tags.includes('vegetable-seeds') ||
+    categoryHandle.includes('vegetable') ||
+    subCategory.includes('vegetable') ||
+    handle.includes('tomato') ||
+    handle.includes('chilli') ||
+    handle.includes('brinjal') ||
+    handle.includes('bhindi') ||
+    handle.includes('capsicum') ||
+    handle.includes('cucumber') ||
+    handle.includes('carrot') ||
+    handle.includes('radish') ||
+    handle.includes('beetroot') ||
+    title.includes('tomato') ||
+    title.includes('chilli') ||
+    title.includes('brinjal') ||
+    title.includes('vegetable')
+  ) {
+    return 'Desi Vegetable'
+  }
+
+  // Vastu / Good Luck
+  if (
+    tags.includes('vastu-friendly') ||
+    tags.includes('lucky-feng') ||
+    handle.includes('jade') ||
+    handle.includes('money-plant') ||
+    title.includes('jade') ||
+    title.includes('money plant')
+  ) {
+    return 'Vastu & Luck'
+  }
+
+  // Low Maintenance
+  if (tags.includes('low-maintenance') || tags.includes('easy-care') || tags.includes('long-living')) {
+    return 'Easy Care'
+  }
+
+  // Fallback
+  const isPerishable = Boolean(metadata.is_perishable)
+  const isSeed = categoryHandle.includes('seed') || (!isPerishable && !categoryHandle.includes('plant'))
+  return isSeed ? 'Heirloom Seed' : 'Indoor Plant'
 }
 
 export function ProductCard({ product, priority = false }: ProductCardProps) {
@@ -71,18 +214,8 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       ? Math.round(unitPriceINR * 1.55)
       : 0)
 
-  // Promotional tag or material badge (e.g. "NATURAL CLAY", "BESTSELLER", "10% OFF")
-  const rawBadges = Array.isArray(metadata.badges)
-    ? (metadata.badges as unknown[]).map(String)
-    : typeof metadata.badge === 'string'
-    ? [metadata.badge]
-    : typeof metadata.tag === 'string'
-    ? [metadata.tag]
-    : []
-  const customTag =
-    rawBadges.length > 0 && typeof rawBadges[0] === 'string' && rawBadges[0].trim().length > 0
-      ? rawBadges[0].trim()
-      : undefined
+  // Smart botanical badge text (e.g. "Culinary Herb")
+  const displayTag = getProductDisplayTag(product)
 
   const handleQuickAction = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -148,26 +281,15 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           )}
         </Link>
 
-        {/* Top-Left Floating Badge */}
+        {/* Top-Left Floating Tag Badge (Capsule style matching theme) */}
         <div className={styles.badgeContainer}>
-          {customTag ? (
-            <span className={styles.cutBadge}>
-              <Zap size={11} className={styles.badgeIcon} aria-hidden="true" />
-              <span>{customTag}</span>
-            </span>
-          ) : (
-            <span className={styles.categoryBadge}>
-              {isSeed ? (
-                <Sprout size={11} style={{ flexShrink: 0 }} aria-hidden="true" />
-              ) : (
-                <Leaf size={11} style={{ flexShrink: 0 }} aria-hidden="true" />
-              )}
-              <span>{isSeed ? 'Seed Variety' : 'Live Botanical'}</span>
-            </span>
-          )}
+          <span className={styles.tagBadge}>
+            <Zap size={11} className={styles.tagIcon} aria-hidden="true" />
+            <span>{displayTag}</span>
+          </span>
         </div>
 
-        {/* Floating Transparent High-Contrast Rating Badge (Bottom-Left) */}
+        {/* Floating Glassy Frosted Rating Badge (Bottom-Left) */}
         <div
           className={styles.ratingBadge}
           aria-label={`Rating ${ratingScore} out of 5 stars from ${reviewCount} reviews`}
@@ -216,7 +338,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           </div>
         </div>
 
-        {/* 3. Bottom Row: Price Stack + Circular Dark Green Bag Quick-Add Button */}
+        {/* 3. Bottom Row: Price Stack + Add To Cart Pill Button */}
         <div className={styles.bottomRow}>
           <div className={styles.priceWrap}>
             <div className={styles.priceStack}>
@@ -237,24 +359,32 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             </div>
           </div>
 
-          {/* Circular Quick Add / Select Options Bag Button */}
+          {/* Add To Cart Pill Button */}
           {stockSummary.hasStock ? (
             <button
               type="button"
               onClick={handleQuickAction}
               disabled={isAdding}
-              className={styles.bagButton}
-              aria-label={`Select Options for ${product.title}`}
+              className={styles.addToCartBtn}
+              aria-label={variantCount > 1 ? `Select Options for ${product.title}` : `Add ${product.title} to Cart`}
               title={variantCount > 1 ? 'Select Options' : 'Add to Cart'}
             >
               {isAdding ? (
-                <Loader2 size={16} className={styles.bagSpinner} />
+                <>
+                  <Loader2 size={13} className={styles.bagSpinner} aria-hidden="true" />
+                  <span>Adding...</span>
+                </>
               ) : isAdded ? (
-                <Check size={16} />
+                <>
+                  <Check size={13} aria-hidden="true" />
+                  <span>Added!</span>
+                </>
               ) : (
-                <ShoppingBag size={18} aria-hidden="true" />
+                <>
+                  <span>{variantCount > 1 ? 'Select Options' : 'Add To Cart'}</span>
+                  <span className={styles.srOnly}>Select Options</span>
+                </>
               )}
-              <span className={styles.srOnly}>Select Options</span>
             </button>
           ) : (
             <Link

@@ -89,6 +89,10 @@ export default defineConfig({
       jwtSecret: process.env.JWT_SECRET || "super-secret-jwt-key-glorov-dev-32bytes",
       cookieSecret: process.env.COOKIE_SECRET || "super-secret-cookie-glorov-dev-32bytes",
     },
+    cookieOptions: {
+      sameSite: (process.env.COOKIE_SAMESITE as any) || "none",
+      secure: process.env.COOKIE_SECURE !== "false",
+    },
     databaseDriverOptions: {
       pool: {
         min: Number(process.env.DB_POOL_MIN) || 2,

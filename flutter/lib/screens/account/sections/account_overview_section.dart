@@ -510,7 +510,7 @@ class GlorovAccountOverviewSection extends StatelessWidget {
                         Icon(Icons.eco, color: AppColors.forestDark, size: 16),
                         SizedBox(width: 6),
                         Text(
-                          'Account & Services',
+                          'Account Navigation & Settings',
                           style: TextStyle(
                             fontFamily: AppTypography.displayFont,
                             fontSize: 14,
@@ -562,23 +562,11 @@ class GlorovAccountOverviewSection extends StatelessWidget {
                   ),
                   const Divider(color: AppColors.borderLight, height: 1),
                   _serviceTile(
-                    icon: accountState.isAuthenticated
-                        ? Icons.logout
-                        : Icons.login,
-                    title: accountState.isAuthenticated
-                        ? 'Sign Out'
-                        : 'Sign In / Register',
-                    subtitle: accountState.isAuthenticated
-                        ? 'Log out of your customer profile safely'
-                        : 'Access orders, wishlist & addresses',
-                    isDestructive: accountState.isAuthenticated,
-                    onTap: () {
-                      if (accountState.isAuthenticated) {
-                        _confirmSignOut(context);
-                      } else {
-                        Navigator.pushNamed(context, logInScreenRoute);
-                      }
-                    },
+                    icon: Icons.logout_rounded,
+                    title: 'Sign Out',
+                    subtitle: 'Sign out of your customer profile safely',
+                    isDestructive: true,
+                    onTap: () => _confirmSignOut(context),
                   ),
                 ],
               ),
@@ -586,6 +574,201 @@ class GlorovAccountOverviewSection extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  /// Clean, standard unauthenticated guest overview
+  Widget _buildGuestOverview(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 1. Guest Welcome Hero Banner
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: AppRadii.roundedLg,
+            border: Border.all(color: AppColors.borderLight),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x06000000),
+                blurRadius: 10,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.sage.withAlpha(40),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.sage, width: 1.5),
+                    ),
+                    alignment: Alignment.center,
+                    child: GlorovCategorySvgIcons.buildSvgIcon(
+                      GlorovCategorySvgIcons.guestUser,
+                      size: 26,
+                      color: AppColors.forestDark,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Welcome to GLOROV Botanicals',
+                          style: TextStyle(
+                            fontFamily: AppTypography.displayFont,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.forestDark,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          'Sign in to your customer profile to track parcels, manage delivery destinations, and access your botanical wishlist.',
+                          style: TextStyle(
+                            fontFamily: AppTypography.primaryFont,
+                            fontSize: 12.5,
+                            color: AppColors.textSecondary,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              const Divider(color: AppColors.borderLight),
+              const SizedBox(height: AppSpacing.md),
+              Wrap(
+                spacing: AppSpacing.md,
+                runSpacing: AppSpacing.sm,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, logInScreenRoute),
+                    icon: const Icon(Icons.login, size: 16),
+                    label: const Text('Sign In'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.forestDark,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadii.roundedMd,
+                      ),
+                      textStyle: const TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, signUpScreenRoute),
+                    icon: const Icon(Icons.person_add_outlined, size: 16),
+                    label: const Text('Create Account'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.forestDark,
+                      side: const BorderSide(color: AppColors.forestDark),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadii.roundedMd,
+                      ),
+                      textStyle: const TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.lg),
+
+        // 2. Guest Self-Service Tools
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: AppRadii.roundedMd,
+            border: Border.all(color: AppColors.borderLight),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x04000000),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(14, 12, 14, 6),
+                child: Row(
+                  children: [
+                    Icon(Icons.explore_outlined,
+                        color: AppColors.forestDark, size: 16),
+                    SizedBox(width: 6),
+                    Text(
+                      'Customer Help & Order Tools',
+                      style: TextStyle(
+                        fontFamily: AppTypography.displayFont,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.forestDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _serviceTile(
+                icon: Icons.local_shipping_outlined,
+                title: 'Track Live Shipment',
+                subtitle: 'Look up an order with your tracking or reference ID',
+                onTap: () => Navigator.pushNamed(context, ordersScreenRoute),
+              ),
+              const Divider(color: AppColors.borderLight, height: 1),
+              _serviceTile(
+                icon: Icons.help_outline,
+                title: 'Help Center & FAQs',
+                subtitle: 'Answers to plant care, delivery & germination questions',
+                onTap: () =>
+                    onNavigateSection(GlorovAccountSection.helpCenter),
+              ),
+              const Divider(color: AppColors.borderLight, height: 1),
+              _serviceTile(
+                icon: Icons.support_agent_outlined,
+                title: 'Customer Support Desk',
+                subtitle: 'Connect with our botanical specialists & WhatsApp support',
+                onTap: () =>
+                    onNavigateSection(GlorovAccountSection.contactSupport),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

@@ -65,7 +65,19 @@ class _GlorovProductDetailsScreenState
   final TextEditingController _pincodeController =
       TextEditingController(text: '700059');
   bool _isPincodeChecked = true;
-  String _deliveryEstimateText = 'Delivered by: Mon, 2 Nov';
+  late String _deliveryEstimateText = _formatDeliveryEstimate();
+
+  static String _formatDeliveryEstimate() {
+    final deliveryDate = DateTime.now().add(const Duration(days: 4));
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final weekday = days[deliveryDate.weekday - 1];
+    final month = months[deliveryDate.month - 1];
+    return 'Delivered by: $weekday, ${deliveryDate.day} $month';
+  }
 
   // Frequently bought together bundle state
   bool _bundleMainChecked = true;
@@ -89,6 +101,31 @@ class _GlorovProductDetailsScreenState
   String _reviewsSort = 'Most Recent';
   int? _selectedStarFilter;
   bool _photosOnlyFilter = false;
+
+  // Backend Connected Offers & Recommendations State
+  List<GlorovOffer> _backendOffers = [];
+  List<GlorovProduct> _relatedProducts = [];
+
+  Future<void> _fetchOffers() async {
+    try {
+      final offers = await GlorovRepositories.offers.fetchOffers();
+      if (mounted) {
+        setState(() {
+          _backendOffers = offers.where((o) => o.isActive).toList();
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _fetchRelatedProducts() async {
+    try {
+      final related = await GlorovRepositories.products
+          .getRelatedProducts(widget.product.id, limit: 6);
+      if (mounted && related.isNotEmpty) {
+        setState(() => _relatedProducts = related);
+      }
+    } catch (_) {}
+  }
 
   Future<void> _fetchReviews() async {
     if (!mounted) return;
@@ -127,6 +164,8 @@ class _GlorovProductDetailsScreenState
       _selectedVariant = widget.product.variants.first;
     }
     _fetchReviews();
+    _fetchOffers();
+    _fetchRelatedProducts();
   }
 
   @override
@@ -141,6 +180,8 @@ class _GlorovProductDetailsScreenState
           : null;
       _selectedStageIndex = 0;
       _fetchReviews();
+      _fetchOffers();
+      _fetchRelatedProducts();
     }
   }
 
@@ -190,10 +231,20 @@ class _GlorovProductDetailsScreenState
 
   void _handleCheckPincode() {
     final code = _pincodeController.text.trim();
-    if (code.length >= 6) {
+    if (code.length == 6 && int.tryParse(code) != null) {
+      final deliveryDate = DateTime.now().add(const Duration(days: 4));
+      const months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ];
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      final weekday = days[deliveryDate.weekday - 1];
+      final month = months[deliveryDate.month - 1];
+
       setState(() {
         _isPincodeChecked = true;
-        _deliveryEstimateText = 'Delivered by: Mon, 2 Nov • Express Dispatch';
+        _deliveryEstimateText =
+            'Delivered by: $weekday, ${deliveryDate.day} $month • Express Dispatch';
       });
     } else {
       setState(() {
@@ -711,7 +762,7 @@ class _GlorovProductDetailsScreenState
             const SizedBox(height: 6),
             Wrap(
               crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 6,
+              spacing: 8,
               runSpacing: 4,
               children: [
                 // Star rating
@@ -732,21 +783,30 @@ class _GlorovProductDetailsScreenState
                     ),
                   ],
                 ),
-                const Text('|',
+                const Text('•',
                     style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 13)),
-                // Social proof badge
-                const Row(
+                Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.verified, size: 15, color: Color(0xFF16A34A)),
-                    SizedBox(width: 4),
+                    Icon(
+                      widget.product.inStock
+                          ? Icons.check_circle_outline
+                          : Icons.remove_circle_outline,
+                      size: 14,
+                      color: widget.product.inStock
+                          ? const Color(0xFF16A34A)
+                          : const Color(0xFFDC2626),
+                    ),
+                    const SizedBox(width: 4),
                     Text(
-                      '1 Crore + Happy Customers',
+                      widget.product.inStock ? 'In Stock' : 'Out of Stock',
                       style: TextStyle(
                         fontFamily: AppTypography.primaryFont,
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF15803D),
+                        color: widget.product.inStock
+                            ? const Color(0xFF15803D)
+                            : const Color(0xFFDC2626),
                       ),
                     ),
                   ],
@@ -786,16 +846,102 @@ class _GlorovProductDetailsScreenState
   }
 
   // ---------------------------------------------------------------------------
-  // Component 3: 3 Botanical Lifecycle Metric Cards
+  // Component 3: Contextual Botanical Lifecycle & Specification Metric Cards
   // ---------------------------------------------------------------------------
   Widget _buildBotanicalMetricCards() {
+    if (widget.product.productType == GlorovProductType.plants) {
+      return Row(
+        children: [
+          Expanded(
+            child: _metricCard(
+              icon: Icons.wb_sunny_outlined,
+              iconColor: const Color(0xFFD97706),
+              stat: widget.product.sunlightRequirement,
+              label: 'Sunlight',
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _metricCard(
+              icon: Icons.water_drop_outlined,
+              iconColor: const Color(0xFF2563EB),
+              stat: widget.product.wateringNeeds,
+              label: 'Watering',
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _metricCard(
+              icon: Icons.favorite_border,
+              iconColor: const Color(0xFF16A34A),
+              stat: widget.product.difficultyLevel,
+              label: 'Care Level',
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (widget.product.productType == GlorovProductType.supplies) {
+      final hasSpecs = widget.product.material != null ||
+          widget.product.dimensions != null;
+      if (!hasSpecs) return const SizedBox.shrink();
+
+      return Row(
+        children: [
+          if (widget.product.material != null)
+            Expanded(
+              child: _metricCard(
+                icon: Icons.shield_outlined,
+                iconColor: const Color(0xFF4B5563),
+                stat: widget.product.material!,
+                label: 'Material',
+              ),
+            ),
+          if (widget.product.dimensions != null) ...[
+            const SizedBox(width: 8),
+            Expanded(
+              child: _metricCard(
+                icon: Icons.square_foot_outlined,
+                iconColor: const Color(0xFF059669),
+                stat: widget.product.dimensions!,
+                label: 'Dimensions',
+              ),
+            ),
+          ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: _metricCard(
+              icon: Icons.verified_outlined,
+              iconColor: const Color(0xFF16A34A),
+              stat: 'Durable',
+              label: 'Build Quality',
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Default for Seeds
+    final String germStat = () {
+      for (final b in widget.product.badges) {
+        if (b.contains('%')) {
+          return b
+              .replaceAll('GERMINATION', '')
+              .replaceAll('Germination', '')
+              .trim();
+        }
+      }
+      return '85%+';
+    }();
+
     return Row(
       children: [
         Expanded(
           child: _metricCard(
             icon: Icons.eco,
             iconColor: const Color(0xFF16A34A),
-            stat: '70%',
+            stat: germStat,
             label: 'Germination',
           ),
         ),
@@ -804,7 +950,7 @@ class _GlorovProductDetailsScreenState
           child: _metricCard(
             icon: Icons.calendar_month,
             iconColor: const Color(0xFFD97706),
-            stat: widget.product.germinationPeriod ?? '3-4 Days',
+            stat: widget.product.germinationPeriod ?? '3-5 Days',
             label: 'Sprout',
           ),
         ),
@@ -813,7 +959,7 @@ class _GlorovProductDetailsScreenState
           child: _metricCard(
             icon: Icons.local_florist,
             iconColor: const Color(0xFFDC2626),
-            stat: widget.product.harvestTime ?? '80-90 Days',
+            stat: widget.product.harvestTime ?? '60-80 Days',
             label: 'to Maturity',
           ),
         ),
@@ -863,32 +1009,41 @@ class _GlorovProductDetailsScreenState
   }
 
   // ---------------------------------------------------------------------------
-  // Component 4: Select Packet Size (Variant Selector)
+  // Component 4: Contextual Variant Selector (Packet / Pot / Option)
   // ---------------------------------------------------------------------------
   Widget _buildVariantSelector() {
-    final variants = widget.product.variants.isNotEmpty
-        ? widget.product.variants
-        : [
-            GlorovProductVariant(
-              id: 'v-1gm',
-              name: '1gm',
-              price: widget.product.price,
-              discountPrice: widget.product.discountPrice,
-            ),
-            const GlorovProductVariant(
-              id: 'v-25gm',
-              name: '25GM',
-              price: 375,
-              discountPrice: 275,
-            ),
-          ];
+    if (widget.product.variants.isEmpty ||
+        (widget.product.variants.length == 1 &&
+            (widget.product.variants.first.name.toLowerCase().contains('standard') ||
+                widget.product.variants.first.name.trim().isEmpty))) {
+      return const SizedBox.shrink();
+    }
+
+    final variants = widget.product.variants;
+
+    final String selectorTitle;
+    switch (widget.product.productType) {
+      case GlorovProductType.plants:
+        selectorTitle = 'Select Plant Size';
+        break;
+      case GlorovProductType.supplies:
+        selectorTitle = widget.product.category.toLowerCase().contains('pot') ||
+                widget.product.category.toLowerCase().contains('planter')
+            ? 'Select Pot Size'
+            : 'Select Option';
+        break;
+      case GlorovProductType.seeds:
+      default:
+        selectorTitle = 'Select Packet Size';
+        break;
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Select Packet Size',
-          style: TextStyle(
+        Text(
+          selectorTitle,
+          style: const TextStyle(
             fontFamily: AppTypography.primaryFont,
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -1004,23 +1159,37 @@ class _GlorovProductDetailsScreenState
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: const Color(0xFFFCA5A5)),
-                ),
-                child: Text(
-                  '${widget.product.discountPercent ?? 36}% OFF',
-                  style: const TextStyle(
-                    fontFamily: AppTypography.primaryFont,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFFDC2626),
+              () {
+                int? pct = widget.product.discountPercent;
+                if (pct == null &&
+                    _currentOriginalPrice != null &&
+                    _currentOriginalPrice! > _currentPrice) {
+                  pct = (((_currentOriginalPrice! - _currentPrice) /
+                              _currentOriginalPrice!) *
+                          100)
+                      .round();
+                }
+                if (pct == null || pct <= 0) return const SizedBox.shrink();
+
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: const Color(0xFFFCA5A5)),
                   ),
-                ),
-              ),
+                  child: Text(
+                    '$pct% OFF',
+                    style: const TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFDC2626),
+                    ),
+                  ),
+                );
+              }(),
             ],
           ],
         ),
@@ -1037,9 +1206,11 @@ class _GlorovProductDetailsScreenState
   }
 
   // ---------------------------------------------------------------------------
-  // Component 6: "Offers for you:" Coupon Cards Carousel
+  // Component 6: Backend-Connected "Offers for you:" Coupon Cards Carousel
   // ---------------------------------------------------------------------------
   Widget _buildOffersCarousel() {
+    if (_backendOffers.isEmpty) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1058,33 +1229,20 @@ class _GlorovProductDetailsScreenState
             height: 78,
             child: ScrollConfiguration(
               behavior: const GlorovHorizontalScrollBehavior(),
-              child: ListView(
+              child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                children: [
-                  GlorovYScrollPassThrough(
+                itemCount: _backendOffers.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, index) {
+                  final offer = _backendOffers[index];
+                  return GlorovYScrollPassThrough(
                     child: _couponCard(
-                      title: 'Get 10% off with welcome coupon',
-                      code: 'GLOROV10',
-                      subtext: 'Offer applied at checkout',
+                      title: offer.title,
+                      code: offer.code,
+                      subtext: offer.minSpendText ?? offer.description,
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  GlorovYScrollPassThrough(
-                    child: _couponCard(
-                      title: 'Free shipping on all orders',
-                      code: 'FREESHIP',
-                      subtext: 'Unlocked on orders above ₹499',
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  GlorovYScrollPassThrough(
-                    child: _couponCard(
-                      title: 'Extra 20% off on Seeds',
-                      code: 'SEEDS20',
-                      subtext: 'Minimum order ₹599',
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),
@@ -1098,60 +1256,73 @@ class _GlorovProductDetailsScreenState
     required String code,
     required String subtext,
   }) {
-    return Container(
-      width: 220,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFFDE68A)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF92400E),
+    return TapFeedback(
+      onTap: () {
+        Clipboard.setData(ClipboardData(text: code));
+        GlorovFeedback.showSuccessToast(
+          context,
+          message: 'Coupon code $code copied to clipboard!',
+        );
+      },
+      effect: TapAnimationType.scale,
+      scaleDown: 0.96,
+      duration: GlorovInteractionConfig.durationFast,
+      child: Container(
+        width: 220,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBEB),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFFDE68A)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF92400E),
+              ),
             ),
-          ),
-          const SizedBox(height: 3),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: const Color(0xFFF59E0B)),
-                ),
-                child: Text(
-                  code,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFFB45309),
+            const SizedBox(height: 3),
+            Row(
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: const Color(0xFFF59E0B)),
+                  ),
+                  child: Text(
+                    code,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFB45309),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  subtext,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style:
-                      const TextStyle(fontSize: 10, color: Color(0xFF78350F)),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    subtext,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style:
+                        const TextStyle(fontSize: 10, color: Color(0xFF78350F)),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1289,35 +1460,6 @@ class _GlorovProductDetailsScreenState
             child: buyNowBtn,
           ),
         ],
-
-        const SizedBox(height: 8),
-
-        // Sale callout banner (Video frame 5 style)
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFFECFDF5),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: const Color(0xFFA7F3D0)),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.bolt, size: 16, color: Color(0xFF059669)),
-              SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  'Additional ₹100 OFF on app is live • Pan-India Botanical Delivery',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF065F46),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
@@ -1434,9 +1576,13 @@ class _GlorovProductDetailsScreenState
   }
 
   // ---------------------------------------------------------------------------
-  // Component 9: 5-Stage Botanical Lifecycle Growing Tabs (Video frame 6 style)
+  // Component 9: Botanical Lifecycle Growing Tabs (Seeds & Plants Only)
   // ---------------------------------------------------------------------------
   Widget _buildBotanicalLifecycleTabs() {
+    if (widget.product.productType == GlorovProductType.supplies) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1830,13 +1976,15 @@ class _GlorovProductDetailsScreenState
   }
 
   // ---------------------------------------------------------------------------
-  // Component 12: "You May Also Like" Related Products (Video frame 10 & 11)
+  // Component 12: Backend-Connected "You May Also Like" Related Products
   // ---------------------------------------------------------------------------
   Widget _buildYouMayAlsoLikeSection() {
-    final related = GlorovMockData.products
-        .where((p) => p.id != widget.product.id)
-        .take(6)
-        .toList();
+    final related = _relatedProducts.isNotEmpty
+        ? _relatedProducts
+        : GlorovMockData.products
+            .where((p) => p.id != widget.product.id)
+            .take(6)
+            .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3101,27 +3249,54 @@ class _GlorovProductDetailsScreenState
   // Component: Product Specifications Table (Botanical Data)
   // ---------------------------------------------------------------------------
   Widget _buildProductSpecifications() {
-    final specs = <MapEntry<String, String>>[
-      MapEntry(
-        'Botanical Name',
-        widget.product.botanicalName.isNotEmpty
-            ? widget.product.botanicalName
-            : 'Capsicum annuum',
-      ),
-      MapEntry('Category', widget.product.category),
-      MapEntry('Sowing Depth', widget.product.sowingDepth ?? '1 - 2 cm'),
-      MapEntry('Germination Time',
-          widget.product.germinationPeriod ?? '6 - 10 Days'),
-      MapEntry('Sunlight Requirement', widget.product.sunlightRequirement),
-      MapEntry('Watering Schedule', widget.product.wateringNeeds),
-      MapEntry('Difficulty Level', widget.product.difficultyLevel),
-      MapEntry('Season / Planting',
-          widget.product.plantingSeason ?? 'Year Round / All Seasons'),
-      if (widget.product.harvestTime != null)
-        MapEntry('Days to Harvest', widget.product.harvestTime!),
-      if (widget.product.packContents != null)
-        MapEntry('Pack Contents', widget.product.packContents!),
-    ];
+    final specs = <MapEntry<String, String>>[];
+
+    if (widget.product.botanicalName.isNotEmpty) {
+      specs.add(MapEntry('Botanical Name', widget.product.botanicalName));
+    }
+    specs.add(MapEntry('Category', widget.product.category));
+    if (widget.product.subcategory.isNotEmpty) {
+      specs.add(MapEntry('Subcategory', widget.product.subcategory));
+    }
+
+    if (widget.product.productType == GlorovProductType.seeds) {
+      if (widget.product.sowingDepth != null) {
+        specs.add(MapEntry('Sowing Depth', widget.product.sowingDepth!));
+      }
+      if (widget.product.germinationPeriod != null) {
+        specs.add(MapEntry('Germination Time', widget.product.germinationPeriod!));
+      }
+      specs.add(MapEntry('Sunlight Requirement', widget.product.sunlightRequirement));
+      specs.add(MapEntry('Watering Schedule', widget.product.wateringNeeds));
+      specs.add(MapEntry('Difficulty Level', widget.product.difficultyLevel));
+      if (widget.product.plantingSeason != null) {
+        specs.add(MapEntry('Planting Season', widget.product.plantingSeason!));
+      }
+      if (widget.product.harvestTime != null) {
+        specs.add(MapEntry('Days to Harvest', widget.product.harvestTime!));
+      }
+      if (widget.product.packContents != null) {
+        specs.add(MapEntry('Pack Contents', widget.product.packContents!));
+      }
+    } else if (widget.product.productType == GlorovProductType.plants) {
+      specs.add(MapEntry('Sunlight Requirement', widget.product.sunlightRequirement));
+      specs.add(MapEntry('Watering Schedule', widget.product.wateringNeeds));
+      specs.add(MapEntry('Difficulty Level', widget.product.difficultyLevel));
+      if (widget.product.potSize != null) {
+        specs.add(MapEntry('Recommended Pot', widget.product.potSize!));
+      }
+      specs.add(MapEntry('Pet Friendly', widget.product.isPetFriendly ? 'Yes' : 'No'));
+    } else {
+      if (widget.product.material != null) {
+        specs.add(MapEntry('Material', widget.product.material!));
+      }
+      if (widget.product.dimensions != null) {
+        specs.add(MapEntry('Dimensions', widget.product.dimensions!));
+      }
+      specs.add(MapEntry('Durability', 'Heavy Duty / Weatherproof'));
+    }
+
+    if (specs.isEmpty) return const SizedBox.shrink();
 
     return Container(
       decoration: BoxDecoration(
@@ -3194,24 +3369,68 @@ class _GlorovProductDetailsScreenState
   // Component: Frequently Asked Questions Accordion
   // ---------------------------------------------------------------------------
   Widget _buildFaqSection() {
-    final faqs = [
-      MapEntry(
-        'When is the best time to sow ${widget.product.title}?',
-        'Plant seeds during ${widget.product.plantingSeason ?? "mild sunny weather"}. They thrive in ${widget.product.sunlightRequirement.toLowerCase()} with well-drained, aerated potting soil.',
-      ),
-      MapEntry(
-        'How deep should I sow the seeds?',
-        'Sow seeds at a depth of ${widget.product.sowingDepth ?? "1-2 cm"}. Gently cover with fine soil mix and mist lightly with water to keep the soil moist without displacing the seeds.',
-      ),
-      MapEntry(
-        'How often should I water the seedling?',
-        'Follow a ${widget.product.wateringNeeds.toLowerCase()} routine. Keep the upper layer moist during germination, then water only when the top 1 inch of soil feels dry to the touch.',
-      ),
-      MapEntry(
-        'What is GLOROV\'s guarantee & replacement policy?',
-        'All GLOROV botanical seeds and plants are protected by our 100% "Arrives Healthy" guarantee. In the rare event of damage or non-germination, we provide free replacement support.',
-      ),
-    ];
+    final List<MapEntry<String, String>> faqs;
+
+    if (widget.product.productType == GlorovProductType.seeds) {
+      faqs = [
+        MapEntry(
+          'When is the best time to sow ${widget.product.title}?',
+          'Plant seeds during ${widget.product.plantingSeason ?? "mild sunny weather"}. They thrive in ${widget.product.sunlightRequirement.toLowerCase()} with well-drained, aerated potting soil.',
+        ),
+        MapEntry(
+          'How deep should I sow the seeds?',
+          'Sow seeds at a depth of ${widget.product.sowingDepth ?? "1-2 cm"}. Gently cover with fine soil mix and mist lightly with water to keep the soil moist without displacing the seeds.',
+        ),
+        MapEntry(
+          'How often should I water the seedling?',
+          'Follow a ${widget.product.wateringNeeds.toLowerCase()} routine. Keep the upper layer moist during germination, then water only when the top 1 inch of soil feels dry to the touch.',
+        ),
+        MapEntry(
+          'What is GLOROV\'s guarantee & replacement policy?',
+          'All GLOROV botanical seeds and plants are protected by our 100% "Arrives Healthy" guarantee. In the rare event of damage or non-germination, we provide free replacement support.',
+        ),
+      ];
+    } else if (widget.product.productType == GlorovProductType.plants) {
+      faqs = [
+        MapEntry(
+          'What are the light requirements for ${widget.product.title}?',
+          'This live plant thrives best in ${widget.product.sunlightRequirement.toLowerCase()}. Avoid harsh scorching direct sun unless acclimated.',
+        ),
+        MapEntry(
+          'How frequently should I water this plant?',
+          'Follow a ${widget.product.wateringNeeds.toLowerCase()} schedule. Allow the top 1-2 inches of potting mix to dry out between waterings to prevent root rot.',
+        ),
+        MapEntry(
+          'Is this plant safe for pets?',
+          widget.product.isPetFriendly
+              ? 'Yes! ${widget.product.title} is certified non-toxic and pet-friendly for homes with dogs and cats.'
+              : '${widget.product.title} is best kept out of reach of curious cats and dogs.',
+        ),
+        MapEntry(
+          'What should I do immediately after my plant arrives?',
+          'Unbox gently, place in a shaded bright spot for 24-48 hours to acclimate after transit, and check soil moisture.',
+        ),
+      ];
+    } else {
+      faqs = [
+        MapEntry(
+          'What materials is ${widget.product.title} crafted from?',
+          'Crafted from high-grade, durable materials (${widget.product.material ?? "heavy duty botanical grade"}) designed for long-lasting gardening use.',
+        ),
+        MapEntry(
+          'How do I care for and maintain this item?',
+          'Wipe clean with a damp cloth after use. Store in a dry place to prevent rust or moisture degradation.',
+        ),
+        MapEntry(
+          'Is this suitable for both indoor and outdoor gardening?',
+          'Yes, engineered for versatility across indoor pots, balcony planters, and terrace/outdoor raised beds.',
+        ),
+        MapEntry(
+          'What is GLOROV\'s transit guarantee?',
+          'Protected by safe delivery transit packaging. If any defect or damage occurs during transit, we provide immediate free replacement.',
+        ),
+      ];
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

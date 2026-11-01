@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/icons/glorov_category_svg_icons.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radii.dart';
@@ -347,85 +348,146 @@ class _GlorovAccountScreenState extends State<GlorovAccountScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // User Mini Header
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundColor: AppColors.sage,
-                    child: Text(
-                      profile.initials,
-                      style: const TextStyle(
-                        fontFamily: AppTypography.displayFont,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
+              // User Mini Header: Dynamic based on auth status
+              if (accountState.isAuthenticated) ...[
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22,
+                      backgroundColor: AppColors.sage,
+                      child: Text(
+                        profile.initials,
+                        style: const TextStyle(
+                          fontFamily: AppTypography.displayFont,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.forestDark,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            profile.displayName,
+                            style: const TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.forestDark,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            profile.email,
+                            style: const TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 11,
+                              color: AppColors.textMuted,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.sage.withAlpha(40),
+                        border: Border.all(color: AppColors.sage, width: 1.2),
+                      ),
+                      alignment: Alignment.center,
+                      child: GlorovCategorySvgIcons.buildSvgIcon(
+                        GlorovCategorySvgIcons.guestUser,
+                        size: 22,
                         color: AppColors.forestDark,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          profile.displayName,
-                          style: const TextStyle(
-                            fontFamily: AppTypography.primaryFont,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.forestDark,
+                    const SizedBox(width: AppSpacing.md),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Guest Customer',
+                            style: TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.forestDark,
+                            ),
                           ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          profile.email,
-                          style: const TextStyle(
-                            fontFamily: AppTypography.primaryFont,
-                            fontSize: 11,
-                            color: AppColors.textMuted,
+                          Text(
+                            'Sign in to access your orders',
+                            style: TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 11,
+                              color: AppColors.textMuted,
+                            ),
                           ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
 
               const SizedBox(height: AppSpacing.lg),
               const Divider(color: AppColors.borderLight),
               const SizedBox(height: AppSpacing.sm),
 
-              // Available Only Services
+              // Account Navigation Items
               _sidebarItem(
                 section: GlorovAccountSection.overview,
                 icon: Icons.dashboard_outlined,
                 label: 'Account Overview',
               ),
-              _sidebarItem(
-                section: GlorovAccountSection.profile,
-                icon: Icons.person_outline,
-                label: 'Customer Profile',
-              ),
-              _sidebarItem(
-                section: GlorovAccountSection.addresses,
-                icon: Icons.location_on_outlined,
-                label: 'Delivery Addresses',
-                badgeText: '$addressCount',
-              ),
-              _sidebarActionItem(
-                icon: Icons.local_shipping_outlined,
-                label: 'Order History & Tracking',
-                badgeText: '$ordersCount',
-                onTap: () => Navigator.pushNamed(context, ordersScreenRoute),
-              ),
-              _sidebarActionItem(
-                icon: Icons.favorite_border,
-                label: 'Saved Wishlist',
-                badgeText: '$wishlistCount',
-                onTap: () => Navigator.pushNamed(context, bookmarkScreenRoute),
-              ),
+              if (accountState.isAuthenticated) ...[
+                _sidebarItem(
+                  section: GlorovAccountSection.profile,
+                  icon: Icons.person_outline,
+                  label: 'Customer Profile',
+                ),
+                _sidebarItem(
+                  section: GlorovAccountSection.addresses,
+                  icon: Icons.location_on_outlined,
+                  label: 'Delivery Addresses',
+                  badgeText: '$addressCount',
+                ),
+                _sidebarActionItem(
+                  icon: Icons.local_shipping_outlined,
+                  label: 'Order History & Tracking',
+                  badgeText: '$ordersCount',
+                  onTap: () => Navigator.pushNamed(context, ordersScreenRoute),
+                ),
+                _sidebarActionItem(
+                  icon: Icons.favorite_border,
+                  label: 'Saved Wishlist',
+                  badgeText: '$wishlistCount',
+                  onTap: () =>
+                      Navigator.pushNamed(context, bookmarkScreenRoute),
+                ),
+              ] else ...[
+                _sidebarActionItem(
+                  icon: Icons.local_shipping_outlined,
+                  label: 'Order Live Tracking',
+                  onTap: () => Navigator.pushNamed(context, ordersScreenRoute),
+                ),
+                _sidebarItem(
+                  section: GlorovAccountSection.helpCenter,
+                  icon: Icons.help_outline,
+                  label: 'Help Center & FAQs',
+                ),
+              ],
               _sidebarItem(
                 section: GlorovAccountSection.contactSupport,
                 icon: Icons.support_agent_outlined,

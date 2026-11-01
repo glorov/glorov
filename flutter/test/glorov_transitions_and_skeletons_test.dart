@@ -205,12 +205,15 @@ void main() {
   group('Prompt 11: Account Form & Support Feedback Tests', () {
     testWidgets('Profile section renders form and handles validation feedback',
         (tester) async {
+      GlorovAccountState.instance.setAuthenticatedForTesting(true);
       tester.view.physicalSize = const Size(1280, 900);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();
       });
+
+      GlorovAccountState.instance.setAuthenticatedForTesting(true);
 
       await tester.pumpWidget(_buildTestApp(const GlorovProfileSection()));
       await tester.pumpAndSettle();

@@ -141,9 +141,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // User account icon + lightning badge
-      expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.bolt), findsOneWidget);
+      // Wishlist icon
+      expect(find.byIcon(Icons.favorite_border_rounded), findsOneWidget);
 
       // Cart icon
       expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);

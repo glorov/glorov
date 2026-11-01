@@ -110,7 +110,9 @@ void main() {
 
       // Title & rating badges
       expect(find.text('Green Chilli Seeds'), findsWidgets);
-      expect(find.textContaining('1 Crore + Happy Customers'), findsOneWidget);
+      expect(find.textContaining('1 Crore'), findsNothing);
+      expect(find.textContaining('Happy Customers'), findsNothing);
+      expect(find.textContaining('In Stock'), findsWidgets);
       expect(find.textContaining('98% GERMINATION'), findsWidgets);
       expect(find.textContaining('DIWALI SALE'), findsNothing);
 

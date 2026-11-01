@@ -42,6 +42,13 @@ class GlorovAccountState extends ChangeNotifier {
   bool get isLoading => _authStatus == GlorovAuthStatus.authenticating;
   String? get authError => _authError;
 
+  @visibleForTesting
+  void setAuthenticatedForTesting([bool authenticated = true, GlorovUserProfile? profile]) {
+    _authStatus = authenticated ? GlorovAuthStatus.authenticated : GlorovAuthStatus.unauthenticated;
+    if (profile != null) _profile = profile;
+    notifyListeners();
+  }
+
   int get unreadNotificationCount =>
       _notifications.where((n) => !n.isRead).length;
 

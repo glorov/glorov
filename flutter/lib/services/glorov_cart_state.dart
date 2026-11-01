@@ -255,6 +255,7 @@ class GlorovCartState extends ChangeNotifier {
       _appliedPromoCode = 'DIWALI10';
       _promoDiscountPercent = 10.0;
       _isFreeShippingPromo = false;
+      _saveToStorage();
       notifyListeners();
       return (true, 'Coupon DIWALI10 applied! 10% discount added.');
     } else if (clean == 'DIWALI15') {
@@ -265,6 +266,7 @@ class GlorovCartState extends ChangeNotifier {
       _appliedPromoCode = 'DIWALI15';
       _promoDiscountPercent = 15.0;
       _isFreeShippingPromo = false;
+      _saveToStorage();
       notifyListeners();
       return (true, 'Coupon DIWALI15 applied! 15% discount added.');
     } else if (clean == 'DIWALI20') {
@@ -275,6 +277,7 @@ class GlorovCartState extends ChangeNotifier {
       _appliedPromoCode = 'DIWALI20';
       _promoDiscountPercent = 20.0;
       _isFreeShippingPromo = false;
+      _saveToStorage();
       notifyListeners();
       return (true, 'Coupon DIWALI20 applied! 20% discount added.');
     } else if (clean == 'GLOROV10') {
@@ -284,6 +287,7 @@ class GlorovCartState extends ChangeNotifier {
       _appliedPromoCode = 'GLOROV10';
       _promoDiscountPercent = 10.0;
       _isFreeShippingPromo = false;
+      _saveToStorage();
       notifyListeners();
       return (true, 'Coupon GLOROV10 applied! You saved 10% on your cart.');
     } else if (clean == 'SEEDS20') {
@@ -293,12 +297,14 @@ class GlorovCartState extends ChangeNotifier {
       _appliedPromoCode = 'SEEDS20';
       _promoDiscountPercent = 20.0;
       _isFreeShippingPromo = false;
+      _saveToStorage();
       notifyListeners();
       return (true, 'Coupon SEEDS20 applied! You saved 20% on your order.');
     } else if (clean == 'FREESHIP') {
       _appliedPromoCode = 'FREESHIP';
       _promoDiscountPercent = 0.0;
       _isFreeShippingPromo = true;
+      _saveToStorage();
       notifyListeners();
       return (true, 'Coupon FREESHIP applied! Free delivery unlocked.');
     }
@@ -310,6 +316,7 @@ class GlorovCartState extends ChangeNotifier {
     _appliedPromoCode = null;
     _promoDiscountPercent = 0.0;
     _isFreeShippingPromo = false;
+    _saveToStorage();
     notifyListeners();
   }
 
@@ -529,6 +536,13 @@ class GlorovCartState extends ChangeNotifier {
       // 5. Orders
       final ordersJson = _orders.map((o) => o.toJson()).toList();
       storage.setItem('glorov_orders', jsonEncode(ordersJson));
+
+      // 6. Active Promo Code
+      if (_appliedPromoCode != null) {
+        storage.setItem('glorov_promo_code', _appliedPromoCode!);
+      } else {
+        storage.removeItem('glorov_promo_code');
+      }
     } catch (e) {
       debugPrint('Error saving to local storage: $e');
     }
@@ -599,6 +613,11 @@ class GlorovCartState extends ChangeNotifier {
             }
           }
         }
+      }
+      // 5. Restore Active Promo Code
+      final promoRaw = storage.getItem('glorov_promo_code');
+      if (promoRaw != null && promoRaw.isNotEmpty) {
+        applyCoupon(promoRaw);
       }
     } catch (e) {
       debugPrint('Error loading from local storage: $e');

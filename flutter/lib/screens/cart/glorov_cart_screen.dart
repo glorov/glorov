@@ -892,7 +892,8 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                   ),
 
                 // Bottom-Left Translucent Frosted Rating Badge
-                Positioned(
+                if (product.id != 'glr-npk-65')
+                  Positioned(
                   left: 8,
                   bottom: 8,
                   child: Container(

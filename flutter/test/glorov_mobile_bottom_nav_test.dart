@@ -42,7 +42,8 @@ void main() {
       expect(find.text('Home'), findsOneWidget);
       expect(find.text('Categories'), findsOneWidget);
       expect(find.text('Cart'), findsOneWidget);
-      expect(find.text('Account'), findsOneWidget);
+      // Account / Sign In depending on auth state
+      expect(find.text('Sign In'), findsOneWidget);
 
       // Verify Search item is removed as requested
       expect(find.text('Search'), findsNothing);
@@ -51,7 +52,6 @@ void main() {
       expect(find.byIcon(Icons.home_rounded), findsOneWidget);
       expect(find.byIcon(Icons.grid_view_outlined), findsOneWidget);
       expect(find.byIcon(Icons.shopping_bag_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
     });
 
     testWidgets('Hides completely on desktop viewport (>= 768px)',

@@ -5,6 +5,7 @@ import '../../../core/theme/app_radii.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/glorov/glorov_user_profile.dart';
+import '../../../route/route_constants.dart';
 import '../../../services/glorov_account_state.dart';
 
 /// Customer Profile Management Section
@@ -76,7 +77,64 @@ class _GlorovProfileSectionState extends State<GlorovProfileSection> {
     return ListenableBuilder(
       listenable: GlorovAccountState.instance,
       builder: (context, _) {
-        final profile = GlorovAccountState.instance.profile;
+        final accountState = GlorovAccountState.instance;
+        final profile = accountState.profile;
+
+        if (!accountState.isAuthenticated) {
+          return Container(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: AppRadii.roundedLg,
+              border: Border.all(color: AppColors.borderLight),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.lock_outline,
+                        color: AppColors.forestMedium, size: 24),
+                    SizedBox(width: 8),
+                    Text(
+                      'Authentication Required',
+                      style: TextStyle(
+                        fontFamily: AppTypography.displayFont,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.forestDark,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Please sign in to view and update your customer profile, saved phone number, and delivery preferences.',
+                  style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                ElevatedButton.icon(
+                  onPressed: () =>
+                      Navigator.pushNamed(context, logInScreenRoute),
+                  icon: const Icon(Icons.login, size: 16),
+                  label: const Text('Sign In to Account'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.forestDark,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadii.roundedMd),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

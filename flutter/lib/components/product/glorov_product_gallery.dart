@@ -341,41 +341,45 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
                                     ),
                                     width: 48,
                                     height: 48,
+                                    padding: const EdgeInsets.all(2.0),
                                     decoration: BoxDecoration(
+                                      color: Colors.black,
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
                                         color: isSel
                                             ? const Color(0xFF52B788)
                                             : Colors.white30,
-                                        width: isSel ? 2.5 : 1.0,
+                                        width: 2.0,
                                       ),
                                     ),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: images[idx].startsWith('assets/')
-                                        ? Image.asset(
-                                            images[idx],
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) => Container(
-                                              color: Colors.white10,
-                                              child: const Icon(
-                                                Icons.image,
-                                                size: 20,
-                                                color: Colors.white54,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: images[idx].startsWith('assets/')
+                                          ? Image.asset(
+                                              images[idx],
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) => Container(
+                                                color: Colors.white10,
+                                                child: const Icon(
+                                                  Icons.image,
+                                                  size: 20,
+                                                  color: Colors.white54,
+                                                ),
+                                              ),
+                                            )
+                                          : Image.network(
+                                              images[idx],
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) => Container(
+                                                color: Colors.white10,
+                                                child: const Icon(
+                                                  Icons.image,
+                                                  size: 20,
+                                                  color: Colors.white54,
+                                                ),
                                               ),
                                             ),
-                                          )
-                                        : Image.network(
-                                            images[idx],
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) => Container(
-                                              color: Colors.white10,
-                                              child: const Icon(
-                                                Icons.image,
-                                                size: 20,
-                                                color: Colors.white54,
-                                              ),
-                                            ),
-                                          ),
+                                    ),
                                   ),
                                 );
                               }),
@@ -656,66 +660,18 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(images.length, (idx) {
                       final isSel = idx == _currentIndex;
-                      final thumbSize = isDesktop ? 56.0 : 48.0;
+                      final thumbSize = isDesktop ? 58.0 : 48.0;
 
                       return GlorovYScrollPassThrough(
                         parentScrollController: widget.delegateScrollController,
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 5),
-                          child: TapFeedback(
+                          child: _GalleryThumbnailItem(
+                            key: ValueKey<String>('gallery_thumbnail_$idx'),
+                            imageUrl: images[idx],
+                            isSelected: isSel,
+                            size: thumbSize,
                             onTap: () => _selectImage(idx),
-                            effect: TapAnimationType.scale,
-                            scaleDown: 0.94,
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              width: thumbSize,
-                              height: thumbSize,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: isSel
-                                      ? AppColors.forestDeep
-                                      : const Color(0xFFE5E7EB),
-                                  width: isSel ? 2.5 : 1.0,
-                                ),
-                                boxShadow: isSel
-                                    ? [
-                                        BoxShadow(
-                                          color: AppColors.forestDeep
-                                              .withValues(alpha: 0.25),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ]
-                                    : null,
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: images[idx].startsWith('assets/')
-                                  ? Image.asset(
-                                      images[idx],
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
-                                        color: const Color(0xFFF3F4F6),
-                                        child: const Icon(
-                                          Icons.image,
-                                          size: 20,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    )
-                                  : Image.network(
-                                      images[idx],
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => Container(
-                                        color: const Color(0xFFF3F4F6),
-                                        child: const Icon(
-                                          Icons.image,
-                                          size: 20,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ),
-                            ),
                           ),
                         ),
                       );
@@ -739,5 +695,106 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
     }
 
     return GlorovYScrollPassThrough(child: galleryContent);
+  }
+}
+
+/// Refined Interactive Gallery Thumbnail with crisp 2px border ring,
+/// inset image mount, and smooth interactive hover & selection transitions.
+class _GalleryThumbnailItem extends StatefulWidget {
+  final String imageUrl;
+  final bool isSelected;
+  final double size;
+  final VoidCallback onTap;
+
+  const _GalleryThumbnailItem({
+    super.key,
+    required this.imageUrl,
+    required this.isSelected,
+    required this.size,
+    required this.onTap,
+  });
+
+  @override
+  State<_GalleryThumbnailItem> createState() => _GalleryThumbnailItemState();
+}
+
+class _GalleryThumbnailItemState extends State<_GalleryThumbnailItem> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = widget.isSelected
+        ? AppColors.forestDeep
+        : (_isHovered ? const Color(0xFF9CA3AF) : const Color(0xFFE5E7EB));
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: TapFeedback(
+        onTap: widget.onTap,
+        effect: TapAnimationType.scale,
+        scaleDown: 0.94,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          width: widget.size,
+          height: widget.size,
+          padding: const EdgeInsets.all(2.5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: borderColor,
+              width: 2.0, // Fixed 2.0px width - zero resize twitch!
+            ),
+            boxShadow: widget.isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.forestDeep.withValues(alpha: 0.22),
+                      blurRadius: 8,
+                      spreadRadius: 0.5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: const Color(0x0A000000),
+                      blurRadius: _isHovered ? 6 : 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: widget.imageUrl.startsWith('assets/')
+                ? Image.asset(
+                    widget.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: const Color(0xFFF3F4F6),
+                      child: const Icon(
+                        Icons.image,
+                        size: 20,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  )
+                : Image.network(
+                    widget.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: const Color(0xFFF3F4F6),
+                      child: const Icon(
+                        Icons.image,
+                        size: 20,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+          ),
+        ),
+      ),
+    );
   }
 }

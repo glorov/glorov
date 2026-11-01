@@ -60,6 +60,24 @@ class _GlorovProductDetailsScreenState
   final ScrollController _pageScrollController = ScrollController();
   final GlobalKey _rightColumnKey = GlobalKey();
   final GlobalKey _galleryKey = GlobalKey();
+  double _lastRightColumnHeight = 0.0;
+  double _lastGalleryHeight = 0.0;
+
+  double _getWidgetHeight(GlobalKey key, bool isRight) {
+    final ctx = key.currentContext;
+    if (ctx != null) {
+      final renderBox = ctx.findRenderObject() as RenderBox?;
+      if (renderBox != null && renderBox.hasSize && renderBox.size.height > 0) {
+        if (isRight) {
+          _lastRightColumnHeight = renderBox.size.height;
+        } else {
+          _lastGalleryHeight = renderBox.size.height;
+        }
+        return renderBox.size.height;
+      }
+    }
+    return isRight ? _lastRightColumnHeight : _lastGalleryHeight;
+  }
 
   // Pincode estimator state
   final TextEditingController _pincodeController =
@@ -173,6 +191,8 @@ class _GlorovProductDetailsScreenState
     super.didUpdateWidget(oldWidget);
     if (oldWidget.product.id != widget.product.id) {
       GlorovHeaderScrollNotifier.instance.reset();
+      _lastRightColumnHeight = 0.0;
+      _lastGalleryHeight = 0.0;
       _selectedImageIndex = 0;
       _quantity = 1;
       _selectedVariant = widget.product.variants.isNotEmpty
@@ -485,12 +505,38 @@ class _GlorovProductDetailsScreenState
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // LEFT COLUMN: Product Gallery cleanly aligned at the top
+        // LEFT COLUMN: Sticky Product Gallery that pins smoothly during scroll
+        // and scrolls naturally with page once right-column buying details finish.
         SizedBox(
           width: galleryWidth,
-          child: Container(
-            key: _galleryKey,
-            child: _buildGallery(context, isSticky: true),
+          child: AnimatedBuilder(
+            animation: _pageScrollController,
+            builder: (context, child) {
+              double stickyOffset = 0.0;
+              if (_pageScrollController.hasClients) {
+                final scrollOffset = _pageScrollController.offset;
+                final rightHeight = _getWidgetHeight(_rightColumnKey, true);
+                final galleryHeight = _getWidgetHeight(_galleryKey, false);
+
+                if (rightHeight > galleryHeight && galleryHeight > 0) {
+                  final maxStickyOffset = rightHeight - galleryHeight;
+                  // Breadcrumbs height is ~34px. When scrolled past, smoothly pin gallery in viewport!
+                  const triggerOffset = 34.0;
+                  if (scrollOffset > triggerOffset) {
+                    stickyOffset =
+                        (scrollOffset - triggerOffset).clamp(0.0, maxStickyOffset);
+                  }
+                }
+              }
+              return Transform.translate(
+                offset: Offset(0, stickyOffset),
+                child: child,
+              );
+            },
+            child: Container(
+              key: _galleryKey,
+              child: _buildGallery(context, isSticky: true),
+            ),
           ),
         ),
 

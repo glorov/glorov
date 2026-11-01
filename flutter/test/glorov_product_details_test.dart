@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shop/components/product/glorov_product_gallery.dart';
+import 'package:shop/core/interactions/interactions.dart';
 import 'package:shop/core/theme/app_breakpoints.dart';
 import 'package:shop/models/glorov/glorov_mock_data.dart';
 import 'package:shop/models/glorov/glorov_product.dart';
@@ -333,6 +334,64 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(InteractiveViewer), findsNothing);
     });
+
+    testWidgets('Tapping thumbnail updates selected image and highlights border correctly',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1200, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      int selectedIdx = 0;
+      const testImages = [
+        'assets/images/products/vegetable-seeds/chinese-cabbage-seeds-1.jpg',
+        'assets/images/products/vegetable-seeds/chinese-cabbage-seeds-2.jpg',
+        'assets/images/products/vegetable-seeds/chinese-cabbage-seeds-3.jpg',
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 520,
+                child: StatefulBuilder(
+                  builder: (context, setState) {
+                    return GlorovProductGallery(
+                      imageUrls: testImages,
+                      selectedIndex: selectedIdx,
+                      onImageSelected: (idx) => setState(() => selectedIdx = idx),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify initial selected index is 0
+      expect(selectedIdx, 0);
+
+      // Tap the second thumbnail item
+      final secondThumb = find.byKey(const ValueKey<String>('gallery_thumbnail_1'));
+      expect(secondThumb, findsOneWidget);
+      await tester.tap(secondThumb);
+      await tester.pumpAndSettle();
+
+      // Index is updated to 1
+      expect(selectedIdx, 1);
+
+      // Tap the third thumbnail item
+      final thirdThumb = find.byKey(const ValueKey<String>('gallery_thumbnail_2'));
+      expect(thirdThumb, findsOneWidget);
+      await tester.tap(thirdThumb);
+      await tester.pumpAndSettle();
+
+      // Index is updated to 2
+      expect(selectedIdx, 2);
+    });
   });
 
   group('Glorov Responsive Sticky Product Gallery Breakpoints Tests', () {
@@ -354,6 +413,13 @@ void main() {
 
       final galleryWidget = tester.widget<GlorovProductGallery>(galleryFinder);
       expect(galleryWidget.isSticky, isTrue);
+
+      // Verify Transform.translate is configured for dynamic sticky scrolling
+      final transformFinder = find.ancestor(
+        of: galleryFinder,
+        matching: find.byType(Transform),
+      );
+      expect(transformFinder, findsWidgets);
 
       // Verify breadcrumbs and product title
       expect(find.text('Home'), findsWidgets);

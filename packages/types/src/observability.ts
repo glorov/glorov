@@ -398,9 +398,9 @@ export function classifyError(error: unknown): {
     }
   }
 
-  // Unauthorized / Forbidden
-  if (/unauthorized|authentication\s+required|invalid\s+credentials/i.test(errMsg)) {
-    const clientMessage = 'Authentication required to perform this action.'
+  // Unauthorized / Forbidden / Auth failures
+  if (/unauthorized|authentication\s+required|invalid\s+credentials|invalid\s+(?:email\s+or\s+password|password)|incorrect\s+password/i.test(errMsg)) {
+    const clientMessage = 'Invalid email or password.'
     return {
       code: 'UNAUTHORIZED',
       clientMessage,
@@ -452,8 +452,8 @@ export function classifyError(error: unknown): {
     }
   }
 
-  // Notification delivery errors
-  if (/notification|email|smtp/i.test(errMsg)) {
+  // Notification delivery errors (strictly delivery failures, not validation of email addresses)
+  if (/(?:notification|smtp|nodemailer|mailer|failed\s+to\s+send)/i.test(errMsg)) {
     const clientMessage = 'Unable to deliver message notification at this time.'
     return {
       code: 'NOTIFICATION_DELIVERY_FAILED',

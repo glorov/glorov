@@ -9,11 +9,11 @@ set -e
 
 PROJECT_ID="glorov-store"
 TARGET_ACCOUNT="elsesourav@gmail.com"
-MEDUSA_URL="http://20.244.48.139/medusa"
+MEDUSA_URL="https://20.244.48.139.sslip.io/medusa"
 PUBLISHABLE_KEY="pk_3e00679a810ca538ba78aedc23b336788d82631606792292cbecad4fc422316a"
 
 echo "=========================================================="
-echo "🌿 GLOROV: Deploying Flutter Web to Firebase Hosting"
+echo "🌿 GLOROV: Deploying Flutter Web & Admin to Firebase"
 echo "=========================================================="
 
 # 1. Verify Tools
@@ -38,7 +38,14 @@ if [[ "${CURRENT_ACCOUNT}" != "${TARGET_ACCOUNT}" ]]; then
   }
 fi
 
-# 3. Build Flutter Web Release
+# 3. Build Medusa Admin Dashboard for Firebase Hosting
+echo "🔨 Compiling Medusa Admin Dashboard..."
+(
+  cd apps/backend
+  ADMIN_PATH="/" MEDUSA_BACKEND_URL="${MEDUSA_URL}" npx medusa build --admin-only --no-lint
+)
+
+# 4. Build Flutter Web Release
 echo "🔨 Compiling Flutter Web release build..."
 (
   cd flutter
@@ -47,15 +54,16 @@ echo "🔨 Compiling Flutter Web release build..."
     --dart-define="MEDUSA_PUBLISHABLE_KEY=${PUBLISHABLE_KEY}"
 )
 
-# 4. Deploy to Firebase Hosting
-echo "🚀 Uploading Flutter Web to Firebase project '${PROJECT_ID}'..."
+# 5. Deploy to Firebase Hosting
+echo "🚀 Uploading sites to Firebase project '${PROJECT_ID}'..."
 firebase deploy --only hosting --project "${PROJECT_ID}"
 
 echo ""
 echo "=========================================================="
-echo "✅ Flutter Web deployment to Firebase complete!"
-echo "🌐 Live URL (Primary): https://glorov-com.web.app"
-echo "🌐 Live URL (App):     https://glorov-app.web.app"
-echo "🌐 Live URL (Store):   https://glorov-store.web.app"
+echo "✅ Deployment to Firebase complete!"
+echo "🌐 Storefront (Primary): https://glorov-com.web.app"
+echo "🌐 Storefront (App):     https://glorov-app.web.app"
+echo "🌐 Storefront (Store):   https://glorov-store.web.app"
+echo "🛡️ Admin Dashboard:      https://glorov-admin.web.app"
 echo "📊 Console: https://console.firebase.google.com/project/glorov-store/overview"
 echo "=========================================================="

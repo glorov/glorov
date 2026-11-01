@@ -16,32 +16,37 @@ import '../../../route/route_constants.dart';
 /// botanical value props, category discovery, featured products,
 /// comprehensive footer, and 4-item mobile bottom navigation dock.
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final bool isLoadingSlider;
+
+  const HomeScreen({
+    super.key,
+    this.isLoadingSlider = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const GlorovStorefrontScaffold(
+    return GlorovStorefrontScaffold(
       currentRoute: homeScreenRoute,
       backgroundColor: AppColors.surfaceCream,
       child: Column(
         children: [
           // 1. Multi-device Hero Banner Slider (Distinct Desktop/Mobile Images)
-          GlorovHeroBannerSlider(),
+          GlorovHeroBannerSlider(isLoading: isLoadingSlider),
 
           // 2. Trust Badges & Botanical Value Props
-          GlorovValueProps(),
+          const GlorovValueProps(),
 
           // 3. Category Discovery
-          GlorovCategoryDiscovery(),
+          const GlorovCategoryDiscovery(),
 
           // 4. Featured Botanical Products (with live cart & wishlist actions)
-          GlorovFeaturedProducts(),
+          const GlorovFeaturedProducts(),
 
           // 5. Editorial Botanical Showcase
-          GlorovHeroSection(),
+          const GlorovHeroSection(),
 
           // 6. Storefront Footer
-          GlorovFooter(),
+          const GlorovFooter(),
         ],
       ),
     );

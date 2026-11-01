@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shop/core/interactions/interactions.dart';
 import 'package:shop/entry_point.dart';
+import '../models/category_model.dart';
 import '../models/glorov/glorov_mock_data.dart';
 import '../models/glorov/glorov_order.dart';
 import '../models/glorov/glorov_product.dart';
@@ -92,15 +93,15 @@ Route<dynamic> _buildRoute(
 }
 
 Route<dynamic> generateRoute(RouteSettings settings) {
-  String name = settings.name ?? '';
+  final rawName = settings.name ?? '';
+  final uri = Uri.tryParse(rawName.startsWith('/') ? rawName : '/$rawName');
+  String name = (uri != null && uri.path.isNotEmpty) ? uri.path : rawName;
   if (name.startsWith('/')) {
     name = name.substring(1);
   }
 
   // Support direct product deep linking and query params (e.g. /product_details, /product_details?id=glr-seed-05, /product/glr-seed-01)
   if (name.startsWith('product_details') || name.startsWith('product/')) {
-    final rawName = settings.name ?? '';
-    final uri = Uri.tryParse(rawName.startsWith('/') ? rawName : '/$rawName');
     String? lookupId;
     if (uri != null) {
       if (uri.queryParameters.containsKey('id')) {
@@ -230,6 +231,20 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     //   );
     case categoriesScreenRoute:
     case discoverScreenRoute:
+      String? initialCatHandle;
+      if (uri != null) {
+        if (uri.queryParameters.containsKey('category')) {
+          initialCatHandle = uri.queryParameters['category'];
+        } else if (uri.queryParameters.containsKey('handle')) {
+          initialCatHandle = uri.queryParameters['handle'];
+        }
+      }
+      if (initialCatHandle != null && initialCatHandle.isNotEmpty) {
+        return _buildRoute(
+          GlorovCategoriesScreen(initialCategoryHandle: initialCatHandle),
+          settings,
+        );
+      }
       if (settings.arguments is String &&
           (settings.arguments as String).trim().isNotEmpty) {
         final category = (settings.arguments as String).trim();
@@ -388,7 +403,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case devInteractionShowcaseRoute:
     case 'showcase':
       return _buildRoute(const InteractionShowcaseScreen(), settings);
+    case 'slider_skeleton':
+    case 'skeleton':
+      return _buildRoute(const HomeScreen(isLoadingSlider: true), settings);
     default:
-      return _buildRoute(const HomeScreen(), settings);
+      final rawName = settings.name ?? '';
+      final isSkeleton = rawName.contains('skeleton') ||
+          rawName.contains('loading=true') ||
+          settings.arguments == 'skeleton';
+      return _buildRoute(HomeScreen(isLoadingSlider: isSkeleton), settings);
   }
 }

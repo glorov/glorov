@@ -882,7 +882,8 @@ class _GlorovProductDetailsScreenState
       );
     }
 
-    if (widget.product.productType == GlorovProductType.supplies) {
+    if (widget.product.productType == GlorovProductType.supplies ||
+        widget.product.productType == GlorovProductType.accessories) {
       final hasSpecs = widget.product.material != null ||
           widget.product.dimensions != null;
       if (!hasSpecs) return const SizedBox.shrink();
@@ -1027,10 +1028,14 @@ class _GlorovProductDetailsScreenState
         selectorTitle = 'Select Plant Size';
         break;
       case GlorovProductType.supplies:
+      case GlorovProductType.accessories:
         selectorTitle = widget.product.category.toLowerCase().contains('pot') ||
                 widget.product.category.toLowerCase().contains('planter')
             ? 'Select Pot Size'
-            : 'Select Option';
+            : (widget.product.variants
+                    .any((v) => v.name.toLowerCase().contains('teeth'))
+                ? 'Select Teeth / Size'
+                : 'Select Option');
         break;
       case GlorovProductType.seeds:
       default:
@@ -1579,7 +1584,8 @@ class _GlorovProductDetailsScreenState
   // Component 9: Botanical Lifecycle Growing Tabs (Seeds & Plants Only)
   // ---------------------------------------------------------------------------
   Widget _buildBotanicalLifecycleTabs() {
-    if (widget.product.productType == GlorovProductType.supplies) {
+    if (widget.product.productType == GlorovProductType.supplies ||
+        widget.product.productType == GlorovProductType.accessories) {
       return const SizedBox.shrink();
     }
 

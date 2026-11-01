@@ -67,7 +67,7 @@ if [[ "${MODE}" == "all" || "${MODE}" == "admin" ]]; then
   echo "🔨 [1/2] Compiling Medusa Admin Dashboard (.medusa/admin)..."
   (
     cd apps/backend
-    ADMIN_PATH="/" MEDUSA_BACKEND_URL="${MEDUSA_URL}" npx medusa build --admin-only --no-lint
+    ADMIN_PATH="/" ADMIN_AUTH_TYPE="jwt" MEDUSA_BACKEND_URL="${MEDUSA_URL}" npx medusa build --admin-only --no-lint
   )
   if [[ ! -f "apps/backend/.medusa/admin/index.html" ]]; then
     echo "❌ Error: Medusa admin build failed to generate apps/backend/.medusa/admin/index.html"

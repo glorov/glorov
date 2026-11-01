@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shop/components/product/glorov_product_gallery.dart';
-import 'package:shop/core/interactions/interactions.dart';
-import 'package:shop/core/theme/app_breakpoints.dart';
 import 'package:shop/models/glorov/glorov_mock_data.dart';
 import 'package:shop/models/glorov/glorov_product.dart';
 import 'package:shop/screens/product/glorov_product_details_screen.dart';
@@ -225,13 +223,155 @@ void main() {
 
       expect(GlorovCartState.instance.itemCount, 0);
 
-      // Tap sticky ADD TO CART
+      // At top of page: in-page Add to Cart is visible, sticky ADD TO CART is hidden (no duplicate CTA!)
+      expect(find.text('ADD TO CART'), findsNothing);
+      expect(find.text('Add To Cart'), findsOneWidget);
+
+      // Scroll down past in-page Add to Cart
+      await tester.drag(find.byType(SingleChildScrollView).first, const Offset(0, -500));
+      await tester.pumpAndSettle();
+      await tester.drag(find.byType(SingleChildScrollView).first, const Offset(0, -500));
+      await tester.pumpAndSettle();
+
+      // Tap sticky ADD TO CART now that it has appeared
       final stickyAddToCart = find.text('ADD TO CART');
       expect(stickyAddToCart, findsOneWidget);
       await tester.tap(stickyAddToCart);
       await tester.pumpAndSettle();
 
       expect(GlorovCartState.instance.itemCount, 1);
+    });
+  });
+
+  group('Glorov Plant Multi-Attribute Variants & Interactive Features Tests', () {
+    testWidgets('Renders plant size chips, planter cards, color swatches and gift checkbox',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final product =
+          GlorovMockData.products.firstWhere((p) => p.id == 'glr-ind-19');
+      await tester.pumpWidget(buildTestableDetails(product));
+      await tester.pumpAndSettle();
+
+      // Multi-attribute selectors
+      expect(find.text('Select Plant Size'), findsOneWidget);
+      expect(find.text('Small'), findsWidgets);
+      expect(find.text('Medium'), findsWidgets);
+      expect(find.text('Size Guide'), findsOneWidget);
+
+      expect(find.text('Select Planter'), findsOneWidget);
+      expect(find.text('GroPot'), findsWidgets);
+      expect(find.text('Krish'), findsWidgets);
+
+      expect(find.textContaining('Color –'), findsOneWidget);
+
+      // Gift option
+      expect(find.textContaining('Make this a gift'), findsOneWidget);
+
+      // Trust reassurance
+      expect(find.textContaining('30-Day Plant Guarantee'), findsOneWidget);
+      expect(find.textContaining('Plant Care Support'), findsOneWidget);
+    });
+
+    testWidgets('Tapping Size Guide opens size comparison guide modal',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final product =
+          GlorovMockData.products.firstWhere((p) => p.id == 'glr-ind-19');
+      await tester.pumpWidget(buildTestableDetails(product));
+      await tester.pumpAndSettle();
+
+      final sizeGuideBtn = find.text('Size Guide');
+      // Scroll past header to make sure Size Guide is in clear viewport
+      await tester.drag(
+        find.byType(SingleChildScrollView).first,
+        const Offset(0, -300),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(sizeGuideBtn);
+      await tester.pumpAndSettle();
+
+      // Modal dialog appears
+      expect(find.text('Plant Size Guide'), findsOneWidget);
+      expect(find.byIcon(Icons.close), findsOneWidget);
+
+      // Dismiss modal
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
+      expect(find.text('Plant Size Guide'), findsNothing);
+    });
+
+    testWidgets('Tapping gift checkbox toggles state',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final product =
+          GlorovMockData.products.firstWhere((p) => p.id == 'glr-ind-19');
+      await tester.pumpWidget(buildTestableDetails(product));
+      await tester.pumpAndSettle();
+
+      final giftFinder = find.textContaining('Make this a gift');
+      // Scroll past header so checkbox is in clear viewport
+      await tester.drag(
+        find.byType(SingleChildScrollView).first,
+        const Offset(0, -450),
+      );
+      await tester.pumpAndSettle();
+
+      final initialCheckbox = tester.widget<Checkbox>(find.byType(Checkbox).first);
+      expect(initialCheckbox.value, isFalse);
+
+      await tester.tap(giftFinder);
+      await tester.pumpAndSettle();
+
+      final toggledCheckbox = tester.widget<Checkbox>(find.byType(Checkbox).first);
+      expect(toggledCheckbox.value, isTrue);
+    });
+
+    testWidgets('Product Specifications accordion toggles expand and collapse',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final product =
+          GlorovMockData.products.firstWhere((p) => p.id == 'glr-ind-19');
+      await tester.pumpWidget(buildTestableDetails(product));
+      await tester.pumpAndSettle();
+
+      // Locate accordion header
+      final accordionHeader = find.text('Product Specifications');
+      await tester.ensureVisible(accordionHeader);
+      await tester.pumpAndSettle();
+
+      // Initially collapsed, 'Botanical Name' is hidden
+      expect(find.text('Botanical Name'), findsNothing);
+
+      // Tap to expand
+      await tester.tap(accordionHeader);
+      await tester.pumpAndSettle();
+
+      // Now expanded: 'Botanical Name' and 'Peace Lily Plant' are visible
+      expect(find.text('Botanical Name'), findsOneWidget);
+
+      // Tap again to collapse
+      await tester.tap(accordionHeader);
+      await tester.pumpAndSettle();
+
+      // Collapsed again
+      expect(find.text('Botanical Name'), findsNothing);
     });
   });
 

@@ -215,7 +215,7 @@ void main() {
       expect(GlorovHeaderScrollNotifier.instance.isTopNavVisible, isTrue);
     });
 
-    test('Sticky header maintains visibility during scrolling and updates announcement bar', () {
+    test('Responsive scroll hysteresis past threshold: slight upward scroll triggers top nav reveal', () {
       final notifier = GlorovHeaderScrollNotifier.instance;
       notifier.reset();
 
@@ -223,23 +223,85 @@ void main() {
       expect(notifier.isTopNavVisible, isTrue);
       expect(notifier.showAnnouncement, isTrue);
 
-      // 2. Initial scroll down (30px) stays sticky and visible
+      // 2. Initial scroll down (30px) stays sticky and visible in Zone 2
       notifier.handleScroll(30.0, 15.0);
       expect(notifier.isTopNavVisible, isTrue);
       expect(notifier.showAnnouncement, isFalse);
       expect(notifier.isBottomNavVisible, isFalse);
 
-      // 3. Scroll down further (240px) maintains sticky top header
+      // 3. Scroll down past threshold (240px) hides top nav smoothly in Zone 4 and shows bottom nav
       notifier.handleScroll(240.0, 30.0);
-      expect(notifier.isTopNavVisible, isTrue);
+      expect(notifier.isTopNavVisible, isFalse);
       expect(notifier.showAnnouncement, isFalse);
-      expect(notifier.isBottomNavVisible, isFalse);
+      expect(notifier.isBottomNavVisible, isTrue);
 
-      // 4. Return to top (0px) restores announcement bar
+      // 4. Slight scroll up (-10px) immediately reveals top nav and hides bottom nav
+      notifier.handleScroll(230.0, -10.0);
+      expect(notifier.isTopNavVisible, isTrue);
+      expect(notifier.isBottomNavVisible, isFalse);
+      expect(notifier.showAnnouncement, isFalse);
+
+      // 5. Return to top (0px) restores announcement bar and category icons
       notifier.handleScroll(0.0, -30.0);
       expect(notifier.isTopNavVisible, isTrue);
+      expect(notifier.isBottomNavVisible, isFalse);
       expect(notifier.showAnnouncement, isTrue);
       expect(notifier.showIcons, isTrue);
+    });
+
+    testWidgets('Tablet Viewport (width: 768) centers the botanical categories in viewport',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(768, 1024);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: GlorovHeader(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify all 8 categories are rendered
+      expect(find.text('Seeds'), findsOneWidget);
+      expect(find.text('Offers'), findsOneWidget);
+
+      // Verify the midpoint between first category (Seeds) and last category (Offers)
+      // is centered in the 768px viewport (midpoint exactly 384px)
+      final seedsRect = tester.getRect(find.text('Seeds'));
+      final offersRect = tester.getRect(find.text('Offers'));
+      final midpoint = (seedsRect.left + offersRect.right) / 2;
+
+      expect(midpoint, closeTo(384.0, 5.0));
+    });
+
+    testWidgets('Tablet Viewport (width: 1024) centers the botanical categories in viewport',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: GlorovHeader(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Seeds'), findsOneWidget);
+      expect(find.text('Offers'), findsOneWidget);
+
+      final seedsRect = tester.getRect(find.text('Seeds'));
+      final offersRect = tester.getRect(find.text('Offers'));
+      final midpoint = (seedsRect.left + offersRect.right) / 2;
+
+      expect(midpoint, closeTo(512.0, 8.0));
     });
   });
 }

@@ -82,6 +82,284 @@ class _GlorovProductDetailsScreenState
     return isRight ? _lastRightColumnHeight : _lastGalleryHeight;
   }
 
+  // Dynamic Sticky Cart Bar visibility (only shown when scrolled past in-page button)
+  bool _showStickyBottomBar = false;
+  final GlobalKey _inPageCartKey = GlobalKey();
+
+  // Multi-attribute variant selection state (Plant Size, Planter, Color)
+  String? _selectedPlantSize;
+  String? _selectedPlanterName;
+  String? _selectedColorName;
+
+  // Gift option & accordion state
+  bool _isGiftOptionSelected = false;
+  bool _isSpecsExpanded = false;
+
+  void _onPageScroll() {
+    if (!mounted) return;
+
+    final ctx = _inPageCartKey.currentContext;
+    if (ctx != null) {
+      final box = ctx.findRenderObject() as RenderBox?;
+      if (box != null && box.hasSize) {
+        final pos = box.localToGlobal(Offset.zero);
+        final isPast = (pos.dy + box.size.height) < 120;
+        if (isPast != _showStickyBottomBar) {
+          setState(() {
+            _showStickyBottomBar = isPast;
+          });
+        }
+        return;
+      }
+    }
+
+    if (_pageScrollController.hasClients) {
+      final isPast = _pageScrollController.offset > 450;
+      if (isPast != _showStickyBottomBar) {
+        setState(() {
+          _showStickyBottomBar = isPast;
+        });
+      }
+    }
+  }
+
+  void _initVariantState() {
+    if (widget.product.variants.isEmpty) return;
+    _selectedVariant ??= widget.product.variants.first;
+    final parts =
+        _selectedVariant!.name.split('/').map((s) => s.trim()).toList();
+    if (parts.length >= 3) {
+      _selectedPlantSize = parts[0];
+      _selectedPlanterName = parts[1];
+      _selectedColorName = parts[2];
+    } else if (parts.length == 2) {
+      if (parts[0].toLowerCase().contains('small') ||
+          parts[0].toLowerCase().contains('medium') ||
+          parts[0].toLowerCase().contains('large') ||
+          parts[0].toLowerCase().contains('inch')) {
+        _selectedPlantSize = parts[0];
+        _selectedColorName = parts[1];
+      } else {
+        _selectedPlanterName = parts[0];
+        _selectedColorName = parts[1];
+      }
+    } else {
+      _selectedPlantSize = _selectedVariant!.name;
+    }
+  }
+
+  void _onSelectSize(String size) {
+    _selectedPlantSize = size;
+    GlorovProductVariant? match;
+    for (final v in widget.product.variants) {
+      final p = v.name.split('/').map((s) => s.trim()).toList();
+      if (p.isNotEmpty && p[0] == size) {
+        if (_selectedPlanterName != null &&
+            p.length >= 2 &&
+            p[1] == _selectedPlanterName) {
+          if (_selectedColorName != null &&
+              p.length >= 3 &&
+              p[2] == _selectedColorName) {
+            match = v;
+            break;
+          }
+          match ??= v;
+        }
+        match ??= v;
+      }
+    }
+    match ??= widget.product.variants.firstWhere(
+      (v) => v.name.contains(size),
+      orElse: () => widget.product.variants.first,
+    );
+    setState(() {
+      _selectedVariant = match;
+      _initVariantState();
+    });
+  }
+
+  void _onSelectPlanter(String planter) {
+    _selectedPlanterName = planter;
+    GlorovProductVariant? match;
+    for (final v in widget.product.variants) {
+      if (v.name.contains(planter)) {
+        if (_selectedPlantSize != null &&
+            v.name.contains(_selectedPlantSize!)) {
+          if (_selectedColorName != null &&
+              v.name.contains(_selectedColorName!)) {
+            match = v;
+            break;
+          }
+          match ??= v;
+        }
+        match ??= v;
+      }
+    }
+    match ??= widget.product.variants.firstWhere(
+      (v) => v.name.contains(planter),
+      orElse: () => widget.product.variants.first,
+    );
+    setState(() {
+      _selectedVariant = match;
+      _initVariantState();
+    });
+  }
+
+  void _onSelectColor(String color) {
+    _selectedColorName = color;
+    GlorovProductVariant? match;
+    for (final v in widget.product.variants) {
+      if (v.name.contains(color)) {
+        if (_selectedPlanterName != null &&
+            v.name.contains(_selectedPlanterName!)) {
+          if (_selectedPlantSize != null &&
+              v.name.contains(_selectedPlantSize!)) {
+            match = v;
+            break;
+          }
+          match ??= v;
+        }
+        match ??= v;
+      }
+    }
+    match ??= widget.product.variants.firstWhere(
+      (v) => v.name.contains(color),
+      orElse: () => widget.product.variants.first,
+    );
+    setState(() {
+      _selectedVariant = match;
+      _initVariantState();
+    });
+  }
+
+  Color _getColorForName(String name) {
+    final lower = name.toLowerCase().trim();
+    if (lower.contains('mocca') || lower.contains('mocha')) {
+      return const Color(0xFF8B5A2B);
+    } else if (lower.contains('ivory') || lower.contains('cream')) {
+      return const Color(0xFFFDFBF7);
+    } else if (lower.contains('white')) {
+      return const Color(0xFFFFFFFF);
+    } else if (lower.contains('brown')) {
+      return const Color(0xFF5D4037);
+    } else if (lower.contains('red') ||
+        lower.contains('terracotta') ||
+        lower.contains('rust')) {
+      return const Color(0xFFB91C1C);
+    } else if (lower.contains('grey') || lower.contains('gray')) {
+      return const Color(0xFF9E9E9E);
+    } else if (lower.contains('black') || lower.contains('charcoal')) {
+      return const Color(0xFF212121);
+    } else if (lower.contains('blue')) {
+      return const Color(0xFF0284C7);
+    } else if (lower.contains('green') || lower.contains('jade')) {
+      return const Color(0xFF15803D);
+    } else if (lower.contains('pink') || lower.contains('magenta')) {
+      return const Color(0xFFDB2777);
+    } else if (lower.contains('yellow')) {
+      return const Color(0xFFEAB308);
+    }
+    return const Color(0xFF6B7280);
+  }
+
+  void _showSizeGuideModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Plant Size Guide',
+                    style: TextStyle(
+                      fontFamily: 'serif',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Our plants are measured from the base of the grower pot to the tip of the highest leaf:',
+                style: TextStyle(fontSize: 13, color: Color(0xFF4B5563)),
+              ),
+              const SizedBox(height: 16),
+              _sizeGuideRow(
+                  'Small', '6 - 10 inches', 'Desks, shelves, tabletops'),
+              const Divider(height: 20, color: Color(0xFFE5E7EB)),
+              _sizeGuideRow('Medium', '12 - 18 inches',
+                  'Coffee tables, side stands, balconies'),
+              const Divider(height: 20, color: Color(0xFFE5E7EB)),
+              _sizeGuideRow('Large', '24 - 36+ inches',
+                  'Living room corners, patios, entrance lobbies'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _sizeGuideRow(String size, String height, String bestFor) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 70,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8F5E9),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            size,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              color: AppColors.forestDeep,
+            ),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                height,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    color: Color(0xFF111827)),
+              ),
+              Text(
+                bestFor,
+                style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   // Pincode estimator state
   final TextEditingController _pincodeController =
       TextEditingController(text: '700059');
@@ -184,9 +462,11 @@ class _GlorovProductDetailsScreenState
     if (widget.product.variants.isNotEmpty) {
       _selectedVariant = widget.product.variants.first;
     }
+    _initVariantState();
     _fetchReviews();
     _fetchOffers();
     _fetchRelatedProducts();
+    _pageScrollController.addListener(_onPageScroll);
   }
 
   @override
@@ -201,6 +481,9 @@ class _GlorovProductDetailsScreenState
       _selectedVariant = widget.product.variants.isNotEmpty
           ? widget.product.variants.first
           : null;
+      _initVariantState();
+      _showStickyBottomBar = false;
+      _isSpecsExpanded = false;
       _selectedStageIndex = 0;
       _fetchReviews();
       _fetchOffers();
@@ -210,6 +493,7 @@ class _GlorovProductDetailsScreenState
 
   @override
   void dispose() {
+    _pageScrollController.removeListener(_onPageScroll);
     _pincodeController.dispose();
     _pageScrollController.dispose();
     super.dispose();
@@ -341,12 +625,25 @@ class _GlorovProductDetailsScreenState
       showBottomNav: false,
       scrollController: _pageScrollController,
       isContentScrollable: true,
-      bottomNavigationBar: !isSticky && mediaWidth <= AppBreakpoints.productMobileMax
-          ? _buildMobileStickyBottomBar()
-          : null,
-      child: isSticky
-          ? _buildStickyDesktopLayout(context, mediaWidth)
-          : _buildStackedLayout(context, mediaWidth),
+      bottomNavigationBar:
+          (!isSticky && mediaWidth <= AppBreakpoints.productMobileMax)
+              ? AnimatedSize(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
+                  child: _showStickyBottomBar
+                      ? _buildMobileStickyBottomBar()
+                      : const SizedBox.shrink(),
+                )
+              : null,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          _onPageScroll();
+          return false;
+        },
+        child: isSticky
+            ? _buildStickyDesktopLayout(context, mediaWidth)
+            : _buildStackedLayout(context, mediaWidth),
+      ),
     );
   }
 
@@ -631,32 +928,46 @@ class _GlorovProductDetailsScreenState
 
                 const SizedBox(height: 16),
 
-                // 3. Pricing & Taxes (Clean pricing without handwritten gift note)
+                // 3. Pricing & Taxes
                 _buildPricingSection(),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
 
-                // 4. "Offers for you:" Coupon Carousel
-                _buildOffersCarousel(),
+                // 4. Gift Option Checkbox
+                _buildGiftOptionCheckbox(),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
                 // 5. Quantity Stepper, Add to Cart & Buy Now
                 _buildQuantityAndAddToCart(context),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-                // 6. Delivery Estimate Pincode Checker
+                // 6. "Offers for you:" Coupon Carousel
+                _buildOffersCarousel(),
+
+                const SizedBox(height: 16),
+
+                // 7. Trust Reassurance Badges
+                _buildTrustReassuranceBadges(),
+
+                const SizedBox(height: 18),
+
+                // 8. Delivery Estimate Pincode Checker
                 _buildDeliveryEstimatePincode(),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
-                // 7. 3 Botanical Lifecycle Metric Cards
-                _buildBotanicalMetricCards(),
+                // 9. Care Highlights Card / Botanical Metric Cards
+                if (widget.product.productType == GlorovProductType.plants) ...[
+                  _buildCareHighlightsCard(),
+                  const SizedBox(height: 20),
+                ] else ...[
+                  _buildBotanicalMetricCards(),
+                  const SizedBox(height: 20),
+                ],
 
-                const SizedBox(height: 24),
-
-                // 8. Product Specifications
+                // 10. Product Specifications
                 _buildProductSpecifications(),
               ],
             ),
@@ -709,11 +1020,6 @@ class _GlorovProductDetailsScreenState
                     const SizedBox(height: 14),
                   ],
 
-                  // 3 Botanical Lifecycle Metric Cards
-                  _buildBotanicalMetricCards(),
-
-                  const SizedBox(height: 18),
-
                   // Select Packet Size (Variant Selector)
                   _buildVariantSelector(),
 
@@ -722,24 +1028,43 @@ class _GlorovProductDetailsScreenState
                   // Pricing & Taxes
                   _buildPricingSection(),
 
+                  const SizedBox(height: 12),
+
+                  // Gift Option Checkbox
+                  _buildGiftOptionCheckbox(),
+
+                  const SizedBox(height: 14),
+
+                  // Quantity Stepper, Add to Cart & Buy Now
+                  _buildQuantityAndAddToCart(context),
+
                   const SizedBox(height: 16),
 
                   // Offers Carousel
                   _buildOffersCarousel(),
 
+                  const SizedBox(height: 14),
+
+                  // Trust & Reassurance Strip (30-day guarantee & support)
+                  _buildTrustReassuranceBadges(),
+
                   const SizedBox(height: 16),
-
-                  // Quantity Stepper, Add to Cart & Buy Now
-                  _buildQuantityAndAddToCart(context),
-
-                  const SizedBox(height: 18),
 
                   // Delivery Estimate Pincode Checker
                   _buildDeliveryEstimatePincode(),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
-                  // Product Specifications
+                  // Care Highlights Card ("How easy it is to care?")
+                  if (widget.product.productType == GlorovProductType.plants) ...[
+                    _buildCareHighlightsCard(),
+                    const SizedBox(height: 18),
+                  ] else ...[
+                    _buildBotanicalMetricCards(),
+                    const SizedBox(height: 18),
+                  ],
+
+                  // Product Specifications (Collapsible Accordion)
                   _buildProductSpecifications(),
 
                   const SizedBox(height: 20),
@@ -786,13 +1111,6 @@ class _GlorovProductDetailsScreenState
       ],
     );
   }
-
-  // Compatibility aliases
-  Widget _buildDesktopLayout(BuildContext context) =>
-      _buildStickyDesktopLayout(context, MediaQuery.of(context).size.width);
-
-  Widget _buildMobileLayout(BuildContext context) =>
-      _buildStackedLayout(context, MediaQuery.of(context).size.width);
 
   // ---------------------------------------------------------------------------
   // Component 1: Title & Social Proof Rating Bar
@@ -1130,14 +1448,325 @@ class _GlorovProductDetailsScreenState
   // ---------------------------------------------------------------------------
   // Component 4: Contextual Variant Selector (Packet / Pot / Option)
   // ---------------------------------------------------------------------------
+  bool get _hasMultiAttributeVariants =>
+      widget.product.variants.any((v) => v.name.contains('/'));
+
   Widget _buildVariantSelector() {
     if (widget.product.variants.isEmpty ||
         (widget.product.variants.length == 1 &&
-            (widget.product.variants.first.name.toLowerCase().contains('standard') ||
+            (widget.product.variants.first.name
+                    .toLowerCase()
+                    .contains('standard') ||
                 widget.product.variants.first.name.trim().isEmpty))) {
       return const SizedBox.shrink();
     }
 
+    if (_hasMultiAttributeVariants) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildPlantSizeSelector(),
+          const SizedBox(height: 14),
+          _buildPlanterSelector(),
+          const SizedBox(height: 14),
+          _buildColorSwatches(),
+        ],
+      );
+    }
+
+    return _buildStandardVariantSelector();
+  }
+
+  Widget _buildPlantSizeSelector() {
+    final sizes = <String>{};
+    for (final v in widget.product.variants) {
+      final p = v.name.split('/').map((s) => s.trim()).toList();
+      if (p.length >= 3) {
+        sizes.add(p[0]);
+      } else if (p.length == 2 &&
+          (p[0].toLowerCase().contains('small') ||
+              p[0].toLowerCase().contains('medium') ||
+              p[0].toLowerCase().contains('large') ||
+              p[0].toLowerCase().contains('inch'))) {
+        sizes.add(p[0]);
+      }
+    }
+    if (sizes.isEmpty) {
+      sizes.addAll(['Small', 'Medium']);
+    } else if (sizes.length == 1 && sizes.contains('Small')) {
+      sizes.add('Medium');
+    }
+
+    final activeSize = _selectedPlantSize ?? sizes.first;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Expanded(
+              child: Text(
+                'Select Plant Size',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                ),
+              ),
+            ),
+            TapFeedback(
+              onTap: _showSizeGuideModal,
+              child: const Text(
+                'Size Guide',
+                style: TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.forestDeep,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          children: sizes.map((s) {
+            final isSelected = s == activeSize;
+            return TapFeedback(
+              onTap: () => _onSelectSize(s),
+              effect: TapAnimationType.scale,
+              scaleDown: 0.96,
+              duration: GlorovInteractionConfig.durationFast,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.forestDeep : Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.forestDeep
+                        : const Color(0xFFD1D5DB),
+                    width: 1.2,
+                  ),
+                ),
+                child: Text(
+                  s,
+                  style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                    color: isSelected ? Colors.white : const Color(0xFF374151),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlanterSelector() {
+    final plantersMap = <String, double>{};
+    for (final v in widget.product.variants) {
+      final p = v.name.split('/').map((s) => s.trim()).toList();
+      String? name;
+      if (p.length >= 3) {
+        name = p[1];
+      } else if (p.length == 2 &&
+          !p[0].toLowerCase().contains('small') &&
+          !p[0].toLowerCase().contains('medium') &&
+          !p[0].toLowerCase().contains('inch')) {
+        name = p[0];
+      }
+      if (name != null) {
+        plantersMap.putIfAbsent(name, () => v.effectivePrice);
+      }
+    }
+
+    if (plantersMap.isEmpty) return const SizedBox.shrink();
+
+    final activePlanter = _selectedPlanterName ?? plantersMap.keys.first;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Select Planter',
+          style: TextStyle(
+            fontFamily: AppTypography.primaryFont,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          children: plantersMap.entries.map((entry) {
+            final planter = entry.key;
+            final price = entry.value;
+            final isSelected = planter == activePlanter;
+
+            return TapFeedback(
+              onTap: () => _onSelectPlanter(planter),
+              effect: TapAnimationType.scale,
+              scaleDown: 0.96,
+              duration: GlorovInteractionConfig.durationFast,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFFE8F5E9) : Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.forestDeep
+                        : const Color(0xFFD1D5DB),
+                    width: isSelected ? 1.6 : 1.0,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.inventory_2_outlined,
+                      size: 20,
+                      color: isSelected
+                          ? AppColors.forestDeep
+                          : const Color(0xFF6B7280),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      planter,
+                      style: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 12.5,
+                        fontWeight:
+                            isSelected ? FontWeight.w800 : FontWeight.w600,
+                        color: isSelected
+                            ? AppColors.forestDeep
+                            : const Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '₹${price.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: isSelected
+                            ? AppColors.forestDeep
+                            : const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildColorSwatches() {
+    final colors = <String>{};
+    for (final v in widget.product.variants) {
+      final p = v.name.split('/').map((s) => s.trim()).toList();
+      if (p.length >= 3) {
+        colors.add(p[2]);
+      } else if (p.length == 2) {
+        colors.add(p[1]);
+      }
+    }
+
+    if (colors.isEmpty) return const SizedBox.shrink();
+
+    final activeColor = _selectedColorName ?? colors.first;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Color – $activeColor',
+          style: const TextStyle(
+            fontFamily: AppTypography.primaryFont,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: colors.map((c) {
+            final isSelected = c == activeColor;
+            final colorVal = _getColorForName(c);
+            final isLight = colorVal == Colors.white ||
+                colorVal == const Color(0xFFFDFBF7);
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: TapFeedback(
+                onTap: () => _onSelectColor(c),
+                effect: TapAnimationType.scale,
+                scaleDown: 0.92,
+                duration: GlorovInteractionConfig.durationFast,
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  padding: const EdgeInsets.all(2.5),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.forestDeep
+                          : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorVal,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isLight
+                            ? const Color(0xFFD1D5DB)
+                            : Colors.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    child: isSelected
+                        ? Icon(
+                            Icons.check,
+                            size: 14,
+                            color: isLight
+                                ? AppColors.forestDeep
+                                : Colors.white,
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStandardVariantSelector() {
     final variants = widget.product.variants;
 
     final String selectorTitle;
@@ -1156,7 +1785,6 @@ class _GlorovProductDetailsScreenState
                 : 'Select Option');
         break;
       case GlorovProductType.seeds:
-      default:
         selectorTitle = 'Select Packet Size';
         break;
     }
@@ -1450,6 +2078,257 @@ class _GlorovProductDetailsScreenState
     );
   }
 
+  Widget _buildGiftOptionCheckbox() {
+    return InkWell(
+      onTap: () =>
+          setState(() => _isGiftOptionSelected = !_isGiftOptionSelected),
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: Checkbox(
+                value: _isGiftOptionSelected,
+                onChanged: (val) =>
+                    setState(() => _isGiftOptionSelected = val ?? false),
+                activeColor: AppColors.forestDeep,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: const Text.rich(
+                TextSpan(
+                  style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 12.5,
+                    color: Color(0xFF374151),
+                  ),
+                  children: [
+                    TextSpan(
+                      text: 'Make this a gift ',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    TextSpan(
+                      text: '• Add a hand-written note free',
+                      style: TextStyle(color: Color(0xFF6B7280)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrustReassuranceBadges() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFEF9C3),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFFEF08A)),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.verified_user_outlined,
+                  size: 18, color: Color(0xFF854D0E)),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '30-Day Plant Guarantee',
+                  style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF713F12),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                'T&C',
+                style: TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF854D0E),
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFEF9C3),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFFEF08A)),
+          ),
+          child: const Row(
+            children: [
+              Expanded(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.chat_bubble_outline,
+                        size: 17, color: Color(0xFF854D0E)),
+                    SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Plant Care Support',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF713F12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.local_shipping_outlined,
+                        size: 18, color: Color(0xFF854D0E)),
+                    SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Pan-India Delivery',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF713F12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCareHighlightsCard() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F7F2),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'How easy it is to care?',
+            style: TextStyle(
+              fontFamily: AppTypography.primaryFont,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(Icons.water_drop_outlined,
+                        color: Color(0xFF0284C7), size: 24),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Water',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          Text(
+                            widget.product.wateringNeeds,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                height: 32,
+                width: 1,
+                color: const Color(0xFFCBD5E1),
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(Icons.wb_sunny_outlined,
+                        color: Color(0xFFEAB308), size: 24),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Light',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          Text(
+                            widget.product.sunlightRequirement,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   // ---------------------------------------------------------------------------
   // Component 7: Quantity Stepper & Green "Add To Cart" Button
   // ---------------------------------------------------------------------------
@@ -1557,33 +2436,36 @@ class _GlorovProductDetailsScreenState
       ),
     );
 
-    return Column(
-      children: [
-        if (isDesktop)
-          Row(
-            children: [
-              quantityStepper,
-              const SizedBox(width: 12),
-              Expanded(flex: 5, child: addToCartBtn),
-              const SizedBox(width: 8),
-              Expanded(flex: 4, child: buyNowBtn),
-            ],
-          )
-        else ...[
-          Row(
-            children: [
-              quantityStepper,
-              const SizedBox(width: 10),
-              Expanded(child: addToCartBtn),
-            ],
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            child: buyNowBtn,
-          ),
+    return Container(
+      key: _inPageCartKey,
+      child: Column(
+        children: [
+          if (isDesktop)
+            Row(
+              children: [
+                quantityStepper,
+                const SizedBox(width: 12),
+                Expanded(flex: 5, child: addToCartBtn),
+                const SizedBox(width: 8),
+                Expanded(flex: 4, child: buyNowBtn),
+              ],
+            )
+          else ...[
+            Row(
+              children: [
+                quantityStepper,
+                const SizedBox(width: 10),
+                Expanded(child: addToCartBtn),
+              ],
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: buyNowBtn,
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 
@@ -3427,70 +4309,99 @@ class _GlorovProductDetailsScreenState
 
     if (specs.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAF8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.format_list_bulleted,
-                  size: 18, color: AppColors.forestDeep),
-              SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  'Product Specifications',
-                  style: TextStyle(
-                    fontFamily: 'serif',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.forestDeep,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TapFeedback(
+          key: const ValueKey('pdp_specs_accordion_toggle'),
+          onTap: () => setState(() => _isSpecsExpanded = !_isSpecsExpanded),
+          effect: TapAnimationType.scale,
+          scaleDown: 0.98,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.forestDeep, // Signature Botanical Green
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.format_list_bulleted,
+                    size: 18, color: Colors.white),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'Product Specifications',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: Color(0xFFE5E7EB)),
-          const SizedBox(height: 8),
-          ...specs.map((s) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: Text(
-                        s.key,
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF6B7280),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 6,
-                      child: Text(
-                        s.value,
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1F2937),
-                        ),
-                      ),
-                    ),
-                  ],
+                const SizedBox(width: 8),
+                Icon(
+                  _isSpecsExpanded ? Icons.remove : Icons.add,
+                  color: Colors.white,
+                  size: 20,
                 ),
-              )),
-        ],
-      ),
+              ],
+            ),
+          ),
+        ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          child: _isSpecsExpanded
+              ? Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAF8),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ...specs.map((s) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 4,
+                                  child: Text(
+                                    s.key,
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  flex: 6,
+                                  child: Text(
+                                    s.value,
+                                    style: const TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF1F2937),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )),
+                    ],
+                  ),
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 
@@ -3514,7 +4425,7 @@ class _GlorovProductDetailsScreenState
           'How often should I water the seedling?',
           'Follow a ${widget.product.wateringNeeds.toLowerCase()} routine. Keep the upper layer moist during germination, then water only when the top 1 inch of soil feels dry to the touch.',
         ),
-        MapEntry(
+        const MapEntry(
           'What is GLOROV\'s guarantee & replacement policy?',
           'All GLOROV botanical seeds and plants are protected by our 100% "Arrives Healthy" guarantee. In the rare event of damage or non-germination, we provide free replacement support.',
         ),
@@ -3535,7 +4446,7 @@ class _GlorovProductDetailsScreenState
               ? 'Yes! ${widget.product.title} is certified non-toxic and pet-friendly for homes with dogs and cats.'
               : '${widget.product.title} is best kept out of reach of curious cats and dogs.',
         ),
-        MapEntry(
+        const MapEntry(
           'What should I do immediately after my plant arrives?',
           'Unbox gently, place in a shaded bright spot for 24-48 hours to acclimate after transit, and check soil moisture.',
         ),
@@ -3546,15 +4457,15 @@ class _GlorovProductDetailsScreenState
           'What materials is ${widget.product.title} crafted from?',
           'Crafted from high-grade, durable materials (${widget.product.material ?? "heavy duty botanical grade"}) designed for long-lasting gardening use.',
         ),
-        MapEntry(
+        const MapEntry(
           'How do I care for and maintain this item?',
           'Wipe clean with a damp cloth after use. Store in a dry place to prevent rust or moisture degradation.',
         ),
-        MapEntry(
+        const MapEntry(
           'Is this suitable for both indoor and outdoor gardening?',
           'Yes, engineered for versatility across indoor pots, balcony planters, and terrace/outdoor raised beds.',
         ),
-        MapEntry(
+        const MapEntry(
           'What is GLOROV\'s transit guarantee?',
           'Protected by safe delivery transit packaging. If any defect or damage occurs during transit, we provide immediate free replacement.',
         ),
@@ -3644,16 +4555,37 @@ class _GlorovProductDetailsScreenState
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GlorovCounter(
-                  value: _currentPrice,
-                  prefix: '₹',
-                  mode: CounterAnimationMode.count,
-                  style: const TextStyle(
-                    fontFamily: AppTypography.primaryFont,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF111827),
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    GlorovCounter(
+                      value: _currentPrice,
+                      prefix: '₹',
+                      mode: CounterAnimationMode.count,
+                      style: const TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    if (_currentOriginalPrice != null &&
+                        _currentOriginalPrice! > _currentPrice) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        '₹${_currentOriginalPrice!.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 13,
+                          color: Color(0xFF9CA3AF),
+                          decoration: TextDecoration.lineThrough,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 Text(
                   _selectedVariant?.name ?? '1gm Pack',

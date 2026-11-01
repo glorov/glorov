@@ -539,6 +539,7 @@ class _GlorovHeaderState extends State<GlorovHeader> {
     required String selectedCategory,
     required bool isDesktop,
   }) {
+    final width = MediaQuery.of(context).size.width;
     final isTablet = AppBreakpoints.isTablet(context);
 
     return GlorovYScrollPassThrough(
@@ -574,6 +575,7 @@ class _GlorovHeaderState extends State<GlorovHeader> {
                           showIcons: showIcons,
                           isDesktop: isDesktop,
                           isTablet: isTablet,
+                          screenWidth: width,
                           onTap: () => _onCategoryTapped(cat),
                         ),
                       );
@@ -606,6 +608,7 @@ class _HeaderCategoryNavItem extends StatefulWidget {
   final bool showIcons;
   final bool isDesktop;
   final bool isTablet;
+  final double screenWidth;
   final VoidCallback onTap;
 
   const _HeaderCategoryNavItem({
@@ -614,6 +617,7 @@ class _HeaderCategoryNavItem extends StatefulWidget {
     required this.showIcons,
     required this.isDesktop,
     this.isTablet = false,
+    this.screenWidth = 1280,
     required this.onTap,
   });
 
@@ -705,9 +709,11 @@ class _HeaderCategoryNavItemState extends State<_HeaderCategoryNavItem>
           curve: Curves.easeOutCubic,
           transform: Matrix4.translationValues(0, translateY, 0),
           padding: EdgeInsets.symmetric(
-            horizontal: widget.isDesktop
-                ? 18
-                : (widget.isTablet ? 14 : 10),
+            horizontal: widget.screenWidth >= 1200
+                ? 18.0
+                : (widget.screenWidth >= 900
+                    ? 12.0
+                    : (widget.screenWidth >= 640 ? 2.5 : 10.0)),
             vertical: showIcons ? 4 : 3,
           ),
           decoration: BoxDecoration(
@@ -730,8 +736,10 @@ class _HeaderCategoryNavItemState extends State<_HeaderCategoryNavItem>
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 240),
                     curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: widget.screenWidth < 900 && widget.screenWidth >= 640
+                          ? 6.0
+                          : 14.0,
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
@@ -782,7 +790,11 @@ class _HeaderCategoryNavItemState extends State<_HeaderCategoryNavItem>
                   style: TextStyle(
                     fontFamily: AppTypography.primaryFont,
                     fontSize: showIcons
-                        ? (widget.isDesktop ? 12 : (widget.isTablet ? 11.5 : 11))
+                        ? (widget.screenWidth >= 1200
+                            ? 12.0
+                            : (widget.screenWidth >= 900
+                                ? 11.5
+                                : (widget.screenWidth >= 640 ? 10.5 : 11.0)))
                         : 12.5,
                     fontWeight: isSelected
                         ? FontWeight.w800

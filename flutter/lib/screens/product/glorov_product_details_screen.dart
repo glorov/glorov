@@ -240,7 +240,8 @@ class _GlorovProductDetailsScreenState
 
     return GlorovStorefrontScaffold(
       backgroundColor: Colors.white,
-      currentRoute: discoverScreenRoute,
+      currentRoute: productDetailsScreenRoute,
+      showBottomNav: false,
       scrollController: _pageScrollController,
       isContentScrollable: true,
       bottomNavigationBar: !isSticky && mediaWidth <= AppBreakpoints.productMobileMax
@@ -421,8 +422,8 @@ class _GlorovProductDetailsScreenState
   }
 
   /// Two-Column Product Buying Viewport:
-  /// Left gallery floats stickily while browsing main buying options,
-  /// then seamlessly scrolls up with the page when reaching the full-width discovery sections below.
+  /// Left gallery starts cleanly at the top aligned with product title and variants,
+  /// with zero empty gaps, and naturally scrolls up when moving to the full-width discovery sections below.
   Widget _buildDesktopTwoColumnBuyingSection(
     BuildContext context, {
     required double galleryWidth,
@@ -431,43 +432,12 @@ class _GlorovProductDetailsScreenState
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // LEFT COLUMN: Sticky Product Gallery that floats during the 2-column buying area,
-        // and scrolls up smoothly when transitioning to the full-width post-purchase sections.
+        // LEFT COLUMN: Product Gallery cleanly aligned at the top
         SizedBox(
           width: galleryWidth,
-          child: AnimatedBuilder(
-            animation: _pageScrollController,
-            builder: (context, child) {
-              double maxTranslation = 0.0;
-              final rightContext = _rightColumnKey.currentContext;
-              final galleryContext = _galleryKey.currentContext;
-
-              if (rightContext?.findRenderObject() is RenderBox &&
-                  galleryContext?.findRenderObject() is RenderBox) {
-                final rightBox =
-                    rightContext!.findRenderObject() as RenderBox;
-                final galleryBox =
-                    galleryContext!.findRenderObject() as RenderBox;
-                maxTranslation = (rightBox.size.height - galleryBox.size.height)
-                    .clamp(0.0, 1500.0);
-              } else {
-                maxTranslation = 320.0;
-              }
-
-              final scrollOffset = _pageScrollController.hasClients
-                  ? _pageScrollController.offset
-                  : 0.0;
-              final translation = scrollOffset.clamp(0.0, maxTranslation);
-
-              return Transform.translate(
-                offset: Offset(0, translation),
-                child: child,
-              );
-            },
-            child: Container(
-              key: _galleryKey,
-              child: _buildGallery(context, isSticky: true),
-            ),
+          child: Container(
+            key: _galleryKey,
+            child: _buildGallery(context, isSticky: true),
           ),
         ),
 
@@ -3347,7 +3317,55 @@ class _GlorovProductDetailsScreenState
                 ),
               ],
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
+            // Mobile Sticky Bar Favorite Toggle
+            ListenableBuilder(
+              listenable: GlorovCartState.instance,
+              builder: (context, _) {
+                final isSaved =
+                    GlorovCartState.instance.isInWishlist(widget.product.id);
+
+                return TapFeedback(
+                  onTap: () {
+                    GlorovCartState.instance.toggleWishlist(widget.product.id);
+                    if (isSaved) {
+                      GlorovFeedback.showInfoToast(
+                        context,
+                        message: 'Removed from wishlist',
+                      );
+                    } else {
+                      GlorovFeedback.showSuccessToast(
+                        context,
+                        message: 'Saved "${widget.product.title}" to wishlist!',
+                      );
+                    }
+                  },
+                  effect: TapAnimationType.bounce,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isSaved
+                          ? const Color(0xFFFEE2E2)
+                          : const Color(0xFFF3F4F6),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSaved
+                            ? const Color(0xFFFCA5A5)
+                            : const Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    child: Icon(
+                      isSaved ? Icons.favorite : Icons.favorite_border_rounded,
+                      size: 20,
+                      color: isSaved
+                          ? const Color(0xFFE11D48)
+                          : const Color(0xFF4B5563),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 10),
             Expanded(
               child: ElevatedButton(
                 onPressed: _isAddingToCart

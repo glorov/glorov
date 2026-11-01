@@ -33,9 +33,12 @@ class AppColors {
   static const Color surfaceSubtle = Color(0xFFF3F4F1);
   static const Color surfaceCard = Colors.white;
 
-  // Announcement Bar
-  static const Color announcementBg = Color(0xFF1B4332);
-  static const Color announcementText = Color(0xFFD8F3DC);
+  // Announcement Bar & Themed Top Badges
+  static const Color announcementBg = Color(0xFF0C2340);
+  static const Color announcementText = Colors.white;
+  static const Color tagDarkBlue = Color(0xFF0C2340);
+  static const Color tagDarkBlueHover = Color(0xFF08192E);
+  static const Color tagTextWhite = Color(0xFFFFFFFF);
 
   // Neutral Borders & Dividers
   static const Color borderSubtle = Color(0xFFE5E7EB);

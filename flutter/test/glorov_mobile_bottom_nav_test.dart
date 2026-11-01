@@ -180,16 +180,16 @@ void main() {
       expect(notifier.isBottomNavVisible, isFalse);
       expect(notifier.showAnnouncement, isFalse);
 
-      // 2. Scroll DOWN into deep page content past threshold (Zone 3: pixels > 180):
+      // 2. Scroll DOWN into deep page content past threshold (pixels > 180):
       notifier.handleScroll(240.0, 30.0);
-      expect(notifier.isTopNavVisible, isFalse); // Top nav tucks away on scroll down
-      expect(notifier.isBottomNavVisible, isTrue); // Bottom nav appears
+      expect(notifier.isTopNavVisible, isTrue); // Top nav stays sticky
+      expect(notifier.isBottomNavVisible, isFalse); // Bottom nav does not stick on standard pages
       expect(notifier.showAnnouncement, isFalse);
 
-      // 3. Scroll UP while in Zone 3:
+      // 3. Scroll UP while mid-page:
       notifier.handleScroll(210.0, -30.0);
-      expect(notifier.isTopNavVisible, isTrue); // Top nav opens immediately on scroll up
-      expect(notifier.isBottomNavVisible, isFalse); // Bottom nav hides
+      expect(notifier.isTopNavVisible, isTrue); // Top nav remains sticky
+      expect(notifier.isBottomNavVisible, isFalse);
       expect(notifier.showAnnouncement, isFalse); // Announcement stays hidden mid-page
 
       // 4. Scroll all the way back to maximum top (Zone 1):

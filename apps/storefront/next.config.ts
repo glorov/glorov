@@ -27,6 +27,10 @@ const nextConfig: NextConfig = {
         hostname: 'cdn.glorov.in',
       },
       {
+        protocol: 'https',
+        hostname: 'cdn.shopify.com',
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
       },

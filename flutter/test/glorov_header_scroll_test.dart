@@ -38,40 +38,43 @@ void main() {
     });
 
     test(
-        'Scrolling down past threshold (Zone 3) hides top nav and displays mobile bottom nav',
+        'Scrolling down keeps top header sticky while tucking away top announcement bar',
         () {
-      // First scroll down through Zone 2 into Zone 3 (pixels = 240, past 180px threshold)
+      // First scroll down through Zone 2 (pixels = 120)
       notifier.handleScroll(120.0, 50.0);
-      expect(notifier.isTopNavVisible, isTrue); // Still visible in Zone 2
+      expect(notifier.isTopNavVisible, isTrue);
+      expect(notifier.showAnnouncement, isFalse);
+      expect(notifier.showIcons, isFalse);
 
-      // Now scroll down into Zone 3 with continuous downward delta
+      // Now scroll down further (pixels = 240)
       notifier.handleScroll(240.0, 40.0);
 
-      // Past the threshold, top navigation hides to give full reading space
-      expect(notifier.isTopNavVisible, isFalse);
-      // Mobile bottom navigation appears
-      expect(notifier.isBottomNavVisible, isTrue);
-      expect(notifier.showIcons, isFalse);
+      // Top navigation remains sticky and visible at the top!
+      expect(notifier.isTopNavVisible, isTrue);
+      // Bottom navigation dock does not stick on standard pages
+      expect(notifier.isBottomNavVisible, isFalse);
+      // Top announcement bar remains tucked away
       expect(notifier.showAnnouncement, isFalse);
+      expect(notifier.showIcons, isFalse);
     });
 
     test(
-        'Scrolling up mid-page opens top navigation and hides mobile bottom navigation',
+        'Scrolling mid-page maintains sticky compact top header',
         () {
-      // First scroll down
+      // Mid-page scroll down (pixels = 300)
       notifier.handleScroll(300.0, 50.0);
-      expect(notifier.isTopNavVisible, isFalse);
-      expect(notifier.isBottomNavVisible, isTrue);
+      expect(notifier.isTopNavVisible, isTrue);
+      expect(notifier.isBottomNavVisible, isFalse);
       expect(notifier.showAnnouncement, isFalse);
 
-      // Now scroll up while still scrolled down (pixels = 260)
+      // Scroll up while still mid-page (pixels = 260)
       notifier.handleScroll(260.0, -40.0);
 
-      // Top navigation opens smoothly, bottom navigation hides
+      // Top navigation stays sticky and visible
       expect(notifier.isTopNavVisible, isTrue);
       expect(notifier.isBottomNavVisible, isFalse);
       expect(notifier.showIcons, isFalse);
-      expect(notifier.showAnnouncement, isFalse); // Only visible at maximum top
+      expect(notifier.showAnnouncement, isFalse); // Only restored when reaching maximum top
     });
 
     test(
@@ -212,27 +215,31 @@ void main() {
       expect(GlorovHeaderScrollNotifier.instance.isTopNavVisible, isTrue);
     });
 
-    test('Responsive scroll hysteresis past threshold: slight upward scroll triggers top nav reveal', () {
+    test('Sticky header maintains visibility during scrolling and updates announcement bar', () {
       final notifier = GlorovHeaderScrollNotifier.instance;
       notifier.reset();
 
       // 1. Initial top state
       expect(notifier.isTopNavVisible, isTrue);
+      expect(notifier.showAnnouncement, isTrue);
 
-      // 2. Initial scroll down (30px) stays sticky and visible in Zone 2
+      // 2. Initial scroll down (30px) stays sticky and visible
       notifier.handleScroll(30.0, 15.0);
       expect(notifier.isTopNavVisible, isTrue);
+      expect(notifier.showAnnouncement, isFalse);
       expect(notifier.isBottomNavVisible, isFalse);
 
-      // 3. Scroll down past threshold (240px) hides top nav smoothly in Zone 3
+      // 3. Scroll down further (240px) maintains sticky top header
       notifier.handleScroll(240.0, 30.0);
-      expect(notifier.isTopNavVisible, isFalse);
-      expect(notifier.isBottomNavVisible, isTrue);
-
-      // 4. Slight scroll up (-10px) immediately reveals top nav
-      notifier.handleScroll(230.0, -10.0);
       expect(notifier.isTopNavVisible, isTrue);
+      expect(notifier.showAnnouncement, isFalse);
       expect(notifier.isBottomNavVisible, isFalse);
+
+      // 4. Return to top (0px) restores announcement bar
+      notifier.handleScroll(0.0, -30.0);
+      expect(notifier.isTopNavVisible, isTrue);
+      expect(notifier.showAnnouncement, isTrue);
+      expect(notifier.showIcons, isTrue);
     });
   });
 }

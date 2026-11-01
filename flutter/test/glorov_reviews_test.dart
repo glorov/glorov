@@ -183,9 +183,9 @@ void main() {
       }
     });
 
-    test('Verifies all 67 products have reviews and summaries', () {
-      expect(GlorovReviewsData.reviews.length, 67);
-      expect(GlorovReviewsData.summaries.length, 67);
+    test('Verifies all products have reviews and summaries', () {
+      expect(GlorovReviewsData.reviews.length, GlorovMockData.products.length);
+      expect(GlorovReviewsData.summaries.length, GlorovMockData.products.length);
 
       for (final p in GlorovMockData.products) {
         expect(GlorovReviewsData.reviews.containsKey(p.id), true,
@@ -258,9 +258,11 @@ void main() {
       final writeBtnFinder = find.widgetWithText(OutlinedButton, 'Write a review').first;
       await tester.scrollUntilVisible(
         writeBtnFinder,
-        500,
+        300,
         scrollable: find.byType(Scrollable).first,
       );
+      // Adjust scroll slightly so button is safely below the sticky top header (header height ~110px)
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, 200));
       await tester.pumpAndSettle();
 
       // Tap "Write a review"

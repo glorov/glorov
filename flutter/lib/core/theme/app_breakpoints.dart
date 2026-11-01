@@ -6,8 +6,8 @@ class AppBreakpoints {
 
   static const double mobileMax = 640.0;
   static const double tabletMin = 641.0;
-  static const double tabletMax = 1024.0;
-  static const double desktopMin = 1025.0;
+  static const double tabletMax = 1023.0;
+  static const double desktopMin = 1024.0;
 
   /// Maximum container width on desktop web viewports
   static const double maxContentWidth = 1280.0;

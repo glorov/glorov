@@ -114,7 +114,7 @@ class GlorovAnnouncementConfig {
   const GlorovAnnouncementConfig({
     this.isEnabled = true,
     this.speedSeconds = 30,
-    this.bgColor = const Color(0xFF1B4332), // Forest Deep
+    this.bgColor = const Color(0xFF0C2340), // Dark Navy Blue Theme
     this.textColor = Colors.white,
     this.highlightColor = const Color(0xFFFFD51F), // Golden Yellow
     this.pauseOnHover = true,

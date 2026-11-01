@@ -20,14 +20,61 @@ class GlorovFeaturedProducts extends StatefulWidget {
 }
 
 class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
-  String _selectedCategory = 'All Botanical';
+  String _selectedCategory = 'All Featured';
 
   final List<String> _tabs = [
-    'All Botanical',
-    'Indoor Plants',
+    'All Featured',
+    'Live Plants',
     'Heirloom Seeds',
-    'Planters & Tools',
   ];
+
+  List<GlorovProduct> _getCuratedProducts() {
+    if (_selectedCategory == 'Live Plants') {
+      return GlorovMockData.products
+          .where((p) =>
+              p.category == 'Live Plants' ||
+              p.productType == GlorovProductType.plants)
+          .take(8)
+          .toList();
+    }
+    if (_selectedCategory == 'Heirloom Seeds') {
+      return GlorovMockData.products
+          .where((p) =>
+              p.category == 'Seeds' ||
+              p.productType == GlorovProductType.seeds)
+          .take(8)
+          .toList();
+    }
+
+    // Default 'All Featured': Curated high-converting selection (Max 8)
+    const preferredIds = [
+      'glr-her-14', // Arugula Seeds (Rocket Leaves) - ⚡ CULINARY HERB
+      'glr-plt-01', // Peace Lily Plant - ⚡ NASA AIR PURIFIER
+      'glr-her-13', // Italian Basil Seeds - ⚡ CULINARY HERB
+      'glr-seed-01', // Green Chilli Seeds - ⚡ 98% GERMINATION
+      'glr-plt-02', // Monstera Deliciosa - ⚡ LOW MAINTENANCE
+      'glr-flw-01', // Marigold Seeds - ⚡ VIBRANT BLOOMS
+      'glr-plt-05', // Snake Plant Golden - ⚡ NASA AIR PURIFIER
+      'glr-veg-02', // Coriander Seeds - ⚡ 98% GERMINATION
+    ];
+
+    final curated = <GlorovProduct>[];
+    for (final id in preferredIds) {
+      final match =
+          GlorovMockData.products.where((p) => p.id == id).firstOrNull;
+      if (match != null) curated.add(match);
+    }
+
+    if (curated.length < 8) {
+      for (final p in GlorovMockData.products) {
+        if (!curated.any((c) => c.id == p.id)) {
+          curated.add(p);
+          if (curated.length == 8) break;
+        }
+      }
+    }
+    return curated;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,12 +94,8 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
       childAspectRatio = 0.58;
     }
 
-    // Filter products
-    final displayedProducts = _selectedCategory == 'All Botanical'
-        ? GlorovMockData.products
-        : GlorovMockData.products
-            .where((p) => p.category == _selectedCategory)
-            .toList();
+    // Filter products strictly capped to 8 items to prevent complex/overwhelming UI
+    final displayedProducts = _getCuratedProducts();
 
     return Container(
       width: double.infinity,
@@ -164,7 +207,7 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // Product Grid
+              // Product Grid (Strictly capped to 8 curated items)
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -183,6 +226,111 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
                     ),
                   );
                 },
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Curated Storefront Discovery Banner
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: AppRadii.roundedLg,
+                  border: Border.all(color: AppColors.borderSubtle),
+                  boxShadow: AppShadows.card,
+                ),
+                child: isDesktop
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(
+                                Icons.eco_outlined,
+                                color: AppColors.forestDeep,
+                                size: 20,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Showing 8 hand-picked botanicals of 60+ specimens',
+                                style: TextStyle(
+                                  fontFamily: AppTypography.primaryFont,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              discoverScreenRoute,
+                            ),
+                            icon: const Icon(Icons.arrow_forward, size: 16),
+                            label: const Text('Explore Full Catalog (60+)'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.forestDeep,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: AppRadii.roundedFull,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.eco_outlined,
+                                color: AppColors.forestDeep,
+                                size: 18,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'Showing 8 curated botanicals of 60+',
+                                style: TextStyle(
+                                  fontFamily: AppTypography.primaryFont,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton.icon(
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              discoverScreenRoute,
+                            ),
+                            icon: const Icon(Icons.arrow_forward, size: 16),
+                            label: const Text('Explore Full Catalog'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.forestDeep,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: AppRadii.roundedFull,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 11,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ],
           ),

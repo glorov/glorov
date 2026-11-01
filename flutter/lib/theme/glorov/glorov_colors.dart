@@ -29,6 +29,11 @@ class GlorovColors {
   static const Color surfaceMuted = Color(0xFFF3F4F1);
   static const Color surfaceCard = Colors.white;
 
+  // Dark Blue Themed Tag & Announcement Tokens
+  static const Color tagDarkBlue = Color(0xFF0C2340);
+  static const Color tagDarkBlueHover = Color(0xFF08192E);
+  static const Color tagTextWhite = Color(0xFFFFFFFF);
+
   // Neutral Borders & Dividers
   static const Color borderSubtle = Color(0xFFE5E7EB);
   static const Color borderMedium = Color(0xFFD1D5DB);

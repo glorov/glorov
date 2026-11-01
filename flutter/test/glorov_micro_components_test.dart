@@ -265,6 +265,7 @@ void main() {
               height: 400,
               child: GlorovProductCard(
                 product: sampleProduct,
+                showWishlistButton: true,
                 onTap: () => cardNavigated = true,
               ),
             ),
@@ -306,6 +307,7 @@ void main() {
               height: 400,
               child: GlorovProductCard(
                 product: sampleProduct,
+                showWishlistButton: true,
                 onTap: () => cardNavigated = true,
               ),
             ),
@@ -339,6 +341,7 @@ void main() {
               height: 400,
               child: GlorovProductCard(
                 product: sampleProduct,
+                showWishlistButton: true,
                 onTap: () => cardNavigated = true,
               ),
             ),
@@ -351,6 +354,28 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(cardNavigated, isTrue);
+    });
+
+    testWidgets('By default, heart wishlist icon is NOT rendered on product card', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 300,
+              height: 400,
+              child: GlorovProductCard(
+                product: sampleProduct,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Verify no heart icon is present on the card
+      expect(find.byIcon(Icons.favorite_border), findsNothing);
+      expect(find.byIcon(Icons.favorite), findsNothing);
     });
   });
 }

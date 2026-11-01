@@ -22,13 +22,18 @@ class BotanicalProductLaunch {
   final String handle;
   final String image;
   final String tag; // e.g. 'BUY NOW', 'NEW LAUNCH', 'SALE IS LIVE'
+  final double? price;
 
   const BotanicalProductLaunch({
     required this.title,
     required this.handle,
     required this.image,
     this.tag = 'BUY NOW',
+    this.price,
   });
+
+  String get formattedPrice =>
+      price != null ? '₹${price!.toStringAsFixed(0)}' : '';
 }
 
 class CategoryModel {
@@ -130,36 +135,42 @@ final List<CategoryModel> glorovBotanicalCategories = [
         handle: 'brinjal-banarshi-giant-seeds',
         image: 'assets/images/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg',
         tag: 'BUY NOW',
+        price: 99.0,
       ),
       BotanicalProductLaunch(
         title: 'Marigold African Double Seeds',
         handle: 'marigold-african-double-seeds',
         image: 'assets/images/products/flower-seeds/marigold-african-double-seeds-1.jpg',
         tag: 'NEW LAUNCH',
+        price: 79.0,
       ),
       BotanicalProductLaunch(
         title: 'Golden Money Plant',
         handle: 'money-plant-golden',
         image: 'assets/images/products/indoor-plants/money-plant-golden-1.jpg',
         tag: 'BUY NOW',
+        price: 249.0,
       ),
       BotanicalProductLaunch(
         title: 'Peace Lily Plant',
         handle: 'peace-lily-plant',
         image: 'assets/images/products/air-purifying-plants/peace-lily-plant-1.jpg',
         tag: 'SALE IS LIVE',
+        price: 299.0,
       ),
       BotanicalProductLaunch(
         title: 'Italian Basil Seeds',
         handle: 'italian-basil-seeds',
         image: 'assets/images/products/herb-seeds/italian-basil-1000-seeds-1.jpg',
         tag: 'BUY NOW',
+        price: 89.0,
       ),
       BotanicalProductLaunch(
         title: 'Diamond Ceramic Pot',
         handle: 'diamond-pot',
         image: 'assets/images/products/ceramic-planters/diamond-pot-1.jpg',
         tag: 'BUY NOW',
+        price: 349.0,
       ),
     ],
   ),
@@ -202,36 +213,42 @@ final List<CategoryModel> glorovBotanicalCategories = [
         handle: 'brinjal-banarshi-giant-seeds',
         image: 'assets/images/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg',
         tag: 'BUY NOW',
+        price: 99.0,
       ),
       BotanicalProductLaunch(
         title: 'Marigold African Double Seeds',
         handle: 'marigold-african-double-seeds',
         image: 'assets/images/products/flower-seeds/marigold-african-double-seeds-1.jpg',
         tag: 'NEW LAUNCH',
+        price: 79.0,
       ),
       BotanicalProductLaunch(
         title: 'Italian Basil Seeds',
         handle: 'italian-basil-seeds',
         image: 'assets/images/products/herb-seeds/italian-basil-1000-seeds-1.jpg',
         tag: 'BUY NOW',
+        price: 89.0,
       ),
       BotanicalProductLaunch(
         title: 'Dahlia Seeds',
         handle: 'dahlia-seeds',
         image: 'assets/images/products/flower-seeds/dahlia-seeds-1.jpg',
         tag: 'SALE IS LIVE',
+        price: 99.0,
       ),
       BotanicalProductLaunch(
         title: 'Chinese Cabbage Seeds',
         handle: 'chinese-cabbage-seeds',
         image: 'assets/images/products/vegetable-seeds/chinese-cabbage-seeds-1.jpg',
         tag: 'BUY NOW',
+        price: 119.0,
       ),
       BotanicalProductLaunch(
         title: 'Marigold African Double Seeds',
         handle: 'marigold-african-double-seeds',
         image: 'assets/images/products/flower-seeds/marigold-african-double-seeds-1.jpg',
         tag: 'BUY NOW',
+        price: 79.0,
       ),
     ],
   ),
@@ -281,24 +298,28 @@ final List<CategoryModel> glorovBotanicalCategories = [
         handle: 'money-plant-golden',
         image: 'assets/images/products/indoor-plants/money-plant-golden-1.jpg',
         tag: 'BUY NOW',
+        price: 249.0,
       ),
       BotanicalProductLaunch(
         title: 'Peace Lily Plant',
         handle: 'peace-lily-plant',
         image: 'assets/images/products/air-purifying-plants/peace-lily-plant-1.jpg',
         tag: 'SALE IS LIVE',
+        price: 299.0,
       ),
       BotanicalProductLaunch(
         title: 'Miniature Jade Plant',
         handle: 'jade-plant-mini',
         image: 'assets/images/products/succulents-bonsai/jade-plant-mini-1.jpg',
         tag: 'NEW LAUNCH',
+        price: 199.0,
       ),
       BotanicalProductLaunch(
         title: 'Areca Palm Plant XL',
         handle: 'areca-palm-plant-xl',
         image: 'assets/images/products/indoor-plants/areca-palm-plant-xl-1.jpg',
         tag: 'BUY NOW',
+        price: 499.0,
       ),
     ],
   ),
@@ -334,24 +355,28 @@ final List<CategoryModel> glorovBotanicalCategories = [
         handle: 'diamond-pot',
         image: 'assets/images/products/ceramic-planters/diamond-pot-1.jpg',
         tag: 'BUY NOW',
+        price: 349.0,
       ),
       BotanicalProductLaunch(
         title: 'Roma Terracotta Pot',
         handle: 'roma-ceramic-pot',
         image: 'assets/images/products/terracotta-pots/roma-ceramic-pot-1.jpg',
         tag: 'SALE IS LIVE',
+        price: 299.0,
       ),
       BotanicalProductLaunch(
         title: 'Spiro Ceramic Pot',
         handle: 'spiro-pot',
         image: 'assets/images/products/ceramic-planters/spiro-pot-1.jpg',
         tag: 'BUY NOW',
+        price: 379.0,
       ),
       BotanicalProductLaunch(
         title: 'Olivia Ivory Handpainted Pot',
         handle: 'olivia-ivory-handpainted-ceramic-pot',
         image: 'assets/images/products/terracotta-pots/olivia-ivory-handpainted-ceramic-pot-1.jpg',
         tag: 'BUY NOW',
+        price: 399.0,
       ),
     ],
   ),
@@ -387,24 +412,28 @@ final List<CategoryModel> glorovBotanicalCategories = [
         handle: 'pot-o-mix-5-kg-potting-mix',
         image: 'assets/images/products/potting-mix-fertilizers/pot-o-mix-5-kg-potting-mix-1.jpg',
         tag: 'BUY NOW',
+        price: 349.0,
       ),
       BotanicalProductLaunch(
         title: 'Heavy Duty Anvil Pruner',
         handle: 'heavy-duty-anvil-pruner',
         image: 'assets/images/products/gardening-tools/heavy-duty-anvil-pruner-1.jpg',
         tag: 'BUY NOW',
+        price: 449.0,
       ),
       BotanicalProductLaunch(
         title: 'Cocopeat Block 5 Kg',
         handle: 'cocopeat-block-5-kg',
         image: 'assets/images/products/potting-mix-fertilizers/cocopeat-block-5-kg-1.jpg',
         tag: 'SALE IS LIVE',
+        price: 199.0,
       ),
       BotanicalProductLaunch(
         title: 'Garden Rake Long Handle',
         handle: 'garden-rake-with-long-handle-12-teeth-4-ft',
         image: 'assets/images/products/gardening-tools/garden-rake-with-long-handle-12-teeth-4-ft-1.jpg',
         tag: 'BUY NOW',
+        price: 499.0,
       ),
     ],
   ),

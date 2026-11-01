@@ -326,26 +326,26 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
   Widget _buildCategoryBadge(GlorovHeroData data) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xxs + 2,
+        horizontal: AppSpacing.sm + 4,
+        vertical: AppSpacing.xxs + 3,
       ),
       decoration: BoxDecoration(
-        color: AppColors.mintBadge,
+        color: AppColors.tagDarkBlue,
         borderRadius: AppRadii.roundedFull,
-        border: Border.all(color: AppColors.sage.withValues(alpha: 0.4)),
+        border: Border.all(color: AppColors.tagDarkBlue),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 6,
-            height: 6,
+            width: 7,
+            height: 7,
             decoration: const BoxDecoration(
-              color: AppColors.forestDeep,
+              color: Color(0xFFF9C74F), // Bright gold accent dot
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 7),
           Flexible(
             child: Text(
               data.tag,
@@ -356,7 +356,7 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
-                color: AppColors.forestDeep,
+                color: Colors.white,
               ),
             ),
           ),

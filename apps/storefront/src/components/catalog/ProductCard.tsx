@@ -260,6 +260,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
               src={product.thumbnail}
               alt={product.title}
               fill
+              unoptimized
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               priority={priority}
               onError={() => setImageError(true)}
@@ -382,7 +383,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
               ) : (
                 <>
                   <span>{variantCount > 1 ? 'Select Options' : 'Add To Cart'}</span>
-                  <span className={styles.srOnly}>Select Options</span>
+                  {variantCount === 1 && <span className={styles.srOnly}>Add to Cart</span>}
                 </>
               )}
             </button>

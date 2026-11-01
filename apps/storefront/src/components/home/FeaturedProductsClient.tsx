@@ -44,6 +44,13 @@ export function FeaturedProductsClient({ initialProducts }: FeaturedProductsClie
       }
     }
 
+    // Prioritize popular botanical staples like Arugula (Culinary Herb) and Basil
+    seedsList.sort((a, b) => {
+      const aScore = a.handle?.includes('arugula') ? 10 : a.handle?.includes('basil') ? 5 : 0
+      const bScore = b.handle?.includes('arugula') ? 10 : b.handle?.includes('basil') ? 5 : 0
+      return bScore - aScore
+    })
+
     // Curate a balanced 8 products for "All": 4 plants + 4 seeds
     const mixed: StoreCatalogProduct[] = []
     const maxHalf = 4

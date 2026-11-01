@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_colors.dart';
@@ -14,11 +15,15 @@ import '../../services/glorov_cart_state.dart';
 class GlorovProductCard extends StatefulWidget {
   final GlorovProduct product;
   final VoidCallback? onTap;
+  final bool showWishlistButton;
+  final bool forceCircularAction;
 
   const GlorovProductCard({
     super.key,
     required this.product,
     this.onTap,
+    this.showWishlistButton = false,
+    this.forceCircularAction = false,
   });
 
   @override
@@ -131,7 +136,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                   ),
                 ),
 
-                // Top-Left Promotional / Custom Badge: ONLY show if configured in dashboard/database
+                // Top-Left Promotional / Custom Badge: Themed dark blue capsule with bolt icon
                 if (product.badges.isNotEmpty &&
                     product.badges.first.trim().isNotEmpty)
                   Positioned(
@@ -140,14 +145,14 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
-                        vertical: 5,
+                        vertical: 5.5,
                       ),
                       decoration: const BoxDecoration(
-                        color: Color(0xFF85102F), // Signature rich wine/burgundy
+                        color: AppColors.tagDarkBlue, // Theme dark blue #0c2340
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(18),
-                          topRight: Radius.circular(14),
-                          bottomRight: Radius.circular(14),
+                          topRight: Radius.circular(16),
+                          bottomRight: Radius.circular(16),
                           bottomLeft: Radius.circular(0),
                         ),
                       ),
@@ -157,7 +162,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                           const Icon(
                             Icons.bolt,
                             size: 13,
-                            color: Color(0xFFF9C74F), // Bright yellow bolt
+                            color: Color(0xFFF9C74F), // Bright yellow/gold bolt
                           ),
                           const SizedBox(width: 3),
                           Text(
@@ -174,126 +179,137 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                     ),
                   ),
 
-                // Top-Right Wishlist Heart Toggle (with bounce micro-interaction)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: ListenableBuilder(
-                    listenable: GlorovCartState.instance,
-                    builder: (context, _) {
-                      final isSaved =
-                          GlorovCartState.instance.isInWishlist(product.id);
+                // Top-Right Wishlist Heart Toggle (ONLY shown if showWishlistButton is enabled)
+                if (widget.showWishlistButton)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: ListenableBuilder(
+                      listenable: GlorovCartState.instance,
+                      builder: (context, _) {
+                        final isSaved =
+                            GlorovCartState.instance.isInWishlist(product.id);
 
-                      return TapFeedback(
-                        onTap: () {
-                          GlorovCartState.instance.toggleWishlist(product.id);
-                          if (isSaved) {
-                            GlorovFeedback.showInfoToast(
-                              context,
-                              message: 'Removed from wishlist',
-                            );
-                          } else {
-                            GlorovFeedback.showSuccessToast(
-                              context,
-                              message: 'Saved "${product.title}" to wishlist!',
-                            );
-                          }
-                        },
-                        effect: TapAnimationType.bounce,
-                        scaleUp: 1.25,
-                        semanticLabel: isSaved
-                            ? 'Remove ${product.title} from wishlist'
-                            : 'Add ${product.title} to wishlist',
-                        child: Material(
-                          color: Colors.white.withValues(alpha: 0.94),
-                          shape: const CircleBorder(),
-                          elevation: 1.5,
-                          child: Padding(
-                            padding: const EdgeInsets.all(6.0),
-                            child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 200),
-                              transitionBuilder: (child, anim) =>
-                                  ScaleTransition(scale: anim, child: child),
-                              child: Icon(
-                                isSaved
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                key: ValueKey<bool>(isSaved),
-                                size: 17,
-                                color: isSaved
-                                    ? const Color(0xFF85102F)
-                                    : const Color(0xFF4B5563),
+                        return TapFeedback(
+                          onTap: () {
+                            GlorovCartState.instance.toggleWishlist(product.id);
+                            if (isSaved) {
+                              GlorovFeedback.showInfoToast(
+                                context,
+                                message: 'Removed from wishlist',
+                              );
+                            } else {
+                              GlorovFeedback.showSuccessToast(
+                                context,
+                                message: 'Saved "${product.title}" to wishlist!',
+                              );
+                            }
+                          },
+                          effect: TapAnimationType.bounce,
+                          scaleUp: 1.25,
+                          semanticLabel: isSaved
+                              ? 'Remove ${product.title} from wishlist'
+                              : 'Add ${product.title} to wishlist',
+                          child: Material(
+                            color: Colors.white.withValues(alpha: 0.94),
+                            shape: const CircleBorder(),
+                            elevation: 1.5,
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 200),
+                                transitionBuilder: (child, anim) =>
+                                    ScaleTransition(scale: anim, child: child),
+                                child: Icon(
+                                  isSaved
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  key: ValueKey<bool>(isSaved),
+                                  size: 17,
+                                  color: isSaved
+                                      ? const Color(0xFF85102F)
+                                      : const Color(0xFF4B5563),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                ),
 
-                // Bottom-Left Rating Pill (White box with green star & review count)
+                // Bottom-Left Rating Pill (Frosted Glass with Proper Visibility)
                 Positioned(
                   left: 8,
                   bottom: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 3.5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(5),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: BackdropFilter(
+                      filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          product.rating.toStringAsFixed(1),
-                          style: const TextStyle(
-                            fontFamily: AppTypography.primaryFont,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1E293B),
-                            height: 1.0,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.78),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.88),
+                            width: 1.0,
                           ),
-                        ),
-                        const SizedBox(width: 3),
-                        const Icon(
-                          Icons.star_rounded,
-                          size: 14,
-                          color: Color(0xFF16A34A), // Rich green star
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4),
-                          child: Text(
-                            '|',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFFCBD5E1),
-                              height: 1.0,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.10),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
                             ),
-                          ),
+                          ],
                         ),
-                        Text(
-                          '${product.reviewCount}',
-                          style: const TextStyle(
-                            fontFamily: AppTypography.primaryFont,
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF475569),
-                            height: 1.0,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              product.rating.toStringAsFixed(1),
+                              style: const TextStyle(
+                                fontFamily: AppTypography.primaryFont,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                                height: 1.0,
+                              ),
+                            ),
+                            const SizedBox(width: 3),
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 14,
+                              color: Color(0xFF16A34A), // Rich green star
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4),
+                              child: Text(
+                                '|',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFF94A3B8),
+                                  height: 1.0,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              '${product.reviewCount}',
+                              style: const TextStyle(
+                                fontFamily: AppTypography.primaryFont,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF334155),
+                                height: 1.0,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -309,32 +325,35 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Product Title (Editorial Serif Typography)
-                  Text(
-                    product.title,
-                    style: const TextStyle(
-                      fontFamily: 'serif',
-                      fontFamilyFallback: [
-                        'Georgia',
-                        'Cambria',
-                        'Playfair Display',
-                        'Recoleta',
-                      ],
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
-                      height: 1.22,
+                  // Product Title (Editorial Serif Typography, Fixed Height for Uniform Card Alignment)
+                  SizedBox(
+                    height: 38,
+                    child: Text(
+                      product.title,
+                      style: const TextStyle(
+                        fontFamily: 'serif',
+                        fontFamilyFallback: [
+                          'Georgia',
+                          'Cambria',
+                          'Playfair Display',
+                          'Recoleta',
+                        ],
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                        height: 1.22,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
 
                   // Bottom Row: Price on Left, Green Button on Right
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      // Under 230px, render circular shopping bag button (Image 1)
-                      // At or above 230px, render pill 'Add To Cart' button (Image 2 & 3)
-                      final isCompact = constraints.maxWidth < 230;
+                      // Under 230px or forced: render circular shopping bag button (Image 1 & 6)
+                      // Above 230px: render pill 'Add To Cart' button
+                      final isCompact = constraints.maxWidth < 230 || widget.forceCircularAction;
 
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

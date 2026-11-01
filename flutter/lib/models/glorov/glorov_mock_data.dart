@@ -1851,6 +1851,31 @@ class GlorovMockData {
         GlorovProductVariant(id: 'var-transplanter-with-pvc-handle-1', name: 'Standard Pack', price: 249.0, discountPrice: 219.0),
       ],
     ),
+
+    // glr-npk-65: Instagrow NPK 19:19:19 Fertilizer
+    GlorovProduct(
+      id: 'glr-npk-65',
+      slug: 'instagrow-npk-19-19-19-fertilizer',
+      title: 'Instagrow NPK 19:19:19 Fertilizer',
+      botanicalName: 'Water Soluble Foliar Fertilizer',
+      shortDescription: 'Balanced essential nutrition for vegetative growth, flowering, and root development in Indian potted plants.',
+      description: 'Instagrow NPK 19:19:19 is a completely water-soluble foliar spray and soil drench fertilizer providing equal proportions of Nitrogen, Phosphorus, and Potassium.',
+      category: 'Plant Care & Soil',
+      subcategory: 'Potting Mix & Fertilizers',
+      productType: GlorovProductType.accessories,
+      price: 399.0,
+      discountPrice: 169.0,
+      discountPercent: 57,
+      rating: 4.8,
+      reviewCount: 416,
+      imageUrls: ['assets/images/products/potting-mix-fertilizers/pot-o-mix-5-kg-potting-mix-1.jpg'],
+      isBestSeller: true,
+      isFeatured: true,
+      badges: ['BESTSELLER'],
+      variants: [
+        GlorovProductVariant(id: 'var-npk-1', name: '500g', price: 399.0, discountPrice: 169.0),
+      ],
+    ),
   ];
 
   static GlorovProduct? getProductById(String id) {

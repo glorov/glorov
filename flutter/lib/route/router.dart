@@ -366,7 +366,12 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case walletScreenRoute:
       return _buildRoute(const WalletScreen(), settings);
     case cartScreenRoute:
-      return _buildRoute(const GlorovCartScreen(), settings);
+      final showOffers = uri?.queryParameters['offers'] == 'true' ||
+          settings.arguments == 'offers';
+      return _buildRoute(
+        GlorovCartScreen(initialShowOffers: showOffers),
+        settings,
+      );
     case checkoutScreenRoute:
       return _buildRoute(const GlorovCheckoutScreen(), settings);
     case 'thanks_for_order':

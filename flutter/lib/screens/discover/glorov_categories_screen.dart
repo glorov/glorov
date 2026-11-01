@@ -1268,7 +1268,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
             crossAxisCount: 3,
             crossAxisSpacing: AppSpacing.lg,
             mainAxisSpacing: AppSpacing.lg,
-            childAspectRatio: 1.15,
+            childAspectRatio: 2.5,
           ),
           itemBuilder: (context, index) {
             final sub = category.subCategories[index];
@@ -1278,52 +1278,90 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
               },
               borderRadius: BorderRadius.circular(16),
               child: Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.borderSubtle),
                   boxShadow: AppShadows.card,
                 ),
+                clipBehavior: Clip.antiAlias,
                 child: Row(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: SizedBox(
-                        width: 72,
-                        height: 72,
-                        child: sub.image.startsWith('assets/')
-                            ? Image.asset(sub.image, fit: BoxFit.cover)
-                            : Image.network(sub.image, fit: BoxFit.cover),
-                      ),
+                    SizedBox(
+                      width: 120,
+                      height: double.infinity,
+                      child: sub.image.startsWith('assets/')
+                          ? Image.asset(
+                              sub.image,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: const Color(0xFFE8F0EA),
+                                child: const Center(
+                                  child: Icon(Icons.eco_rounded, color: AppColors.forestDeep, size: 28),
+                                ),
+                              ),
+                            )
+                          : Image.network(
+                              sub.image,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: const Color(0xFFE8F0EA),
+                                child: const Center(
+                                  child: Icon(Icons.eco_rounded, color: AppColors.forestDeep, size: 28),
+                                ),
+                              ),
+                            ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            sub.title,
-                            style: const TextStyle(
-                              fontFamily: AppTypography.primaryFont,
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              sub.title,
+                              style: const TextStyle(
+                                fontFamily: AppTypography.primaryFont,
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${sub.count} curated items',
-                            style: const TextStyle(
-                              fontFamily: AppTypography.primaryFont,
-                              fontSize: 12,
-                              color: AppColors.textMuted,
+                            const SizedBox(height: 4),
+                            Text(
+                              '${sub.count} curated varieties',
+                              style: const TextStyle(
+                                fontFamily: AppTypography.primaryFont,
+                                fontSize: 12.5,
+                                color: AppColors.textMuted,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            const Row(
+                              children: [
+                                Text(
+                                  'Explore Collection',
+                                  style: TextStyle(
+                                    fontFamily: AppTypography.primaryFont,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.forestDeep,
+                                  ),
+                                ),
+                                SizedBox(width: 4),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 13,
+                                  color: AppColors.forestDeep,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -1381,8 +1419,26 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                           fit: StackFit.expand,
                           children: [
                             launch.image.startsWith('assets/')
-                                ? Image.asset(launch.image, fit: BoxFit.cover)
-                                : Image.network(launch.image, fit: BoxFit.cover),
+                                ? Image.asset(
+                                    launch.image,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      color: const Color(0xFFF0F4F1),
+                                      child: const Center(
+                                        child: Icon(Icons.eco_rounded, color: AppColors.forestDeep, size: 24),
+                                      ),
+                                    ),
+                                  )
+                                : Image.network(
+                                    launch.image,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      color: const Color(0xFFF0F4F1),
+                                      child: const Center(
+                                        child: Icon(Icons.eco_rounded, color: AppColors.forestDeep, size: 24),
+                                      ),
+                                    ),
+                                  ),
                             Positioned(
                               top: 8,
                               left: 8,

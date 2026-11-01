@@ -82,136 +82,106 @@ async function run() {
     console.log(`Saved screenshot: ${filename}.png (${width}x${height})`);
   }
 
+  async function navigateFresh(url) {
+    await send('Page.navigate', { url: 'about:blank' });
+    await new Promise((r) => setTimeout(r, 300));
+    await send('Page.navigate', { url });
+    await new Promise((r) => setTimeout(r, 3500));
+  }
+
   console.log('--- 1. Verification of Catalog Grid (No heart icons on cards, frosted rating badge) ---');
-  await send('Page.navigate', { url: 'http://localhost:8086/#/discover' });
-  await new Promise((r) => setTimeout(r, 3000));
+  await navigateFresh('http://localhost:8086/#/discover');
   await takeScreenshot('flutter_catalog_mobile_no_heart_cards', 390, 844, true);
   await takeScreenshot('flutter_catalog_desktop_no_heart_cards', 1280, 850, false);
 
   console.log('--- 2. Verification of PDP (Favorite Heart Button IS present) ---');
-  await send('Page.navigate', { url: 'http://localhost:8086/#/product_details?id=glr-flo-10' });
-  await new Promise((r) => setTimeout(r, 3000));
+  await navigateFresh('http://localhost:8086/#/product_details?id=glr-flo-10');
   await takeScreenshot('flutter_pdp_mobile_favorite_button', 390, 844, true);
   await takeScreenshot('flutter_pdp_desktop_favorite_button', 1280, 850, false);
 
   console.log('--- 3. Cart State 1: Mobile (Subtotal ₹297 -> Add ₹202 more to unlock free delivery) ---');
-  // Seed local storage with Cosmos Mix Seeds quantity 3
+  // Seed local storage with Cosmos Mix Seeds quantity 3 and no promo
   await send('Runtime.evaluate', {
     expression: `
       window.localStorage.setItem('glorov_cart_items', JSON.stringify([
         { "productId": "glr-flo-10", "variantId": "var-cosmos-mix-seeds-1", "quantity": 3 }
       ]));
+      window.localStorage.removeItem('glorov_promo_code');
     `
   });
-  await send('Page.navigate', { url: 'http://localhost:8086/#/cart' });
-  await new Promise((r) => setTimeout(r, 3000));
+  await navigateFresh('http://localhost:8086/#/cart');
   await takeScreenshot('flutter_cart_mobile_state1_free_delivery_target', 390, 844, true);
 
   console.log('--- 4. Cart State 2: Mobile (Subtotal ₹693 -> Add ₹306 more to unlock 10% off) ---');
-  // Seed local storage with Cosmos Mix Seeds quantity 7
+  // Seed local storage with Cosmos Mix Seeds quantity 7 and no promo
   await send('Runtime.evaluate', {
     expression: `
       window.localStorage.setItem('glorov_cart_items', JSON.stringify([
         { "productId": "glr-flo-10", "variantId": "var-cosmos-mix-seeds-1", "quantity": 7 }
       ]));
+      window.localStorage.removeItem('glorov_promo_code');
     `
   });
-  await send('Page.reload');
-  await new Promise((r) => setTimeout(r, 3000));
+  await navigateFresh('http://localhost:8086/#/cart');
   await takeScreenshot('flutter_cart_mobile_state2_10pct_target', 390, 844, true);
 
-  console.log('--- 5. Cart State 3: Mobile (Coupon Applied DIWALI10 & Promo Badge) ---');
-  // Tap "APPLY" or view coupons to apply DIWALI10 with subtotal > 999 (e.g. quantity 12 = 12 * 99 = 1188)
+  console.log('--- 5. Cart State 3: Mobile (Subtotal ₹1,188 -> Coupon Applied DIWALI10 & Promo Tag) ---');
+  // Seed local storage with Cosmos Mix Seeds quantity 12 and DIWALI10 promo
   await send('Runtime.evaluate', {
     expression: `
       window.localStorage.setItem('glorov_cart_items', JSON.stringify([
         { "productId": "glr-flo-10", "variantId": "var-cosmos-mix-seeds-1", "quantity": 12 }
       ]));
+      window.localStorage.setItem('glorov_promo_code', 'DIWALI10');
     `
   });
-  await send('Page.reload');
-  await new Promise((r) => setTimeout(r, 3000));
-
-  // Click on "View all available coupons" or "APPLY" to open Available Offers sheet
-  await send('Input.dispatchMouseEvent', {
-    type: 'mousePressed',
-    x: 195,
-    y: 430, // In-flow coupon card region
-    button: 'left',
-    clickCount: 1,
-  });
-  await send('Input.dispatchMouseEvent', {
-    type: 'mouseReleased',
-    x: 195,
-    y: 430,
-    button: 'left',
-    clickCount: 1,
-  });
-  await new Promise((r) => setTimeout(r, 1500));
-
-  // Capture Available Offers Modal (Matching Image 4)
-  await takeScreenshot('flutter_cart_mobile_state4_available_offers_modal', 390, 844, true);
-
-  // Click APPLY on DIWALI10 (around middle of the first offer card)
-  await send('Input.dispatchMouseEvent', {
-    type: 'mousePressed',
-    x: 330,
-    y: 480, // Right button of first offer
-    button: 'left',
-    clickCount: 1,
-  });
-  await send('Input.dispatchMouseEvent', {
-    type: 'mouseReleased',
-    x: 330,
-    y: 480,
-    button: 'left',
-    clickCount: 1,
-  });
-  await new Promise((r) => setTimeout(r, 1200));
-
-  // Close the modal sheet by clicking close icon at top right
-  await send('Input.dispatchMouseEvent', {
-    type: 'mousePressed',
-    x: 360,
-    y: 390,
-    button: 'left',
-    clickCount: 1,
-  });
-  await send('Input.dispatchMouseEvent', {
-    type: 'mouseReleased',
-    x: 360,
-    y: 390,
-    button: 'left',
-    clickCount: 1,
-  });
-  await new Promise((r) => setTimeout(r, 1200));
-
-  // Capture Coupon Applied state on cart screen (Matching Image 3 & 5)
+  await navigateFresh('http://localhost:8086/#/cart');
   await takeScreenshot('flutter_cart_mobile_state3_coupon_applied_inflow', 390, 844, true);
 
-  console.log('--- 6. Cart State 5: Mobile (Tax Breakdown Sheet Expanded) ---');
+  console.log('--- 6. Cart State 4: Mobile (Available Offers Modal Sheet) ---');
+  await navigateFresh('http://localhost:8086/#/cart?offers=true');
+  await new Promise((r) => setTimeout(r, 1500));
+  await takeScreenshot('flutter_cart_mobile_state4_available_offers_modal', 390, 844, true);
+
+  console.log('--- 7. Cart State 5: Mobile (Price & Tax Breakdown Sheet) ---');
+  await navigateFresh('http://localhost:8086/#/cart');
   // Click on "Inclusive of all taxes ⌵" in sticky bottom bar
   await send('Input.dispatchMouseEvent', {
     type: 'mousePressed',
-    x: 90,
-    y: 820,
+    x: 95,
+    y: 825,
     button: 'left',
     clickCount: 1,
   });
   await send('Input.dispatchMouseEvent', {
     type: 'mouseReleased',
-    x: 90,
-    y: 820,
+    x: 95,
+    y: 825,
     button: 'left',
     clickCount: 1,
   });
   await new Promise((r) => setTimeout(r, 1500));
   await takeScreenshot('flutter_cart_mobile_tax_breakdown_expanded', 390, 844, true);
 
-  console.log('--- 7. Desktop Cart View (2-Column Layout matching Image 5) ---');
-  // Navigate back to cart on desktop
-  await send('Page.navigate', { url: 'http://localhost:8086/#/cart' });
-  await new Promise((r) => setTimeout(r, 3000));
+  // Close tax breakdown sheet by clicking scrim at top
+  await send('Input.dispatchMouseEvent', {
+    type: 'mousePressed',
+    x: 195,
+    y: 200,
+    button: 'left',
+    clickCount: 1,
+  });
+  await send('Input.dispatchMouseEvent', {
+    type: 'mouseReleased',
+    x: 195,
+    y: 200,
+    button: 'left',
+    clickCount: 1,
+  });
+  await new Promise((r) => setTimeout(r, 1200));
+
+  console.log('--- 8. Desktop Cart View (2-Column Layout matching Image 5) ---');
+  await navigateFresh('http://localhost:8086/#/cart');
   await takeScreenshot('flutter_cart_desktop_fullpage', 1280, 850, false);
 
   ws.close();

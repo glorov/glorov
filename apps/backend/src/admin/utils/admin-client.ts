@@ -71,6 +71,15 @@ export async function adminFetch<T = any>(
     headers.set("Content-Type", "application/json");
   }
 
+  if (!headers.has("Authorization") && typeof window !== "undefined") {
+    const token =
+      localStorage.getItem("medusa_auth_token") ||
+      sessionStorage.getItem("medusa_auth_token");
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+  }
+
   try {
     const res = await fetch(fullUrl, {
       ...options,

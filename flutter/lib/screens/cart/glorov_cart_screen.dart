@@ -19,7 +19,8 @@ import '../../services/glorov_cart_state.dart';
 /// recommended products carousel, in-flow coupon voucher card, Available Offers modal,
 /// and sticky bottom checkout bar with tax breakdown.
 class GlorovCartScreen extends StatefulWidget {
-  const GlorovCartScreen({super.key});
+  final bool initialShowOffers;
+  const GlorovCartScreen({super.key, this.initialShowOffers = false});
 
   @override
   State<GlorovCartScreen> createState() => _GlorovCartScreenState();
@@ -30,6 +31,18 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
   final TextEditingController _pincodeController = TextEditingController();
   String? _pincodeStatus;
   bool _isPincodeValid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialShowOffers) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _showAvailableOffersModal(context, GlorovCartState.instance);
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {

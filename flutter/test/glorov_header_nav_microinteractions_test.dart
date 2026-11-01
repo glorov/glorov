@@ -1,0 +1,184 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shop/components/navigation/glorov_header.dart';
+import 'package:shop/core/theme/app_colors.dart';
+import 'package:shop/services/glorov_header_scroll_notifier.dart';
+
+void main() {
+  group('GLOROV Header Search & Nav Micro-Interactions Tests', () {
+    setUp(() {
+      GlorovHeaderScrollNotifier.instance.reset();
+    });
+
+    testWidgets('Header displays left brand logo with glorov-logo.svg',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          onGenerateRoute: (settings) => MaterialPageRoute(
+            builder: (_) => const Scaffold(body: Text('Destination')),
+          ),
+          home: const Scaffold(
+            body: GlorovHeader(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify SVG Logo exists
+      final logoFinder = find.byType(SvgPicture);
+      expect(logoFinder, findsWidgets);
+
+      // Verify pill search bar exists with wine magnifying glass
+      final searchFieldFinder = find.byType(TextField);
+      expect(searchFieldFinder, findsOneWidget);
+      final searchIconFinder = find.byIcon(Icons.search);
+      expect(searchIconFinder, findsOneWidget);
+
+      final searchIcon = tester.widget<Icon>(searchIconFinder);
+      expect(searchIcon.color, AppColors.forestDeep);
+    });
+
+    testWidgets(
+        'Header category nav buttons are centered and contain 8 items without "For You"',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          onGenerateRoute: (settings) => MaterialPageRoute(
+            builder: (_) => const Scaffold(body: Text('Destination')),
+          ),
+          home: const Scaffold(
+            body: GlorovHeader(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // "For You" is NOT present
+      expect(find.text('For You'), findsNothing);
+
+      // All 8 botanical categories are present
+      final expectedCategories = [
+        'Seeds',
+        'Live Plants',
+        'Planters',
+        'Plant Care',
+        'Flowering',
+        'Herbs',
+        'Vegetables',
+        'Offers',
+      ];
+
+      for (final cat in expectedCategories) {
+        expect(find.text(cat), findsOneWidget);
+      }
+    });
+
+    testWidgets(
+        'Switching nav category updates active state with spring interaction',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          onGenerateRoute: (settings) => MaterialPageRoute(
+            builder: (_) => const Scaffold(body: Text('Destination')),
+          ),
+          home: const Scaffold(
+            body: GlorovHeader(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Default selected category is Seeds
+      expect(GlorovHeaderScrollNotifier.instance.selectedCategory, 'Seeds');
+
+      // Tap "Live Plants" to switch category
+      final livePlantsFinder = find.text('Live Plants');
+      expect(livePlantsFinder, findsOneWidget);
+
+      await tester.tap(livePlantsFinder);
+      await tester.pump(
+          const Duration(milliseconds: 100)); // Halfway through spring bounce
+      await tester.pumpAndSettle();
+
+      // Selected category switched to Live Plants
+      expect(
+          GlorovHeaderScrollNotifier.instance.selectedCategory, 'Live Plants');
+    });
+
+    testWidgets(
+        'Header right-side actions render user bolt badge and cart counter on desktop',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          onGenerateRoute: (settings) => MaterialPageRoute(
+            builder: (_) => const Scaffold(body: Text('Destination')),
+          ),
+          home: const Scaffold(
+            body: GlorovHeader(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // User account icon + lightning badge
+      expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.bolt), findsOneWidget);
+
+      // Cart icon
+      expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
+    });
+
+    testWidgets(
+        'Mobile Header renders left-side logo and search bar ONLY without cart or login icons',
+        (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          onGenerateRoute: (settings) => MaterialPageRoute(
+            builder: (_) => const Scaffold(body: Text('Destination')),
+          ),
+          home: const Scaffold(
+            body: GlorovHeader(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify SVG Logo exists on mobile
+      expect(find.byType(SvgPicture), findsWidgets);
+
+      // Verify search field exists on mobile
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.text('Search for plants, seeds, pots...'), findsOneWidget);
+
+      // Verify cart and login icons are removed on mobile header
+      expect(find.byIcon(Icons.shopping_cart_outlined), findsNothing);
+      expect(find.byIcon(Icons.bolt), findsNothing);
+    });
+  });
+}

@@ -1,0 +1,293 @@
+import 'package:flutter/material.dart';
+import '../../components/navigation/glorov_footer.dart';
+import '../../components/navigation/glorov_storefront_scaffold.dart';
+import '../../components/product/glorov_product_card.dart';
+import '../../components/responsive/glorov_responsive.dart';
+import '../../core/interactions/interactions.dart';
+import '../../core/theme/app_breakpoints.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radii.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_typography.dart';
+import '../../models/glorov/glorov_mock_data.dart';
+import '../../models/glorov/glorov_product.dart';
+import '../../route/route_constants.dart';
+import '../../services/glorov_cart_state.dart';
+
+/// GLOROV Dedicated Botanical Wishlist Screen
+/// Synchronized with global wishlist IDs, providing 1-click add to cart,
+/// individual removals, and graceful empty state recovery.
+class GlorovWishlistScreen extends StatelessWidget {
+  const GlorovWishlistScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlorovStorefrontScaffold(
+      backgroundColor: AppColors.surfaceCream,
+      currentRoute: bookmarkScreenRoute,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Breadcrumbs
+          _buildBreadcrumbs(context),
+
+          // Main Wishlist Content
+          GlorovContainer(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.lg,
+            ),
+            child: ListenableBuilder(
+              listenable: GlorovCartState.instance,
+              builder: (context, _) {
+                final wishlistIds =
+                    GlorovCartState.instance.wishlistIds;
+
+                // Resolve wishlist IDs to actual products
+                final List<GlorovProduct> products = wishlistIds
+                    .map((id) => GlorovMockData.getProductById(id))
+                    .whereType<GlorovProduct>()
+                    .toList();
+
+                if (products.isEmpty) {
+                  return _buildEmptyWishlist(context);
+                }
+
+                return _buildWishlistContent(context, products);
+              },
+            ),
+          ),
+
+          const SizedBox(height: AppSpacing.xxl),
+
+          // Storefront Footer
+          const GlorovFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBreadcrumbs(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: AppColors.surfacePure,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
+      child: GlorovContainer(
+        padding: EdgeInsets.zero,
+        child: Row(
+          children: [
+            InkWell(
+              onTap: () => Navigator.pushNamed(context, homeScreenRoute),
+              child: const Text(
+                'Home',
+                style: TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: 13,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ),
+            const Icon(Icons.chevron_right,
+                size: 14, color: AppColors.textMuted),
+            const Text(
+              'Botanical Wishlist',
+              style: TextStyle(
+                fontFamily: AppTypography.primaryFont,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.forestDeep,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWishlistContent(
+      BuildContext context, List<GlorovProduct> products) {
+    final width = MediaQuery.of(context).size.width;
+    int crossAxisCount = 2;
+    if (width > 1100) {
+      crossAxisCount = 4;
+    } else if (width > 768) {
+      crossAxisCount = 3;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Title Header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'My Botanical Wishlist (${products.length} saved)',
+                  style: const TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.forestDeep,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Your curated collection of rare plants and certified organic heirloom seeds.',
+                  style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                for (final p in products) {
+                  GlorovCartState.instance.addToCart(p);
+                }
+                GlorovFeedback.showSuccessToast(
+                  context,
+                  message:
+                      'Added all ${products.length} items to your shopping bag!',
+                  actionLabel: 'VIEW BAG',
+                  onAction: () => Navigator.pushNamed(context, cartScreenRoute),
+                );
+              },
+              icon: const Icon(Icons.shopping_bag_outlined, size: 16),
+              label: const Text('ADD ALL TO BAG'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.forestDeep,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: 12,
+                ),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: AppRadii.roundedMd,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // Products Grid
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: products.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: AppSpacing.md,
+            mainAxisSpacing: AppSpacing.md,
+            childAspectRatio: 0.72,
+          ),
+          itemBuilder: (ctx, i) {
+            final p = products[i];
+            return GlorovStaggeredItem(
+              index: i < 6 ? i : 5,
+              child: GlorovProductCard(product: p),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyWishlist(BuildContext context) {
+    final suggested = GlorovMockData.products.take(4).toList();
+
+    return Column(
+      children: [
+        const SizedBox(height: AppSpacing.xl),
+        Container(
+          width: 90,
+          height: 90,
+          decoration: const BoxDecoration(
+            color: AppColors.mintSurface,
+            shape: BoxShape.circle,
+          ),
+          child: const Center(
+            child: Icon(
+              Icons.favorite_border_rounded,
+              size: 44,
+              color: AppColors.forestDeep,
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        const Text(
+          'Your Botanical Wishlist is Empty',
+          style: TextStyle(
+            fontFamily: AppTypography.primaryFont,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: AppColors.forestDeep,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        const Text(
+          'Save your favorite heirloom seeds and rare tropical foliage plants to revisit whenever you are ready to plant.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: AppTypography.primaryFont,
+            fontSize: 14,
+            color: AppColors.textMuted,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        GlorovButton.primary(
+          label: 'EXPLORE CATALOG',
+          leadingIcon: const Icon(Icons.eco_outlined, size: 16),
+          onPressed: () => Navigator.pushNamed(
+            context,
+            discoverScreenRoute,
+            arguments: 'All Botanical',
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
+
+        // Suggested Botanical Products
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'FEATURED BOTANICAL BESTSELLERS',
+            style: TextStyle(
+              fontFamily: AppTypography.primaryFont,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: AppColors.forestMedium,
+              letterSpacing: 0.8,
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: suggested.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: AppBreakpoints.isDesktop(context) ? 4 : 2,
+            crossAxisSpacing: AppSpacing.md,
+            mainAxisSpacing: AppSpacing.md,
+            childAspectRatio: 0.72,
+          ),
+          itemBuilder: (ctx, i) {
+            return GlorovStaggeredItem(
+              index: i,
+              child: GlorovProductCard(product: suggested[i]),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}

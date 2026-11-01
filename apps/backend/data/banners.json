@@ -1,68 +1,11 @@
 [
   {
-    "id": "banner_garden_begins",
-    "title": "Every Great Garden Begins with a Seed.",
-    "subtitle": "Discover the joy of growing something beautiful.",
-    "tag": "GROW WITH GLOROV",
-    "desktop_image_url": "/banners/banner_garden_begins_desktop.png",
-    "mobile_image_url": "/banners/banner_garden_begins_mobile.jpg",
-    "cta_text": "EXPLORE SEEDS & PLANTS",
-    "cta_route": "/categories/seeds",
-    "cta_arguments": {
-      "category": "seeds",
-      "title": "Seeds & Live Plants"
-    },
-    "display_order": 4,
-    "is_active": true,
-    "bg_color": "#1E3D2F",
-    "created_at": "2026-10-30T00:00:00.000Z",
-    "updated_at": "2026-11-01T21:08:13.488Z"
-  },
-  {
-    "id": "banner_plant_seed",
-    "title": "Plant a Seed. Grow a Dream.",
-    "subtitle": "A greener tomorrow begins with what you plant today.",
-    "tag": "START SOMETHING BEAUTIFUL",
-    "desktop_image_url": "/banners/banner_plant_seed_desktop.png",
-    "mobile_image_url": "/banners/banner_plant_seed_mobile.jpg",
-    "cta_text": "START YOUR GARDEN",
-    "cta_route": "/categories/live-plants",
-    "cta_arguments": {
-      "category": "live-plants",
-      "title": "Live Houseplants"
-    },
-    "display_order": 3,
-    "is_active": true,
-    "bg_color": "#2D5A27",
-    "created_at": "2026-10-30T00:00:00.000Z",
-    "updated_at": "2026-11-01T21:08:13.488Z"
-  },
-  {
-    "id": "banner_garden_bloom",
-    "title": "Let Your Garden Bloom.",
-    "subtitle": "Bring home the colors, calm, and beauty of nature.",
-    "tag": "A LITTLE MORE NATURE",
-    "desktop_image_url": "/banners/banner_garden_bloom_desktop.png",
-    "mobile_image_url": "/banners/banner_garden_bloom_mobile.jpg",
-    "cta_text": "DISCOVER FLOWER SEEDS",
-    "cta_route": "/categories/flowering",
-    "cta_arguments": {
-      "category": "flowering",
-      "title": "Flowering Plants & Seeds"
-    },
-    "display_order": 2,
-    "is_active": true,
-    "bg_color": "#7C1034",
-    "created_at": "2026-10-30T00:00:00.000Z",
-    "updated_at": "2026-11-01T21:08:13.488Z"
-  },
-  {
     "id": "banner_grow_fresh",
     "title": "Grow Fresh. Live Green.",
     "subtitle": "Turn your little space into a garden full of life.",
     "tag": "GROW YOUR OWN",
-    "desktop_image_url": "/banners/banner_grow_fresh_desktop.png",
-    "mobile_image_url": "/banners/banner_grow_fresh_mobile.jpg",
+    "desktop_image_url": "https://res.cloudinary.com/naodmm8w/image/upload/v1793516596/glorov/banners/banner_grow_fresh_desktop.png",
+    "mobile_image_url": "https://res.cloudinary.com/naodmm8w/image/upload/v1793516597/glorov/banners/banner_grow_fresh_mobile.jpg",
     "cta_text": "SHOP VEGETABLE SEEDS",
     "cta_route": "/categories/vegetables",
     "cta_arguments": {
@@ -73,6 +16,63 @@
     "is_active": true,
     "bg_color": "#183B28",
     "created_at": "2026-10-30T00:00:00.000Z",
-    "updated_at": "2026-11-01T21:08:13.488Z"
+    "updated_at": "2026-11-01T22:00:00.000Z"
+  },
+  {
+    "id": "banner_garden_bloom",
+    "title": "Let Your Garden Bloom.",
+    "subtitle": "Bring home the colors, calm, and beauty of nature.",
+    "tag": "A LITTLE MORE NATURE",
+    "desktop_image_url": "https://res.cloudinary.com/naodmm8w/image/upload/v1793516595/glorov/banners/banner_garden_bloom_desktop.png",
+    "mobile_image_url": "https://res.cloudinary.com/naodmm8w/image/upload/v1793516595/glorov/banners/banner_garden_bloom_mobile.jpg",
+    "cta_text": "DISCOVER FLOWER SEEDS",
+    "cta_route": "/categories/flowering",
+    "cta_arguments": {
+      "category": "flowering",
+      "title": "Flowering Plants & Seeds"
+    },
+    "display_order": 2,
+    "is_active": true,
+    "bg_color": "#7C1034",
+    "created_at": "2026-10-30T00:00:00.000Z",
+    "updated_at": "2026-11-01T22:00:00.000Z"
+  },
+  {
+    "id": "banner_plant_seed",
+    "title": "Plant a Seed. Grow a Dream.",
+    "subtitle": "A greener tomorrow begins with what you plant today.",
+    "tag": "START SOMETHING BEAUTIFUL",
+    "desktop_image_url": "https://res.cloudinary.com/naodmm8w/image/upload/v1793516598/glorov/banners/banner_plant_seed_desktop.png",
+    "mobile_image_url": "https://res.cloudinary.com/naodmm8w/image/upload/v1793516599/glorov/banners/banner_plant_seed_mobile.jpg",
+    "cta_text": "START YOUR GARDEN",
+    "cta_route": "/categories/live-plants",
+    "cta_arguments": {
+      "category": "live-plants",
+      "title": "Live Houseplants"
+    },
+    "display_order": 3,
+    "is_active": true,
+    "bg_color": "#2D5A27",
+    "created_at": "2026-10-30T00:00:00.000Z",
+    "updated_at": "2026-11-01T22:00:00.000Z"
+  },
+  {
+    "id": "banner_garden_begins",
+    "title": "Every Great Garden Begins with a Seed.",
+    "subtitle": "Discover the joy of growing something beautiful.",
+    "tag": "GROW WITH GLOROV",
+    "desktop_image_url": "https://res.cloudinary.com/naodmm8w/image/upload/v1793516593/glorov/banners/banner_garden_begins_desktop.png",
+    "mobile_image_url": "https://res.cloudinary.com/naodmm8w/image/upload/v1793516594/glorov/banners/banner_garden_begins_mobile.jpg",
+    "cta_text": "EXPLORE SEEDS & PLANTS",
+    "cta_route": "/categories/seeds",
+    "cta_arguments": {
+      "category": "seeds",
+      "title": "Seeds & Live Plants"
+    },
+    "display_order": 4,
+    "is_active": true,
+    "bg_color": "#1E3D2F",
+    "created_at": "2026-10-30T00:00:00.000Z",
+    "updated_at": "2026-11-01T22:00:00.000Z"
   }
 ]

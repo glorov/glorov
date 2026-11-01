@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shop/components/navigation/glorov_header.dart';
-import 'package:shop/models/glorov/glorov_mock_data.dart';
-import 'package:shop/models/glorov/glorov_product.dart';
 import 'package:shop/repositories/glorov_repositories.dart';
-import 'package:shop/route/route_constants.dart';
 import 'package:shop/route/router.dart';
 import 'package:shop/screens/discover/glorov_categories_screen.dart';
 import 'package:shop/screens/product/glorov_product_details_screen.dart';

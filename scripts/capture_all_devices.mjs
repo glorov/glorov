@@ -155,7 +155,7 @@ async function main() {
     height: 800,
     isMobile: false,
     url: `${baseUrl}/`,
-    scrollDeltaY: 2300,
+    scrollDeltaY: 2700,
   });
 
   console.log('All viewports captured successfully!');

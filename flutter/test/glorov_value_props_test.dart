@@ -4,7 +4,6 @@ import 'package:shop/components/common/glorov_custom_trust_icon.dart';
 import 'package:shop/components/home/glorov_value_props.dart';
 import 'package:shop/core/theme/app_colors.dart';
 import 'package:shop/models/glorov/glorov_trust_badge.dart';
-import 'package:shop/repositories/contracts/trust_badge_repository.dart';
 import 'package:shop/repositories/glorov_repositories.dart';
 import 'package:shop/repositories/mock/local_trust_badge_repository.dart';
 

@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shop/models/category_model.dart';
-import 'package:shop/route/route_constants.dart';
 import 'package:shop/screens/discover/glorov_categories_screen.dart';
 
 class TestHttpOverrides extends HttpOverrides {

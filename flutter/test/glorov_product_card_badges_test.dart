@@ -77,7 +77,7 @@ void main() {
     });
 
     test('mock catalog has zero hardcoded Diwali Sale tags', () {
-      final allProducts = GlorovMockData.products;
+      const allProducts = GlorovMockData.products;
       for (final p in allProducts) {
         for (final badge in p.badges) {
           expect(badge.toLowerCase().contains('diwali'), isFalse,

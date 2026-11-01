@@ -121,7 +121,7 @@ class _GlorovOfferBannerState extends State<GlorovOfferBanner>
   Widget build(BuildContext context) {
     if (_isLoading) {
       // Clean fallback skeleton while fetching
-      final defaultOffer = GlorovOffer.defaultWelcomeOffer;
+      const defaultOffer = GlorovOffer.defaultWelcomeOffer;
       return _buildCard(defaultOffer);
     }
 

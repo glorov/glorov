@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_micro_interactions/flutter_micro_interactions.dart';
 import 'package:shop/components/home/glorov_hero_banner_slider.dart';
-import 'package:shop/components/home/glorov_hero_banner_slider_skeleton.dart';
 import 'package:shop/core/interactions/glorov_skeletons.dart';
 
 void main() {

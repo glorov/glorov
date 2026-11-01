@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/icons/glorov_category_svg_icons.dart';
@@ -1005,7 +1004,6 @@ class _HeaderActionButton extends StatefulWidget {
   final String tooltip;
   final String? badgeText;
   final Color? badgeColor;
-  final Widget? badge;
   final VoidCallback onTap;
 
   const _HeaderActionButton({
@@ -1014,7 +1012,6 @@ class _HeaderActionButton extends StatefulWidget {
     required this.tooltip,
     this.badgeText,
     this.badgeColor,
-    this.badge,
     required this.onTap,
   }) : assert(icon != null || customIcon != null);
 
@@ -1056,13 +1053,7 @@ class _HeaderActionButtonState extends State<_HeaderActionButton> {
                           ? AppColors.forestDeep
                           : const Color(0xFF1E293B),
                     ),
-                if (widget.badge != null)
-                  Positioned(
-                    right: -4,
-                    top: -4,
-                    child: widget.badge!,
-                  )
-                else if (widget.badgeText != null)
+                if (widget.badgeText != null)
                   Positioned(
                     right: -7,
                     top: -6,

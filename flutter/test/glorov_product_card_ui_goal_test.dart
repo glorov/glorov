@@ -1,10 +1,8 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shop/components/home/glorov_featured_products.dart';
 import 'package:shop/components/product/glorov_product_card.dart';
 import 'package:shop/core/theme/app_colors.dart';
-import 'package:shop/models/glorov/glorov_mock_data.dart';
 import 'package:shop/models/glorov/glorov_product.dart';
 
 void main() {

@@ -198,8 +198,6 @@ class _GlorovHeaderState extends State<GlorovHeader> {
         final selectedCategory = isHomeRoute
             ? ''
             : GlorovHeaderScrollNotifier.instance.selectedCategory;
-        debugPrint(
-            'DEBUG GlorovHeader build: currentRouteName=$currentRouteName, isHomeRoute=$isHomeRoute, notifierCat=${GlorovHeaderScrollNotifier.instance.selectedCategory}, selectedCategory=$selectedCategory');
 
         // Heights
         final double fullHeight = isDesktop ? 132.0 : 124.0;

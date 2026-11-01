@@ -40,7 +40,7 @@ pnpm install --filter=@glorov/backend... --prefer-offline || pnpm install --filt
 if [[ ! -d "${DIR}/apps/backend/.medusa/server" || "${PULL_FROM_GIT}" == "true" ]]; then
   echo "🔨 Building Medusa backend (.medusa/server)..."
   cd "${DIR}/apps/backend"
-  NODE_OPTIONS="--max-old-space-size=512" pnpm build
+  MEDUSA_ADMIN_DISABLED="true" NODE_OPTIONS="--max-old-space-size=512" pnpm build --no-lint
   cd "${DIR}"
 fi
 

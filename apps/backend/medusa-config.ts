@@ -73,7 +73,7 @@ export default defineConfig({
   admin: {
     path: (process.env.ADMIN_PATH as `/${string}`) || "/app",
     backendUrl: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
-    disable: false,
+    disable: process.env.MEDUSA_ADMIN_DISABLED === "true",
   },
   projectConfig: {
     databaseUrl:

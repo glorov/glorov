@@ -288,7 +288,9 @@ void main() {
 
     test('LocalAccountRepository manages profile and address book', () async {
       final initialProfile = await accountRepo.getProfile();
-      expect(initialProfile.displayName.isNotEmpty, true);
+      // First visit starts with guest profile and empty address book
+      expect(accountRepo.isAuthenticated, false);
+      expect(await accountRepo.getAddresses(), isEmpty);
 
       final updatedProfile =
           initialProfile.copyWith(displayName: 'Sourav Botanical Master');
@@ -296,10 +298,6 @@ void main() {
 
       final fetched = await accountRepo.getProfile();
       expect(fetched.displayName, 'Sourav Botanical Master');
-
-      // Addresses
-      final addresses = await accountRepo.getAddresses();
-      expect(addresses.isNotEmpty, true);
 
       const newAddr = GlorovAddress(
         id: 'addr_new_test',
@@ -316,6 +314,10 @@ void main() {
     });
 
     test('LocalNotificationRepository marks items as read', () async {
+      // First visit has no unread notifications
+      expect(await notifRepo.getUnreadCount(), 0);
+
+      accountState.seedSampleNotificationsForTesting();
       final notifs = await notifRepo.getNotifications();
       expect(notifs.isNotEmpty, true);
 

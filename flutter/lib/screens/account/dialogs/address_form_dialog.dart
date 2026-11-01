@@ -78,19 +78,6 @@ class _GlorovAddressFormDialogState extends State<GlorovAddressFormDialog> {
     super.dispose();
   }
 
-  void _autofillSample() {
-    setState(() {
-      _nameController.text = GlorovAddress.sample.fullName;
-      _phoneController.text = GlorovAddress.sample.phoneNumber;
-      _addressController.text = GlorovAddress.sample.addressLine;
-      _cityController.text = GlorovAddress.sample.city;
-      _stateController.text = GlorovAddress.sample.state;
-      _pincodeController.text = GlorovAddress.sample.pincode;
-      _landmarkController.text = GlorovAddress.sample.landmark ?? '';
-      _label = 'Home';
-    });
-  }
-
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
       final address = GlorovAddress(
@@ -171,30 +158,14 @@ class _GlorovAddressFormDialogState extends State<GlorovAddressFormDialog> {
                   ],
                 ),
 
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Ensure PIN code and phone number are accurate for transit.',
-                      style: TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    if (!isEditing)
-                      TextButton.icon(
-                        onPressed: _autofillSample,
-                        icon: const Icon(Icons.flash_on, size: 14),
-                        label: const Text('Autofill Sample',
-                            style: TextStyle(fontSize: 11)),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.forestMedium,
-                          padding: EdgeInsets.zero,
-                        ),
-                      ),
-                  ],
+                const SizedBox(height: AppSpacing.xs),
+                const Text(
+                  'Ensure PIN code and phone number are accurate for transit.',
+                  style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
 
                 const SizedBox(height: AppSpacing.lg),
@@ -234,114 +205,229 @@ class _GlorovAddressFormDialogState extends State<GlorovAddressFormDialog> {
 
                 const SizedBox(height: AppSpacing.md),
 
-                // Recipient Name & Phone
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 6,
-                      child: _buildTextField(
-                        controller: _nameController,
-                        label: 'Recipient Full Name *',
-                        hint: 'Ananya Sharma',
-                        validator: (v) => v == null || v.trim().isEmpty
-                            ? 'Name is required'
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      flex: 5,
-                      child: _buildTextField(
-                        controller: _phoneController,
-                        label: '10-Digit Mobile *',
-                        hint: '9876543210',
-                        keyboardType: TextInputType.phone,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Phone is required';
-                          }
-                          final clean = v.replaceAll(RegExp(r'\D'), '');
-                          if (clean.length < 10) {
-                            return 'Enter 10-digit number';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isMobile = constraints.maxWidth < 460;
 
-                const SizedBox(height: AppSpacing.md),
+                    if (isMobile) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildTextField(
+                            controller: _nameController,
+                            label: 'Recipient Full Name *',
+                            hint: 'Full name',
+                            validator: (v) => v == null || v.trim().isEmpty
+                                ? 'Name is required'
+                                : null,
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          _buildTextField(
+                            controller: _phoneController,
+                            label: '10-Digit Mobile *',
+                            hint: '10-digit mobile number',
+                            keyboardType: TextInputType.phone,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) {
+                                return 'Phone is required';
+                              }
+                              final clean = v.replaceAll(RegExp(r'\D'), '');
+                              if (clean.length < 10) {
+                                return 'Enter 10-digit number';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          _buildTextField(
+                            controller: _addressController,
+                            label: 'Flat / House No. / Street Address *',
+                            hint: 'House / flat no., street, area',
+                            validator: (v) => v == null || v.trim().isEmpty
+                                ? 'Street address is required'
+                                : null,
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 5,
+                                child: _buildTextField(
+                                  controller: _pincodeController,
+                                  label: 'PIN Code *',
+                                  hint: '6-digit PIN',
+                                  keyboardType: TextInputType.number,
+                                  validator: (v) {
+                                    if (v == null || v.trim().isEmpty) {
+                                      return 'PIN required';
+                                    }
+                                    if (v.trim().length != 6) {
+                                      return '6 digits';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(
+                                flex: 6,
+                                child: _buildTextField(
+                                  controller: _cityController,
+                                  label: 'City *',
+                                  hint: 'City / District',
+                                  validator: (v) => v == null || v.trim().isEmpty
+                                      ? 'City is required'
+                                      : null,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 5,
+                                child: _buildTextField(
+                                  controller: _stateController,
+                                  label: 'State *',
+                                  hint: 'State',
+                                  validator: (v) => v == null || v.trim().isEmpty
+                                      ? 'State is required'
+                                      : null,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(
+                                flex: 6,
+                                child: _buildTextField(
+                                  controller: _landmarkController,
+                                  label: 'Landmark (Optional)',
+                                  hint: 'Nearby landmark',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    }
 
-                // Street Address Line
-                _buildTextField(
-                  controller: _addressController,
-                  label: 'Flat / House No. / Street Address *',
-                  hint: 'Flat 402, Green Meadows, 12th Main Road',
-                  validator: (v) => v == null || v.trim().isEmpty
-                      ? 'Street address is required'
-                      : null,
-                ),
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Recipient Name & Phone
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 6,
+                              child: _buildTextField(
+                                controller: _nameController,
+                                label: 'Recipient Full Name *',
+                                hint: 'Recipient name',
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'Name is required'
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              flex: 5,
+                              child: _buildTextField(
+                                controller: _phoneController,
+                                label: '10-Digit Mobile *',
+                                hint: '10-digit mobile number',
+                                keyboardType: TextInputType.phone,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Phone is required';
+                                  }
+                                  final clean = v.replaceAll(RegExp(r'\D'), '');
+                                  if (clean.length < 10) {
+                                    return 'Enter 10-digit number';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
 
-                const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.md),
 
-                // Landmark (Optional)
-                _buildTextField(
-                  controller: _landmarkController,
-                  label: 'Nearby Landmark (Optional)',
-                  hint: 'Near Botanical Garden Gate / Metro Pillar 24',
-                ),
+                        // Street Address Line
+                        _buildTextField(
+                          controller: _addressController,
+                          label: 'Flat / House No. / Street Address *',
+                          hint: 'House / flat no., street, area',
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? 'Street address is required'
+                              : null,
+                        ),
 
-                const SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.md),
 
-                // City, State, PIN code
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: _buildTextField(
-                        controller: _cityController,
-                        label: 'City *',
-                        hint: 'Bengaluru',
-                        validator: (v) => v == null || v.trim().isEmpty
-                            ? 'City is required'
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      flex: 4,
-                      child: _buildTextField(
-                        controller: _stateController,
-                        label: 'State *',
-                        hint: 'Karnataka',
-                        validator: (v) => v == null || v.trim().isEmpty
-                            ? 'State is required'
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      flex: 3,
-                      child: _buildTextField(
-                        controller: _pincodeController,
-                        label: 'PIN Code *',
-                        hint: '560038',
-                        keyboardType: TextInputType.number,
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'PIN required';
-                          }
-                          if (v.trim().length != 6) {
-                            return '6 digits';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
+                        // Landmark (Optional)
+                        _buildTextField(
+                          controller: _landmarkController,
+                          label: 'Nearby Landmark (Optional)',
+                          hint: 'Nearby landmark or gate',
+                        ),
+
+                        const SizedBox(height: AppSpacing.md),
+
+                        // City, State, PIN code
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 4,
+                              child: _buildTextField(
+                                controller: _cityController,
+                                label: 'City *',
+                                hint: 'City',
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'City is required'
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              flex: 4,
+                              child: _buildTextField(
+                                controller: _stateController,
+                                label: 'State *',
+                                hint: 'State',
+                                validator: (v) => v == null || v.trim().isEmpty
+                                    ? 'State is required'
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              flex: 3,
+                              child: _buildTextField(
+                                controller: _pincodeController,
+                                label: 'PIN Code *',
+                                hint: 'PIN code',
+                                keyboardType: TextInputType.number,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'PIN required';
+                                  }
+                                  if (v.trim().length != 6) {
+                                    return '6 digits';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
                 ),
 
                 const SizedBox(height: AppSpacing.md),

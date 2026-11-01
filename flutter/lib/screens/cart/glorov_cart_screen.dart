@@ -85,7 +85,10 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = AppBreakpoints.isDesktop(context);
+    final width = MediaQuery.of(context).size.width;
+    final isDesktop = width >= 1024.0;
+    final isTablet = width >= 640.0 && width < 1024.0;
+    final isMobile = width < 640.0;
 
     return ListenableBuilder(
       listenable: GlorovCartState.instance,
@@ -99,7 +102,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
           showTopNav: false,
           showBottomNav: false, // Dedicated placement for sticky checkout bar
           alwaysShowBottomNav: false,
-          bottomNavigationBar: (!isDesktop && items.isNotEmpty)
+          bottomNavigationBar: (isMobile && items.isNotEmpty)
               ? _buildStickyCheckoutBar(context, state)
               : null,
           child: Column(
@@ -111,22 +114,24 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
               if (widget.isLoading)
                 GlorovContainer(
                   padding: EdgeInsets.symmetric(
-                    horizontal: isDesktop ? AppSpacing.md : 10.0,
+                    horizontal: isDesktop ? AppSpacing.md : (isTablet ? AppSpacing.md : 10.0),
                     vertical: isDesktop ? AppSpacing.sm : 6.0,
                   ),
-                  child: GlorovCartSkeleton(isDesktop: isDesktop),
+                  child: GlorovCartSkeleton(isDesktop: isDesktop || isTablet),
                 )
               else if (items.isEmpty)
                 _buildEmptyCart(context)
               else
                 GlorovContainer(
                   padding: EdgeInsets.symmetric(
-                    horizontal: isDesktop ? AppSpacing.md : 10.0,
+                    horizontal: isDesktop ? AppSpacing.md : (isTablet ? AppSpacing.md : 10.0),
                     vertical: isDesktop ? AppSpacing.sm : 6.0,
                   ),
                   child: isDesktop
                       ? _buildDesktopLayout(context, items, state)
-                      : _buildMobileLayout(context, items, state),
+                      : (isTablet
+                          ? _buildTabletLayout(context, items, state)
+                          : _buildMobileLayout(context, items, state)),
                 ),
 
               const SizedBox(height: AppSpacing.xxl),
@@ -631,7 +636,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Left Column: Milestone, Items, Recommendations, Delivery at bottom, Guarantee (Flex 13)
+        // Left Column: Milestone, Items, Recommendations (Flex 13)
         Expanded(
           flex: 13,
           child: Column(
@@ -642,25 +647,73 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
               _buildCartItemsList(context, items, state),
               const SizedBox(height: 18),
               _buildRecommendedProductsSection(context),
-              const SizedBox(height: 14),
-              _buildPincodeBox(),
-              const SizedBox(height: 12),
-              _buildTransitGuaranteeCard(context),
             ],
           ),
         ),
 
         const SizedBox(width: AppSpacing.xl),
 
-        // Right Column: Coupon Card & Sticky Order Summary (Flex 8)
+        // Right Column: Coupon Card, Pincode, Order Summary & Guarantee (Flex 8)
         Expanded(
           flex: 8,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildCouponVoucherCard(context, state),
+              const SizedBox(height: 14),
+              _buildPincodeBox(),
               const SizedBox(height: 16),
               _buildDesktopOrderSummaryCard(context, state),
+              const SizedBox(height: 12),
+              _buildTransitGuaranteeCard(context),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // -------------------------------------------------------------
+  // Tablet 2-Column Responsive Layout (640px to 1023px)
+  // -------------------------------------------------------------
+  Widget _buildTabletLayout(
+    BuildContext context,
+    List<GlorovCartItem> items,
+    GlorovCartState state,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left Column: Milestone Progress, Items List, Recommendations (Flex 12, ~57%)
+        Expanded(
+          flex: 12,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildMilestoneProgressBar(context, state),
+              const SizedBox(height: 10),
+              _buildCartItemsList(context, items, state),
+              const SizedBox(height: 16),
+              _buildRecommendedProductsSection(context),
+            ],
+          ),
+        ),
+
+        const SizedBox(width: AppSpacing.md),
+
+        // Right Column: Coupon, Delivery/Pincode, Order Summary, Guarantee (Flex 9, ~43%)
+        Expanded(
+          flex: 9,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildCouponVoucherCard(context, state),
+              const SizedBox(height: 12),
+              _buildPincodeBox(),
+              const SizedBox(height: 14),
+              _buildDesktopOrderSummaryCard(context, state),
+              const SizedBox(height: 12),
+              _buildTransitGuaranteeCard(context),
             ],
           ),
         ),
@@ -1428,21 +1481,24 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
               borderRadius: BorderRadius.circular(6),
               child: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'View all available coupons',
-                      style: TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF0A4C36),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'View all available coupons',
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0A4C36),
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(Icons.arrow_forward, size: 14, color: Color(0xFF0A4C36)),
-                  ],
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward, size: 14, color: Color(0xFF0A4C36)),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1592,21 +1648,24 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
             const SizedBox(height: 6),
             InkWell(
               onTap: () => _showAvailableOffersModal(context, state),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'View all available coupons',
-                    style: TextStyle(
-                      fontFamily: AppTypography.primaryFont,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF0A4C36),
+              child: const FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'View all available coupons',
+                      style: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0A4C36),
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 4),
-                  Icon(Icons.arrow_forward, size: 13, color: Color(0xFF0A4C36)),
-                ],
+                    SizedBox(width: 4),
+                    Icon(Icons.arrow_forward, size: 13, color: Color(0xFF0A4C36)),
+                  ],
+                ),
               ),
             ),
           ],
@@ -1909,42 +1968,47 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
           // Payable Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Total Payable',
-                    style: TextStyle(
-                      fontFamily: AppTypography.primaryFont,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Total Payable',
+                      style: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        '₹${comparePrice.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF9CA3AF),
-                          decoration: TextDecoration.lineThrough,
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          '₹${comparePrice.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF9CA3AF),
+                            decoration: TextDecoration.lineThrough,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '($discountPercent% OFF)',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF008C4B),
+                        const SizedBox(width: 4),
+                        Text(
+                          '($discountPercent% OFF)',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF008C4B),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '₹${state.total.toStringAsFixed(0)}',
                 style: const TextStyle(
@@ -1975,14 +2039,19 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'PROCEED TO CHECKOUT',
-                    style: TextStyle(
-                      fontFamily: AppTypography.primaryFont,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.6,
+                  Flexible(
+                    child: Text(
+                      'PROCEED TO CHECKOUT',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                   SizedBox(width: 6),

@@ -204,6 +204,32 @@ class AppTheme {
         thickness: 1,
         space: 1,
       ),
+      scrollbarTheme: ScrollbarThemeData(
+        thumbVisibility: const WidgetStatePropertyAll(false),
+        trackVisibility: const WidgetStatePropertyAll(false),
+        thickness: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered) || states.contains(WidgetState.dragged)) {
+            return 6.0;
+          }
+          return 4.0; // Small and thin slider
+        }),
+        radius: const Radius.circular(8.0),
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.dragged)) {
+            return const Color(0xFF0A4C36); // Deep forest green when dragged
+          }
+          if (states.contains(WidgetState.hovered)) {
+            return const Color(0xFF1B6A4C); // Rich emerald on hover
+          }
+          return const Color(0x660A4C36); // Translucent botanical green
+        }),
+        trackColor: const WidgetStatePropertyAll(Colors.transparent),
+        trackBorderColor: const WidgetStatePropertyAll(Colors.transparent),
+        interactive: true,
+        crossAxisMargin: 2.0,
+        mainAxisMargin: 4.0,
+        minThumbLength: 36.0,
+      ),
       extensions: const <ThemeExtension<dynamic>>[
         tokens,
       ],

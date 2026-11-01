@@ -891,8 +891,8 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
     if (isDesktop) {
       crossAxisCount = width >= 1200 ? 4 : (width >= 800 ? 3 : 2);
       childAspectRatio = 0.72;
-    } else if (width > 600) {
-      crossAxisCount = 2;
+    } else if (width >= 640) {
+      crossAxisCount = 3;
       childAspectRatio = 0.70;
     }
 

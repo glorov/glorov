@@ -92,7 +92,7 @@ class GlorovHeaderScrollNotifier extends ChangeNotifier {
   void setBottomNavVisible(bool visible) {
     if (_isBottomNavVisible != visible) {
       _isBottomNavVisible = visible;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -100,7 +100,7 @@ class GlorovHeaderScrollNotifier extends ChangeNotifier {
   void setTopNavVisible(bool visible) {
     if (_isTopNavVisible != visible) {
       _isTopNavVisible = visible;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -109,7 +109,7 @@ class GlorovHeaderScrollNotifier extends ChangeNotifier {
       [double maxScrollExtent = double.infinity]) {
     // 1. Zone 1: Maximum Top of the page (scroll offset <= 12px):
     // Full header is open with announcement bar and category icons.
-    // Mobile bottom navigation is hidden.
+    // Mobile bottom navigation is hidden so the hero section stays clean.
     if (pixels <= topThreshold) {
       _accumulatedDelta = 0.0;
       if (!_isTopNavVisible ||
@@ -120,28 +120,98 @@ class GlorovHeaderScrollNotifier extends ChangeNotifier {
         _showIcons = true;
         _showAnnouncement = true;
         _isBottomNavVisible = false;
-        notifyListeners();
+        _safeNotifyListeners();
       }
       _lastPixels = pixels;
       return;
     }
 
-    // 2. Zone 2: Scrolled down (pixels > 12px):
-    // - Header remains STICKY and visible at the top ("I want it to stick when I scroll ... that is the top part stick").
-    // - Top announcement bar smoothly collapses from 34px to 0px ("Move the top part when I scroll").
-    // - Category icons tuck away into sleek compact header mode.
-    // - Mobile bottom navigation dock is not stuck on standard screens ("the scroll doesn't stick in the bottom part").
-    _accumulatedDelta = 0.0;
-    if (!_isTopNavVisible ||
-        _showAnnouncement ||
-        _showIcons ||
-        _isBottomNavVisible) {
-      _isTopNavVisible = true;
-      _showAnnouncement = false;
-      _showIcons = false;
-      _isBottomNavVisible = false;
-      notifyListeners();
+    // 2. Zone 2: Initial Page Scroll / "No-Hide Zone" (12px < pixels <= 180px):
+    // "when I scroll in the top site after some time, automatically sticky that."
+    // Near top of page, header remains sticky & VISIBLE!
+    // Announcement bar and category icons tuck away into sleek compact mode.
+    // Header NEVER hides prematurely on initial scroll down.
+    // Mobile bottom navigation remains hidden so the hero section stays clean.
+    if (pixels <= stickyActivationThreshold) {
+      _accumulatedDelta = 0.0;
+      if (!_isTopNavVisible ||
+          _showAnnouncement ||
+          _showIcons ||
+          _isBottomNavVisible) {
+        _isTopNavVisible = true;
+        _showAnnouncement = false;
+        _showIcons = false;
+        _isBottomNavVisible = false;
+        _safeNotifyListeners();
+      }
+      _lastPixels = pixels;
+      return;
     }
+
+    // 3. Zone 3: Bottom of Page / Footer Zone:
+    // When the user scrolls near or reaches the bottom (footer section):
+    // The mobile bottom nav MUST remain docked and visible so users can easily navigate
+    // without experiencing blank gaps or sudden disappearances.
+    if (maxScrollExtent.isFinite &&
+        maxScrollExtent > stickyActivationThreshold &&
+        pixels >= maxScrollExtent - 240.0) {
+      _accumulatedDelta = 0.0;
+      if (!_isBottomNavVisible) {
+        _isBottomNavVisible = true;
+        _safeNotifyListeners();
+      }
+      _lastPixels = pixels;
+      return;
+    }
+
+    // 4. Zone 4: Content Browsing / Dynamic Sticky (pixels > 180px):
+    // "When up scrolling, then scrolling when down, the whole top navigation disappears.
+    // That is the one part. And for the mobile screen, when I scroll up, hide the bottom nav,
+    // and when I scroll down, again show the bottom navbar."
+    final effectiveDelta = delta ?? (pixels - _lastPixels);
+
+    // Track direction and accumulate delta to prevent jitter from 1-2px tremors
+    if ((effectiveDelta > 0 && _accumulatedDelta < 0) ||
+        (effectiveDelta < 0 && _accumulatedDelta > 0)) {
+      _accumulatedDelta = effectiveDelta;
+    } else {
+      _accumulatedDelta += effectiveDelta;
+    }
+
+    // Scrolling DOWN past tolerance -> hide header, show mobile bottom navigation
+    if (_accumulatedDelta > downTolerance) {
+      if (_isTopNavVisible ||
+          !_isBottomNavVisible ||
+          _showAnnouncement ||
+          _showIcons) {
+        _isTopNavVisible = false;
+        _isBottomNavVisible = true;
+        _showAnnouncement = false;
+        _showIcons = false;
+        _safeNotifyListeners();
+      }
+      _accumulatedDelta = 0.0;
+      _lastPixels = pixels;
+      return;
+    }
+
+    // Scrolling UP past tolerance -> reveal compact header, hide mobile bottom navigation
+    if (_accumulatedDelta < -upTolerance) {
+      if (!_isTopNavVisible ||
+          _isBottomNavVisible ||
+          _showAnnouncement ||
+          _showIcons) {
+        _isTopNavVisible = true;
+        _isBottomNavVisible = false;
+        _showAnnouncement = false;
+        _showIcons = false;
+        _safeNotifyListeners();
+      }
+      _accumulatedDelta = 0.0;
+      _lastPixels = pixels;
+      return;
+    }
+
     _lastPixels = pixels;
   }
 

@@ -24,6 +24,12 @@ class GlorovAddress {
     this.isDefault = false,
   });
 
+  /// Check if the address is empty/unset
+  bool get isEmpty => id.isEmpty && fullName.isEmpty && addressLine.isEmpty;
+
+  /// Check if the address is not empty
+  bool get isNotEmpty => !isEmpty;
+
   /// Check if the address has valid, non-empty fields and correct PIN format
   bool get isValid =>
       fullName.trim().isNotEmpty &&
@@ -133,6 +139,20 @@ class GlorovAddress {
       },
     };
   }
+
+  /// Empty address template for clean initialization
+  static const GlorovAddress empty = GlorovAddress(
+    id: '',
+    fullName: '',
+    phoneNumber: '',
+    addressLine: '',
+    city: '',
+    state: '',
+    pincode: '',
+    landmark: null,
+    label: 'Home',
+    isDefault: false,
+  );
 
   /// Default demonstration primary home address
   static const GlorovAddress sample = GlorovAddress(

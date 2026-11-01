@@ -105,8 +105,16 @@ void main() {
       expect(state.orders.first.id, order.id);
     });
 
+    test('Initial address book for first-time visitor is empty', () {
+      final state = GlorovCartState.instance;
+      state.resetDemoData();
+      expect(state.addresses, isEmpty);
+      expect(state.selectedAddress.isEmpty, isTrue);
+    });
+
     test('Address book enforces single default address', () {
       final state = GlorovCartState.instance;
+      state.setSampleAddressesForTesting();
       expect(state.addresses.isNotEmpty, isTrue);
 
       const newAddr = GlorovAddress(

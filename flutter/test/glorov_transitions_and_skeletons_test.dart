@@ -241,6 +241,8 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
+      GlorovAccountState.instance.seedSampleNotificationsForTesting();
+      GlorovAccountState.instance.seedSampleNotificationsForTesting();
       await tester
           .pumpWidget(_buildTestApp(const GlorovNotificationsSection()));
       await tester.pumpAndSettle();

@@ -51,8 +51,8 @@ class AppBreakpoints {
 
   static int getGridColumnCount(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    if (width > 1200) return 4;
-    if (width > 860) return 3;
+    if (width > 1150) return 4;
+    if (width >= 640) return 3;
     return 2;
   }
 }

@@ -130,6 +130,18 @@ class GlorovUserProfile {
     );
   }
 
+  /// Default unauthenticated guest profile
+  static const GlorovUserProfile guest = GlorovUserProfile(
+    id: '',
+    displayName: 'Guest Visitor',
+    email: '',
+    phoneNumber: '',
+    avatarUrl: null,
+    memberSince: '',
+    membershipTier: 'Guest',
+    isDemoAccount: false,
+  );
+
   /// Initial mock demonstration profile
   static const GlorovUserProfile sample = GlorovUserProfile(
     id: 'usr_demo_01',

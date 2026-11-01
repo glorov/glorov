@@ -38,39 +38,39 @@ void main() {
     });
 
     test(
-        'Scrolling down keeps top header sticky while tucking away top announcement bar',
+        'Scrolling down past threshold (Zone 4) hides top nav and displays mobile bottom nav',
         () {
-      // First scroll down through Zone 2 (pixels = 120)
+      // First scroll down through Zone 2 into Zone 4 (pixels = 120)
       notifier.handleScroll(120.0, 50.0);
-      expect(notifier.isTopNavVisible, isTrue);
+      expect(notifier.isTopNavVisible, isTrue); // Near top, header remains sticky & visible
       expect(notifier.showAnnouncement, isFalse);
       expect(notifier.showIcons, isFalse);
 
-      // Now scroll down further (pixels = 240)
+      // Now scroll down past threshold (pixels = 240)
       notifier.handleScroll(240.0, 40.0);
 
-      // Top navigation remains sticky and visible at the top!
-      expect(notifier.isTopNavVisible, isTrue);
-      // Bottom navigation dock does not stick on standard pages
-      expect(notifier.isBottomNavVisible, isFalse);
-      // Top announcement bar remains tucked away
+      // Past the threshold, top navigation hides on scroll down
+      expect(notifier.isTopNavVisible, isFalse);
+      // Mobile bottom navigation appears on scroll down
+      expect(notifier.isBottomNavVisible, isTrue);
+      // Top announcement bar and icons remain tucked away
       expect(notifier.showAnnouncement, isFalse);
       expect(notifier.showIcons, isFalse);
     });
 
     test(
-        'Scrolling mid-page maintains sticky compact top header',
+        'Scrolling up mid-page reveals compact top header and hides mobile bottom navigation',
         () {
       // Mid-page scroll down (pixels = 300)
       notifier.handleScroll(300.0, 50.0);
-      expect(notifier.isTopNavVisible, isTrue);
-      expect(notifier.isBottomNavVisible, isFalse);
+      expect(notifier.isTopNavVisible, isFalse);
+      expect(notifier.isBottomNavVisible, isTrue);
       expect(notifier.showAnnouncement, isFalse);
 
       // Scroll up while still mid-page (pixels = 260)
       notifier.handleScroll(260.0, -40.0);
 
-      // Top navigation stays sticky and visible
+      // Top navigation reveals smoothly on scroll up, bottom navigation hides
       expect(notifier.isTopNavVisible, isTrue);
       expect(notifier.isBottomNavVisible, isFalse);
       expect(notifier.showIcons, isFalse);

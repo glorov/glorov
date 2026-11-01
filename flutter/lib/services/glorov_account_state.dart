@@ -14,16 +14,15 @@ import 'storage/local_storage.dart';
 class GlorovAccountState extends ChangeNotifier {
   static final GlorovAccountState instance = GlorovAccountState._internal();
 
-  GlorovUserProfile _profile = GlorovUserProfile.sample;
+  GlorovUserProfile _profile = GlorovUserProfile.guest;
   List<GlorovNotification> _notifications = [];
   GlorovAccountSettings _settings = GlorovAccountSettings.defaults;
   final List<Map<String, dynamic>> _supportTickets = [];
 
-  GlorovAuthStatus _authStatus = GlorovAuthStatus.initial;
+  GlorovAuthStatus _authStatus = GlorovAuthStatus.unauthenticated;
   String? _authError;
 
   GlorovAccountState._internal() {
-    _notifications = GlorovNotification.sampleNotifications;
     _loadFromStorage();
   }
 
@@ -46,6 +45,12 @@ class GlorovAccountState extends ChangeNotifier {
   void setAuthenticatedForTesting([bool authenticated = true, GlorovUserProfile? profile]) {
     _authStatus = authenticated ? GlorovAuthStatus.authenticated : GlorovAuthStatus.unauthenticated;
     if (profile != null) _profile = profile;
+    notifyListeners();
+  }
+
+  @visibleForTesting
+  void seedSampleNotificationsForTesting() {
+    _notifications = List.from(GlorovNotification.sampleNotifications);
     notifyListeners();
   }
 
@@ -137,7 +142,7 @@ class GlorovAccountState extends ChangeNotifier {
     await GlorovRepositories.account.logout();
     _authStatus = GlorovAuthStatus.unauthenticated;
     _authError = null;
-    _profile = GlorovUserProfile.sample;
+    _profile = GlorovUserProfile.guest;
     _saveToStorage();
     notifyListeners();
   }
@@ -149,6 +154,7 @@ class GlorovAccountState extends ChangeNotifier {
       _authStatus = GlorovAuthStatus.authenticated;
       _authError = null;
     } else {
+      _profile = GlorovUserProfile.guest;
       _authStatus = GlorovAuthStatus.unauthenticated;
     }
     notifyListeners();
@@ -266,8 +272,8 @@ class GlorovAccountState extends ChangeNotifier {
   // Demo Account Reset
   // ---------------------------------------------------------------------------
   void resetEntireDemoAccount() {
-    _profile = GlorovUserProfile.sample;
-    _notifications = GlorovNotification.sampleNotifications;
+    _profile = GlorovUserProfile.guest;
+    _notifications = [];
     _settings = GlorovAccountSettings.defaults;
     _supportTickets.clear();
     _authStatus = GlorovAuthStatus.unauthenticated;
@@ -308,11 +314,20 @@ class GlorovAccountState extends ChangeNotifier {
     try {
       final storage = GlorovLocalStorage.instance;
 
-      // 1. Restore Profile
-      final profileRaw = storage.getItem('glorov_profile');
-      if (profileRaw != null && profileRaw.isNotEmpty) {
-        _profile = GlorovUserProfile.fromJson(
-            jsonDecode(profileRaw) as Map<String, dynamic>);
+      // 1. Check Token First to establish auth state
+      final token = storage.getItem('glorov_customer_token');
+      if (token != null && token.isNotEmpty) {
+        _authStatus = GlorovAuthStatus.authenticated;
+        final profileRaw = storage.getItem('glorov_profile');
+        if (profileRaw != null && profileRaw.isNotEmpty) {
+          _profile = GlorovUserProfile.fromJson(
+              jsonDecode(profileRaw) as Map<String, dynamic>);
+        } else {
+          _profile = GlorovUserProfile.guest;
+        }
+      } else {
+        _authStatus = GlorovAuthStatus.unauthenticated;
+        _profile = GlorovUserProfile.guest;
       }
 
       // 2. Restore Notifications
@@ -322,6 +337,8 @@ class GlorovAccountState extends ChangeNotifier {
         _notifications = list
             .map((e) => GlorovNotification.fromJson(e as Map<String, dynamic>))
             .toList();
+      } else {
+        _notifications = [];
       }
 
       // 3. Restore Settings
@@ -341,14 +358,6 @@ class GlorovAccountState extends ChangeNotifier {
             _supportTickets.add(item);
           }
         }
-      }
-
-      // 5. Check Token
-      final token = storage.getItem('glorov_customer_token');
-      if (token != null && token.isNotEmpty) {
-        _authStatus = GlorovAuthStatus.authenticated;
-      } else {
-        _authStatus = GlorovAuthStatus.unauthenticated;
       }
     } catch (e) {
       debugPrint('Error loading account state from storage: $e');

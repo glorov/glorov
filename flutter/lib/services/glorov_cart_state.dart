@@ -62,12 +62,9 @@ class GlorovCartState extends ChangeNotifier {
   final Map<String, GlorovCartItem> _items = {};
   final Set<String> _wishlistIds = {};
   final List<GlorovOrder> _orders = [];
-  List<GlorovAddress> _addresses = [
-    GlorovAddress.sample,
-    GlorovAddress.sampleWork,
-  ];
+  List<GlorovAddress> _addresses = [];
 
-  GlorovAddress _selectedAddress = GlorovAddress.sample;
+  GlorovAddress _selectedAddress = GlorovAddress.empty;
   GlorovDeliveryOption _selectedDeliveryOption = GlorovDeliveryOption.standard;
   String? _appliedPromoCode;
   double _promoDiscountPercent = 0.0;
@@ -386,6 +383,8 @@ class GlorovCartState extends ChangeNotifier {
         _selectedAddress = _addresses.firstWhere((a) => a.isDefault,
             orElse: () => _addresses.first);
       }
+    } else {
+      _selectedAddress = GlorovAddress.empty;
     }
     _saveToStorage();
     notifyListeners();
@@ -405,15 +404,22 @@ class GlorovCartState extends ChangeNotifier {
     _items.clear();
     _wishlistIds.clear();
     _orders.clear();
+    _addresses = [];
+    _selectedAddress = GlorovAddress.empty;
+    _appliedPromoCode = null;
+    _promoDiscountPercent = 0.0;
+    _isFreeShippingPromo = false;
+    _saveToStorage();
+    notifyListeners();
+  }
+
+  @visibleForTesting
+  void setSampleAddressesForTesting() {
     _addresses = [
       GlorovAddress.sample,
       GlorovAddress.sampleWork,
     ];
     _selectedAddress = GlorovAddress.sample;
-    _appliedPromoCode = null;
-    _promoDiscountPercent = 0.0;
-    _isFreeShippingPromo = false;
-    _saveToStorage();
     notifyListeners();
   }
 
@@ -527,11 +533,19 @@ class GlorovCartState extends ChangeNotifier {
       storage.setItem('glorov_wishlist', jsonEncode(_wishlistIds.toList()));
 
       // 3. Address
-      storage.setItem('glorov_address', jsonEncode(_selectedAddress.toJson()));
+      if (_selectedAddress.isValid) {
+        storage.setItem('glorov_address', jsonEncode(_selectedAddress.toJson()));
+      } else {
+        storage.removeItem('glorov_address');
+      }
 
       // 4. Address Book
-      final addressesJson = _addresses.map((a) => a.toJson()).toList();
-      storage.setItem('glorov_address_book', jsonEncode(addressesJson));
+      if (_addresses.isNotEmpty) {
+        final addressesJson = _addresses.map((a) => a.toJson()).toList();
+        storage.setItem('glorov_address_book', jsonEncode(addressesJson));
+      } else {
+        storage.removeItem('glorov_address_book');
+      }
 
       // 5. Orders
       final ordersJson = _orders.map((o) => o.toJson()).toList();
@@ -560,20 +574,25 @@ class GlorovCartState extends ChangeNotifier {
       }
 
       // 2. Restore Address & Address Book
+      final addressBookRaw = storage.getItem('glorov_address_book');
+      if (addressBookRaw != null && addressBookRaw.isNotEmpty) {
+        final list = jsonDecode(addressBookRaw) as List<dynamic>;
+        _addresses = list
+            .map((e) => GlorovAddress.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else {
+        _addresses = [];
+      }
+
       final addressRaw = storage.getItem('glorov_address');
       if (addressRaw != null && addressRaw.isNotEmpty) {
         _selectedAddress = GlorovAddress.fromJson(
             jsonDecode(addressRaw) as Map<String, dynamic>);
-      }
-
-      final addressBookRaw = storage.getItem('glorov_address_book');
-      if (addressBookRaw != null && addressBookRaw.isNotEmpty) {
-        final list = jsonDecode(addressBookRaw) as List<dynamic>;
-        if (list.isNotEmpty) {
-          _addresses = list
-              .map((e) => GlorovAddress.fromJson(e as Map<String, dynamic>))
-              .toList();
-        }
+      } else if (_addresses.isNotEmpty) {
+        _selectedAddress = _addresses.firstWhere((a) => a.isDefault,
+            orElse: () => _addresses.first);
+      } else {
+        _selectedAddress = GlorovAddress.empty;
       }
 
       // 3. Restore Orders

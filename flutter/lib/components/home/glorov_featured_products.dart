@@ -102,7 +102,7 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
     if (width > 1150) {
       crossAxisCount = 4;
       childAspectRatio = 0.72;
-    } else if (width > 780) {
+    } else if (width >= 640) {
       crossAxisCount = 3;
       childAspectRatio = 0.70;
     } else {

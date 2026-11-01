@@ -36,8 +36,15 @@ void main() {
       expect(state.profile.initials, 'VM');
     });
 
+    test('Notification center starts empty for first-time visitor', () {
+      final state = GlorovAccountState.instance;
+      expect(state.notifications, isEmpty);
+      expect(state.unreadNotificationCount, 0);
+    });
+
     test('Notification center marks as read and computes unread count', () {
       final state = GlorovAccountState.instance;
+      state.seedSampleNotificationsForTesting();
       expect(state.notifications, isNotEmpty);
       final initialUnread = state.unreadNotificationCount;
       expect(initialUnread > 0, isTrue);

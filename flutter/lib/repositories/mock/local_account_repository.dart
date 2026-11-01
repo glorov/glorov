@@ -55,16 +55,20 @@ class LocalAccountRepository implements AccountRepository {
     _isAuthenticated = true;
     _storage.setItem('glorov_customer_token', _token!);
 
-    // If logging in with a specific name, update profile
+    // Create genuine new customer profile without demo leftovers
     final names = cleanEmail.split('@').first.split('.');
     final firstName = names.first[0].toUpperCase() + names.first.substring(1);
     final lastName = names.length > 1
         ? names.last[0].toUpperCase() + names.last.substring(1)
         : 'Botanist';
 
-    final profile = _accountState.profile.copyWith(
+    final profile = GlorovUserProfile(
+      id: 'cus_mock_${cleanEmail.hashCode.abs()}',
       displayName: '$firstName $lastName',
       email: cleanEmail,
+      phoneNumber: '',
+      memberSince: 'November 2026',
+      membershipTier: 'Botanical Patron • Green Club',
       isDemoAccount: false,
     );
     _accountState.updateProfile(profile);
@@ -95,8 +99,8 @@ class LocalAccountRepository implements AccountRepository {
       id: 'cus_mock_${DateTime.now().millisecondsSinceEpoch}',
       displayName: fullName.isNotEmpty ? fullName : cleanEmail,
       email: cleanEmail,
-      phoneNumber: phone?.trim() ?? '9876543210',
-      memberSince: 'October 2026',
+      phoneNumber: phone?.trim() ?? '',
+      memberSince: 'November 2026',
       membershipTier: 'Botanical Patron • Green Club',
       isDemoAccount: false,
     );

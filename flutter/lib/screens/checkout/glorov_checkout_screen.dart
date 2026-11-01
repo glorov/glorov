@@ -46,13 +46,14 @@ class _GlorovCheckoutScreenState extends State<GlorovCheckoutScreen> {
   void initState() {
     super.initState();
     final initial = GlorovCartState.instance.selectedAddress;
-    _nameController = TextEditingController(text: initial.fullName);
-    _phoneController = TextEditingController(text: initial.phoneNumber);
-    _addressController = TextEditingController(text: initial.addressLine);
-    _cityController = TextEditingController(text: initial.city);
-    _stateController = TextEditingController(text: initial.state);
-    _pincodeController = TextEditingController(text: initial.pincode);
-    _landmarkController = TextEditingController(text: initial.landmark ?? '');
+    final hasValidAddress = initial.isValid && initial.fullName.isNotEmpty;
+    _nameController = TextEditingController(text: hasValidAddress ? initial.fullName : '');
+    _phoneController = TextEditingController(text: hasValidAddress ? initial.phoneNumber : '');
+    _addressController = TextEditingController(text: hasValidAddress ? initial.addressLine : '');
+    _cityController = TextEditingController(text: hasValidAddress ? initial.city : '');
+    _stateController = TextEditingController(text: hasValidAddress ? initial.state : '');
+    _pincodeController = TextEditingController(text: hasValidAddress ? initial.pincode : '');
+    _landmarkController = TextEditingController(text: hasValidAddress ? (initial.landmark ?? '') : '');
   }
 
   @override
@@ -65,10 +66,6 @@ class _GlorovCheckoutScreenState extends State<GlorovCheckoutScreen> {
     _pincodeController.dispose();
     _landmarkController.dispose();
     super.dispose();
-  }
-
-  void _autofillSampleAddress() {
-    _applyAddress(GlorovAddress.sample);
   }
 
   void _applyAddress(GlorovAddress addr) {
@@ -373,205 +370,353 @@ class _GlorovCheckoutScreenState extends State<GlorovCheckoutScreen> {
   // Step 1: Address Form
   // -------------------------------------------------------------
   Widget _buildAddressForm() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surfacePure,
-        borderRadius: AppRadii.roundedLg,
-        border: Border.all(color: AppColors.borderSubtle),
-        boxShadow: AppShadows.card,
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Shipping Information',
-                  style: TextStyle(
-                    fontFamily: AppTypography.primaryFont,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.forestDeep,
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: _autofillSampleAddress,
-                  icon: const Icon(Icons.flash_on, size: 14),
-                  label: const Text('Use Sample Address'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.forestMedium,
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 600;
 
-            // Saved Addresses Selector
-            if (GlorovCartState.instance.addresses.isNotEmpty) ...[
-              const Text(
-                'Choose Saved Delivery Address',
-                style: TextStyle(
-                  fontFamily: AppTypography.primaryFont,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.xs,
-                children: [
-                  ...GlorovCartState.instance.addresses.map((addr) {
-                    final isSelected = _addressController.text.trim() ==
-                        addr.addressLine.trim();
-                    return ChoiceChip(
-                      label: Text('${addr.label} (${addr.city})'),
-                      selected: isSelected,
-                      selectedColor: AppColors.forestDark,
-                      backgroundColor: AppColors.cream,
-                      labelStyle: TextStyle(
-                        color:
-                            isSelected ? Colors.white : AppColors.textPrimary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
+        return Container(
+          padding: EdgeInsets.all(isMobile ? AppSpacing.md : AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: AppColors.surfacePure,
+            borderRadius: AppRadii.roundedLg,
+            border: Border.all(color: AppColors.borderSubtle),
+            boxShadow: AppShadows.card,
+          ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Clean Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.location_on_outlined,
+                            size: 18, color: AppColors.forestDeep),
+                        SizedBox(width: 6),
+                        Text(
+                          'Delivery Address',
+                          style: TextStyle(
+                            fontFamily: AppTypography.primaryFont,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.forestDeep,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.sage.withAlpha(40),
+                        borderRadius: AppRadii.roundedFull,
                       ),
-                      onSelected: (val) {
-                        if (val) {
-                          _applyAddress(addr);
-                        }
-                      },
-                    );
-                  }),
-                  ActionChip(
-                    avatar: const Icon(Icons.add,
-                        size: 14, color: AppColors.forestDark),
-                    label: const Text('+ Add New',
-                        style: TextStyle(
-                            fontSize: 11, fontWeight: FontWeight.w600)),
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: AppColors.borderLight),
-                    onPressed: () {
-                      GlorovAddressFormDialog.show(
-                        context,
-                        onSave: (newAddr) {
-                          GlorovCartState.instance.addAddress(newAddr);
-                          _applyAddress(newAddr);
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              const Divider(color: AppColors.borderLight, height: 1),
-              const SizedBox(height: AppSpacing.md),
-            ],
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.lock_outline,
+                              size: 11, color: AppColors.forestDark),
+                          SizedBox(width: 4),
+                          Text(
+                            'Secure Transit',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.forestDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
 
-            // Full Name & Phone Number
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
+                // Saved Addresses Selector (Only shown if user actually has saved addresses)
+                if (GlorovCartState.instance.addresses.isNotEmpty) ...[
+                  const Text(
+                    'Choose Saved Delivery Address',
+                    style: TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.xs,
+                    children: [
+                      ...GlorovCartState.instance.addresses.map((addr) {
+                        final isSelected = _addressController.text.trim() ==
+                            addr.addressLine.trim();
+                        return ChoiceChip(
+                          label: Text('${addr.label} (${addr.city})'),
+                          selected: isSelected,
+                          selectedColor: AppColors.forestDark,
+                          backgroundColor: AppColors.cream,
+                          labelStyle: TextStyle(
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          onSelected: (val) {
+                            if (val) {
+                              _applyAddress(addr);
+                            }
+                          },
+                        );
+                      }),
+                      ActionChip(
+                        avatar: const Icon(Icons.add,
+                            size: 14, color: AppColors.forestDark),
+                        label: const Text('+ Add New',
+                            style: TextStyle(
+                                fontSize: 11, fontWeight: FontWeight.w600)),
+                        backgroundColor: Colors.white,
+                        side: const BorderSide(color: AppColors.borderLight),
+                        onPressed: () {
+                          GlorovAddressFormDialog.show(
+                            context,
+                            onSave: (newAddr) {
+                              GlorovCartState.instance.addAddress(newAddr);
+                              _applyAddress(newAddr);
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  const Divider(color: AppColors.borderLight, height: 1),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+
+                // Form Fields: Ergonomic Single Column & 2-Col for Mobile vs Spaced for Desktop
+                if (isMobile) ...[
+                  // 1. Full Name (Full width on mobile)
+                  TextFormField(
                     controller: _nameController,
+                    textInputAction: TextInputAction.next,
                     decoration:
-                        _inputDecoration('Full Name *', 'e.g. Ananya Sharma'),
+                        _inputDecoration('Full Name *', 'Recipient full name'),
                     validator: (val) => val == null || val.trim().isEmpty
                         ? 'Enter recipient name'
                         : null,
                   ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: TextFormField(
+                  const SizedBox(height: AppSpacing.sm),
+
+                  // 2. Mobile Phone (Full width on mobile)
+                  TextFormField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.next,
                     decoration: _inputDecoration(
-                        '10-Digit Mobile Phone *', 'e.g. 9876543210'),
+                        '10-Digit Mobile Phone *', '10-digit mobile number'),
                     validator: (val) {
-                      if (val == null || val.trim().isEmpty)
+                      if (val == null || val.trim().isEmpty) {
                         return 'Enter mobile number';
-                      if (val.trim().length < 10) return 'Must be 10 digits';
+                      }
+                      final clean = val.replaceAll(RegExp(r'\D'), '');
+                      if (clean.length < 10) return 'Must be 10 digits';
                       return null;
                     },
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
 
-            // Street Address
-            TextFormField(
-              controller: _addressController,
-              decoration: _inputDecoration(
-                'Flat, Floor, House No., Building & Street *',
-                'e.g. Flat 402, Green Meadows, 12th Main',
-              ),
-              validator: (val) => val == null || val.trim().isEmpty
-                  ? 'Enter street address'
-                  : null,
-            ),
-            const SizedBox(height: AppSpacing.md),
-
-            // City, State, PIN
-            Row(
-              children: [
-                Expanded(
-                  flex: 5,
-                  child: TextFormField(
-                    controller: _cityController,
-                    decoration: _inputDecoration('City *', 'e.g. Bengaluru'),
-                    validator: (val) =>
-                        val == null || val.trim().isEmpty ? 'Enter city' : null,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  flex: 5,
-                  child: TextFormField(
-                    controller: _stateController,
-                    decoration: _inputDecoration('State *', 'e.g. Karnataka'),
+                  // 3. Street Address Line (Full width)
+                  TextFormField(
+                    controller: _addressController,
+                    textInputAction: TextInputAction.next,
+                    decoration: _inputDecoration(
+                      'Flat, House No., Street Address *',
+                      'House / flat no., building, street',
+                    ),
                     validator: (val) => val == null || val.trim().isEmpty
-                        ? 'Enter state'
+                        ? 'Enter street address'
                         : null,
                   ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  flex: 4,
-                  child: TextFormField(
-                    controller: _pincodeController,
-                    keyboardType: TextInputType.number,
-                    maxLength: 6,
-                    decoration:
-                        _inputDecoration('PIN Code *', 'e.g. 560038').copyWith(
-                      counterText: '',
-                    ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return 'Enter PIN';
-                      if (val.trim().length != 6) return 'Must be 6 digits';
-                      return null;
-                    },
+                  const SizedBox(height: AppSpacing.sm),
+
+                  // 4. Compact Row: PIN Code + City (fits cleanly on 375px+ phones)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: TextFormField(
+                          controller: _pincodeController,
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.next,
+                          maxLength: 6,
+                          decoration:
+                              _inputDecoration('PIN Code *', '6-digit PIN')
+                                  .copyWith(counterText: ''),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'Enter PIN';
+                            }
+                            if (val.trim().length != 6) return '6 digits';
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        flex: 6,
+                        child: TextFormField(
+                          controller: _cityController,
+                          textInputAction: TextInputAction.next,
+                          decoration:
+                              _inputDecoration('City *', 'City / District'),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? 'Enter city'
+                              : null,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: AppSpacing.sm),
+
+                  // 5. Compact Row: State + Landmark (Optional)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: TextFormField(
+                          controller: _stateController,
+                          textInputAction: TextInputAction.next,
+                          decoration: _inputDecoration('State *', 'State'),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? 'Enter state'
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        flex: 6,
+                        child: TextFormField(
+                          controller: _landmarkController,
+                          textInputAction: TextInputAction.done,
+                          decoration: _inputDecoration(
+                              'Landmark (Optional)', 'Nearby landmark'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else ...[
+                  // Tablet / Desktop Layout (Spacious Multi-Column)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _nameController,
+                          decoration: _inputDecoration(
+                              'Full Name *', 'Recipient full name'),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? 'Enter recipient name'
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _phoneController,
+                          keyboardType: TextInputType.phone,
+                          decoration: _inputDecoration(
+                              '10-Digit Mobile Phone *', '10-digit mobile number'),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'Enter mobile number';
+                            }
+                            final clean = val.replaceAll(RegExp(r'\D'), '');
+                            if (clean.length < 10) return 'Must be 10 digits';
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  // Street Address
+                  TextFormField(
+                    controller: _addressController,
+                    decoration: _inputDecoration(
+                      'Flat, Floor, House No., Building & Street *',
+                      'Flat 402, Green Meadows, 12th Main',
+                    ),
+                    validator: (val) => val == null || val.trim().isEmpty
+                        ? 'Enter street address'
+                        : null,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  // City, State, PIN
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: TextFormField(
+                          controller: _cityController,
+                          decoration: _inputDecoration('City *', 'City'),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? 'Enter city'
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        flex: 5,
+                        child: TextFormField(
+                          controller: _stateController,
+                          decoration: _inputDecoration('State *', 'State'),
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? 'Enter state'
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        flex: 4,
+                        child: TextFormField(
+                          controller: _pincodeController,
+                          keyboardType: TextInputType.number,
+                          maxLength: 6,
+                          decoration: _inputDecoration('PIN Code *', '6 digits')
+                              .copyWith(counterText: ''),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'Enter PIN';
+                            }
+                            if (val.trim().length != 6) return 'Must be 6 digits';
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  // Landmark
+                  TextFormField(
+                    controller: _landmarkController,
+                    decoration: _inputDecoration('Nearby Landmark (Optional)',
+                        'Near City Botanical Garden'),
+                  ),
+                ],
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
-
-            // Landmark
-            TextFormField(
-              controller: _landmarkController,
-              decoration: _inputDecoration('Nearby Landmark (Optional)',
-                  'e.g. Near City Botanical Garden'),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

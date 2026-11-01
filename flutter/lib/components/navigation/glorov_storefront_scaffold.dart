@@ -150,9 +150,10 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold>
     final double topNavOffset = widget.showTopNav
         ? (isDesktop ? 166.0 : 158.0)
         : 0.0;
+    final double bottomSafeArea = MediaQuery.of(context).padding.bottom;
     final double bottomNavOffset = (!isDesktop && widget.showBottomNav && widget.bottomNavigationBar == null)
-        ? 68.0
-        : 0.0;
+        ? (76.0 + bottomSafeArea)
+        : (widget.bottomNavigationBar != null && !isDesktop ? (88.0 + bottomSafeArea) : 0.0);
 
     return Scaffold(
       backgroundColor: widget.backgroundColor ?? AppColors.surfaceCream,
@@ -269,15 +270,22 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold>
               ),
 
             // 3. Fixed/Sticky Floating Mobile Bottom Navigation Dock
-            // Always visible across mobile storefront screens (Home, Category, Account, etc.)
+            // Dynamic scroll visibility for mobile storefront screens (slides in on scroll down, slides out on scroll up)
             if (!isDesktop && widget.showBottomNav && widget.bottomNavigationBar == null)
               Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
-                child: GlorovMobileBottomNav(
-                  currentRoute: widget.currentRoute,
-                  isVisible: true,
+                child: ListenableBuilder(
+                  listenable: GlorovHeaderScrollNotifier.instance,
+                  builder: (context, _) {
+                    final isBottomVisible =
+                        GlorovHeaderScrollNotifier.instance.isBottomNavVisible;
+                    return GlorovMobileBottomNav(
+                      currentRoute: widget.currentRoute,
+                      isVisible: isBottomVisible,
+                    );
+                  },
                 ),
               ),
           ],

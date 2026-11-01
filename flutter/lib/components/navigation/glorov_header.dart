@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -530,7 +531,7 @@ class _GlorovHeaderState extends State<GlorovHeader> {
   }
 
   // ---------------------------------------------------------------------------
-  // Category Navigation Strip: Responsive, Free-Scrolling on Mobile with No Jitter
+  // Category Navigation Strip: Responsive, Centered on Tablet & Desktop, Free-Scrolling on Mobile
   // ---------------------------------------------------------------------------
   Widget _buildCategoryStrip(
     BuildContext context, {
@@ -538,39 +539,50 @@ class _GlorovHeaderState extends State<GlorovHeader> {
     required String selectedCategory,
     required bool isDesktop,
   }) {
+    final isTablet = AppBreakpoints.isTablet(context);
+
     return GlorovYScrollPassThrough(
       parentScrollController: widget.pageScrollController,
       child: Container(
         color: Colors.white,
         height: showIcons ? (isDesktop ? 62.0 : 66.0) : (isDesktop ? 38.0 : 38.0),
-        alignment: isDesktop ? Alignment.center : Alignment.centerLeft,
-        child: ScrollConfiguration(
-          behavior: const GlorovHorizontalScrollBehavior(),
-          child: SingleChildScrollView(
-            key: const PageStorageKey<String>('glorov_header_categories_scroll'),
-            controller: _categoryScrollController,
-            scrollDirection: Axis.horizontal,
-            physics: const ClampingScrollPhysics(), // Stays where user scrolls; no snap-back!
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment:
-                  isDesktop ? MainAxisAlignment.center : MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: _categories.map((cat) {
-                final isSelected = selectedCategory == cat.label;
-                return GlorovYScrollPassThrough(
-                  parentScrollController: widget.pageScrollController,
-                  child: _HeaderCategoryNavItem(
-                    item: cat,
-                    isSelected: isSelected,
-                    showIcons: showIcons,
-                    isDesktop: isDesktop,
-                    onTap: () => _onCategoryTapped(cat),
+        alignment: Alignment.center,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final availableWidth = math.max(0.0, constraints.maxWidth - 32.0);
+
+            return ScrollConfiguration(
+              behavior: const GlorovHorizontalScrollBehavior(),
+              child: SingleChildScrollView(
+                key: const PageStorageKey<String>('glorov_header_categories_scroll'),
+                controller: _categoryScrollController,
+                scrollDirection: Axis.horizontal,
+                physics: const ClampingScrollPhysics(), // Stays where user scrolls; no snap-back!
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: availableWidth),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: _categories.map((cat) {
+                      final isSelected = selectedCategory == cat.label;
+                      return GlorovYScrollPassThrough(
+                        parentScrollController: widget.pageScrollController,
+                        child: _HeaderCategoryNavItem(
+                          item: cat,
+                          isSelected: isSelected,
+                          showIcons: showIcons,
+                          isDesktop: isDesktop,
+                          isTablet: isTablet,
+                          onTap: () => _onCategoryTapped(cat),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              }).toList(),
-            ),
-          ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -593,6 +605,7 @@ class _HeaderCategoryNavItem extends StatefulWidget {
   final bool isSelected;
   final bool showIcons;
   final bool isDesktop;
+  final bool isTablet;
   final VoidCallback onTap;
 
   const _HeaderCategoryNavItem({
@@ -600,6 +613,7 @@ class _HeaderCategoryNavItem extends StatefulWidget {
     required this.isSelected,
     required this.showIcons,
     required this.isDesktop,
+    this.isTablet = false,
     required this.onTap,
   });
 
@@ -691,7 +705,9 @@ class _HeaderCategoryNavItemState extends State<_HeaderCategoryNavItem>
           curve: Curves.easeOutCubic,
           transform: Matrix4.translationValues(0, translateY, 0),
           padding: EdgeInsets.symmetric(
-            horizontal: widget.isDesktop ? 18 : 10,
+            horizontal: widget.isDesktop
+                ? 18
+                : (widget.isTablet ? 14 : 10),
             vertical: showIcons ? 4 : 3,
           ),
           decoration: BoxDecoration(
@@ -758,13 +774,16 @@ class _HeaderCategoryNavItemState extends State<_HeaderCategoryNavItem>
                   const SizedBox(height: 3),
                 ],
 
-                // Category Label Text
+                // Category Label Text (Strictly centered for mobile, tablet, and desktop)
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 180),
                   curve: Curves.easeOutCubic,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: AppTypography.primaryFont,
-                    fontSize: showIcons ? (widget.isDesktop ? 12 : 11) : 12.5,
+                    fontSize: showIcons
+                        ? (widget.isDesktop ? 12 : (widget.isTablet ? 11.5 : 11))
+                        : 12.5,
                     fontWeight: isSelected
                         ? FontWeight.w800
                         : (isHovered ? FontWeight.w700 : FontWeight.w600),
@@ -774,7 +793,10 @@ class _HeaderCategoryNavItemState extends State<_HeaderCategoryNavItem>
                             ? const Color(0xFF111827)
                             : const Color(0xFF4B5563)),
                   ),
-                  child: Text(widget.item.label),
+                  child: Text(
+                    widget.item.label,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
 
                 // Animated Bottom Active Indicator Bar (Smooth spring width expansion on switch)

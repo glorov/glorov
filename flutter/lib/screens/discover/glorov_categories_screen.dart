@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../components/navigation/glorov_footer.dart';
 import '../../components/navigation/glorov_mobile_bottom_nav.dart';
 import '../../components/navigation/glorov_storefront_scaffold.dart';
@@ -14,9 +15,13 @@ import '../../route/route_constants.dart';
 import '../../services/glorov_cart_state.dart';
 
 /// GLOROV Full-Page Botanical Category Screen
-/// - Mobile Viewport (< 800px): Clean split dual-column layout with left category rail and right 3-column subcategory & product launch grids (matching the mobile e-commerce reference).
-/// - Desktop Viewport (>= 800px): Expansive full-width botanical taxonomy layout with hero banner, filter tabs, rich responsive cards grid, and seasonal sowing guide.
-/// - Strictly displays ONLY seeded database categories (Seeds, Live Plants, Pots & Planters, Plant Care & Soil).
+///
+/// Features:
+/// - Mobile Viewport (< 800px): Clean split dual-column layout with left category rail and right 3-column subcategory & product launch grids.
+///   Features buttery-smooth animated slide & cross-fade transitions when switching categories, tactile active indicator bars, and crisp image cards.
+/// - Desktop Viewport (>= 800px): Expansive full-width botanical taxonomy layout with hero banner, animated category filter tabs with icons,
+///   deep-dive category showcase view, rich responsive cards grid, and seasonal sowing guide.
+/// - Strictly displays ONLY seeded database categories (Seeds, Live Plants, Planters & Pots, Plant Care & Soil).
 class GlorovCategoriesScreen extends StatefulWidget {
   final String? initialCategoryHandle;
 
@@ -31,6 +36,8 @@ class GlorovCategoriesScreen extends StatefulWidget {
 
 class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
   late int _selectedCategoryIndex;
+  final ScrollController _rightScrollController = ScrollController();
+  final ScrollController _leftRailScrollController = ScrollController();
   final TextEditingController _desktopSearchController = TextEditingController();
   String _desktopSearchQuery = '';
   String _selectedDesktopGroup = 'All Categories';
@@ -45,6 +52,10 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
       );
       if (idx != -1) {
         _selectedCategoryIndex = idx;
+        final selectedCat = glorovBotanicalCategories[idx];
+        if (selectedCat.handle != 'for-you') {
+          _selectedDesktopGroup = selectedCat.title;
+        }
       }
     }
 
@@ -57,8 +68,36 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
 
   @override
   void dispose() {
+    _rightScrollController.dispose();
+    _leftRailScrollController.dispose();
     _desktopSearchController.dispose();
     super.dispose();
+  }
+
+  void _onCategorySelected(int index) {
+    if (_selectedCategoryIndex == index) return;
+    HapticFeedback.selectionClick();
+    setState(() {
+      _selectedCategoryIndex = index;
+    });
+
+    // Reset right scroll offset to top smoothly on category switch
+    if (_rightScrollController.hasClients) {
+      _rightScrollController.jumpTo(0.0);
+    }
+
+    // Ensure selected item in left rail is visible
+    if (_leftRailScrollController.hasClients) {
+      final targetOffset = (index * 84.0).clamp(
+        0.0,
+        _leftRailScrollController.position.maxScrollExtent,
+      );
+      _leftRailScrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
+    }
   }
 
   @override
@@ -74,7 +113,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
   }
 
   // =========================================================================
-  // 1. MOBILE DUAL-COLUMN LAYOUT (Matching User Reference Image)
+  // 1. MOBILE DUAL-COLUMN LAYOUT (With Silky Smooth Category Transitions)
   // =========================================================================
   Widget _buildMobileDualColumnLayout(BuildContext context) {
     final activeCategory = glorovBotanicalCategories[_selectedCategoryIndex];
@@ -89,9 +128,43 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
             // Left Category Navigation Rail
             _buildLeftCategoryRail(),
 
-            // Right Category & Subcategory Content
+            // Right Category & Subcategory Content (Animated Switcher for buttery smooth transitions)
             Expanded(
-              child: _buildRightContentArea(activeCategory),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 280),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                layoutBuilder: (currentChild, previousChildren) {
+                  return Stack(
+                    fit: StackFit.expand,
+                    children: <Widget>[
+                      ...previousChildren,
+                      if (currentChild != null) currentChild,
+                    ],
+                  );
+                },
+                transitionBuilder: (child, animation) {
+                  final slideAnimation = Tween<Offset>(
+                    begin: const Offset(0.0, 0.035),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ));
+
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: slideAnimation,
+                      child: child,
+                    ),
+                  );
+                },
+                child: KeyedSubtree(
+                  key: ValueKey<String>(activeCategory.handle),
+                  child: _buildRightContentArea(activeCategory),
+                ),
+              ),
             ),
           ],
         ),
@@ -210,12 +283,12 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
     );
   }
 
-  /// Left Vertical Category Selector Rail
+  /// Left Vertical Category Selector Rail with Tactile Animated Indicators
   Widget _buildLeftCategoryRail() {
     return Container(
-      width: 86,
+      width: 88,
       decoration: const BoxDecoration(
-        color: Color(0xFFF4F6F8),
+        color: Color(0xFFF8FAF9), // Soft botanical tinted background
         border: Border(
           right: BorderSide(
             color: Color(0xFFE5E7EB),
@@ -224,6 +297,8 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
         ),
       ),
       child: ListView.builder(
+        controller: _leftRailScrollController,
+        padding: const EdgeInsets.symmetric(vertical: 4),
         itemCount: glorovBotanicalCategories.length,
         itemBuilder: (context, index) {
           final cat = glorovBotanicalCategories[index];
@@ -231,27 +306,30 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
           final isForYou = cat.handle == 'for-you';
 
           return InkWell(
-            onTap: () {
-              setState(() {
-                _selectedCategoryIndex = index;
-              });
-            },
-            child: Container(
+            onTap: () => _onCategorySelected(index),
+            splashColor: AppColors.forestDeep.withOpacity(0.06),
+            highlightColor: AppColors.forestDeep.withOpacity(0.04),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
               color: isSelected ? Colors.white : Colors.transparent,
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+              padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 4),
               child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  // Active Left Indicator Bar
+                  // Active Left Vertical Indicator Bar
                   if (isSelected)
                     Positioned(
                       left: 0,
-                      top: 0,
-                      bottom: 0,
+                      top: 4,
+                      bottom: 4,
                       child: Container(
-                        width: 3.5,
+                        width: 3.8,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1B4332), // Forest Deep
-                          borderRadius: BorderRadius.circular(2),
+                          color: AppColors.forestDeep,
+                          borderRadius: const BorderRadius.horizontal(
+                            right: Radius.circular(3),
+                          ),
                         ),
                       ),
                     ),
@@ -261,29 +339,42 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Icon / Image container
-                        Container(
-                          width: 46,
-                          height: 46,
+                        // Icon / Image container with active subtle ring
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOutCubic,
+                          width: 48,
+                          height: 48,
                           decoration: BoxDecoration(
                             color: isForYou
-                                ? const Color(0xFFE8F5E9)
+                                ? (isSelected
+                                    ? const Color(0xFFD8F3DC)
+                                    : const Color(0xFFE8F5E9))
                                 : Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: isSelected
-                                  ? const Color(0xFF1B4332)
+                                  ? AppColors.forestDeep
                                   : const Color(0xFFE5E7EB),
-                              width: isSelected ? 1.5 : 1,
+                              width: isSelected ? 1.8 : 1.0,
                             ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: AppColors.forestDeep.withOpacity(0.12),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ]
+                                : const [],
                           ),
                           clipBehavior: Clip.antiAlias,
                           child: isForYou
                               ? const Center(
                                   child: Icon(
-                                    Icons.local_mall_rounded,
-                                    color: Color(0xFF1B4332),
-                                    size: 24,
+                                    Icons.auto_awesome_rounded,
+                                    color: AppColors.forestDeep,
+                                    size: 22,
                                   ),
                                 )
                               : (cat.image.startsWith('assets/')
@@ -295,7 +386,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                                               const Center(
                                         child: Icon(
                                           Icons.eco_rounded,
-                                          color: Color(0xFF1B4332),
+                                          color: AppColors.forestDeep,
                                           size: 20,
                                         ),
                                       ),
@@ -308,7 +399,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                                               const Center(
                                         child: Icon(
                                           Icons.eco_rounded,
-                                          color: Color(0xFF1B4332),
+                                          color: AppColors.forestDeep,
                                           size: 20,
                                         ),
                                       ),
@@ -323,12 +414,13 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                             cat.title,
                             textAlign: TextAlign.center,
                             style: TextStyle(
+                              fontFamily: AppTypography.primaryFont,
                               fontSize: 10.5,
                               fontWeight: isSelected
                                   ? FontWeight.w800
-                                  : FontWeight.w500,
+                                  : FontWeight.w600,
                               color: isSelected
-                                  ? const Color(0xFF1B4332)
+                                  ? AppColors.forestDeep
                                   : const Color(0xFF4B5563),
                               height: 1.2,
                             ),
@@ -358,20 +450,43 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
     return Container(
       color: Colors.white,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        controller: _rightScrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. First Section: Subcategories / Popular Store Grid
-            Text(
-              sectionTitle,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF111827),
-              ),
+            // Top Category Header Banner Card
+            _buildCategoryHeaderCard(activeCategory),
+            const SizedBox(height: 16),
+
+            // 1. First Section: Subcategories / Popular Collections Grid
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    sectionTitle,
+                    style: const TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF111827),
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${activeCategory.subCategories.length} Collections',
+                  style: const TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
             // 3-Column Grid of Subcategories
             GridView.builder(
@@ -381,8 +496,8 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 crossAxisSpacing: 10,
-                mainAxisSpacing: 14,
-                childAspectRatio: 0.62,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.69,
               ),
               itemBuilder: (context, index) {
                 final sub = activeCategory.subCategories[index];
@@ -390,19 +505,33 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
               },
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
 
             // 2. Second Section: Top Varieties / New & Upcoming Launches
             if (activeCategory.launches.isNotEmpty) ...[
-              Text(
-                isForYou ? 'New & Upcoming Launches' : 'Top Seeded Varieties',
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF111827),
-                ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.local_fire_department_rounded,
+                    size: 16,
+                    color: AppColors.terracotta,
+                  ),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Text(
+                      isForYou ? 'New & Upcoming Launches' : 'Top Seeded Varieties',
+                      style: const TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF111827),
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
 
               // 3-Column Grid of Product Launches
               GridView.builder(
@@ -413,7 +542,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                   crossAxisCount: 3,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 14,
-                  childAspectRatio: 0.58,
+                  childAspectRatio: 0.54,
                 ),
                 itemBuilder: (context, index) {
                   final launch = activeCategory.launches[index];
@@ -428,7 +557,85 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
     );
   }
 
-  /// 3-Column Subcategory Item (Matching the round square card with label below)
+  /// Sleek Category Header Card
+  Widget _buildCategoryHeaderCard(CategoryModel activeCategory) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAF8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.spa_rounded,
+                      size: 16,
+                      color: AppColors.forestDeep,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        activeCategory.title,
+                        style: const TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.forestDeep,
+                          letterSpacing: -0.3,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                decoration: BoxDecoration(
+                  color: AppColors.forestDeep.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${activeCategory.count} Items',
+                  style: const TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.forestDeep,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (activeCategory.description.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              activeCategory.description,
+              style: const TextStyle(
+                fontFamily: AppTypography.primaryFont,
+                fontSize: 11.5,
+                color: Color(0xFF6B7280),
+                height: 1.3,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 3-Column Subcategory Item (Clean rounded squircle with crisp botanical image and label)
   Widget _buildSubcategoryCard(BuildContext context, BotanicalSubCategory sub) {
     return InkWell(
       onTap: () {
@@ -439,7 +646,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
           arguments: sub.title,
         );
       },
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -450,7 +657,14 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFFF9FAF8),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+                border: Border.all(color: const Color(0xFFECEEEB), width: 1),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x06000000),
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ],
               ),
               clipBehavior: Clip.antiAlias,
               child: sub.image.startsWith('assets/')
@@ -461,7 +675,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                           const Center(
                         child: Icon(
                           Icons.eco_rounded,
-                          color: Color(0xFF1B4332),
+                          color: AppColors.forestDeep,
                           size: 24,
                         ),
                       ),
@@ -473,7 +687,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                           const Center(
                         child: Icon(
                           Icons.eco_rounded,
-                          color: Color(0xFF1B4332),
+                          color: AppColors.forestDeep,
                           size: 24,
                         ),
                       ),
@@ -487,8 +701,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
             sub.title,
             textAlign: TextAlign.center,
             style: const TextStyle(
+              fontFamily: AppTypography.primaryFont,
               fontSize: 11,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
               color: Color(0xFF1F2937),
               height: 1.25,
             ),
@@ -500,8 +715,17 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
     );
   }
 
-  /// 3-Column Launch Product Item (With "BUY NOW" / "SALE IS LIVE" tag)
+  /// 3-Column Launch Product Item (With Status Tag & Price indication)
   Widget _buildLaunchCard(BuildContext context, BotanicalProductLaunch launch) {
+    Color tagColor;
+    if (launch.tag == 'SALE IS LIVE') {
+      tagColor = AppColors.terracotta;
+    } else if (launch.tag == 'NEW LAUNCH') {
+      tagColor = AppColors.sage;
+    } else {
+      tagColor = AppColors.forestDeep;
+    }
+
     return InkWell(
       onTap: () {
         Navigator.pushNamed(
@@ -510,7 +734,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
           arguments: launch.title,
         );
       },
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -526,7 +750,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                     color: const Color(0xFFF9FAF8),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: const Color(0xFFE5E7EB),
+                      color: const Color(0xFFECEEEB),
                       width: 1,
                     ),
                   ),
@@ -539,7 +763,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                               const Center(
                             child: Icon(
                               Icons.eco_rounded,
-                              color: Color(0xFF1B4332),
+                              color: AppColors.forestDeep,
                               size: 24,
                             ),
                           ),
@@ -551,7 +775,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                               const Center(
                             child: Icon(
                               Icons.eco_rounded,
-                              color: Color(0xFF1B4332),
+                              color: AppColors.forestDeep,
                               size: 24,
                             ),
                           ),
@@ -566,9 +790,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 2.5),
                     decoration: BoxDecoration(
-                      color: launch.tag == 'SALE IS LIVE'
-                          ? AppColors.terracotta
-                          : AppColors.sage,
+                      color: tagColor,
                       borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(13),
                         bottomRight: Radius.circular(13),
@@ -578,6 +800,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                       launch.tag,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
+                        fontFamily: AppTypography.primaryFont,
                         color: Colors.white,
                         fontSize: 9,
                         fontWeight: FontWeight.w800,
@@ -589,44 +812,57 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 5),
 
-          // Launch Title
+          // Title
           Text(
             launch.title,
             textAlign: TextAlign.center,
             style: const TextStyle(
+              fontFamily: AppTypography.primaryFont,
               fontSize: 11,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
               color: Color(0xFF1F2937),
-              height: 1.25,
+              height: 1.2,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
+
+          // Price Tag
+          if (launch.formattedPrice.isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              launch.formattedPrice,
+              style: const TextStyle(
+                fontFamily: AppTypography.primaryFont,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+                color: AppColors.forestDeep,
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
   // =========================================================================
-  // 2. DESKTOP VIEWPORT LAYOUT (Expansive Taxonomy Experience)
+  // 2. DESKTOP VIEWPORT LAYOUT (>= 800px)
   // =========================================================================
   Widget _buildDesktopLayout(BuildContext context) {
     final categories = _filteredDesktopCategories;
 
     return GlorovStorefrontScaffold(
       currentRoute: discoverScreenRoute,
-      showTopNav: false,
-      alwaysShowBottomNav: true,
+      backgroundColor: AppColors.surfaceCream,
       child: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 1. Desktop Hero Header Banner
+            // 1. Desktop Hero Banner Header
             _buildDesktopHeroHeader(),
 
-            // 2. Desktop Content Container
+            // 2. Main Content Container
             Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1280),
@@ -638,26 +874,28 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Desktop Search and Filter Pills
+                      // Desktop Search and Filter Tabs
                       _buildDesktopSearchAndFilters(),
 
                       const SizedBox(height: AppSpacing.lg),
 
-                      // Desktop Category Cards Grid (Excludes "For You" on desktop)
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: categories.length,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: AppSpacing.lg,
-                          mainAxisSpacing: AppSpacing.lg,
-                          childAspectRatio: 0.74,
-                        ),
-                        itemBuilder: (context, index) {
-                          final cat = categories[index];
-                          return _buildDesktopCategoryCard(context, cat);
+                      // Desktop Animated Content Switcher
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 280),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
                         },
+                        child: KeyedSubtree(
+                          key: ValueKey<String>('$_selectedDesktopGroup-$_desktopSearchQuery'),
+                          child: _selectedDesktopGroup == 'All Categories'
+                              ? _buildDesktopAllCategoriesGrid(context, categories)
+                              : _buildDesktopSingleCategoryShowcase(context),
+                        ),
                       ),
 
                       const SizedBox(height: AppSpacing.xxl),
@@ -778,6 +1016,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
               const Text(
                 'Explore Botanical Categories',
                 style: TextStyle(
+                  fontFamily: AppTypography.displayFont,
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
                   fontSize: 36,
@@ -791,6 +1030,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                 child: Text(
                   'Browse acclimatized live indoor houseplants, germination-tested Desi heirloom seeds, artisanal terracotta planters, and certified organic soil blends.',
                   style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
                     color: Colors.white.withOpacity(0.85),
                     fontSize: 16,
                     height: 1.5,
@@ -831,6 +1071,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
           Text(
             label,
             style: const TextStyle(
+              fontFamily: AppTypography.primaryFont,
               color: Colors.white,
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -842,7 +1083,13 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
   }
 
   Widget _buildDesktopSearchAndFilters() {
-    final groups = ['All Categories', 'Seeds', 'Live Plants', 'Planters & Pots', 'Plant Care & Soil'];
+    final groups = [
+      _DesktopTabItem(label: 'All Categories', icon: Icons.grid_view_rounded),
+      _DesktopTabItem(label: 'Seeds', icon: Icons.grain_rounded),
+      _DesktopTabItem(label: 'Live Plants', icon: Icons.local_florist_rounded),
+      _DesktopTabItem(label: 'Planters & Pots', icon: Icons.inventory_2_outlined),
+      _DesktopTabItem(label: 'Plant Care & Soil', icon: Icons.spa_rounded),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -857,7 +1104,11 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
           child: TextField(
             key: const Key('category_search_field'),
             controller: _desktopSearchController,
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+            style: const TextStyle(
+              fontFamily: AppTypography.primaryFont,
+              color: AppColors.textPrimary,
+              fontSize: 15,
+            ),
             onSubmitted: (query) {
               if (query.trim().isNotEmpty) {
                 Navigator.pushNamed(
@@ -869,7 +1120,11 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
             },
             decoration: InputDecoration(
               hintText: 'Search categories, seeds, houseplants, pots...',
-              hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+              hintStyle: const TextStyle(
+                fontFamily: AppTypography.primaryFont,
+                color: AppColors.textMuted,
+                fontSize: 14,
+              ),
               prefixIcon: IconButton(
                 icon: const Icon(Icons.search_rounded, color: AppColors.forestDeep),
                 tooltip: 'Search botanical collection',
@@ -895,33 +1150,386 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
           ),
         ),
         const SizedBox(height: AppSpacing.md),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: groups.map((g) {
+              final isSelected = _selectedDesktopGroup == g.label;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  avatar: Icon(
+                    g.icon,
+                    size: 16,
+                    color: isSelected ? Colors.white : AppColors.forestDeep,
+                  ),
+                  label: Text(g.label),
+                  selected: isSelected,
+                  onSelected: (val) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _selectedDesktopGroup = g.label);
+                  },
+                  backgroundColor: AppColors.surfacePure,
+                  selectedColor: AppColors.forestDeep,
+                  labelStyle: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    color: isSelected ? Colors.white : AppColors.textPrimary,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                  side: BorderSide(
+                    color: isSelected ? AppColors.forestDeep : AppColors.borderSubtle,
+                    width: 1.2,
+                  ),
+                  shape: const RoundedRectangleBorder(borderRadius: AppRadii.roundedFull),
+                  showCheckmark: false,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Desktop All Categories Overview 3-Column Grid
+  Widget _buildDesktopAllCategoriesGrid(BuildContext context, List<CategoryModel> categories) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: categories.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: AppSpacing.lg,
+        mainAxisSpacing: AppSpacing.lg,
+        childAspectRatio: 0.74,
+      ),
+      itemBuilder: (context, index) {
+        final cat = categories[index];
+        return _buildDesktopCategoryCard(context, cat);
+      },
+    );
+  }
+
+  /// Desktop Dedicated Single Category Showcase (Subcategories + Top Seeded Launches)
+  Widget _buildDesktopSingleCategoryShowcase(BuildContext context) {
+    final category = glorovBotanicalCategories.firstWhere(
+      (c) => c.title == _selectedDesktopGroup,
+      orElse: () => glorovBotanicalCategories[1],
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Category Spotlight Hero Card
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: AppRadii.roundedXl,
+            border: Border.all(color: AppColors.borderSubtle),
+            boxShadow: AppShadows.card,
+          ),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  width: 120,
+                  height: 120,
+                  child: category.image.startsWith('assets/')
+                      ? Image.asset(category.image, fit: BoxFit.cover)
+                      : Image.network(category.image, fit: BoxFit.cover),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xl),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD8F3DC),
+                            borderRadius: AppRadii.roundedFull,
+                          ),
+                          child: Text(
+                            category.badge,
+                            style: const TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.forestDeep,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${category.count} Botanical Varieties',
+                          style: const TextStyle(
+                            fontFamily: AppTypography.primaryFont,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      category.title,
+                      style: const TextStyle(
+                        fontFamily: AppTypography.displayFont,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      category.description,
+                      style: const TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 14,
+                        color: Color(0xFF4B5563),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // Subcategories Section
         Row(
-          children: groups.map((g) {
-            final isSelected = _selectedDesktopGroup == g;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: FilterChip(
-                label: Text(g),
-                selected: isSelected,
-                onSelected: (val) => setState(() => _selectedDesktopGroup = g),
-                backgroundColor: AppColors.surfacePure,
-                selectedColor: AppColors.forestDeep,
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : AppColors.textPrimary,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '${category.title} Collections',
+              style: const TextStyle(
+                fontFamily: AppTypography.primaryFont,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, discoverScreenRoute, arguments: category.title);
+              },
+              icon: const Icon(Icons.arrow_forward_rounded, size: 15),
+              label: const Text('View All in Catalog'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.forestDeep,
+                textStyle: const TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontWeight: FontWeight.w700,
                   fontSize: 13,
                 ),
-                side: BorderSide(
-                  color: isSelected ? AppColors.forestDeep : AppColors.borderSubtle,
-                  width: 1.2,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+
+        // Subcategory Cards Row
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: category.subCategories.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: AppSpacing.lg,
+            mainAxisSpacing: AppSpacing.lg,
+            childAspectRatio: 1.15,
+          ),
+          itemBuilder: (context, index) {
+            final sub = category.subCategories[index];
+            return InkWell(
+              onTap: () {
+                Navigator.pushNamed(context, discoverScreenRoute, arguments: sub.title);
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.borderSubtle),
+                  boxShadow: AppShadows.card,
                 ),
-                shape: const RoundedRectangleBorder(borderRadius: AppRadii.roundedFull),
-                showCheckmark: false,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: SizedBox(
+                        width: 72,
+                        height: 72,
+                        child: sub.image.startsWith('assets/')
+                            ? Image.asset(sub.image, fit: BoxFit.cover)
+                            : Image.network(sub.image, fit: BoxFit.cover),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            sub.title,
+                            style: const TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${sub.count} curated items',
+                            style: const TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 12,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
-          }).toList(),
+          },
         ),
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // Featured Launches Section
+        if (category.launches.isNotEmpty) ...[
+          const Text(
+            'Featured Varieties & Launches',
+            style: TextStyle(
+              fontFamily: AppTypography.primaryFont,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: category.launches.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              crossAxisSpacing: AppSpacing.md,
+              mainAxisSpacing: AppSpacing.md,
+              childAspectRatio: 0.72,
+            ),
+            itemBuilder: (context, index) {
+              final launch = category.launches[index];
+              return InkWell(
+                onTap: () {
+                  Navigator.pushNamed(context, discoverScreenRoute, arguments: launch.title);
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.borderSubtle),
+                    boxShadow: AppShadows.card,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AspectRatio(
+                        aspectRatio: 1.15,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            launch.image.startsWith('assets/')
+                                ? Image.asset(launch.image, fit: BoxFit.cover)
+                                : Image.network(launch.image, fit: BoxFit.cover),
+                            Positioned(
+                              top: 8,
+                              left: 8,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: launch.tag == 'SALE IS LIVE'
+                                      ? AppColors.terracotta
+                                      : (launch.tag == 'NEW LAUNCH'
+                                          ? AppColors.sage
+                                          : AppColors.forestDeep),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  launch.tag,
+                                  style: const TextStyle(
+                                    fontFamily: AppTypography.primaryFont,
+                                    color: Colors.white,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              launch.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontFamily: AppTypography.primaryFont,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            if (launch.formattedPrice.isNotEmpty) ...[
+                              const SizedBox(height: 3),
+                              Text(
+                                launch.formattedPrice,
+                                style: const TextStyle(
+                                  fontFamily: AppTypography.primaryFont,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.forestDeep,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ],
     );
   }
@@ -986,6 +1594,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                       child: Text(
                         cat.badge,
                         style: const TextStyle(
+                          fontFamily: AppTypography.primaryFont,
                           color: Color(0xFF042018),
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
@@ -1005,6 +1614,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                       child: Text(
                         '${cat.count} Varieties',
                         style: const TextStyle(
+                          fontFamily: AppTypography.primaryFont,
                           color: Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -1023,6 +1633,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                       Text(
                         cat.title,
                         style: const TextStyle(
+                          fontFamily: AppTypography.primaryFont,
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w800,
                           fontSize: 18,
@@ -1034,6 +1645,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                       Text(
                         cat.description,
                         style: const TextStyle(
+                          fontFamily: AppTypography.primaryFont,
                           color: AppColors.textMuted,
                           fontSize: 13,
                           height: 1.4,
@@ -1061,6 +1673,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                               child: Text(
                                 sub.title,
                                 style: const TextStyle(
+                                  fontFamily: AppTypography.primaryFont,
                                   fontSize: 11,
                                   color: AppColors.forestDeep,
                                   fontWeight: FontWeight.w600,
@@ -1076,7 +1689,8 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                         children: [
                           const Text(
                             'Explore Collection',
-                            style: TextStyle(
+                            style: const TextStyle(
+                              fontFamily: AppTypography.primaryFont,
                               color: AppColors.forestDeep,
                               fontWeight: FontWeight.w700,
                               fontSize: 13,
@@ -1129,6 +1743,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
             child: const Text(
               'SEASONAL SOWING GUIDE',
               style: TextStyle(
+                fontFamily: AppTypography.primaryFont,
                 color: Colors.white,
                 fontSize: 10.5,
                 fontWeight: FontWeight.w800,
@@ -1140,6 +1755,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
           const Text(
             'Need Help Choosing What to Plant This Month?',
             style: TextStyle(
+              fontFamily: AppTypography.displayFont,
               color: AppColors.textPrimary,
               fontWeight: FontWeight.w800,
               fontSize: 22,
@@ -1148,7 +1764,11 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
           const SizedBox(height: AppSpacing.xs),
           const Text(
             'Explore our month-by-month Indian Sowing Calendar designed for Kharif, Rabi, and Zaid cultivation across Indian agro-climatic zones.',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 13.5),
+            style: TextStyle(
+              fontFamily: AppTypography.primaryFont,
+              color: AppColors.textMuted,
+              fontSize: 13.5,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           ElevatedButton.icon(
@@ -1168,4 +1788,11 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
       ),
     );
   }
+}
+
+class _DesktopTabItem {
+  final String label;
+  final IconData icon;
+
+  const _DesktopTabItem({required this.label, required this.icon});
 }

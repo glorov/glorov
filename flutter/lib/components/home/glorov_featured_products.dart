@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radii.dart';
+import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/theme/glorov_horizontal_scroll_behavior.dart';
 import '../../models/glorov/glorov_mock_data.dart';
+import '../../models/glorov/glorov_product.dart';
 import '../../route/route_constants.dart';
 import '../../core/interactions/interactions.dart';
 import '../common/glorov_y_scroll_pass_through.dart';
@@ -275,7 +277,7 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.forestDeep,
                               foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
+                              shape: const RoundedRectangleBorder(
                                 borderRadius: AppRadii.roundedFull,
                               ),
                               padding: const EdgeInsets.symmetric(
@@ -320,7 +322,7 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.forestDeep,
                               foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
+                              shape: const RoundedRectangleBorder(
                                 borderRadius: AppRadii.roundedFull,
                               ),
                               padding: const EdgeInsets.symmetric(

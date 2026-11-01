@@ -95,9 +95,10 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
   Widget build(BuildContext context) {
     final isDesktop = AppBreakpoints.isDesktop(context);
     final width = MediaQuery.of(context).size.width;
+    final isMobile = width < 640;
 
     int crossAxisCount = 2;
-    double childAspectRatio = 0.65;
+    double childAspectRatio = 0.66;
 
     if (width > 1150) {
       crossAxisCount = 4;
@@ -106,17 +107,19 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
       crossAxisCount = 3;
       childAspectRatio = 0.60;
     } else {
-      childAspectRatio = 0.65;
+      childAspectRatio = 0.66;
     }
 
     // Filter products (showing at least 16 curated botanicals)
     final displayedProducts = _getCuratedProducts();
+    final double crossAxisSpacing = isMobile ? 8.0 : AppSpacing.md;
+    final double mainAxisSpacing = isMobile ? 10.0 : AppSpacing.md;
 
     return Container(
       width: double.infinity,
       color: AppColors.surfaceCream,
       padding: EdgeInsets.symmetric(
-        horizontal: isDesktop ? AppSpacing.lg : AppSpacing.md,
+        horizontal: isDesktop ? AppSpacing.lg : (isMobile ? 12.0 : AppSpacing.md),
         vertical: AppSpacing.xxl,
       ),
       child: Center(
@@ -236,8 +239,8 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
                   itemCount: displayedProducts.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: AppSpacing.md,
-                    mainAxisSpacing: AppSpacing.md,
+                    crossAxisSpacing: crossAxisSpacing,
+                    mainAxisSpacing: mainAxisSpacing,
                     childAspectRatio: childAspectRatio,
                   ),
                   itemBuilder: (context, index) {

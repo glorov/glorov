@@ -2601,9 +2601,9 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
             itemCount: suggested.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: AppBreakpoints.isDesktop(context) ? 4 : 2,
-              crossAxisSpacing: AppSpacing.md,
-              mainAxisSpacing: AppSpacing.md,
-              childAspectRatio: AppBreakpoints.isDesktop(context) ? 0.70 : 0.63,
+              crossAxisSpacing: AppBreakpoints.isMobile(context) ? 8.0 : AppSpacing.md,
+              mainAxisSpacing: AppBreakpoints.isMobile(context) ? 10.0 : AppSpacing.md,
+              childAspectRatio: AppBreakpoints.isDesktop(context) ? 0.70 : 0.65,
             ),
             itemBuilder: (ctx, i) {
               return GlorovProductCard(product: suggested[i]);

@@ -178,6 +178,10 @@ class GlorovProductGridSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = crossAxisCount == 2;
+    final spacing = isMobile ? 8.0 : AppSpacing.md;
+    final verticalSpacing = isMobile ? 10.0 : AppSpacing.md;
+
     return SkeletonScope(
       child: GridView.builder(
         shrinkWrap: true,
@@ -185,8 +189,8 @@ class GlorovProductGridSkeleton extends StatelessWidget {
         itemCount: count,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
-          crossAxisSpacing: AppSpacing.md,
-          mainAxisSpacing: AppSpacing.md,
+          crossAxisSpacing: spacing,
+          mainAxisSpacing: verticalSpacing,
           childAspectRatio:
               childAspectRatio ?? (crossAxisCount == 2 ? 0.66 : 0.72),
         ),

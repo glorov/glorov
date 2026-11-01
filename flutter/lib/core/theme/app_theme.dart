@@ -99,6 +99,7 @@ class AppTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.surfaceCream,
       fontFamily: AppTypography.primaryFont,
+      fontFamilyFallback: AppTypography.primaryFontFallback,
       textTheme: AppTypography.textTheme(AppColors.textPrimary),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.surfacePure,

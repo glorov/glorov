@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../core/interactions/interactions.dart';
+import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_typography.dart';
@@ -49,12 +50,24 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
+    final mediaWidth = MediaQuery.maybeOf(context)?.size.width ?? 1200.0;
+    final isMobileDevice = mediaWidth <= AppBreakpoints.mobileMax;
+    final isDesktopDevice = mediaWidth >= AppBreakpoints.desktopMin;
+    final isTabletDevice = !isMobileDevice && !isDesktopDevice;
+
+    // Responsive Card Border Radius:
+    // Mobile: 12.0 (smaller border radius matching Image 1)
+    // Tablet: 16.0 (medium border radius matching Image 2)
+    // Desktop: 20.0 (prominent larger border radius matching Image 3)
+    final double cardRadius = isDesktopDevice
+        ? 20.0
+        : (isTabletDevice ? 16.0 : 12.0);
 
     Widget cardBody = AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(cardRadius),
         border: Border.all(
           color: _isFocused
               ? AppColors.forestDeep
@@ -93,8 +106,8 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
               children: [
                 // Product Image with subtle botanical hover zoom
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(14),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(cardRadius),
                   ),
                   child: AnimatedScale(
                     scale: _isHovered ? 1.04 : 1.0,
@@ -164,13 +177,13 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                         horizontal: 8,
                         vertical: 3.5,
                       ),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.tagDarkBlue, // Theme dark blue #0c2340
                         borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(14),
-                          topRight: Radius.circular(8),
-                          bottomRight: Radius.circular(8),
-                          bottomLeft: Radius.circular(0),
+                          topLeft: Radius.circular(cardRadius),
+                          topRight: const Radius.circular(8),
+                          bottomRight: const Radius.circular(8),
+                          bottomLeft: Radius.zero,
                         ),
                       ),
                       child: Row(
@@ -340,15 +353,38 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final isCompact = constraints.maxWidth < 230 || widget.forceCircularAction;
+                final isCompact = constraints.maxWidth < 230 || widget.forceCircularAction || isMobileDevice;
+                final isTabletCard = !isCompact && (isTabletDevice || constraints.maxWidth < 275);
+                final isDesktopCard = !isCompact && !isTabletCard;
+
+                // Responsive Title Font Size:
+                // Mobile: 13.5 (small font size matching Image 1)
+                // Tablet: 16.5 (medium font size matching Image 2)
+                // Desktop: 18.5 (large prominent font size matching Image 3)
+                final double titleFontSize = isCompact
+                    ? 13.5
+                    : (isTabletCard ? 16.5 : 18.5);
+
+                final double priceFontSize = isCompact
+                    ? 15.5
+                    : (isTabletCard ? 17.5 : 19.5);
+
+                final double originalPriceFontSize = isCompact
+                    ? 11.0
+                    : (isTabletCard ? 12.5 : 13.5);
+
+                final double subtitleFontSize = isDesktopCard ? 12.5 : 11.5;
+
                 final availableHeight = constraints.maxHeight;
                 final showSubtitle = !isCompact &&
-                    availableHeight >= 125 &&
+                    availableHeight >= 135 &&
                     product.shortDescription.isNotEmpty;
 
                 final bodyPadding = isCompact
-                    ? const EdgeInsets.fromLTRB(10, 6, 10, 8)
-                    : const EdgeInsets.fromLTRB(12, 8, 12, 8);
+                    ? const EdgeInsets.fromLTRB(9, 6, 9, 8)
+                    : (isTabletCard
+                        ? const EdgeInsets.fromLTRB(12, 6, 12, 8)
+                        : const EdgeInsets.fromLTRB(12, 8, 12, 8));
 
                 return Padding(
                   padding: bodyPadding,
@@ -368,7 +404,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontFamily: AppTypography.displayFont,
-                                fontSize: isCompact ? 14.5 : 15.5,
+                                fontSize: titleFontSize,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF0F2F24),
                                 height: 1.22,
@@ -381,11 +417,11 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                                 product.shortDescription,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: AppTypography.primaryFont,
-                                  fontSize: 11.5,
+                                  fontSize: subtitleFontSize,
                                   fontWeight: FontWeight.w400,
-                                  color: Color(0xFF6B7280),
+                                  color: const Color(0xFF6B7280),
                                   height: 1.2,
                                 ),
                               ),
@@ -411,7 +447,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                                   '₹${product.effectivePrice.toStringAsFixed(0)}',
                                   style: TextStyle(
                                     fontFamily: AppTypography.displayFont,
-                                    fontSize: isCompact ? 16.5 : 18.0,
+                                    fontSize: priceFontSize,
                                     fontWeight: FontWeight.w800,
                                     color: const Color(0xFF111827),
                                     height: 1.0,
@@ -422,7 +458,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                                     '₹${product.price.toStringAsFixed(0)}',
                                     style: TextStyle(
                                       fontFamily: AppTypography.primaryFont,
-                                      fontSize: isCompact ? 11.5 : 12.5,
+                                      fontSize: originalPriceFontSize,
                                       color: const Color(0xFF94A3B8),
                                       decoration: TextDecoration.lineThrough,
                                       fontWeight: FontWeight.w500,
@@ -435,7 +471,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                           const SizedBox(width: 6),
 
                           // Green Action Button (Circular Bag or Pill Add to Cart)
-                          _buildGreenActionButton(context, isCompact),
+                          _buildGreenActionButton(context, isCompact, isDesktopDevice),
                         ],
                       ),
                     ],
@@ -491,7 +527,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
   }
 
   /// Builds the signature green button requested by the user with tactile press feedback
-  Widget _buildGreenActionButton(BuildContext context, bool isCompact) {
+  Widget _buildGreenActionButton(BuildContext context, bool isCompact, [bool isDesktop = false]) {
     const greenColor = AppColors.forestDeep; // Rich botanical forest green
 
     if (isCompact) {
@@ -534,7 +570,10 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
         duration: GlorovInteractionConfig.durationFast,
         semanticLabel: 'Add ${widget.product.title} to cart',
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          padding: EdgeInsets.symmetric(
+            horizontal: isDesktop ? 16 : 13,
+            vertical: isDesktop ? 8 : 6.5,
+          ),
           decoration: BoxDecoration(
             color: greenColor,
             borderRadius: BorderRadius.circular(20),
@@ -546,11 +585,11 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
               ),
             ],
           ),
-          child: const Text(
+          child: Text(
             'Add To Cart',
             style: TextStyle(
               fontFamily: AppTypography.primaryFont,
-              fontSize: 12.5,
+              fontSize: isDesktop ? 13.0 : 12.0,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
               color: Colors.white,

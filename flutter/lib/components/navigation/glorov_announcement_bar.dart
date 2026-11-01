@@ -96,8 +96,12 @@ class _GlorovAnnouncementBarState extends State<GlorovAnnouncementBar>
     if (widget.customItems != null && widget.customConfig != null) return;
 
     try {
-      final items = await GlorovRepositories.announcements.fetchAnnouncements();
-      final config = await GlorovRepositories.announcements.fetchConfig();
+      final results = await Future.wait([
+        GlorovRepositories.announcements.fetchAnnouncements(),
+        GlorovRepositories.announcements.fetchConfig(),
+      ]);
+      final items = results[0] as List<GlorovAnnouncementItem>;
+      final config = results[1] as GlorovAnnouncementConfig;
 
       if (mounted) {
         setState(() {

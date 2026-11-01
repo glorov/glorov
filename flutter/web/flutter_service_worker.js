@@ -6,14 +6,6 @@ self.addEventListener('install', function() {
 
 self.addEventListener('activate', function(event) {
   event.waitUntil(
-    self.registration.unregister().then(function() {
-      return self.clients.matchAll({ type: 'window' });
-    }).then(function(clients) {
-      clients.forEach(function(client) {
-        if (client.url && 'navigate' in client) {
-          client.navigate(client.url);
-        }
-      });
-    })
+    self.registration.unregister()
   );
 });

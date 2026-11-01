@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/interactions/interactions.dart';
+import '../../../core/theme/app_breakpoints.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -1047,11 +1048,11 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
         Expanded(
           child: GridView.builder(
             controller: _scrollController,
-            padding: const EdgeInsets.all(AppSpacing.md),
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            padding: EdgeInsets.all(AppBreakpoints.isMobile(context) ? 10.0 : AppSpacing.md),
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent: 240,
-              mainAxisSpacing: AppSpacing.md,
-              crossAxisSpacing: AppSpacing.md,
+              mainAxisSpacing: AppBreakpoints.isMobile(context) ? 10.0 : AppSpacing.md,
+              crossAxisSpacing: AppBreakpoints.isMobile(context) ? 8.0 : AppSpacing.md,
               childAspectRatio: 0.69,
             ),
             itemCount: _searchResult.products.length,

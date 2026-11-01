@@ -9,10 +9,28 @@ class AppTypography {
   static const String displayFont = 'Fraunces';
   static const String serifFont = 'Fraunces';
 
+  static const List<String> primaryFontFallback = [
+    'Grandis Extended',
+    'Fraunces',
+    'Roboto',
+    'Noto Sans',
+    'Arial',
+    'sans-serif',
+  ];
+
+  static const List<String> displayFontFallback = [
+    'Grandis Extended',
+    'Plus Jakarta',
+    'Roboto',
+    'Noto Sans',
+    'serif',
+  ];
+
   static TextTheme textTheme(Color textColor) {
     return TextTheme(
       displayLarge: TextStyle(
         fontFamily: displayFont,
+        fontFamilyFallback: displayFontFallback,
         fontSize: 38,
         fontWeight: FontWeight.w700,
         height: 1.15,
@@ -21,6 +39,7 @@ class AppTypography {
       ),
       displayMedium: TextStyle(
         fontFamily: displayFont,
+        fontFamilyFallback: displayFontFallback,
         fontSize: 30,
         fontWeight: FontWeight.w700,
         height: 1.2,
@@ -29,6 +48,7 @@ class AppTypography {
       ),
       displaySmall: TextStyle(
         fontFamily: displayFont,
+        fontFamilyFallback: displayFontFallback,
         fontSize: 24,
         fontWeight: FontWeight.w700,
         height: 1.25,
@@ -37,6 +57,7 @@ class AppTypography {
       ),
       headlineLarge: TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 22,
         fontWeight: FontWeight.w700,
         height: 1.3,
@@ -44,6 +65,7 @@ class AppTypography {
       ),
       headlineMedium: TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 20,
         fontWeight: FontWeight.w600,
         height: 1.35,
@@ -51,6 +73,7 @@ class AppTypography {
       ),
       headlineSmall: TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 18,
         fontWeight: FontWeight.w600,
         height: 1.4,
@@ -58,6 +81,7 @@ class AppTypography {
       ),
       titleLarge: TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 16,
         fontWeight: FontWeight.w600,
         height: 1.45,
@@ -65,6 +89,7 @@ class AppTypography {
       ),
       titleMedium: TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 14,
         fontWeight: FontWeight.w600,
         height: 1.45,
@@ -72,6 +97,7 @@ class AppTypography {
       ),
       titleSmall: TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 13,
         fontWeight: FontWeight.w500,
         height: 1.45,
@@ -79,6 +105,7 @@ class AppTypography {
       ),
       bodyLarge: TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 15,
         fontWeight: FontWeight.w400,
         height: 1.55,
@@ -86,6 +113,7 @@ class AppTypography {
       ),
       bodyMedium: const TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 14,
         fontWeight: FontWeight.w400,
         height: 1.5,
@@ -93,6 +121,7 @@ class AppTypography {
       ),
       bodySmall: const TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 12,
         fontWeight: FontWeight.w400,
         height: 1.5,
@@ -100,6 +129,7 @@ class AppTypography {
       ),
       labelLarge: TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 14,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.2,
@@ -107,6 +137,7 @@ class AppTypography {
       ),
       labelMedium: const TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 12,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.25,
@@ -114,6 +145,7 @@ class AppTypography {
       ),
       labelSmall: const TextStyle(
         fontFamily: primaryFont,
+        fontFamilyFallback: primaryFontFallback,
         fontSize: 11,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.4,

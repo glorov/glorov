@@ -570,14 +570,17 @@ class _GlorovProductDetailsScreenState
     if (!mounted) return;
     setState(() => _isLoadingReviews = true);
     try {
-      final summary =
-          await GlorovRepositories.reviews.getSummary(widget.product.id);
-      final list = await GlorovRepositories.reviews.getReviews(
-        widget.product.id,
-        sortBy: _reviewsSort,
-        starFilter: _selectedStarFilter,
-        photosOnly: _photosOnlyFilter,
-      );
+      final results = await Future.wait([
+        GlorovRepositories.reviews.getSummary(widget.product.id),
+        GlorovRepositories.reviews.getReviews(
+          widget.product.id,
+          sortBy: _reviewsSort,
+          starFilter: _selectedStarFilter,
+          photosOnly: _photosOnlyFilter,
+        ),
+      ]);
+      final summary = results[0] as GlorovReviewSummary;
+      final list = results[1] as List<GlorovReview>;
       if (mounted) {
         setState(() {
           _reviewSummary = summary;

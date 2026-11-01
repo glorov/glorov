@@ -9,7 +9,7 @@ class MedusaApiConfig {
     this.baseUrl = defaultBaseUrl,
     this.publishableKey = defaultPublishableKey,
     this.customerAuthToken,
-    this.timeout = const Duration(seconds: 15),
+    this.timeout = const Duration(seconds: 8),
   });
 
   /// Compile-time environment configuration defaults

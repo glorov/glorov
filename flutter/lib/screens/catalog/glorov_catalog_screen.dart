@@ -908,6 +908,10 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
       return _buildEmptyState();
     }
 
+    final isMobile = width < 640;
+    final double crossAxisSpacing = isMobile ? 8.0 : AppSpacing.md;
+    final double mainAxisSpacing = isMobile ? 10.0 : AppSpacing.md;
+
     return GlorovSkeletonLoader(
       loading: widget.isLoading,
       skeleton: GlorovProductGridSkeleton(
@@ -921,8 +925,8 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
         itemCount: products.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
-          crossAxisSpacing: AppSpacing.md,
-          mainAxisSpacing: AppSpacing.md,
+          crossAxisSpacing: crossAxisSpacing,
+          mainAxisSpacing: mainAxisSpacing,
           childAspectRatio: childAspectRatio,
         ),
         itemBuilder: (context, index) {

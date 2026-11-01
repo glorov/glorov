@@ -23,11 +23,19 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  const urlPath = req.url.split('?')[0];
+  let urlPath = req.url.split('?')[0];
+  try {
+    urlPath = decodeURIComponent(urlPath);
+  } catch {}
   let filePath = path.join(WEB_DIR, urlPath);
 
   if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-    filePath = path.join(filePath, 'index.html');
+    const indexPath = path.join(filePath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      filePath = indexPath;
+    } else {
+      filePath = path.join(WEB_DIR, 'index.html');
+    }
   }
 
   // SPA fallback if file does not exist
@@ -40,6 +48,7 @@ const server = http.createServer((req, res) => {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
+      console.error(`Error reading ${filePath} for ${req.url}:`, err);
       res.writeHead(500, { 'Content-Type': 'text/plain' });
       res.end('Internal Server Error');
       return;

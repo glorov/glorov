@@ -64,6 +64,7 @@ async function captureViewport({ name, width, height, isMobile, url, scrollDelta
     await send('Page.enable');
     await send('DOM.enable');
     await send('Network.enable');
+    await send('Runtime.enable');
     await send('Emulation.setDeviceMetricsOverride', {
       width,
       height,
@@ -76,7 +77,19 @@ async function captureViewport({ name, width, height, isMobile, url, scrollDelta
 
     // Wait for Flutter app initialization
     console.log(`[${name}] Waiting for Flutter app to settle...`);
-    await new Promise((r) => setTimeout(r, 4500));
+    for (let i = 0; i < 50; i++) {
+      await new Promise((r) => setTimeout(r, 300));
+      try {
+        const res = await send('Runtime.evaluate', {
+          expression: 'Boolean(document.querySelector("flt-glass-pane") || document.querySelector("flutter-view"))',
+          returnByValue: true,
+        });
+        if (res?.result?.value) {
+          break;
+        }
+      } catch {}
+    }
+    await new Promise((r) => setTimeout(r, 3000));
 
     if (scrollDeltaY) {
       console.log(`[${name}] Scrolling deltaY: ${scrollDeltaY}...`);
@@ -155,7 +168,7 @@ async function main() {
     height: 800,
     isMobile: false,
     url: `${baseUrl}/`,
-    scrollDeltaY: 2700,
+    scrollDeltaY: 2950,
   });
 
   console.log('All viewports captured successfully!');

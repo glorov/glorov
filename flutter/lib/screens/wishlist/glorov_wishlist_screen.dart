@@ -246,8 +246,8 @@ class GlorovWishlistScreen extends StatelessWidget {
           itemCount: products.length,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            crossAxisSpacing: AppSpacing.md,
-            mainAxisSpacing: AppSpacing.md,
+            crossAxisSpacing: AppBreakpoints.isMobile(context) ? 8.0 : AppSpacing.md,
+            mainAxisSpacing: AppBreakpoints.isMobile(context) ? 10.0 : AppSpacing.md,
             childAspectRatio: 0.72,
           ),
           itemBuilder: (ctx, i) {

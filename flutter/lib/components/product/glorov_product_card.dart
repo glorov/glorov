@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import '../../core/icons/glorov_custom_icons.dart';
 import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_shadows.dart';
@@ -85,9 +86,9 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Media Area with Overlays (Aspect Ratio ~1.08)
+          // Top Media Area with Overlays (Aspect Ratio ~1.01 for prominent, larger product images)
           AspectRatio(
-            aspectRatio: 1.08,
+            aspectRatio: 1.01,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -120,6 +121,19 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                         : Image.network(
                             product.primaryImage,
                             fit: BoxFit.cover,
+                            loadingBuilder: (context, child, progress) {
+                              if (progress == null) return child;
+                              return Container(
+                                color: AppColors.mintSurface,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.yard_outlined,
+                                    size: 32,
+                                    color: AppColors.sage,
+                                  ),
+                                ),
+                              );
+                            },
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 color: AppColors.mintSurface,
@@ -136,7 +150,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                   ),
                 ),
 
-                // Top-Left Promotional / Custom Badge: Themed dark blue capsule with bolt icon
+                // Top-Left Promotional / Custom Badge: Themed compact dark blue tag with bolt icon
                 if (product.badges.isNotEmpty &&
                     product.badges.first.trim().isNotEmpty)
                   Positioned(
@@ -144,15 +158,15 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                     left: 0,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5.5,
+                        horizontal: 8,
+                        vertical: 3.5,
                       ),
                       decoration: const BoxDecoration(
                         color: AppColors.tagDarkBlue, // Theme dark blue #0c2340
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(18),
-                          topRight: Radius.circular(16),
-                          bottomRight: Radius.circular(16),
+                          topRight: Radius.circular(10),
+                          bottomRight: Radius.circular(10),
                           bottomLeft: Radius.circular(0),
                         ),
                       ),
@@ -161,7 +175,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                         children: [
                           const Icon(
                             Icons.bolt,
-                            size: 13,
+                            size: 11,
                             color: Color(0xFFF9C74F), // Bright yellow/gold bolt
                           ),
                           const SizedBox(width: 3),
@@ -169,9 +183,9 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                             product.badges.first.trim().toUpperCase(),
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 10.5,
+                              fontSize: 9.5,
                               fontWeight: FontWeight.w800,
-                              letterSpacing: 0.7,
+                              letterSpacing: 0.4,
                             ),
                           ),
                         ],
@@ -320,14 +334,14 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
           // Card Body: Title, Prices & Green Action Button
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Product Title (Editorial Serif Typography, Fixed Height for Uniform Card Alignment)
                   SizedBox(
-                    height: 38,
+                    height: 35,
                     child: Text(
                       product.title,
                       style: const TextStyle(
@@ -338,7 +352,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                           'Playfair Display',
                           'Recoleta',
                         ],
-                        fontSize: 15,
+                        fontSize: 13.5,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF111827),
                         height: 1.22,
@@ -372,7 +386,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                                   style: const TextStyle(
                                     fontFamily: 'serif',
                                     fontFamilyFallback: ['Georgia', 'serif'],
-                                    fontSize: 17,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w800,
                                     color: Color(0xFF111827),
                                     height: 1.0,
@@ -383,7 +397,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                                     '₹${product.price.toStringAsFixed(0)}',
                                     style: const TextStyle(
                                       fontFamily: AppTypography.primaryFont,
-                                      fontSize: 12,
+                                      fontSize: 11.5,
                                       color: Color(0xFF94A3B8),
                                       decoration: TextDecoration.lineThrough,
                                       fontWeight: FontWeight.w500,
@@ -474,10 +488,10 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
               ),
             ],
           ),
-          child: const Icon(
-            Icons.shopping_bag_outlined,
-            size: 18,
+          child: GlorovCustomIcons.cart(
+            size: 16,
             color: Colors.white,
+            isFilled: true,
           ),
         ),
       );

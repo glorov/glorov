@@ -87,7 +87,8 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Find the TextField in desktop search
       final textFieldFinder = find.byType(TextField).first;
@@ -116,7 +117,8 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       // Header title should be Flowering Plants
       expect(find.text('Flowering Plants'), findsWidgets);

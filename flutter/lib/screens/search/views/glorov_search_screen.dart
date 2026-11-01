@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/interactions/interactions.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_radii.dart';
 import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
@@ -747,6 +747,13 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildLiveSuggestionsView(ThemeData theme) {
+    if (_isLoading && _searchResult.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.md),
+        child: GlorovSearchSkeleton(count: 6),
+      );
+    }
+
     if (_searchResult.isEmpty && !_isLoading) {
       return _buildNoResultsState();
     }
@@ -893,6 +900,13 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildSubmittedResultsView(ThemeData theme) {
+    if (_isLoading && _searchResult.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.md),
+        child: GlorovProductGridSkeleton(count: 6, crossAxisCount: 2),
+      );
+    }
+
     if (_searchResult.isEmpty && !_isLoading) {
       return _buildNoResultsState();
     }
@@ -1019,7 +1033,7 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
               maxCrossAxisExtent: 240,
               mainAxisSpacing: AppSpacing.md,
               crossAxisSpacing: AppSpacing.md,
-              childAspectRatio: 0.68,
+              childAspectRatio: 0.69,
             ),
             itemCount: _searchResult.products.length,
             itemBuilder: (context, index) {
@@ -1568,16 +1582,10 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
                     _buildImagePlaceholder(width, height),
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
-                  return const Center(
-                    child: SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.forestDeep,
-                        ),
-                      ),
+                  return SkeletonScope(
+                    child: LoadingSkeleton(
+                      width: width,
+                      height: height,
                     ),
                   );
                 },

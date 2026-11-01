@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/icons/glorov_category_svg_icons.dart';
+import '../../core/icons/glorov_custom_icons.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -113,14 +114,22 @@ class GlorovMobileBottomNav extends StatelessWidget {
                       },
                     ),
 
-                    // 3. Cart (with live reactive badge count)
+                    // 3. Cart (with live reactive badge count and custom icon)
                     ListenableBuilder(
                       listenable: GlorovCartState.instance,
                       builder: (context, _) {
                         final count = GlorovCartState.instance.itemCount;
                         return _BottomNavItem(
-                          icon: Icons.shopping_bag_outlined,
-                          activeIcon: Icons.shopping_bag_rounded,
+                          customIcon: GlorovCustomIcons.cart(
+                            size: 21,
+                            color: const Color(0xFF6B7280),
+                            isFilled: false,
+                          ),
+                          customActiveIcon: GlorovCustomIcons.cart(
+                            size: 21,
+                            color: AppColors.forestDeep,
+                            isFilled: true,
+                          ),
                           label: 'Cart',
                           isActive: activeRoute == cartScreenRoute,
                           badgeCount: count,
@@ -143,27 +152,9 @@ class GlorovMobileBottomNav extends StatelessWidget {
 
                         if (isAuthenticated) {
                           return _BottomNavItem(
-                            customIcon: Container(
-                              width: 22,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.forestDark,
-                                border: Border.all(
-                                  color: AppColors.sage,
-                                  width: 1.2,
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                profile.initials,
-                                style: const TextStyle(
-                                  fontFamily: AppTypography.displayFont,
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                ),
-                              ),
+                            customIcon: GlorovCustomIcons.loggedInUser(
+                              size: 22,
+                              initials: profile.initials,
                             ),
                             label: 'Account',
                             isActive: activeRoute == profileScreenRoute,

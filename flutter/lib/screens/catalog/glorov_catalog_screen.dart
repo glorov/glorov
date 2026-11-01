@@ -7,7 +7,6 @@ import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radii.dart';
-import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/theme/glorov_horizontal_scroll_behavior.dart';
@@ -30,6 +29,7 @@ class GlorovCatalogScreen extends StatefulWidget {
   final String? initialSearchQuery;
   final GlorovProductType? initialProductType;
   final bool initialOffersOnly;
+  final bool isLoading;
 
   const GlorovCatalogScreen({
     super.key,
@@ -37,6 +37,7 @@ class GlorovCatalogScreen extends StatefulWidget {
     this.initialSearchQuery,
     this.initialProductType,
     this.initialOffersOnly = false,
+    this.isLoading = false,
   });
 
   @override
@@ -883,13 +884,9 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
   }
 
   Widget _buildProductGrid(List<GlorovProduct> products, bool isDesktop) {
-    if (products.isEmpty) {
-      return _buildEmptyState();
-    }
-
     final width = MediaQuery.of(context).size.width;
     int crossAxisCount = 2;
-    double childAspectRatio = 0.68;
+    double childAspectRatio = 0.69;
 
     if (isDesktop) {
       crossAxisCount = width >= 1200 ? 4 : (width >= 800 ? 3 : 2);
@@ -899,22 +896,42 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
       childAspectRatio = 0.70;
     }
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: products.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+    if (widget.isLoading) {
+      return GlorovProductGridSkeleton(
+        count: 8,
         crossAxisCount: crossAxisCount,
-        crossAxisSpacing: AppSpacing.md,
-        mainAxisSpacing: AppSpacing.md,
+        childAspectRatio: childAspectRatio,
+      );
+    }
+
+    if (products.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return GlorovSkeletonLoader(
+      loading: widget.isLoading,
+      skeleton: GlorovProductGridSkeleton(
+        count: 8,
+        crossAxisCount: crossAxisCount,
         childAspectRatio: childAspectRatio,
       ),
-      itemBuilder: (context, index) {
-        return GlorovStaggeredItem(
-          index: index < 6 ? index : 5,
-          child: GlorovProductCard(product: products[index]),
-        );
-      },
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: products.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: AppSpacing.md,
+          mainAxisSpacing: AppSpacing.md,
+          childAspectRatio: childAspectRatio,
+        ),
+        itemBuilder: (context, index) {
+          return GlorovStaggeredItem(
+            index: index < 6 ? index : 5,
+            child: GlorovProductCard(product: products[index]),
+          );
+        },
+      ),
     );
   }
 

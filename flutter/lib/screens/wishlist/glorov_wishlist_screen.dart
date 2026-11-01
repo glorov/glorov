@@ -3,6 +3,7 @@ import '../../components/navigation/glorov_footer.dart';
 import '../../components/navigation/glorov_storefront_scaffold.dart';
 import '../../components/product/glorov_product_card.dart';
 import '../../components/responsive/glorov_responsive.dart';
+import '../../core/icons/glorov_custom_icons.dart';
 import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
@@ -18,7 +19,12 @@ import '../../services/glorov_cart_state.dart';
 /// Synchronized with global wishlist IDs, providing 1-click add to cart,
 /// individual removals, and graceful empty state recovery.
 class GlorovWishlistScreen extends StatelessWidget {
-  const GlorovWishlistScreen({super.key});
+  final bool isLoading;
+
+  const GlorovWishlistScreen({
+    super.key,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +54,14 @@ class GlorovWishlistScreen extends StatelessWidget {
                     .map((id) => GlorovMockData.getProductById(id))
                     .whereType<GlorovProduct>()
                     .toList();
+
+                if (isLoading) {
+                  final isDesktop = AppBreakpoints.isDesktop(context);
+                  return GlorovProductGridSkeleton(
+                    count: 6,
+                    crossAxisCount: isDesktop ? 4 : 2,
+                  );
+                }
 
                 if (products.isEmpty) {
                   return _buildEmptyWishlist(context);
@@ -206,7 +220,7 @@ class GlorovWishlistScreen extends StatelessWidget {
                   onAction: () => Navigator.pushNamed(context, cartScreenRoute),
                 );
               },
-              icon: const Icon(Icons.shopping_bag_outlined, size: 16),
+              icon: GlorovCustomIcons.cart(size: 16, color: Colors.white, isFilled: true),
               label: const Text('ADD ALL TO BAG'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.forestDeep,

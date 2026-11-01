@@ -150,12 +150,10 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
                                   fit: BoxFit.contain,
                                   loadingBuilder: (context, child, progress) {
                                     if (progress == null) return child;
-                                    return const Center(
-                                      child: CircularProgressIndicator(
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.white70,
-                                        ),
-                                      ),
+                                    return Container(
+                                      width: 320,
+                                      height: 320,
+                                      color: Colors.white10,
                                     );
                                   },
                                   errorBuilder: (_, __, ___) => Container(

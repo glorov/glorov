@@ -1,8 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-
+import '../core/interactions/interactions.dart';
 import '../constants.dart';
-import 'skleton/skelton.dart';
 
 class NetworkImageWithLoader extends StatelessWidget {
   final BoxFit fit;
@@ -42,7 +41,11 @@ class NetworkImageWithLoader extends StatelessWidget {
             ),
           ),
         ),
-        placeholder: (context, url) => const Skeleton(),
+        placeholder: (context, url) => SkeletonScope(
+          child: LoadingSkeleton(
+            borderRadius: BorderRadius.all(Radius.circular(radius)),
+          ),
+        ),
         errorWidget: (context, url, error) => const Icon(Icons.error),
       ),
     );

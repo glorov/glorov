@@ -2420,7 +2420,7 @@ export default async function seedUgaooCatalog({ container }: ExecArgs) {
   });
   const usedSkus = new Set<string>(
     allExistingVariants
-      .map((pv: { sku?: string }) => pv.sku)
+      .map((pv: { sku?: string | null }) => pv.sku)
       .filter((sku): sku is string => Boolean(sku))
   );
 

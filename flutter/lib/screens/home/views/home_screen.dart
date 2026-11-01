@@ -17,10 +17,12 @@ import '../../../route/route_constants.dart';
 /// comprehensive footer, and 4-item mobile bottom navigation dock.
 class HomeScreen extends StatelessWidget {
   final bool isLoadingSlider;
+  final bool isLoading;
 
   const HomeScreen({
     super.key,
     this.isLoadingSlider = false,
+    this.isLoading = false,
   });
 
   @override
@@ -31,16 +33,16 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         children: [
           // 1. Multi-device Hero Banner Slider (Distinct Desktop/Mobile Images)
-          GlorovHeroBannerSlider(isLoading: isLoadingSlider),
+          GlorovHeroBannerSlider(isLoading: isLoadingSlider || isLoading),
 
           // 2. Trust Badges & Botanical Value Props
           const GlorovValueProps(),
 
           // 3. Category Discovery
-          const GlorovCategoryDiscovery(),
+          GlorovCategoryDiscovery(isLoading: isLoading),
 
           // 4. Featured Botanical Products (with live cart & wishlist actions)
-          const GlorovFeaturedProducts(),
+          GlorovFeaturedProducts(isLoading: isLoading),
 
           // 5. Editorial Botanical Showcase
           const GlorovHeroSection(),

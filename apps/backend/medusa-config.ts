@@ -183,6 +183,23 @@ export default defineConfig({
         ],
       },
     },
+    {
+      resolve: "@medusajs/medusa/file",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/file-cloudinary",
+            id: "cloudinary",
+            options: {
+              cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "naodmm8w",
+              api_key: process.env.CLOUDINARY_API_KEY || "179253354861549",
+              api_secret: process.env.CLOUDINARY_API_SECRET || "0FkMyyEi9taeWd2f8nEN55zqOUM",
+              folder: "glorov",
+            },
+          },
+        ],
+      },
+    },
   ],
 })
 

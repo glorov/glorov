@@ -19,7 +19,8 @@ import '../../services/glorov_header_scroll_notifier.dart';
 /// Displays confirmed orders, item snapshots, live botanical transit tracking,
 /// order cancellation, return requests, and instant re-order actions.
 class GlorovOrdersScreen extends StatefulWidget {
-  const GlorovOrdersScreen({super.key});
+  final bool? isLoading;
+  const GlorovOrdersScreen({super.key, this.isLoading});
 
   @override
   State<GlorovOrdersScreen> createState() => _GlorovOrdersScreenState();
@@ -89,15 +90,7 @@ class _GlorovOrdersScreenState extends State<GlorovOrdersScreen> {
             content: SizedBox(
               width: 480,
               child: snapshot.connectionState == ConnectionState.waiting
-                  ? const SizedBox(
-                      height: 120,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.forestDeep,
-                        ),
-                      ),
-                    )
+                  ? const GlorovTrackingSkeleton()
                   : SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -438,16 +431,8 @@ class _GlorovOrdersScreenState extends State<GlorovOrdersScreen> {
               builder: (context, _) {
                 final orders = GlorovCartState.instance.orders;
 
-                if (_isLoading && orders.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(AppSpacing.xxl),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.forestDeep,
-                      ),
-                    ),
-                  );
+                if ((widget.isLoading ?? _isLoading) && orders.isEmpty) {
+                  return const GlorovOrdersListSkeleton(count: 3);
                 }
 
                 if (orders.isEmpty) {

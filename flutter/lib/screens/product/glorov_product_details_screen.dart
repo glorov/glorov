@@ -5,6 +5,7 @@ import '../../components/navigation/glorov_footer.dart';
 import '../../components/navigation/glorov_storefront_scaffold.dart';
 import '../../components/product/glorov_product_card.dart';
 import '../../components/product/glorov_product_gallery.dart';
+import '../../core/icons/glorov_custom_icons.dart';
 import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
@@ -38,10 +39,12 @@ import '../../services/glorov_header_scroll_notifier.dart';
 /// - Sticky mobile bottom bar with price and green ADD TO CART button
 class GlorovProductDetailsScreen extends StatefulWidget {
   final GlorovProduct product;
+  final bool isLoading;
 
   const GlorovProductDetailsScreen({
     super.key,
     required this.product,
+    this.isLoading = false,
   });
 
   @override
@@ -311,6 +314,27 @@ class _GlorovProductDetailsScreenState
     final mediaWidth = MediaQuery.of(context).size.width;
     final isSticky = AppBreakpoints.isProductStickyLayout(mediaWidth);
 
+    if (widget.isLoading) {
+      return GlorovStorefrontScaffold(
+        backgroundColor: Colors.white,
+        currentRoute: productDetailsScreenRoute,
+        showBottomNav: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: AppBreakpoints.maxContentWidth,
+              ),
+              child: GlorovProductDetailsSkeleton(
+                isMobile: !isSticky,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return GlorovStorefrontScaffold(
       backgroundColor: Colors.white,
       currentRoute: productDetailsScreenRoute,
@@ -576,8 +600,8 @@ class _GlorovProductDetailsScreenState
                   }
                 }
               }
-              return Transform.translate(
-                offset: Offset(0, stickyOffset),
+              return Padding(
+                padding: EdgeInsets.only(top: stickyOffset),
                 child: child,
               );
             },
@@ -1480,8 +1504,8 @@ class _GlorovProductDetailsScreenState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.shopping_bag_outlined, size: 18),
-          const SizedBox(width: 6),
+          GlorovCustomIcons.cart(size: 18, color: Colors.white),
+          const SizedBox(width: 8),
           Flexible(
             child: Text(
               _isAddingToCart ? 'Adding...' : 'Add To Cart',
@@ -1511,12 +1535,12 @@ class _GlorovProductDetailsScreenState
           borderRadius: BorderRadius.circular(10),
         ),
       ),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.flash_on, size: 18),
-          SizedBox(width: 6),
-          Flexible(
+          GlorovCustomIcons.buy(size: 17, color: Colors.white),
+          const SizedBox(width: 8),
+          const Flexible(
             child: Text(
               'Buy Now',
               maxLines: 1,
@@ -1568,7 +1592,7 @@ class _GlorovProductDetailsScreenState
   // ---------------------------------------------------------------------------
   Widget _buildDeliveryEstimatePincode() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAF8),
         borderRadius: BorderRadius.circular(10),
@@ -1581,7 +1605,7 @@ class _GlorovProductDetailsScreenState
             children: [
               Icon(Icons.local_shipping_outlined,
                   size: 18, color: AppColors.forestDeep),
-              SizedBox(width: 6),
+              SizedBox(width: 8),
               Text(
                 'Delivery Estimate',
                 style: TextStyle(
@@ -1593,73 +1617,90 @@ class _GlorovProductDetailsScreenState
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFFD1D5DB)),
-                  ),
+          const SizedBox(height: 10),
+          // Unified single-border pincode check component (no duplicate/multiple borders)
+          Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFCBD5E1), width: 1.2),
+            ),
+            child: Row(
+              children: [
+                Expanded(
                   child: TextField(
                     controller: _pincodeController,
                     keyboardType: TextInputType.number,
+                    maxLength: 6,
                     style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w600),
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF111827),
+                    ),
                     decoration: const InputDecoration(
+                      counterText: '',
                       hintText: 'Enter 6-digit Pincode',
-                      hintStyle:
-                          TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+                      hintStyle: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 12.5,
+                        color: Color(0xFF94A3B8),
+                        fontWeight: FontWeight.w400,
+                      ),
                       border: InputBorder.none,
+                      isDense: true,
                       contentPadding:
-                          EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    onSubmitted: (_) => _handleCheckPincode(),
+                  ),
+                ),
+                TapFeedback(
+                  onTap: _handleCheckPincode,
+                  effect: TapAnimationType.scale,
+                  scaleDown: 0.94,
+                  duration: GlorovInteractionConfig.durationFast,
+                  child: Container(
+                    height: 40,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: const BoxDecoration(
+                      color: AppColors.forestDeep,
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(7),
+                        bottomRight: Radius.circular(7),
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      'CHECK',
+                      style: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              TapFeedback(
-                onTap: _handleCheckPincode,
-                effect: TapAnimationType.scale,
-                scaleDown: 0.92,
-                duration: GlorovInteractionConfig.durationFast,
-                child: Container(
-                  height: 38,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: AppColors.forestDeep,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    'CHECK',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Row(
             children: [
               Icon(
                 _isPincodeChecked ? Icons.check_circle : Icons.error_outline,
-                size: 14,
+                size: 15,
                 color: _isPincodeChecked ? const Color(0xFF16A34A) : Colors.red,
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 6),
               Flexible(
                 child: Text(
                   _deliveryEstimateText,
                   style: TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: _isPincodeChecked
                         ? const Color(0xFF15803D)
@@ -2637,19 +2678,7 @@ class _GlorovProductDetailsScreenState
 
         // 6. Dynamic Customer Reviews List
         if (_isLoadingReviews)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 32),
-            child: Center(
-              child: SizedBox(
-                width: 28,
-                height: 28,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.forestDeep),
-                ),
-              ),
-            ),
-          )
+          const GlorovReviewsSkeleton(count: 3)
         else if (_reviews.isEmpty)
           Container(
             width: double.infinity,

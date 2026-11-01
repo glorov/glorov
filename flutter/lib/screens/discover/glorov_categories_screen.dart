@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../components/navigation/glorov_footer.dart';
 import '../../components/navigation/glorov_mobile_bottom_nav.dart';
 import '../../components/navigation/glorov_storefront_scaffold.dart';
+import '../../core/icons/glorov_custom_icons.dart';
 import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
@@ -24,10 +25,12 @@ import '../../services/glorov_cart_state.dart';
 /// - Strictly displays ONLY seeded database categories (Seeds, Live Plants, Planters & Pots, Plant Care & Soil).
 class GlorovCategoriesScreen extends StatefulWidget {
   final String? initialCategoryHandle;
+  final bool isLoading;
 
   const GlorovCategoriesScreen({
     super.key,
     this.initialCategoryHandle,
+    this.isLoading = false,
   });
 
   @override
@@ -104,6 +107,27 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
   Widget build(BuildContext context) {
     final isDesktop = AppBreakpoints.isDesktop(context);
     final width = MediaQuery.of(context).size.width;
+
+    if (widget.isLoading) {
+      if (width >= 800 || isDesktop) {
+        return const GlorovStorefrontScaffold(
+          backgroundColor: AppColors.surfaceCream,
+          currentRoute: discoverScreenRoute,
+          child: Padding(
+            padding: EdgeInsets.all(AppSpacing.xl),
+            child: GlorovCategoriesSkeleton(isMobile: false),
+          ),
+        );
+      } else {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: _buildMobileAppBar(context),
+          body: const SafeArea(
+            child: GlorovCategoriesSkeleton(isMobile: true),
+          ),
+        );
+      }
+    }
 
     if (width >= 800 || isDesktop) {
       return _buildDesktopLayout(context);
@@ -227,8 +251,8 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
               clipBehavior: Clip.none,
               children: [
                 IconButton(
-                  icon: const Icon(
-                    Icons.shopping_cart_outlined,
+                  icon: GlorovCustomIcons.cart(
+                    size: 21,
                     color: AppColors.textPrimary,
                   ),
                   onPressed: () {

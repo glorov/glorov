@@ -93,6 +93,10 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       NOTIFICATION_MOCK_MODE: "false"
       AUTO_MIGRATE: "true"
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-naodmm8w}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-179253354861549}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      CLOUDINARY_URL: ${CLOUDINARY_URL}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
       interval: 30s

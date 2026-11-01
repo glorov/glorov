@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../core/icons/glorov_custom_icons.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
@@ -215,7 +216,10 @@ class GlorovDrawer extends StatelessWidget {
                   ),
                   _drawerItem(
                     context,
-                    icon: Icons.shopping_bag_outlined,
+                    customLeading: GlorovCustomIcons.cart(
+                      size: 21,
+                      color: AppColors.textPrimary,
+                    ),
                     label: 'Shopping Cart',
                     route: cartScreenRoute,
                     trailing: ListenableBuilder(
@@ -291,13 +295,15 @@ class GlorovDrawer extends StatelessWidget {
 
   Widget _drawerItem(
     BuildContext context, {
-    required IconData icon,
+    IconData? icon,
+    Widget? customLeading,
     required String label,
     required String route,
     Widget? trailing,
   }) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.textPrimary, size: 22),
+      leading: customLeading ??
+          Icon(icon ?? Icons.circle, color: AppColors.textPrimary, size: 22),
       title: Text(
         label,
         style: const TextStyle(

@@ -144,8 +144,8 @@ void main() {
       // Wishlist icon
       expect(find.byIcon(Icons.favorite_border_rounded), findsOneWidget);
 
-      // Cart icon
-      expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
+      // Cart action with custom botanical icon
+      expect(find.byTooltip('Cart'), findsOneWidget);
     });
 
     testWidgets(

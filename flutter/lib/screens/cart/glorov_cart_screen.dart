@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import '../../components/navigation/glorov_storefront_scaffold.dart';
 import '../../components/product/glorov_product_card.dart';
 import '../../components/responsive/glorov_responsive.dart';
+import '../../core/icons/glorov_custom_icons.dart';
 import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_radii.dart';
-import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../models/glorov/glorov_mock_data.dart';
@@ -20,7 +18,12 @@ import '../../services/glorov_cart_state.dart';
 /// compact cart items, in-flow coupon voucher card, and sticky checkout bar.
 class GlorovCartScreen extends StatefulWidget {
   final bool initialShowOffers;
-  const GlorovCartScreen({super.key, this.initialShowOffers = false});
+  final bool isLoading;
+  const GlorovCartScreen({
+    super.key,
+    this.initialShowOffers = false,
+    this.isLoading = false,
+  });
 
   @override
   State<GlorovCartScreen> createState() => _GlorovCartScreenState();
@@ -105,13 +108,21 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
               // Clean Cart Top Bar
               _buildTopHeader(context, state),
 
-              if (items.isEmpty)
+              if (widget.isLoading)
+                GlorovContainer(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isDesktop ? AppSpacing.md : 10.0,
+                    vertical: isDesktop ? AppSpacing.sm : 6.0,
+                  ),
+                  child: GlorovCartSkeleton(isDesktop: isDesktop),
+                )
+              else if (items.isEmpty)
                 _buildEmptyCart(context)
               else
                 GlorovContainer(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isDesktop ? AppSpacing.md : 10.0,
+                    vertical: isDesktop ? AppSpacing.sm : 6.0,
                   ),
                   child: isDesktop
                       ? _buildDesktopLayout(context, items, state)
@@ -209,7 +220,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
   }
 
   // -------------------------------------------------------------
-  // Dynamic Milestone Roadmap Progress Meter (Botanical Green Theme)
+  // Compact Botanical Milestone Progress Meter (~48px height)
   // -------------------------------------------------------------
   Widget _buildMilestoneProgressBar(BuildContext context, GlorovCartState state) {
     final headlineInfo = state.milestoneHeadlineInfo;
@@ -218,55 +229,52 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
 
     return InkWell(
       onTap: () => _showAvailableOffersModal(context, state),
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFF3FAF6), Color(0xFFEAF6EE)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: const Color(0xFFC7EBD8), width: 1.2),
+          color: const Color(0xFFF2FAF5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFC7EBD8), width: 1.0),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x0A0A4C36),
-              blurRadius: 10,
-              offset: Offset(0, 3),
+              color: Color(0x060A4C36),
+              blurRadius: 6,
+              offset: Offset(0, 2),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Badge and Shortfall Headline
+            // Top Row: Headline on left, View Offers link on right
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A4C36),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.local_offer, size: 10, color: Colors.white),
-                      SizedBox(width: 3),
-                      Text(
-                        'GLOROV REWARDS',
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
+                Expanded(
+                  child: RichText(
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    text: TextSpan(
+                      text: headlineInfo.$1,
+                      style: const TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
                       ),
-                    ],
+                      children: [
+                        TextSpan(
+                          text: headlineInfo.$2,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF0A4C36),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -274,55 +282,27 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                       'View Offers',
                       style: TextStyle(
                         fontFamily: AppTypography.primaryFont,
-                        fontSize: 11.5,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF0A4C36),
                       ),
                     ),
                     SizedBox(width: 2),
-                    Icon(Icons.arrow_forward, size: 12, color: Color(0xFF0A4C36)),
+                    Icon(Icons.arrow_forward_ios, size: 9, color: Color(0xFF0A4C36)),
                   ],
                 ),
               ],
             ),
 
-            const SizedBox(height: 8),
-
-            // Shortfall Headline (e.g. "Add ₹202 more to unlock free delivery")
-            RichText(
-              text: TextSpan(
-                text: headlineInfo.$1,
-                style: const TextStyle(
-                  fontFamily: AppTypography.primaryFont,
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1F2937),
-                ),
-                children: [
-                  TextSpan(
-                    text: headlineInfo.$2,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF0A4C36), // Signature Botanical Green
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 14),
+            const SizedBox(height: 7),
 
             // Continuous Horizontal Roadmap Track with Milestone Nodes
             LayoutBuilder(
               builder: (context, constraints) {
                 final trackWidth = constraints.maxWidth;
-                const nodeSize = 26.0;
+                const nodeSize = 20.0;
                 final availableWidth = trackWidth - nodeSize;
 
-                // 3 Milestone Thresholds:
-                // Node 1: 10% (at ₹999) ~33%
-                // Node 2: 15% (at ₹1599) ~66%
-                // Node 3: 20% (at ₹2299) ~100%
                 final node1Reached = subtotal >= 999.0;
                 final node2Reached = subtotal >= 1599.0;
                 final node3Reached = subtotal >= 2299.0;
@@ -330,34 +310,34 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                 final fillWidth = fraction * availableWidth;
 
                 return SizedBox(
-                  height: 30,
+                  height: 22,
                   child: Stack(
                     alignment: Alignment.centerLeft,
                     children: [
-                      // Base Track Line (Soft Muted Green)
+                      // Base Track Line
                       Positioned(
                         left: nodeSize / 2,
                         right: nodeSize / 2,
                         child: Container(
-                          height: 4,
+                          height: 3,
                           decoration: BoxDecoration(
                             color: const Color(0xFFD6EAE0),
-                            borderRadius: BorderRadius.circular(2),
+                            borderRadius: BorderRadius.circular(1.5),
                           ),
                         ),
                       ),
 
-                      // Active Filled Track Line (Emerald to Forest Green Gradient)
+                      // Active Filled Track Line
                       Positioned(
                         left: nodeSize / 2,
                         child: Container(
                           width: fillWidth,
-                          height: 4,
+                          height: 3,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF22C55E), Color(0xFF0A4C36)],
+                              colors: [Color(0xFF008C4B), Color(0xFF0A4C36)],
                             ),
-                            borderRadius: BorderRadius.circular(2),
+                            borderRadius: BorderRadius.circular(1.5),
                           ),
                         ),
                       ),
@@ -365,19 +345,19 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                       // Milestone Node 1: 10%
                       Positioned(
                         left: availableWidth * 0.33,
-                        child: _milestoneNodeCircle('10%', node1Reached),
+                        child: _milestoneNodeCircle('10%', node1Reached, size: nodeSize),
                       ),
 
                       // Milestone Node 2: 15%
                       Positioned(
                         left: availableWidth * 0.66,
-                        child: _milestoneNodeCircle('15%', node2Reached),
+                        child: _milestoneNodeCircle('15%', node2Reached, size: nodeSize),
                       ),
 
                       // Milestone Node 3: 20%
                       Positioned(
                         right: 0,
-                        child: _milestoneNodeCircle('20%', node3Reached),
+                        child: _milestoneNodeCircle('20%', node3Reached, size: nodeSize),
                       ),
                     ],
                   ),
@@ -390,21 +370,21 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
     );
   }
 
-  Widget _milestoneNodeCircle(String label, bool isReached) {
+  Widget _milestoneNodeCircle(String label, bool isReached, {double size = 20}) {
     return Container(
-      width: 26,
-      height: 26,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: isReached ? const Color(0xFF0A4C36) : Colors.white,
         shape: BoxShape.circle,
         border: Border.all(
           color: const Color(0xFF0A4C36),
-          width: 1.6,
+          width: 1.4,
         ),
         boxShadow: [
           BoxShadow(
             color: isReached ? const Color(0x330A4C36) : const Color(0x10000000),
-            blurRadius: 4,
+            blurRadius: 3,
             offset: const Offset(0, 1),
           ),
         ],
@@ -414,7 +394,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
           label,
           style: TextStyle(
             fontFamily: AppTypography.primaryFont,
-            fontSize: 9.5,
+            fontSize: size <= 20 ? 8.5 : 9.5,
             fontWeight: FontWeight.w800,
             color: isReached ? Colors.white : const Color(0xFF0A4C36),
             height: 1.0,
@@ -513,54 +493,71 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
 
           if (_isPincodeExpanded) ...[
             const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 38,
+            Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFCBD5E1), width: 1.2),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
                     child: TextField(
                       controller: _pincodeController,
                       keyboardType: TextInputType.number,
                       maxLength: 6,
-                      decoration: InputDecoration(
-                        hintText: 'Enter 6-digit Pincode',
+                      style: const TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                      ),
+                      decoration: const InputDecoration(
                         counterText: '',
-                        hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        filled: true,
-                        fillColor: const Color(0xFFF9FAFB),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                        hintText: 'Enter 6-digit Pincode',
+                        hintStyle: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 12,
+                          color: Color(0xFF9CA3AF),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       ),
+                      onSubmitted: (_) => _checkPincode(),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  height: 38,
-                  child: ElevatedButton(
-                    onPressed: _checkPincode,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0A4C36),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                  TapFeedback(
+                    onTap: _checkPincode,
+                    effect: TapAnimationType.scale,
+                    scaleDown: 0.94,
+                    child: Container(
+                      height: 40,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                    ),
-                    child: const Text(
-                      'CHECK',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF0A4C36),
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(7),
+                          bottomRight: Radius.circular(7),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'CHECK',
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
 
@@ -582,7 +579,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
   }
 
   // -------------------------------------------------------------
-  // Mobile Stacked Layout (Enhanced Botanical Hierarchy)
+  // Mobile Stacked Layout (Compact Botanical Hierarchy)
   // -------------------------------------------------------------
   Widget _buildMobileLayout(
     BuildContext context,
@@ -592,33 +589,33 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Dynamic Milestone Roadmap Progress Meter
+        // 1. Ultra-Compact Milestone Roadmap Progress Ribbon
         _buildMilestoneProgressBar(context, state),
+
+        const SizedBox(height: 8),
+
+        // 2. Compact Cart Items List (Very small, sleek cards)
+        _buildCartItemsList(context, items, state),
+
+        const SizedBox(height: 12),
+
+        // 3. Recommended Products Carousel (HIGH PRIORITY - Prominently visible)
+        _buildRecommendedProductsSection(context),
+
+        const SizedBox(height: 12),
+
+        // 4. In-Flow Coupon Voucher Card (Smart Direct Apply)
+        _buildCouponVoucherCard(context, state),
 
         const SizedBox(height: 10),
 
-        // 2. Shifted Express Delivery & Pincode Strip
+        // 5. Express Delivery & Pincode Strip (Relocated to bottom section)
         _buildPincodeBox(),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
 
-        // 3. Compact Cart Items List
-        _buildCartItemsList(context, items, state),
-
-        const SizedBox(height: 14),
-
-        // 4. In-Flow Coupon Voucher Card
-        _buildCouponVoucherCard(context, state),
-
-        const SizedBox(height: 12),
-
-        // 5. Safe Botanical Transit & Care Guarantee Strip
+        // 6. Safe Botanical Transit & Care Guarantee Strip
         _buildTransitGuaranteeCard(context),
-
-        const SizedBox(height: 16),
-
-        // 6. Recommended Products Carousel ("Pairs Well With Your Garden")
-        _buildRecommendedProductsSection(context),
       ],
     );
   }
@@ -634,7 +631,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Left Column: Milestone, Delivery, Items, Guarantee & Recommendations (Flex 13)
+        // Left Column: Milestone, Items, Recommendations, Delivery at bottom, Guarantee (Flex 13)
         Expanded(
           flex: 13,
           child: Column(
@@ -642,13 +639,13 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
             children: [
               _buildMilestoneProgressBar(context, state),
               const SizedBox(height: 12),
-              _buildPincodeBox(),
-              const SizedBox(height: 14),
               _buildCartItemsList(context, items, state),
-              const SizedBox(height: 14),
-              _buildTransitGuaranteeCard(context),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               _buildRecommendedProductsSection(context),
+              const SizedBox(height: 14),
+              _buildPincodeBox(),
+              const SizedBox(height: 12),
+              _buildTransitGuaranteeCard(context),
             ],
           ),
         ),
@@ -672,7 +669,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
   }
 
   // -------------------------------------------------------------
-  // Compact Cart Items List (Zero Clipping / 100% Fit)
+  // Compact Cart Items List (Very Small & Clean Cards)
   // -------------------------------------------------------------
   Widget _buildCartItemsList(
     BuildContext context,
@@ -682,7 +679,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
     return Column(
       children: items.map((item) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.only(bottom: 7),
           child: _buildCompactCartItemCard(context, item, state),
         );
       }).toList(),
@@ -701,28 +698,28 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
         : 0;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE5ECE8)),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x06000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
+            color: Color(0x05000000),
+            blurRadius: 6,
+            offset: Offset(0, 1.5),
           ),
         ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 74px Square Thumbnail with 14px rounded corners
+          // 56px Square Thumbnail with 10px rounded corners
           ClipRRect(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(10),
             child: Container(
-              width: 74,
-              height: 74,
+              width: 56,
+              height: 56,
               color: const Color(0xFFF3F4F6),
               child: item.product.primaryImage.startsWith('assets/')
                   ? Image.asset(
@@ -731,6 +728,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                       errorBuilder: (_, __, ___) => const Icon(
                         Icons.yard_outlined,
                         color: Color(0xFF16A34A),
+                        size: 24,
                       ),
                     )
                   : Image.network(
@@ -739,17 +737,19 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                       errorBuilder: (_, __, ___) => const Icon(
                         Icons.yard_outlined,
                         color: Color(0xFF16A34A),
+                        size: 24,
                       ),
                     ),
             ),
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
 
           // Details Column
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 // Title and Top-Right Trash Button
                 Row(
@@ -758,18 +758,18 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                     Expanded(
                       child: Text(
                         item.product.title,
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontFamily: AppTypography.displayFont,
-                          fontSize: 14.5,
+                          fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF111827),
-                          height: 1.25,
+                          height: 1.2,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     TapFeedback(
                       onTap: () => _confirmRemoveItem(context, item),
                       effect: TapAnimationType.scale,
@@ -778,7 +778,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                         padding: EdgeInsets.all(2.0),
                         child: Icon(
                           Icons.delete_outline,
-                          size: 19,
+                          size: 16,
                           color: Color(0xFF9CA3AF),
                         ),
                       ),
@@ -786,46 +786,46 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
 
-                // Pack size / Variant chip + applied promo badge
+                // Variant chip + applied promo badge + Save for later
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF3F4F6),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         variantText,
                         style: const TextStyle(
                           fontFamily: AppTypography.primaryFont,
-                          fontSize: 11,
+                          fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF4B5563),
                         ),
                       ),
                     ),
                     if (appliedPromo != null) ...[
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                         decoration: BoxDecoration(
                           color: const Color(0xFFECFDF5),
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(4),
                           border: Border.all(color: const Color(0xFFA7F3D0)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.bolt, size: 11, color: Color(0xFF059669)),
+                            const Icon(Icons.bolt, size: 9, color: Color(0xFF059669)),
                             const SizedBox(width: 2),
                             Text(
                               appliedPromo,
                               style: const TextStyle(
                                 fontFamily: AppTypography.primaryFont,
-                                fontSize: 10,
+                                fontSize: 9,
                                 fontWeight: FontWeight.w800,
                                 color: Color(0xFF047857),
                               ),
@@ -834,10 +834,33 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                         ),
                       ),
                     ],
+                    const Spacer(),
+                    // Subtle "Save for later" action
+                    TapFeedback(
+                      onTap: () {
+                        GlorovCartState.instance.moveToWishlist(item.itemKey);
+                        GlorovFeedback.showSuccessToast(
+                          context,
+                          message: 'Moved "${item.product.title}" to wishlist',
+                          actionLabel: 'VIEW',
+                          onAction: () => Navigator.pushNamed(context, bookmarkScreenRoute),
+                        );
+                      },
+                      effect: TapAnimationType.bounce,
+                      child: const Text(
+                        'Save for later',
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 10,
+                          color: Color(0xFF6B7280),
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 5),
 
                 // Bottom Row: Price on Left, Compact Forest Green Stepper on Right
                 Row(
@@ -851,30 +874,30 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                          '₹ ${item.unitPrice.toStringAsFixed(0)}',
+                          '₹${item.unitPrice.toStringAsFixed(0)}',
                           style: const TextStyle(
                             fontFamily: AppTypography.displayFont,
-                            fontSize: 16,
+                            fontSize: 14.5,
                             fontWeight: FontWeight.w800,
                             color: Color(0xFF0A4C36),
                           ),
                         ),
                         if (item.originalUnitPrice > item.unitPrice) ...[
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 4),
                           Text(
                             '₹${item.originalUnitPrice.toStringAsFixed(0)}',
                             style: const TextStyle(
                               fontFamily: AppTypography.primaryFont,
-                              fontSize: 12,
+                              fontSize: 11,
                               color: Color(0xFF9CA3AF),
                               decoration: TextDecoration.lineThrough,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           if (itemDiscountPercent > 0) ...[
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 4),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFE8F5E9),
                                 borderRadius: BorderRadius.circular(4),
@@ -882,7 +905,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                               child: Text(
                                 '$itemDiscountPercent% off',
                                 style: const TextStyle(
-                                  fontSize: 9.5,
+                                  fontSize: 8.5,
                                   fontWeight: FontWeight.w800,
                                   color: Color(0xFF0A4C36),
                                 ),
@@ -895,16 +918,16 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
 
                     // Compact Botanical Green Outlined Pill Stepper [- 3 +]
                     Container(
-                      height: 28,
+                      height: 24,
                       decoration: BoxDecoration(
                         color: const Color(0xFFF4F9F6),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: const Color(0xFF0A4C36), // Glorov Forest Green
-                          width: 1.2,
+                          color: const Color(0xFF0A4C36),
+                          width: 1.1,
                         ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -922,17 +945,17 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                             effect: TapAnimationType.scale,
                             scaleDown: 0.90,
                             child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              child: Icon(Icons.remove, size: 13, color: Color(0xFF0A4C36)),
+                              padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              child: Icon(Icons.remove, size: 11, color: Color(0xFF0A4C36)),
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: Text(
                               '${item.quantity}',
                               style: const TextStyle(
                                 fontFamily: AppTypography.primaryFont,
-                                fontSize: 13,
+                                fontSize: 11.5,
                                 fontWeight: FontWeight.w800,
                                 color: Color(0xFF0A4C36),
                               ),
@@ -950,42 +973,14 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                             effect: TapAnimationType.scale,
                             scaleDown: 0.90,
                             child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              child: Icon(Icons.add, size: 13, color: Color(0xFF0A4C36)),
+                              padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              child: Icon(Icons.add, size: 11, color: Color(0xFF0A4C36)),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ],
-                ),
-
-                const SizedBox(height: 5),
-
-                // Subtle "Save for later" action
-                TapFeedback(
-                  onTap: () {
-                    GlorovCartState.instance.moveToWishlist(item.itemKey);
-                    GlorovFeedback.showSuccessToast(
-                      context,
-                      message: 'Moved "${item.product.title}" to your Wishlist',
-                      actionLabel: 'VIEW',
-                      onAction: () => Navigator.pushNamed(context, bookmarkScreenRoute),
-                    );
-                  },
-                  effect: TapAnimationType.bounce,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 2.0),
-                    child: Text(
-                      'Save for later',
-                      style: TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 11,
-                        color: Color(0xFF6B7280),
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -1038,21 +1033,27 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Row(
-              children: [
-                Icon(Icons.spa_outlined, size: 18, color: Color(0xFF0A4C36)),
-                SizedBox(width: 6),
-                Text(
-                  'Recommended Products',
-                  style: TextStyle(
-                    fontFamily: AppTypography.displayFont,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0A4C36),
+            const Expanded(
+              child: Row(
+                children: [
+                  Icon(Icons.spa_outlined, size: 18, color: Color(0xFF0A4C36)),
+                  SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      'Recommended Products',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppTypography.displayFont,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0A4C36),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+            const SizedBox(width: 8),
             Row(
               children: [
                 InkWell(
@@ -1299,11 +1300,11 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                               ),
                             ],
                           ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.shopping_bag_outlined,
+                          child: Center(
+                            child: GlorovCustomIcons.cart(
                               size: 16,
                               color: Colors.white,
+                              isFilled: true,
                             ),
                           ),
                         ),
@@ -1449,13 +1450,34 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
         ),
       );
     } else {
-      // Unapplied State Prompt
+      // Find the highest eligible milestone offer based on cart subtotal
+      final eligibleOffers = GlorovCartState.milestoneOffers
+          .where((o) => state.subtotal >= o.minSpend)
+          .toList();
+      final GlorovMilestoneOffer? bestApplicable =
+          eligibleOffers.isNotEmpty ? eligibleOffers.last : null;
+
+      final title = bestApplicable != null
+          ? 'Apply ${bestApplicable.code} (${bestApplicable.discountPercent.toInt()}% OFF)'
+          : 'Apply Coupon & Save More';
+
+      final subtitle = bestApplicable != null
+          ? 'Tap to save ₹${(state.subtotal * bestApplicable.discountPercent / 100).toStringAsFixed(0)} on this order'
+          : (state.subtotal > 0
+              ? 'Add ₹${(999 - state.subtotal).clamp(0, double.infinity).toInt()} more to unlock 10% OFF'
+              : 'Milestone offers up to 20% off available');
+
       return Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: const Color(0xFFE5ECE8)),
+          border: Border.all(
+            color: bestApplicable != null
+                ? const Color(0xFFB7E4C7)
+                : const Color(0xFFE5ECE8),
+            width: bestApplicable != null ? 1.2 : 1.0,
+          ),
           boxShadow: const [
             BoxShadow(
               color: Color(0x06000000),
@@ -1470,30 +1492,40 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(7),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE8F5E9),
+                  decoration: BoxDecoration(
+                    color: bestApplicable != null
+                        ? const Color(0xFF0A4C36)
+                        : const Color(0xFFE8F5E9),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.percent, size: 14, color: Color(0xFF0A4C36)),
+                  child: Icon(
+                    Icons.percent,
+                    size: 14,
+                    color: bestApplicable != null
+                        ? Colors.white
+                        : const Color(0xFF0A4C36),
+                  ),
                 ),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Apply Coupon & Save More',
+                        title,
                         style: TextStyle(
                           fontFamily: AppTypography.primaryFont,
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF111827),
+                          color: bestApplicable != null
+                              ? const Color(0xFF0A4C36)
+                              : const Color(0xFF111827),
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
-                        'Milestone offers up to 20% off available',
-                        style: TextStyle(
+                        subtitle,
+                        style: const TextStyle(
                           fontFamily: AppTypography.primaryFont,
                           fontSize: 11.5,
                           color: Color(0xFF6B7280),
@@ -1502,28 +1534,57 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                     ],
                   ),
                 ),
-                // Forest Green Apply Button
-                TapFeedback(
-                  onTap: () => _showAvailableOffersModal(context, state),
-                  effect: TapAnimationType.scale,
-                  scaleDown: 0.94,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0A4C36),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Text(
-                      'APPLY',
-                      style: TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                // Show APPLY button ONLY if a coupon is applicable
+                if (bestApplicable != null) ...[
+                  const SizedBox(width: 8),
+                  TapFeedback(
+                    onTap: () {
+                      final (ok, msg) = state.applyCoupon(bestApplicable.code);
+                      if (ok) {
+                        GlorovFeedback.showSuccessToast(context, message: msg);
+                      } else {
+                        GlorovFeedback.showErrorToast(context, message: msg);
+                      }
+                    },
+                    effect: TapAnimationType.scale,
+                    scaleDown: 0.94,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0A4C36),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        'APPLY',
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ] else ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3FAF6),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFD6EAE0)),
+                    ),
+                    child: const Text(
+                      '10% at ₹999',
+                      style: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0A4C36),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 8),
@@ -1645,88 +1706,92 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Left: Price Stack & Inclusive of taxes toggle
+            // Left: Price Stack & Inclusive of taxes toggle (scales down smoothly on narrow screens)
             Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Total Payable
-                      Text(
-                        '₹${state.total.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          fontFamily: AppTypography.primaryFont,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF0A4C36),
-                          height: 1.0,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      // Compare Price Strikethrough
-                      Text(
-                        '₹${comparePrice.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          fontFamily: AppTypography.primaryFont,
-                          fontSize: 12.5,
-                          color: Color(0xFF9CA3AF),
-                          decoration: TextDecoration.lineThrough,
-                          fontWeight: FontWeight.w500,
-                          height: 1.0,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      // Discount Pill
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF008C4B), // Vivid green badge
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '$discountPercent% off',
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Total Payable
+                        Text(
+                          '₹${state.total.toStringAsFixed(0)}',
                           style: const TextStyle(
                             fontFamily: AppTypography.primaryFont,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF0A4C36),
                             height: 1.0,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-
-                  // Inclusive of all taxes with down caret
-                  InkWell(
-                    onTap: () => _showTaxBreakdownSheet(context, state),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+                        const SizedBox(width: 6),
+                        // Compare Price Strikethrough
                         Text(
-                          'Inclusive of all taxes',
-                          style: TextStyle(
+                          '₹${comparePrice.toStringAsFixed(0)}',
+                          style: const TextStyle(
                             fontFamily: AppTypography.primaryFont,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF4B5563),
+                            fontSize: 12.5,
+                            color: Color(0xFF9CA3AF),
+                            decoration: TextDecoration.lineThrough,
+                            fontWeight: FontWeight.w500,
+                            height: 1.0,
                           ),
                         ),
-                        SizedBox(width: 2),
-                        Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 14,
-                          color: Color(0xFF4B5563),
+                        const SizedBox(width: 6),
+                        // Discount Pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF008C4B), // Vivid green badge
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '$discountPercent% off',
+                            style: const TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              height: 1.0,
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+
+                    // Inclusive of all taxes with down caret
+                    InkWell(
+                      onTap: () => _showTaxBreakdownSheet(context, state),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Inclusive of all taxes',
+                            style: TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF4B5563),
+                            ),
+                          ),
+                          SizedBox(width: 2),
+                          Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 14,
+                            color: Color(0xFF4B5563),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -2355,11 +2420,11 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
               color: Color(0xFFEAF5EE),
               shape: BoxShape.circle,
             ),
-            child: const Center(
-              child: Icon(
-                Icons.shopping_bag_outlined,
+            child: Center(
+              child: GlorovCustomIcons.cart(
                 size: 40,
-                color: Color(0xFF0A4C36),
+                color: const Color(0xFF0A4C36),
+                isFilled: true,
               ),
             ),
           ),

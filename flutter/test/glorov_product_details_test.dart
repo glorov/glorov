@@ -114,7 +114,8 @@ void main() {
       expect(find.textContaining('1 Crore'), findsNothing);
       expect(find.textContaining('Happy Customers'), findsNothing);
       expect(find.textContaining('In Stock'), findsWidgets);
-      expect(find.textContaining('98% GERMINATION'), findsWidgets);
+      expect(find.textContaining('SUMMER SALE'), findsWidgets);
+      expect(find.textContaining('98% GERMINATION'), findsNothing);
       expect(find.textContaining('DIWALI SALE'), findsNothing);
 
       // Packet size variants

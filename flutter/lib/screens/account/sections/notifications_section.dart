@@ -9,7 +9,8 @@ import '../../../services/glorov_account_state.dart';
 
 /// Notifications Center Section
 class GlorovNotificationsSection extends StatefulWidget {
-  const GlorovNotificationsSection({super.key});
+  final bool isLoading;
+  const GlorovNotificationsSection({super.key, this.isLoading = false});
 
   @override
   State<GlorovNotificationsSection> createState() =>
@@ -151,7 +152,14 @@ class _GlorovNotificationsSectionState
             const SizedBox(height: AppSpacing.lg),
 
             // Notification List or Empty State
-            if (notifications.isEmpty)
+            if (widget.isLoading)
+              Column(
+                children: List.generate(
+                  4,
+                  (_) => const GlorovListItemSkeleton(hasAvatar: true),
+                ),
+              )
+            else if (notifications.isEmpty)
               _buildEmptyState()
             else
               ListView.separated(

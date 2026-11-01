@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/icons/glorov_category_svg_icons.dart';
+import '../../core/icons/glorov_custom_icons.dart';
 import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
@@ -374,38 +375,14 @@ class _GlorovHeaderState extends State<GlorovHeader> {
                   final profile = accountState.profile;
 
                   if (isAuthenticated) {
-                    // Logged in: Profile avatar with user initials and active status dot
+                    // Logged in: Bespoke profile avatar with verified badge & user initials
                     return _HeaderActionButton(
                       tooltip: profile.displayName.isNotEmpty
                           ? 'Account (${profile.displayName})'
                           : 'Customer Account',
-                      customIcon: Container(
-                        width: 26,
-                        height: 26,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.forestDark,
-                          border: Border.all(color: AppColors.sage, width: 1.5),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          profile.initials,
-                          style: const TextStyle(
-                            fontFamily: AppTypography.displayFont,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      badge: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF10B981),
-                          border: Border.all(color: Colors.white, width: 1.5),
-                        ),
+                      customIcon: GlorovCustomIcons.loggedInUser(
+                        size: 26,
+                        initials: profile.initials,
                       ),
                       onTap: () =>
                           Navigator.pushNamed(context, profileScreenRoute),
@@ -446,13 +423,16 @@ class _GlorovHeaderState extends State<GlorovHeader> {
 
               const SizedBox(width: 12),
 
-              // Action 3: Cart with solid counter badge
+              // Action 3: Bespoke Botanical Cart with solid counter badge
               ListenableBuilder(
                 listenable: GlorovCartState.instance,
                 builder: (context, _) {
                   final count = GlorovCartState.instance.itemCount;
                   return _HeaderActionButton(
-                    icon: Icons.shopping_cart_outlined,
+                    customIcon: GlorovCustomIcons.cart(
+                      size: 22,
+                      color: const Color(0xFF1E293B),
+                    ),
                     tooltip: 'Cart',
                     badgeText: count > 0 ? '$count' : null,
                     badgeColor: AppColors.forestDeep, // Match GLOROV theme

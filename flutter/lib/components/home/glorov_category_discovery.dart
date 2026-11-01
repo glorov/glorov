@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radii.dart';
-import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../core/interactions/interactions.dart';
-import '../../models/category_model.dart';
 import '../../route/route_constants.dart';
 import '../../screens/discover/glorov_categories_screen.dart';
 
@@ -33,10 +31,12 @@ class BotanicalCategoryItem {
 /// Directly synchronised with the 4 root seeded botanical database categories.
 class GlorovCategoryDiscovery extends StatelessWidget {
   final List<BotanicalCategoryItem> categories;
+  final bool isLoading;
 
   const GlorovCategoryDiscovery({
     super.key,
     this.categories = defaultCategories,
+    this.isLoading = false,
   });
 
   /// Strictly the EXACT 4 Root Seeded Categories (Seeds, Live Plants, Planters & Pots, Plant Care & Soil)
@@ -204,22 +204,52 @@ class GlorovCategoryDiscovery extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
 
               // 3. Responsive 4-Category Grid (Clean 2x2 on Mobile, 4 across on Desktop)
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: categories.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: childAspectRatio,
+              GlorovSkeletonLoader(
+                loading: isLoading,
+                skeleton: SkeletonScope(
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 4,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: childAspectRatio,
+                    ),
+                    itemBuilder: (context, index) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.sage.withValues(alpha: 0.15),
+                          ),
+                        ),
+                        child: const LoadingSkeleton(
+                          borderRadius: BorderRadius.all(Radius.circular(14)),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-                itemBuilder: (context, index) {
-                  return GlorovStaggeredItem(
-                    index: index < 4 ? index : 3,
-                    child: _buildCategoryCard(context, categories[index]),
-                  );
-                },
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: categories.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: childAspectRatio,
+                  ),
+                  itemBuilder: (context, index) {
+                    return GlorovStaggeredItem(
+                      index: index < 4 ? index : 3,
+                      child: _buildCategoryCard(context, categories[index]),
+                    );
+                  },
+                ),
               ),
             ],
           ),

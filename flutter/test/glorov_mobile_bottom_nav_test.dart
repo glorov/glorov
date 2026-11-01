@@ -48,10 +48,10 @@ void main() {
       // Verify Search item is removed as requested
       expect(find.text('Search'), findsNothing);
 
-      // Check key icons
+      // Check key icons and text
       expect(find.byIcon(Icons.home_rounded), findsOneWidget);
       expect(find.byIcon(Icons.grid_view_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.shopping_bag_outlined), findsOneWidget);
+      expect(find.text('Cart'), findsOneWidget);
     });
 
     testWidgets('Hides completely on desktop viewport (>= 768px)',

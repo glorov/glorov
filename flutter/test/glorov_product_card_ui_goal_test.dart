@@ -109,7 +109,7 @@ void main() {
   });
 
   group('GlorovFeaturedProducts Homepage Simplification', () {
-    testWidgets('Caps products grid strictly to 8 items to prevent complex UI clutter',
+    testWidgets('Displays minimum 16 items in featured seeds and plants section',
         (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
@@ -120,15 +120,17 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 400));
 
-      // Invariant: GridView contains exactly 8 items (or up to 8)
+      // Invariant: GridView contains at least 16 items (exactly 16 curated)
       final productCards = find.byType(GlorovProductCard);
-      expect(productCards.evaluate().length, lessThanOrEqualTo(8));
-      expect(productCards.evaluate().length, equals(8));
+      expect(productCards.evaluate().length, greaterThanOrEqualTo(16));
+      expect(productCards.evaluate().length, equals(16));
 
       // Discovery exploration banner is present
       expect(find.text('Explore Full Catalog (60+)'), findsWidgets);
+      expect(find.textContaining('Showing 16'), findsOneWidget);
     });
   });
 }

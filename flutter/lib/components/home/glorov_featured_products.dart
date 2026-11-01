@@ -15,7 +15,12 @@ import '../product/glorov_product_card.dart';
 
 /// GLOROV Featured Products Section with Interactive Filter Tabs
 class GlorovFeaturedProducts extends StatefulWidget {
-  const GlorovFeaturedProducts({super.key});
+  final bool isLoading;
+
+  const GlorovFeaturedProducts({
+    super.key,
+    this.isLoading = false,
+  });
 
   @override
   State<GlorovFeaturedProducts> createState() => _GlorovFeaturedProductsState();
@@ -36,7 +41,7 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
           .where((p) =>
               p.category == 'Live Plants' ||
               p.productType == GlorovProductType.plants)
-          .take(8)
+          .take(16)
           .toList();
     }
     if (_selectedCategory == 'Heirloom Seeds') {
@@ -44,20 +49,28 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
           .where((p) =>
               p.category == 'Seeds' ||
               p.productType == GlorovProductType.seeds)
-          .take(8)
+          .take(16)
           .toList();
     }
 
-    // Default 'All Featured': Curated high-converting selection (Max 8)
+    // Default 'All Featured': Curated high-converting selection (16 items)
     const preferredIds = [
-      'glr-her-14', // Arugula Seeds (Rocket Leaves) - ⚡ CULINARY HERB
-      'glr-plt-01', // Peace Lily Plant - ⚡ NASA AIR PURIFIER
-      'glr-her-13', // Italian Basil Seeds - ⚡ CULINARY HERB
-      'glr-seed-01', // Green Chilli Seeds - ⚡ 98% GERMINATION
-      'glr-plt-02', // Monstera Deliciosa - ⚡ LOW MAINTENANCE
-      'glr-flw-01', // Marigold Seeds - ⚡ VIBRANT BLOOMS
-      'glr-plt-05', // Snake Plant Golden - ⚡ NASA AIR PURIFIER
-      'glr-veg-02', // Coriander Seeds - ⚡ 98% GERMINATION
+      'glr-her-14', // Fenugreek Seeds - Culinary Herb
+      'glr-ind-19', // Peace Lily Plant - Low Maintenance
+      'glr-her-13', // Coriander Seeds - Culinary Herb
+      'glr-seed-01', // Green Chilli Seeds - 98% Germination
+      'glr-air-30', // ZZ Plant - NASA Air Purifier
+      'glr-flo-09', // Marigold Flower Seeds - Vibrant Blooms
+      'glr-suc-39', // Snake Plant - Golden Hahnii - Drought Tolerant
+      'glr-veg-02', // Green Head Cabbage Seeds - 98% Germination
+      'glr-flo-36', // Petunia Grandiflora Mixed Cascade - Continuous Blooms
+      'glr-air-28', // Aglaonema Pink Beauty Plant - NASA Air Purifier
+      'glr-veg-01', // Brinjal Banarasi Giant Seeds - 98% Germination
+      'glr-ind-21', // Jade Mini Plant - Low Maintenance
+      'glr-flo-35', // Bird of Paradise Plant - Continuous Blooms
+      'glr-her-15', // Holy Basil Seeds - Culinary Herb
+      'glr-ind-24', // Areca Palm Plant XL - Low Maintenance
+      'glr-veg-05', // Heirloom Tomato Seeds - 98% Germination
     ];
 
     final curated = <GlorovProduct>[];
@@ -67,11 +80,11 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
       if (match != null) curated.add(match);
     }
 
-    if (curated.length < 8) {
+    if (curated.length < 16) {
       for (final p in GlorovMockData.products) {
         if (!curated.any((c) => c.id == p.id)) {
           curated.add(p);
-          if (curated.length == 8) break;
+          if (curated.length == 16) break;
         }
       }
     }
@@ -84,19 +97,19 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
     final width = MediaQuery.of(context).size.width;
 
     int crossAxisCount = 2;
-    double childAspectRatio = 0.66;
+    double childAspectRatio = 0.69;
 
     if (width > 1150) {
       crossAxisCount = 4;
       childAspectRatio = 0.72;
     } else if (width > 780) {
       crossAxisCount = 3;
-      childAspectRatio = 0.68;
-    } else if (width < 380) {
-      childAspectRatio = 0.58;
+      childAspectRatio = 0.70;
+    } else {
+      childAspectRatio = 0.69;
     }
 
-    // Filter products strictly capped to 8 items to prevent complex/overwhelming UI
+    // Filter products (showing at least 16 curated botanicals)
     final displayedProducts = _getCuratedProducts();
 
     return Container(
@@ -210,24 +223,32 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
               const SizedBox(height: AppSpacing.lg),
 
               // Product Grid (Strictly capped to 8 curated items)
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: displayedProducts.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              GlorovSkeletonLoader(
+                loading: widget.isLoading,
+                skeleton: GlorovProductGridSkeleton(
+                  count: 8,
                   crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: AppSpacing.md,
-                  mainAxisSpacing: AppSpacing.md,
                   childAspectRatio: childAspectRatio,
                 ),
-                itemBuilder: (context, index) {
-                  return GlorovStaggeredItem(
-                    index: index < 6 ? index : 5,
-                    child: GlorovProductCard(
-                      product: displayedProducts[index],
-                    ),
-                  );
-                },
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: displayedProducts.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: AppSpacing.md,
+                    mainAxisSpacing: AppSpacing.md,
+                    childAspectRatio: childAspectRatio,
+                  ),
+                  itemBuilder: (context, index) {
+                    return GlorovStaggeredItem(
+                      index: index < 6 ? index : 5,
+                      child: GlorovProductCard(
+                        product: displayedProducts[index],
+                      ),
+                    );
+                  },
+                ),
               ),
               const SizedBox(height: AppSpacing.xl),
 
@@ -248,17 +269,17 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Row(
+                          Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.eco_outlined,
                                 color: AppColors.forestDeep,
                                 size: 20,
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Text(
-                                'Showing 8 hand-picked botanicals of 60+ specimens',
-                                style: TextStyle(
+                                'Showing ${displayedProducts.length} hand-picked botanicals of 60+ specimens',
+                                style: const TextStyle(
                                   fontFamily: AppTypography.primaryFont,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -291,18 +312,18 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Row(
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.eco_outlined,
                                 color: AppColors.forestDeep,
                                 size: 18,
                               ),
-                              SizedBox(width: 6),
+                              const SizedBox(width: 6),
                               Text(
-                                'Showing 8 curated botanicals of 60+',
-                                style: TextStyle(
+                                'Showing ${displayedProducts.length} hand-picked botanicals of 60+ specimens',
+                                style: const TextStyle(
                                   fontFamily: AppTypography.primaryFont,
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w600,

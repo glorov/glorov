@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../components/navigation/glorov_footer.dart';
 import '../../../components/navigation/glorov_storefront_scaffold.dart';
+import '../../../core/interactions/interactions.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/glorov/glorov_mock_data.dart';
@@ -20,8 +21,9 @@ import '../../../route/route_constants.dart';
 /// - Interactive "Write a Review" submission modal
 class ProductReviewsScreen extends StatefulWidget {
   final GlorovProduct? product;
+  final bool? isLoading;
 
-  const ProductReviewsScreen({super.key, this.product});
+  const ProductReviewsScreen({super.key, this.product, this.isLoading});
 
   @override
   State<ProductReviewsScreen> createState() => _ProductReviewsScreenState();
@@ -241,17 +243,8 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
                       const SizedBox(height: 16),
 
                       // Reviews List
-                      if (_isLoading)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 40),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.forestDeep),
-                            ),
-                          ),
-                        )
+                      if (widget.isLoading ?? _isLoading)
+                        const GlorovReviewsSkeleton(count: 4)
                       else if (_filteredReviews.isEmpty)
                         Container(
                           width: double.infinity,

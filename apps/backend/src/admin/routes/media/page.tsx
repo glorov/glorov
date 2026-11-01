@@ -83,8 +83,8 @@ export const MediaAdminPage = () => {
     try {
       const res = await adminFetch(`/admin/media?folder=${encodeURIComponent(selectedFolder)}&limit=100`);
       if (res.ok) {
-        const data = await res.json();
-        setMediaList(data.media || []);
+        const data = res.data;
+        setMediaList(data?.media || []);
       } else {
         toast.error("Cloudinary Error", {
           description: "Failed to load media assets from Cloudinary.",
@@ -153,9 +153,9 @@ export const MediaAdminPage = () => {
       });
 
       if (res.ok) {
-        const data = await res.json();
+        const data = res.data;
         toast.success("Upload successful", {
-          description: `Uploaded to ${data.asset?.secure_url}`,
+          description: `Uploaded to ${data?.asset?.secure_url}`,
         });
         setPreviewDataUrl(null);
         setPreviewFileName("");
@@ -163,9 +163,8 @@ export const MediaAdminPage = () => {
         if (fileInputRef.current) fileInputRef.current.value = "";
         fetchMedia();
       } else {
-        const err = await res.json();
         toast.error("Upload failed", {
-          description: err.message || "Failed to upload to Cloudinary.",
+          description: res.error || res.data?.message || "Failed to upload to Cloudinary.",
         });
       }
     } catch (err: any) {
@@ -193,9 +192,8 @@ export const MediaAdminPage = () => {
         });
         setMediaList((prev) => prev.filter((m) => m.public_id !== publicId));
       } else {
-        const err = await res.json();
         toast.error("Delete failed", {
-          description: err.message || "Could not delete asset.",
+          description: res.error || res.data?.message || "Could not delete asset.",
         });
       }
     } catch {

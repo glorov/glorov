@@ -1,0 +1,119 @@
+name: Deploy Backend to Azure VM
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/backend/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'deploy/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-azure-vm
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build & Deploy Medusa Backend to Azure VM
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: 3. Setup pnpm 9.15.9
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - name: 4. Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: 5. Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 6. Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 7. Build Backend Artifacts (.medusa/server)
+        run: |
+          echo "🔨 Compiling Medusa v2 backend and admin bundles..."
+          pnpm --filter @glorov/types build || true
+          pnpm --filter @glorov/backend build
+
+      - name: 8. Configure SSH & Deploy to Azure VM
+        env:
+          SSH_KEY: ${{ secrets.AZURE_SSH_KEY || secrets.SERVER_SSH_KEY }}
+          HOST: ${{ secrets.AZURE_HOST || '20.244.48.139' }}
+          USER: ${{ secrets.AZURE_USER || 'elsesourav' }}
+        run: |
+          if [ -z "$SSH_KEY" ]; then
+            echo "❌ Error: Secret AZURE_SSH_KEY is not configured in GitHub repository secrets!"
+            echo "👉 Please go to GitHub: Settings -> Secrets and variables -> Actions -> New repository secret"
+            echo "   Name: AZURE_SSH_KEY"
+            echo "   Value: (paste the private SSH key generated on the server)"
+            exit 1
+          fi
+
+          # Setup SSH key and agent
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
+
+          SSH_CMD="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new"
+
+          echo "📡 Verifying SSH connection to $USER@$HOST..."
+          $SSH_CMD "$USER@$HOST" "uptime"
+
+          echo "📦 Synchronizing backend source, compiled build, and deploy scripts to Azure VM..."
+          rsync -avz --delete \
+            --exclude 'node_modules' \
+            --exclude '.next' \
+            --exclude '.turbo' \
+            --exclude '.git' \
+            --exclude '.firebase' \
+            --exclude 'apps/storefront' \
+            --exclude 'flutter' \
+            -e "$SSH_CMD" \
+            ./apps/backend/src/ "$USER@$HOST:/var/www/glorov/apps/backend/src/"
+
+          rsync -avz --delete \
+            -e "$SSH_CMD" \
+            ./apps/backend/.medusa/ "$USER@$HOST:/var/www/glorov/apps/backend/.medusa/"
+
+          rsync -avz \
+            -e "$SSH_CMD" \
+            ./apps/backend/package.json ./apps/backend/medusa-config.ts "$USER@$HOST:/var/www/glorov/apps/backend/"
+
+          rsync -avz \
+            -e "$SSH_CMD" \
+            ./deploy/ "$USER@$HOST:/var/www/glorov/deploy/"
+
+          echo "🚀 Executing server deployment and health checks on Azure VM..."
+          $SSH_CMD "$USER@$HOST" "bash /var/www/glorov/deploy/deploy-server.sh"
+
+      - name: 9. Verify Live Public Storefront API
+        run: |
+          echo "🩺 Probing public HTTPS endpoint..."
+          sleep 3
+          curl -f -k -s -i "https://20.244.48.139.sslip.io/medusa/store/banners" \
+            -H "x-publishable-api-key: pk_3e00679a810ca538ba78aedc23b336788d82631606792292cbecad4fc422316a" | head -n 15
+          echo "✅ Live backend verification passed!"

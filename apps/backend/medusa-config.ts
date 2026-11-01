@@ -71,8 +71,8 @@ validateProductionConfig()
 
 export default defineConfig({
   admin: {
-    path: (process.env.ADMIN_PATH as `/${string}`) || "/",
-    backendUrl: process.env.MEDUSA_BACKEND_URL || "http://20.244.48.139/medusa",
+    path: (process.env.ADMIN_PATH as `/${string}`) || "/app",
+    backendUrl: process.env.MEDUSA_BACKEND_URL || "http://localhost:9000",
     disable: false,
   },
   projectConfig: {

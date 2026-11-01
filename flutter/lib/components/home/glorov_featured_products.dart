@@ -97,16 +97,16 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
     final width = MediaQuery.of(context).size.width;
 
     int crossAxisCount = 2;
-    double childAspectRatio = 0.69;
+    double childAspectRatio = 0.58;
 
     if (width > 1150) {
       crossAxisCount = 4;
       childAspectRatio = 0.72;
     } else if (width >= 640) {
       crossAxisCount = 3;
-      childAspectRatio = 0.70;
+      childAspectRatio = 0.68;
     } else {
-      childAspectRatio = 0.69;
+      childAspectRatio = 0.58;
     }
 
     // Filter products (showing at least 16 curated botanicals)

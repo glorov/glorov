@@ -15,6 +15,7 @@ import '../../models/glorov/glorov_delivery_option.dart';
 import '../../models/glorov/glorov_payment_method.dart';
 import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
+import '../../services/glorov_account_state.dart';
 import '../../services/glorov_cart_state.dart';
 import '../account/dialogs/address_form_dialog.dart';
 
@@ -171,8 +172,15 @@ class _GlorovCheckoutScreenState extends State<GlorovCheckoutScreen> {
               vertical: AppSpacing.lg,
             ),
             child: ListenableBuilder(
-              listenable: GlorovCartState.instance,
+              listenable: Listenable.merge([
+                GlorovCartState.instance,
+                GlorovAccountState.instance,
+              ]),
               builder: (context, _) {
+                if (!GlorovAccountState.instance.isAuthenticated) {
+                  return _buildAuthRequiredState(context);
+                }
+
                 final items = GlorovCartState.instance.items;
 
                 if (items.isEmpty && !_isSubmitting) {
@@ -1037,6 +1045,132 @@ class _GlorovCheckoutScreenState extends State<GlorovCheckoutScreen> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAuthRequiredState(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 40),
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          decoration: BoxDecoration(
+            color: AppColors.surfacePure,
+            borderRadius: AppRadii.roundedLg,
+            border: Border.all(color: AppColors.borderSubtle),
+            boxShadow: AppShadows.card,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.sage.withAlpha(50),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.lock_outline_rounded,
+                  size: 32,
+                  color: AppColors.forestDeep,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              const Text(
+                'Sign In to Checkout',
+                style: TextStyle(
+                  fontFamily: AppTypography.displayFont,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.forestDeep,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              const Text(
+                'To secure your botanical seeds and ensure live transit insurance, please sign in or register before completing your order.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      logInScreenRoute,
+                      arguments: {
+                        'redirectTo': checkoutScreenRoute,
+                        'reason':
+                            'Please sign in to complete your checkout and secure your botanical order.',
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.forestDeep,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text(
+                    'SIGN IN TO CONTINUE',
+                    style: TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      signUpScreenRoute,
+                      arguments: {
+                        'redirectTo': checkoutScreenRoute,
+                        'reason':
+                            'Create your account to complete checkout and secure your botanical order.',
+                      },
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.forestDeep,
+                    side: const BorderSide(color: AppColors.forestMedium),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text(
+                    'CREATE NEW ACCOUNT',
+                    style: TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

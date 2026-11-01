@@ -555,7 +555,7 @@ class _GlorovHeaderState extends State<GlorovHeader> {
                   Positioned.fill(
                     child: IgnorePointer(
                       child: Align(
-                        alignment: Alignment.centerLeft,
+                        alignment: const Alignment(-1.0, -0.15),
                         child: ClipRect(
                           child: AnimatedSwitcher(
                             duration: const Duration(milliseconds: 380),
@@ -603,6 +603,9 @@ class _GlorovHeaderState extends State<GlorovHeader> {
                                 fontFamily: AppTypography.primaryFont,
                                 color: const Color(0xFF9CA3AF),
                                 fontSize: isDesktop ? 13.5 : 12.5,
+                                height: 1.1,
+                                leadingDistribution:
+                                    TextLeadingDistribution.even,
                               ),
                             ),
                           ),
@@ -618,10 +621,13 @@ class _GlorovHeaderState extends State<GlorovHeader> {
                   textInputAction: TextInputAction.search,
                   onSubmitted: _handleSearchSubmit,
                   onTap: () => _openSearchScreen(),
+                  textAlignVertical: TextAlignVertical.center,
                   style: TextStyle(
                     fontFamily: AppTypography.primaryFont,
                     fontSize: isDesktop ? 13.5 : 13.0,
                     color: AppColors.textPrimary,
+                    height: 1.1,
+                    leadingDistribution: TextLeadingDistribution.even,
                   ),
                   decoration: InputDecoration(
                     border: InputBorder.none,
@@ -632,9 +638,11 @@ class _GlorovHeaderState extends State<GlorovHeader> {
                     focusedErrorBorder: InputBorder.none,
                     filled: false,
                     isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 2,
-                      vertical: isDesktop ? 10 : 8,
+                    contentPadding: EdgeInsets.only(
+                      left: 2,
+                      right: hasText ? 4 : 8,
+                      top: 0,
+                      bottom: 1.5,
                     ),
                   ),
                 ),

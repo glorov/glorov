@@ -11,7 +11,14 @@ import 'package:shop/services/glorov_account_state.dart';
 import 'components/login_form.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final String? redirectTo;
+  final String? reason;
+
+  const LoginScreen({
+    super.key,
+    this.redirectTo,
+    this.reason,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -21,6 +28,34 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  String? get _effectiveRedirect {
+    if (widget.redirectTo != null && widget.redirectTo!.isNotEmpty) {
+      return widget.redirectTo;
+    }
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String && args.isNotEmpty) {
+      return args;
+    }
+    if (args is Map<String, dynamic> && args['redirectTo'] is String) {
+      return args['redirectTo'] as String;
+    }
+    return null;
+  }
+
+  String? get _effectiveReason {
+    if (widget.reason != null && widget.reason!.isNotEmpty) {
+      return widget.reason;
+    }
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map<String, dynamic> && args['reason'] is String) {
+      return args['reason'] as String;
+    }
+    if (_effectiveRedirect == checkoutScreenRoute) {
+      return 'Please sign in to complete your checkout and secure your botanical order.';
+    }
+    return null;
+  }
 
   @override
   void dispose() {
@@ -44,11 +79,25 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         message: 'Welcome back, ${result.requireData.displayName}!',
       );
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        profileScreenRoute,
-        ModalRoute.withName(entryPointScreenRoute),
-      );
+
+      final dest = _effectiveRedirect;
+      if (dest != null && dest.isNotEmpty) {
+        if (dest == checkoutScreenRoute) {
+          Navigator.pushReplacementNamed(context, checkoutScreenRoute);
+        } else {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            dest,
+            ModalRoute.withName(entryPointScreenRoute),
+          );
+        }
+      } else {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          profileScreenRoute,
+          ModalRoute.withName(entryPointScreenRoute),
+        );
+      }
     } else {
       GlorovFeedback.showErrorToast(
         context,
@@ -165,6 +214,47 @@ class _LoginScreenState extends State<LoginScreen> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Contextual Reason/Guard Banner (e.g., from Checkout)
+                            if (_effectiveReason != null) ...[
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md,
+                                  vertical: AppSpacing.sm + 2,
+                                ),
+                                margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE8F5E9), // Mint green
+                                  borderRadius: AppRadii.roundedMd,
+                                  border: Border.all(
+                                    color: const Color(0xFFA5D6A7),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.lock_clock_outlined,
+                                      size: 18,
+                                      color: AppColors.forestDark,
+                                    ),
+                                    const SizedBox(width: AppSpacing.sm),
+                                    Expanded(
+                                      child: Text(
+                                        _effectiveReason!,
+                                        style: const TextStyle(
+                                          fontFamily: AppTypography.primaryFont,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.forestDark,
+                                          height: 1.35,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+
                             Text(
                               "Welcome back!",
                               style: Theme.of(context)
@@ -307,7 +397,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   TextButton(
                                     onPressed: () {
                                       Navigator.pushNamed(
-                                          context, signUpScreenRoute);
+                                        context,
+                                        signUpScreenRoute,
+                                        arguments: {
+                                          'redirectTo': _effectiveRedirect,
+                                          'reason': _effectiveReason,
+                                        },
+                                      );
                                     },
                                     child: const Text(
                                       "Sign up",

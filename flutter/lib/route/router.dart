@@ -15,6 +15,7 @@ import '../screens/wishlist/glorov_wishlist_screen.dart';
 import '../screens/account/glorov_account_screen.dart';
 import '../screens/dev/interaction_showcase_screen.dart';
 import '../screens/discover/glorov_categories_screen.dart';
+import '../services/glorov_account_state.dart';
 import '../services/glorov_cart_state.dart';
 import '../services/glorov_header_scroll_notifier.dart';
 import 'route_constants.dart';
@@ -187,9 +188,58 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case 'onbording':
       return _buildRoute(const OnBordingScreen(), settings, overrideRouteName: '/onbording');
     case 'login':
-      return _buildRoute(const LoginScreen(), settings, overrideRouteName: '/login');
+      String? loginRedirect;
+      String? loginReason;
+      if (uri != null) {
+        if (uri.queryParameters.containsKey('redirect')) {
+          loginRedirect = uri.queryParameters['redirect'];
+        } else if (uri.queryParameters.containsKey('from')) {
+          loginRedirect = uri.queryParameters['from'];
+        }
+      }
+      if (settings.arguments is String) {
+        loginRedirect = settings.arguments as String;
+      } else if (settings.arguments is Map<String, dynamic>) {
+        final map = settings.arguments as Map<String, dynamic>;
+        loginRedirect = map['redirectTo'] as String?;
+        loginReason = map['reason'] as String?;
+      }
+      return _buildRoute(
+        LoginScreen(
+          redirectTo: loginRedirect,
+          reason: loginReason,
+        ),
+        settings,
+        overrideRouteName:
+            loginRedirect != null ? '/login?redirect=$loginRedirect' : '/login',
+      );
     case 'signup':
-      return _buildRoute(const SignUpScreen(), settings, overrideRouteName: '/signup');
+      String? signupRedirect;
+      String? signupReason;
+      if (uri != null) {
+        if (uri.queryParameters.containsKey('redirect')) {
+          signupRedirect = uri.queryParameters['redirect'];
+        } else if (uri.queryParameters.containsKey('from')) {
+          signupRedirect = uri.queryParameters['from'];
+        }
+      }
+      if (settings.arguments is String) {
+        signupRedirect = settings.arguments as String;
+      } else if (settings.arguments is Map<String, dynamic>) {
+        final map = settings.arguments as Map<String, dynamic>;
+        signupRedirect = map['redirectTo'] as String?;
+        signupReason = map['reason'] as String?;
+      }
+      return _buildRoute(
+        SignUpScreen(
+          redirectTo: signupRedirect,
+          reason: signupReason,
+        ),
+        settings,
+        overrideRouteName: signupRedirect != null
+            ? '/signup?redirect=$signupRedirect'
+            : '/signup',
+      );
     case 'password_recovery':
       return _buildRoute(const PasswordRecoveryScreen(), settings, overrideRouteName: '/password_recovery');
     case 'product_reviews':
@@ -427,12 +477,34 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         overrideRouteName: '/preferences',
       );
     case 'orders':
+      if (!GlorovAccountState.instance.isAuthenticated) {
+        return _buildRoute(
+          const LoginScreen(
+            redirectTo: ordersScreenRoute,
+            reason:
+                'Please sign in to view your orders and track live botanical shipments.',
+          ),
+          settings,
+          overrideRouteName: '/login?redirect=/orders',
+        );
+      }
       return _buildRoute(
         const GlorovOrdersScreen(),
         settings,
         overrideRouteName: '/orders',
       );
     case 'order_details':
+      if (!GlorovAccountState.instance.isAuthenticated) {
+        return _buildRoute(
+          const LoginScreen(
+            redirectTo: ordersScreenRoute,
+            reason:
+                'Please sign in to view your order confirmation and shipment details.',
+          ),
+          settings,
+          overrideRouteName: '/login?redirect=/orders',
+        );
+      }
       GlorovOrder? orderDetails;
       if (settings.arguments is GlorovOrder) {
         orderDetails = settings.arguments as GlorovOrder;
@@ -458,6 +530,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         overrideRouteName: '/cart',
       );
     case 'checkout':
+      if (!GlorovAccountState.instance.isAuthenticated) {
+        return _buildRoute(
+          const LoginScreen(
+            redirectTo: checkoutScreenRoute,
+            reason:
+                'Please sign in to complete your checkout and secure your botanical order.',
+          ),
+          settings,
+          overrideRouteName: '/login?redirect=/checkout',
+        );
+      }
       return _buildRoute(const GlorovCheckoutScreen(), settings, overrideRouteName: '/checkout');
     case 'thanks_for_order':
     case 'order_confirmation':

@@ -153,7 +153,7 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold>
     final double bottomSafeArea = MediaQuery.of(context).padding.bottom;
     final double bottomNavOffset = (!isDesktop && widget.showBottomNav && widget.bottomNavigationBar == null)
         ? (76.0 + bottomSafeArea)
-        : (widget.bottomNavigationBar != null && !isDesktop ? (88.0 + bottomSafeArea) : 0.0);
+        : 0.0;
 
     return Scaffold(
       backgroundColor: widget.backgroundColor ?? AppColors.surfaceCream,

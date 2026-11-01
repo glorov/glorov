@@ -49,9 +49,6 @@ class GlorovFooter extends StatelessWidget {
                     _buildDesktopBottomBar(context)
                   else
                     _buildMobileBottomBar(context),
-
-                  // Safe bottom clearance on mobile to prevent bottom nav overlap
-                  if (!isDesktop) const SizedBox(height: 52),
                 ],
               ),
             ),

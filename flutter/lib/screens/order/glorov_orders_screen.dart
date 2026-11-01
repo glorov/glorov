@@ -12,6 +12,7 @@ import '../../models/glorov/glorov_mock_data.dart';
 import '../../models/glorov/glorov_order.dart';
 import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
+import '../../services/glorov_account_state.dart';
 import '../../services/glorov_cart_state.dart';
 import '../../services/glorov_header_scroll_notifier.dart';
 
@@ -427,12 +428,19 @@ class _GlorovOrdersScreenState extends State<GlorovOrdersScreen> {
               vertical: AppSpacing.lg,
             ),
             child: ListenableBuilder(
-              listenable: GlorovCartState.instance,
+              listenable: Listenable.merge([
+                GlorovCartState.instance,
+                GlorovAccountState.instance,
+              ]),
               builder: (context, _) {
                 final orders = GlorovCartState.instance.orders;
 
                 if ((widget.isLoading ?? _isLoading) && orders.isEmpty) {
                   return const GlorovOrdersListSkeleton(count: 3);
+                }
+
+                if (!GlorovAccountState.instance.isAuthenticated) {
+                  return _buildAuthRequiredState(context);
                 }
 
                 if (orders.isEmpty) {
@@ -533,6 +541,132 @@ class _GlorovOrdersScreenState extends State<GlorovOrdersScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAuthRequiredState(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 40),
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          decoration: BoxDecoration(
+            color: AppColors.surfacePure,
+            borderRadius: AppRadii.roundedLg,
+            border: Border.all(color: AppColors.borderSubtle),
+            boxShadow: AppShadows.card,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.sage.withAlpha(50),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.local_shipping_outlined,
+                  size: 32,
+                  color: AppColors.forestDeep,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              const Text(
+                'Sign In to View Orders',
+                style: TextStyle(
+                  fontFamily: AppTypography.displayFont,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.forestDeep,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              const Text(
+                'Sign in to track your live plant deliveries, view order history, download tax invoices, and manage botanical returns.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      logInScreenRoute,
+                      arguments: {
+                        'redirectTo': ordersScreenRoute,
+                        'reason':
+                            'Please sign in to view your orders and track live botanical shipments.',
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.forestDeep,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text(
+                    'SIGN IN TO CONTINUE',
+                    style: TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      signUpScreenRoute,
+                      arguments: {
+                        'redirectTo': ordersScreenRoute,
+                        'reason':
+                            'Create your account to view your orders and track live botanical shipments.',
+                      },
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.forestDeep,
+                    side: const BorderSide(color: AppColors.forestMedium),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Text(
+                    'CREATE NEW ACCOUNT',
+                    style: TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

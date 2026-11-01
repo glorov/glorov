@@ -10,6 +10,7 @@ import '../../core/theme/app_typography.dart';
 import '../../models/glorov/glorov_mock_data.dart';
 import '../../models/glorov/glorov_product.dart';
 import '../../route/route_constants.dart';
+import '../../services/glorov_account_state.dart';
 import '../../services/glorov_cart_state.dart';
 
 /// GLOROV Botanical Shopping Cart Screen
@@ -1296,11 +1297,11 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontFamily: AppTypography.displayFont,
+                      fontFamily: AppTypography.primaryFont,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF111827),
-                      height: 1.2,
+                      height: 1.25,
                     ),
                   ),
 
@@ -1361,11 +1362,11 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                               ),
                             ],
                           ),
-                          child: Center(
-                            child: GlorovCustomIcons.cart(
-                              size: 16,
+                          child: const Center(
+                            child: Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 18,
                               color: Colors.white,
-                              isFilled: true,
                             ),
                           ),
                         ),
@@ -1742,6 +1743,29 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
   }
 
   // -------------------------------------------------------------
+  // Protected Checkout Navigation Guard
+  // -------------------------------------------------------------
+  void _handleProceedToCheckout(BuildContext context) {
+    if (!GlorovAccountState.instance.isAuthenticated) {
+      GlorovFeedback.showInfoToast(
+        context,
+        message: 'Please sign in to proceed to checkout',
+      );
+      Navigator.pushNamed(
+        context,
+        logInScreenRoute,
+        arguments: {
+          'redirectTo': checkoutScreenRoute,
+          'reason':
+              'Please sign in to complete your checkout and secure your botanical order.',
+        },
+      );
+      return;
+    }
+    Navigator.pushNamed(context, checkoutScreenRoute);
+  }
+
+  // -------------------------------------------------------------
   // Sticky Bottom Checkout Bar (Botanical Green Theme)
   // -------------------------------------------------------------
   Widget _buildStickyCheckoutBar(BuildContext context, GlorovCartState state) {
@@ -1866,7 +1890,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
 
             // Right: Signature Forest Green Checkout Button
             TapFeedback(
-              onTap: () => Navigator.pushNamed(context, checkoutScreenRoute),
+              onTap: () => _handleProceedToCheckout(context),
               effect: TapAnimationType.scale,
               scaleDown: 0.94,
               child: Container(
@@ -2035,7 +2059,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, checkoutScreenRoute),
+              onPressed: () => _handleProceedToCheckout(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0A4C36),
                 foregroundColor: Colors.white,
@@ -2569,7 +2593,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
               crossAxisCount: AppBreakpoints.isDesktop(context) ? 4 : 2,
               crossAxisSpacing: AppSpacing.md,
               mainAxisSpacing: AppSpacing.md,
-              childAspectRatio: 0.72,
+              childAspectRatio: AppBreakpoints.isDesktop(context) ? 0.72 : 0.58,
             ),
             itemBuilder: (ctx, i) {
               return GlorovProductCard(product: suggested[i]);

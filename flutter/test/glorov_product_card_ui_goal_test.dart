@@ -106,6 +106,32 @@ void main() {
       final backdrop = tester.widgetList<BackdropFilter>(find.byType(BackdropFilter)).first;
       expect(backdrop.filter, isNotNull);
     });
+
+    testWidgets('Renders outline shopping bag icon on circular action button for compact cards',
+        (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 170, // Mobile compact width
+              height: 295,
+              child: GlorovProductCard(
+                product: culinaryHerbProduct,
+                forceCircularAction: true,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify outline shopping bag icon matching reference image 1
+      expect(find.byIcon(Icons.shopping_bag_outlined), findsOneWidget);
+
+      // Verify price is ₹119 in bold sans-serif
+      expect(find.text('₹119'), findsOneWidget);
+      expect(find.text('₹175'), findsOneWidget);
+    });
   });
 
   group('GlorovFeaturedProducts Homepage Simplification', () {

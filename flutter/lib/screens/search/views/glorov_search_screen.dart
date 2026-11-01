@@ -368,10 +368,13 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
                 autofocus: widget.initialQuery == null ||
                     widget.initialQuery!.isEmpty,
                 textInputAction: TextInputAction.search,
+                textAlignVertical: TextAlignVertical.center,
                 style: const TextStyle(
                   fontFamily: AppTypography.primaryFont,
-                  fontSize: 14.5,
+                  fontSize: 14.0,
                   color: AppColors.textPrimary,
+                  height: 1.1,
+                  leadingDistribution: TextLeadingDistribution.even,
                 ),
                 onChanged: _onQueryChanged,
                 onSubmitted: _submitSearch,
@@ -381,11 +384,22 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
                     fontFamily: AppTypography.primaryFont,
                     color: Color(0xFF9CA3AF),
                     fontSize: 13.5,
+                    height: 1.1,
+                    leadingDistribution: TextLeadingDistribution.even,
+                  ),
+                  isDense: true,
+                  prefixIconConstraints: const BoxConstraints(
+                    minWidth: 40,
+                    minHeight: 44,
                   ),
                   prefixIcon: const Icon(
                     Icons.search_rounded,
                     color: AppColors.forestDeep, // Match botanical theme
                     size: 20,
+                  ),
+                  suffixIconConstraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 44,
                   ),
                   suffixIcon: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -423,9 +437,11 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
                   disabledBorder: InputBorder.none,
                   focusedErrorBorder: InputBorder.none,
                   filled: false,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 11,
+                  contentPadding: const EdgeInsets.only(
+                    left: 0,
+                    right: 12,
+                    top: 0,
+                    bottom: 1.5,
                   ),
                 ),
               ),

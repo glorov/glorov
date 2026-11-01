@@ -55,13 +55,13 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
       duration: const Duration(milliseconds: 180),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: _isFocused
               ? AppColors.forestDeep
               : (_isHovered
                   ? AppColors.forestDeep.withValues(alpha: 0.35)
-                  : const Color(0xFFECEEEB)),
+                  : const Color(0xFFE5E7EB)),
           width: _isFocused ? 2.0 : 1.0,
         ),
         boxShadow: _isFocused
@@ -86,16 +86,16 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Media Area with Overlays (Aspect Ratio ~1.01 for prominent, larger product images)
+          // Top Media Area with Overlays (Aspect Ratio ~1.06 for prominent product imagery)
           AspectRatio(
-            aspectRatio: 1.01,
+            aspectRatio: 1.06,
             child: Stack(
               fit: StackFit.expand,
               children: [
                 // Product Image with subtle botanical hover zoom
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(18),
+                    top: Radius.circular(22),
                   ),
                   child: AnimatedScale(
                     scale: _isHovered ? 1.04 : 1.0,
@@ -164,7 +164,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                       decoration: const BoxDecoration(
                         color: AppColors.tagDarkBlue, // Theme dark blue #0c2340
                         borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(18),
+                          topLeft: Radius.circular(22),
                           topRight: Radius.circular(10),
                           bottomRight: Radius.circular(10),
                           bottomLeft: Radius.circular(0),
@@ -252,12 +252,12 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                     ),
                   ),
 
-                // Bottom-Left Rating Pill (Frosted Glass with Proper Visibility)
+                // Bottom-Left Rating Pill (Crisp Frosted Glass with Strong Contrast)
                 Positioned(
                   left: 8,
                   bottom: 8,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                     child: BackdropFilter(
                       filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                       child: Container(
@@ -266,15 +266,15 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.78),
-                          borderRadius: BorderRadius.circular(6),
+                          color: Colors.white.withValues(alpha: 0.94),
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.88),
+                            color: const Color(0xFFE5E7EB),
                             width: 1.0,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.10),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -288,7 +288,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                               product.rating.toStringAsFixed(1),
                               style: const TextStyle(
                                 fontFamily: AppTypography.primaryFont,
-                                fontSize: 12,
+                                fontSize: 12.5,
                                 fontWeight: FontWeight.w800,
                                 color: Color(0xFF0F172A),
                                 height: 1.0,
@@ -306,7 +306,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                                 '|',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Color(0xFF94A3B8),
+                                  color: Color(0xFFCBD5E1),
                                   height: 1.0,
                                 ),
                               ),
@@ -334,28 +334,22 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
           // Card Body: Title, Prices & Green Action Button
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+              padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Product Title (Editorial Serif Typography, Fixed Height for Uniform Card Alignment)
+                  // Product Title (Modern Bold Sans-Serif Typography matching Image 1)
                   SizedBox(
-                    height: 35,
+                    height: 38,
                     child: Text(
                       product.title,
                       style: const TextStyle(
-                        fontFamily: 'serif',
-                        fontFamilyFallback: [
-                          'Georgia',
-                          'Cambria',
-                          'Playfair Display',
-                          'Recoleta',
-                        ],
-                        fontSize: 13.5,
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF111827),
-                        height: 1.22,
+                        height: 1.25,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -373,20 +367,19 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Pricing Section with Odometer / Serif text
+                          // Pricing Section: Bold sans-serif effective price + strikethrough original
                           Expanded(
                             child: Wrap(
                               crossAxisAlignment: WrapCrossAlignment.center,
                               alignment: WrapAlignment.start,
-                              spacing: 4,
+                              spacing: 5,
                               runSpacing: 2,
                               children: [
                                 Text(
                                   '₹${product.effectivePrice.toStringAsFixed(0)}',
                                   style: const TextStyle(
-                                    fontFamily: 'serif',
-                                    fontFamilyFallback: ['Georgia', 'serif'],
-                                    fontSize: 16,
+                                    fontFamily: AppTypography.primaryFont,
+                                    fontSize: 17.5,
                                     fontWeight: FontWeight.w800,
                                     color: Color(0xFF111827),
                                     height: 1.0,
@@ -397,7 +390,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                                     '₹${product.price.toStringAsFixed(0)}',
                                     style: const TextStyle(
                                       fontFamily: AppTypography.primaryFont,
-                                      fontSize: 11.5,
+                                      fontSize: 12.0,
                                       color: Color(0xFF94A3B8),
                                       decoration: TextDecoration.lineThrough,
                                       fontWeight: FontWeight.w500,
@@ -430,7 +423,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
         glowRadius: 10.0,
         spreadRadius: 2.0,
         glowOpacity: 0.22,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         child: cardBody,
       );
     }
@@ -476,22 +469,25 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
         duration: GlorovInteractionConfig.durationFast,
         semanticLabel: 'Add ${widget.product.title} to cart',
         child: Container(
-          padding: const EdgeInsets.all(9.0),
+          width: 38,
+          height: 38,
           decoration: const BoxDecoration(
             color: greenColor,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Color(0x20000000),
+                color: Color(0x22000000),
                 blurRadius: 4,
-                offset: Offset(0, 1),
+                offset: Offset(0, 2),
               ),
             ],
           ),
-          child: GlorovCustomIcons.cart(
-            size: 16,
-            color: Colors.white,
-            isFilled: true,
+          child: const Center(
+            child: Icon(
+              Icons.shopping_bag_outlined,
+              size: 20,
+              color: Colors.white,
+            ),
           ),
         ),
       );

@@ -886,14 +886,14 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
   Widget _buildProductGrid(List<GlorovProduct> products, bool isDesktop) {
     final width = MediaQuery.of(context).size.width;
     int crossAxisCount = 2;
-    double childAspectRatio = 0.58;
+    double childAspectRatio = 0.63;
 
     if (isDesktop) {
       crossAxisCount = width >= 1200 ? 4 : (width >= 800 ? 3 : 2);
-      childAspectRatio = 0.72;
+      childAspectRatio = 0.70;
     } else if (width >= 640) {
       crossAxisCount = 3;
-      childAspectRatio = 0.68;
+      childAspectRatio = 0.66;
     }
 
     if (widget.isLoading) {

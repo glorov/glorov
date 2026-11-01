@@ -10,6 +10,11 @@ import 'package:shop/services/glorov_account_state.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
+  
+  // Optimize CanvasKit WebGL memory footprint: limit memory image cache to 100 entries / 64 MB
+  PaintingBinding.instance.imageCache.maximumSize = 100;
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 64 << 20;
+
   GlorovRepositories.init();
   GlorovAccountState.instance.restoreSession();
   runApp(const MyApp());

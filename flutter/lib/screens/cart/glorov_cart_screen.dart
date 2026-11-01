@@ -2593,7 +2593,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
               crossAxisCount: AppBreakpoints.isDesktop(context) ? 4 : 2,
               crossAxisSpacing: AppSpacing.md,
               mainAxisSpacing: AppSpacing.md,
-              childAspectRatio: AppBreakpoints.isDesktop(context) ? 0.72 : 0.58,
+              childAspectRatio: AppBreakpoints.isDesktop(context) ? 0.70 : 0.63,
             ),
             itemBuilder: (ctx, i) {
               return GlorovProductCard(product: suggested[i]);

@@ -100,6 +100,16 @@ if [[ "${MODE}" == "all" || "${MODE}" == "store" ]]; then
     cp "flutter/web/flutter_service_worker.js" "flutter/build/web/flutter_service_worker.js"
   fi
 
+  # Copy high-res Open Graph banner image
+  if [[ -f "flutter/web/og-image.jpg" ]]; then
+    cp "flutter/web/og-image.jpg" "flutter/build/web/og-image.jpg"
+  fi
+
+  # Dynamically pre-render product metadata & Open Graph tags for social crawlers
+  echo ""
+  echo "🌿 Pre-rendering dynamic product metadata & social share OG tags..."
+  node scripts/generate-product-metadata.js
+
   echo "✅ Flutter Web Storefront compiled successfully (Wasm: $(ls -lh flutter/build/web/main.dart.wasm | awk '{print $5}'), JS: $(ls -lh flutter/build/web/main.dart.js | awk '{print $5}'))."
 fi
 

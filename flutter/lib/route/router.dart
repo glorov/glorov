@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shop/core/interactions/interactions.dart';
 import 'package:shop/entry_point.dart';
-import '../models/category_model.dart';
 import '../models/glorov/glorov_mock_data.dart';
 import '../models/glorov/glorov_order.dart';
 import '../models/glorov/glorov_product.dart';
@@ -150,12 +149,18 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     name = name.substring(0, name.length - 1);
   }
 
-  // Support direct product deep linking and query params (e.g. /product_details, /product_details?id=glr-seed-05, /product/glr-seed-01)
-  if (name.startsWith('product_details') || name.startsWith('product/')) {
+  // Support direct product deep linking and query params (e.g. /product_details, /product_details?id=glr-seed-05, /product/glr-seed-01, /products/chinese-cabbage-seeds)
+  if (name.startsWith('product_details') ||
+      name.startsWith('product/') ||
+      name.startsWith('products/') ||
+      name == 'product' ||
+      name == 'products') {
     String? lookupId;
     if (uri != null) {
       if (uri.queryParameters.containsKey('id')) {
         lookupId = uri.queryParameters['id'];
+      } else if (uri.queryParameters.containsKey('slug')) {
+        lookupId = uri.queryParameters['slug'];
       } else if (uri.pathSegments.length > 1) {
         lookupId = uri.pathSegments.last;
       }
@@ -172,12 +177,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           GlorovMockData.getProductBySlug(lookupId);
     }
     final resolvedProduct = product ?? GlorovMockData.products.first;
+    final slugOrId = resolvedProduct.slug.isNotEmpty
+        ? resolvedProduct.slug
+        : resolvedProduct.id;
     return _buildRoute(
       GlorovProductDetailsScreen(
         product: resolvedProduct,
       ),
       settings,
-      overrideRouteName: '/product_details?id=${resolvedProduct.id}',
+      overrideRouteName: '/product/$slugOrId',
     );
   }
 

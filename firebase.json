@@ -111,7 +111,7 @@
           ]
         },
         {
-          "source": "index.html",
+          "source": "**/*.html",
           "headers": [
             {
               "key": "Cache-Control",
@@ -124,6 +124,15 @@
             {
               "key": "Expires",
               "value": "0"
+            }
+          ]
+        },
+        {
+          "source": "og-image.jpg",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=86400, stale-while-revalidate=604800"
             }
           ]
         },

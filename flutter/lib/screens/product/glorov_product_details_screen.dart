@@ -20,6 +20,7 @@ import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
 import '../../services/glorov_cart_state.dart';
 import '../../services/glorov_header_scroll_notifier.dart';
+import '../../services/meta/glorov_meta_service.dart';
 
 /// GLOROV Production-Grade Product Details & Ordering Screen
 /// Matches the authentic mobile & desktop ordering experience:
@@ -608,6 +609,38 @@ class _GlorovProductDetailsScreenState
     _fetchOffers();
     _fetchRelatedProducts();
     _pageScrollController.addListener(_onPageScroll);
+    _updateMetadata();
+  }
+
+  void _updateMetadata() {
+    final slugOrId = widget.product.slug.isNotEmpty
+        ? widget.product.slug
+        : widget.product.id;
+    GlorovMetaService.instance.setProductMeta(
+      title: widget.product.title,
+      description: widget.product.description,
+      imageUrl: widget.product.imageUrls.isNotEmpty
+          ? widget.product.imageUrls.first
+          : GlorovMetaService.defaultOgImage,
+      productSlugOrId: slugOrId,
+      price: _currentPrice,
+    );
+  }
+
+  Future<void> _handleShareProduct() async {
+    final slugOrId = widget.product.slug.isNotEmpty
+        ? widget.product.slug
+        : widget.product.id;
+    final didShareNative = await GlorovMetaService.instance.shareProduct(
+      title: widget.product.title,
+      productSlugOrId: slugOrId,
+    );
+    if (!didShareNative && mounted) {
+      GlorovFeedback.showSuccessToast(
+        context,
+        message: 'Product link copied to clipboard! Ready to share.',
+      );
+    }
   }
 
   @override
@@ -629,11 +662,13 @@ class _GlorovProductDetailsScreenState
       _fetchReviews();
       _fetchOffers();
       _fetchRelatedProducts();
+      _updateMetadata();
     }
   }
 
   @override
   void dispose() {
+    GlorovMetaService.instance.resetToDefault();
     _pageScrollController.removeListener(_onPageScroll);
     _pincodeController.dispose();
     _pageScrollController.dispose();
@@ -897,6 +932,39 @@ class _GlorovProductDetailsScreenState
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: AppColors.forestDeep,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // 1-Tap Social Share Button in Breadcrumbs
+              InkWell(
+                key: const Key('pdp_breadcrumbs_share_button'),
+                onTap: _handleShareProduct,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F5E9),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFFC8E6C9)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.share_outlined,
+                          size: 13, color: AppColors.forestDeep),
+                      SizedBox(width: 4),
+                      Text(
+                        'Share',
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.forestDeep,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -1331,6 +1399,27 @@ class _GlorovProductDetailsScreenState
                       color: isWishlisted
                           ? const Color(0xFFE11D48)
                           : const Color(0xFF4B5563),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // 1-Tap Social Share Button next to Wishlist
+                TapFeedback(
+                  key: const ValueKey('pdp_header_share_button'),
+                  onTap: _handleShareProduct,
+                  effect: TapAnimationType.bounce,
+                  duration: GlorovInteractionConfig.durationFast,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F4F6),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFE5E7EB)),
+                    ),
+                    child: const Icon(
+                      Icons.share_outlined,
+                      size: 20,
+                      color: Color(0xFF4B5563),
                     ),
                   ),
                 ),

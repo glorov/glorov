@@ -1,6 +1,5 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import '../../core/icons/glorov_custom_icons.dart';
 import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_shadows.dart';
@@ -55,7 +54,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
       duration: const Duration(milliseconds: 180),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: _isFocused
               ? AppColors.forestDeep
@@ -86,16 +85,16 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Media Area with Overlays (Aspect Ratio ~1.06 for prominent product imagery)
+          // Top Media Area with Overlays (Aspect Ratio ~1.05 for balanced product imagery)
           AspectRatio(
-            aspectRatio: 1.06,
+            aspectRatio: 1.05,
             child: Stack(
               fit: StackFit.expand,
               children: [
                 // Product Image with subtle botanical hover zoom
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(22),
+                    top: Radius.circular(14),
                   ),
                   child: AnimatedScale(
                     scale: _isHovered ? 1.04 : 1.0,
@@ -105,6 +104,8 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                         ? Image.asset(
                             product.primaryImage,
                             fit: BoxFit.cover,
+                            cacheWidth: 600,
+                            filterQuality: FilterQuality.medium,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 color: AppColors.mintSurface,
@@ -121,6 +122,8 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                         : Image.network(
                             product.primaryImage,
                             fit: BoxFit.cover,
+                            cacheWidth: 600,
+                            filterQuality: FilterQuality.medium,
                             loadingBuilder: (context, child, progress) {
                               if (progress == null) return child;
                               return Container(
@@ -164,9 +167,9 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                       decoration: const BoxDecoration(
                         color: AppColors.tagDarkBlue, // Theme dark blue #0c2340
                         borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(22),
-                          topRight: Radius.circular(10),
-                          bottomRight: Radius.circular(10),
+                          topLeft: Radius.circular(14),
+                          topRight: Radius.circular(8),
+                          bottomRight: Radius.circular(8),
                           bottomLeft: Radius.circular(0),
                         ),
                       ),
@@ -252,76 +255,78 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                     ),
                   ),
 
-                // Bottom-Left Rating Pill (Crisp Frosted Glass with Strong Contrast)
+                // Bottom-Left Rating Pill (Translucent Frosted Glass matching Reference Images 3 & 4)
                 Positioned(
-                  left: 8,
-                  bottom: 8,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: BackdropFilter(
-                      filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.94),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: const Color(0xFFE5E7EB),
-                            width: 1.0,
+                  left: 6,
+                  bottom: 6,
+                  child: RepaintBoundary(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: BackdropFilter(
+                        filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2.5,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            borderRadius: BorderRadius.circular(5),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.90),
+                              width: 0.8,
                             ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              product.rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                fontFamily: AppTypography.primaryFont,
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
-                                height: 1.0,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
                               ),
-                            ),
-                            const SizedBox(width: 3),
-                            const Icon(
-                              Icons.star_rounded,
-                              size: 14,
-                              color: Color(0xFF16A34A), // Rich green star
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 4),
-                              child: Text(
-                                '|',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFFCBD5E1),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                product.rating.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  fontFamily: AppTypography.primaryFont,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF0F172A),
                                   height: 1.0,
                                 ),
                               ),
-                            ),
-                            Text(
-                              '${product.reviewCount}',
-                              style: const TextStyle(
-                                fontFamily: AppTypography.primaryFont,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF334155),
-                                height: 1.0,
+                              const SizedBox(width: 3),
+                              const Icon(
+                                Icons.star_rounded,
+                                size: 13,
+                                color: Color(0xFF16A34A), // Rich green star
                               ),
-                            ),
-                          ],
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 3),
+                                child: Text(
+                                  '|',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Color(0xFFCBD5E1),
+                                    height: 1.0,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '${product.reviewCount}',
+                                style: const TextStyle(
+                                  fontFamily: AppTypography.primaryFont,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF475569),
+                                  height: 1.0,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -333,41 +338,66 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
 
           // Card Body: Title, Prices & Green Action Button
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Product Title (Modern Bold Sans-Serif Typography matching Image 1)
-                  SizedBox(
-                    height: 38,
-                    child: Text(
-                      product.title,
-                      style: const TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                        height: 1.25,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxWidth < 230 || widget.forceCircularAction;
+                final availableHeight = constraints.maxHeight;
+                final showSubtitle = !isCompact &&
+                    availableHeight >= 110 &&
+                    product.shortDescription.isNotEmpty;
+
+                final bodyPadding = isCompact
+                    ? const EdgeInsets.fromLTRB(10, 8, 10, 10)
+                    : const EdgeInsets.fromLTRB(12, 10, 12, 12);
+
+                return Padding(
+                  padding: bodyPadding,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Product Title & Subtitle (Display Serif matching Reference Images 1, 3, & 4)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            product.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: AppTypography.displayFont,
+                              fontSize: isCompact ? 14.5 : 15.5,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF0F2F24),
+                              height: 1.22,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          if (showSubtitle) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              product.shortDescription,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontFamily: AppTypography.primaryFont,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFF6B7280),
+                                height: 1.2,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
 
-                  // Bottom Row: Price on Left, Green Button on Right
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      // Under 230px or forced: render circular shopping bag button (Image 1 & 6)
-                      // Above 230px: render pill 'Add To Cart' button
-                      final isCompact = constraints.maxWidth < 230 || widget.forceCircularAction;
-
-                      return Row(
+                      // Bottom Row: Price on Left, Green Button on Right
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // Pricing Section: Bold sans-serif effective price + strikethrough original
+                          // Pricing Section
                           Expanded(
                             child: Wrap(
                               crossAxisAlignment: WrapCrossAlignment.center,
@@ -377,21 +407,21 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                               children: [
                                 Text(
                                   '₹${product.effectivePrice.toStringAsFixed(0)}',
-                                  style: const TextStyle(
-                                    fontFamily: AppTypography.primaryFont,
-                                    fontSize: 17.5,
+                                  style: TextStyle(
+                                    fontFamily: AppTypography.displayFont,
+                                    fontSize: isCompact ? 16.5 : 18.0,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF111827),
+                                    color: const Color(0xFF111827),
                                     height: 1.0,
                                   ),
                                 ),
                                 if (product.hasDiscount)
                                   Text(
                                     '₹${product.price.toStringAsFixed(0)}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontFamily: AppTypography.primaryFont,
-                                      fontSize: 12.0,
-                                      color: Color(0xFF94A3B8),
+                                      fontSize: isCompact ? 11.5 : 12.5,
+                                      color: const Color(0xFF94A3B8),
                                       decoration: TextDecoration.lineThrough,
                                       fontWeight: FontWeight.w500,
                                       height: 1.0,
@@ -405,11 +435,11 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                           // Green Action Button (Circular Bag or Pill Add to Cart)
                           _buildGreenActionButton(context, isCompact),
                         ],
-                      );
-                    },
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
@@ -423,7 +453,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
         glowRadius: 10.0,
         spreadRadius: 2.0,
         glowOpacity: 0.22,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(14),
         child: cardBody,
       );
     }
@@ -469,8 +499,8 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
         duration: GlorovInteractionConfig.durationFast,
         semanticLabel: 'Add ${widget.product.title} to cart',
         child: Container(
-          width: 38,
-          height: 38,
+          width: 36,
+          height: 36,
           decoration: const BoxDecoration(
             color: greenColor,
             shape: BoxShape.circle,
@@ -485,7 +515,7 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
           child: const Center(
             child: Icon(
               Icons.shopping_bag_outlined,
-              size: 20,
+              size: 18,
               color: Colors.white,
             ),
           ),

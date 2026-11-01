@@ -84,56 +84,31 @@ async function run() {
     await send('Page.navigate', { url: `${baseUrl}/` });
     await new Promise((r) => setTimeout(r, 4500));
 
-    // Scroll down directly to Featured Seeds & Plants grid (~2100px)
+    // Scroll down directly to Featured Seeds & Plants grid into full view (~2450px)
     console.log('2. Scrolling down to Featured Seeds & Plants section...');
     await send('Input.dispatchMouseEvent', {
       type: 'mouseWheel',
       x: 195,
       y: 400,
       deltaX: 0,
-      deltaY: 2100,
+      deltaY: 2450,
     });
     await new Promise((r) => setTimeout(r, 2000));
 
-    // Capture Mobile Featured Product Cards
+    // Capture Mobile Featured Product Cards in Full View
     let screenshot = await send('Page.captureScreenshot', { format: 'png' });
     let filePath = path.join(ARTIFACT_DIR, 'glorov_mobile_product_cards_verified.png');
     writeFileSync(filePath, Buffer.from(screenshot.data, 'base64'));
     console.log(`Saved screenshot: ${filePath}`);
 
-    // Tap on the first visible product card's circular add-to-cart button
-    // The button is around x=155, y=560
-    console.log('3. Tapping Add to Cart on product card...');
-    await send('Input.dispatchMouseEvent', {
-      type: 'mousePressed',
-      x: 155,
-      y: 560,
-      button: 'left',
-      clickCount: 1,
-    });
-    await send('Input.dispatchMouseEvent', {
-      type: 'mouseReleased',
-      x: 155,
-      y: 560,
-      button: 'left',
-      clickCount: 1,
-    });
-    await new Promise((r) => setTimeout(r, 600));
-
-    // Capture Mobile Toast + Cards
-    screenshot = await send('Page.captureScreenshot', { format: 'png' });
-    filePath = path.join(ARTIFACT_DIR, 'glorov_mobile_product_card_add_to_cart_toast.png');
-    writeFileSync(filePath, Buffer.from(screenshot.data, 'base64'));
-    console.log(`Saved screenshot: ${filePath}`);
-
-    // Scroll down another 400px to see the next row of product cards
-    console.log('3b. Scrolling down to capture full cards grid...');
+    // Scroll down another 320px to see the second and third rows of product cards
+    console.log('3. Scrolling down to capture second row of product cards...');
     await send('Input.dispatchMouseEvent', {
       type: 'mouseWheel',
       x: 195,
       y: 400,
       deltaX: 0,
-      deltaY: 420,
+      deltaY: 320,
     });
     await new Promise((r) => setTimeout(r, 1500));
 
@@ -196,6 +171,37 @@ async function run() {
   } finally {
     tabletSession.ws.close();
     tabletSession.chrome.kill('SIGTERM');
+  }
+
+  // --- Session 3: Desktop Verification (1280x800) ---
+  const desktopPort = port + 2;
+  console.log(`Starting Desktop Chrome session on port ${desktopPort}...`);
+  const desktopSession = await createChrome(desktopPort, 1280, 800, false);
+  try {
+    const { send } = desktopSession;
+
+    console.log('6. Navigating to desktop /discover/...');
+    await send('Page.navigate', { url: `${baseUrl}/discover/` });
+    await new Promise((r) => setTimeout(r, 4500));
+
+    // Scroll to products
+    await send('Input.dispatchMouseEvent', {
+      type: 'mouseWheel',
+      x: 640,
+      y: 400,
+      deltaX: 0,
+      deltaY: 280,
+    });
+    await new Promise((r) => setTimeout(r, 1500));
+
+    const screenshot = await send('Page.captureScreenshot', { format: 'png' });
+    const filePath = path.join(ARTIFACT_DIR, 'glorov_desktop_product_grid_verified.png');
+    writeFileSync(filePath, Buffer.from(screenshot.data, 'base64'));
+    console.log(`Saved screenshot: ${filePath}`);
+
+  } finally {
+    desktopSession.ws.close();
+    desktopSession.chrome.kill('SIGTERM');
   }
 
   console.log('All product card verification screenshots captured successfully!');

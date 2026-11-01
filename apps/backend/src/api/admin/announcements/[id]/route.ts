@@ -47,6 +47,12 @@ export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
 };
 
 /**
+ * POST /admin/announcements/:id
+ * Alias for PUT to seamlessly support clients sending POST.
+ */
+export const POST = PUT;
+
+/**
  * DELETE /admin/announcements/:id
  * Deletes an announcement item.
  */

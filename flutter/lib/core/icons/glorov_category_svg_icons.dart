@@ -22,6 +22,12 @@ class GlorovCategorySvgIcons {
 
   static const String offers = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19" /><circle cx="7.5" cy="7.5" r="2.5" /><circle cx="16.5" cy="16.5" r="2.5" /></svg>''';
 
+  /// Custom Artisanal Guest User Icon (when unauthenticated / not logged in)
+  static const String guestUser = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="4"/><path d="M4 20.5a8 8 0 0 1 12.5 -6.5"/><circle cx="18" cy="18" r="3.5" fill="#f0fdf4" stroke="currentColor" stroke-width="1.6"/><path d="M18 16.2v3.6" stroke-width="1.6"/><path d="M16.2 18h3.6" stroke-width="1.6"/></svg>''';
+
+  /// Custom Authenticated Customer Icon (with verification badge)
+  static const String authenticatedUser = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="4" fill="currentColor" fill-opacity="0.12"/><path d="M4 20.5a8 8 0 0 1 11 -7"/><circle cx="18" cy="17.5" r="4" fill="#0a4c36" stroke="#ffffff" stroke-width="1.5"/><path d="M16.5 17.5l1 1 2 -2" stroke="#ffffff" stroke-width="1.6"/></svg>''';
+
   /// Returns rendered SVG widget with smooth color filtration
   static Widget buildSvgIcon(
     String svgXml, {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_micro_interactions/flutter_micro_interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radii.dart';
@@ -9,8 +10,11 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/theme/glorov_horizontal_scroll_behavior.dart';
 import '../common/glorov_y_scroll_pass_through.dart';
+import 'glorov_hero_banner_slider_skeleton.dart';
 import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
+
+export 'glorov_hero_banner_slider_skeleton.dart';
 
 /// Data model for a promotional coupon tag inside a banner slide
 class GlorovBannerCoupon {
@@ -154,6 +158,7 @@ class GlorovHeroBannerSlider extends StatefulWidget {
   final EdgeInsetsGeometry? margin;
   final BorderRadius? borderRadius;
   final ValueChanged<int>? onSlideChanged;
+  final bool isLoading;
 
   const GlorovHeroBannerSlider({
     super.key,
@@ -174,6 +179,7 @@ class GlorovHeroBannerSlider extends StatefulWidget {
     this.margin,
     this.borderRadius,
     this.onSlideChanged,
+    this.isLoading = false,
   });
 
   /// Canonical Default Promotional Botanical Slides
@@ -416,6 +422,22 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isLoading) {
+      return GlorovHeroBannerSliderSkeleton(
+        desktopHeight: widget.desktopHeight,
+        mobileHeight: widget.mobileHeight,
+        desktopAspectRatio: widget.desktopAspectRatio,
+        tabletAspectRatio: widget.tabletAspectRatio,
+        mobileAspectRatio: widget.mobileAspectRatio,
+        aspectRatio: widget.aspectRatio,
+        showArrows: widget.showArrows,
+        showIndicators: widget.showIndicators,
+        isFullWidth: widget.isFullWidth,
+        margin: widget.margin,
+        borderRadius: widget.borderRadius,
+      );
+    }
+
     final isDesktop = AppBreakpoints.isDesktop(context);
     final isTablet = AppBreakpoints.isTablet(context);
     final isWidescreen = isDesktop || isTablet;
@@ -669,6 +691,17 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
       fit: BoxFit.cover,
       alignment: alignment,
       filterQuality: FilterQuality.high,
+      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+        if (wasSynchronouslyLoaded || frame != null) {
+          return AnimatedOpacity(
+            opacity: frame == null ? 0.0 : 1.0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+            child: child,
+          );
+        }
+        return _buildShimmerLoading();
+      },
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return _buildShimmerLoading();
@@ -809,17 +842,25 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
   }
 
   Widget _buildShimmerLoading() {
-    return Container(
-      color: AppColors.mintSurface.withValues(alpha: 0.3),
-      child: const Center(
-        child: SizedBox(
-          width: 32,
-          height: 32,
-          child: CircularProgressIndicator(
-            strokeWidth: 2.5,
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.forestDeep),
+    return const SkeletonScope(
+      duration: Duration(milliseconds: 1500),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          LoadingSkeleton(
+            width: double.infinity,
+            height: double.infinity,
+            baseColor: Color(0xFFE9EFE8),
+            highlightColor: Color(0xFFF7FBF6),
           ),
-        ),
+          Center(
+            child: Icon(
+              Icons.spa_outlined,
+              color: Color(0x261E3D2F), // 15% forest green watermark
+              size: 48,
+            ),
+          ),
+        ],
       ),
     );
   }

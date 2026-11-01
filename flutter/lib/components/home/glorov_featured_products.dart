@@ -318,7 +318,7 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
                               discoverScreenRoute,
                             ),
                             icon: const Icon(Icons.arrow_forward, size: 16),
-                            label: const Text('Explore Full Catalog'),
+                            label: const Text('Explore Full Catalog (60+)'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.forestDeep,
                               foregroundColor: Colors.white,

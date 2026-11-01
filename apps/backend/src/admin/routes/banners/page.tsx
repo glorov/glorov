@@ -1,5 +1,6 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import React, { useState, useEffect, useMemo } from "react";
+import { adminFetch } from "../../utils/admin-client";
 import {
   Container,
   Heading,
@@ -70,12 +71,11 @@ const BannersAdminPage = () => {
   const fetchBanners = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/admin/banners");
+      const res = await adminFetch<any>("/admin/banners");
       if (res.ok) {
-        const data = await res.json();
-        setBanners(data.banners || []);
+        setBanners(res.data.banners || []);
       } else {
-        toast.error("Error", { description: "Failed to load banners from backend API." });
+        toast.error("Error", { description: res.error || "Failed to load banners from backend API." });
       }
     } catch {
       toast.error("Connection Error", { description: "Could not reach /admin/banners endpoint." });
@@ -93,10 +93,9 @@ const BannersAdminPage = () => {
   // Handle direct status toggle
   const handleToggleActive = async (banner: Banner) => {
     try {
-      const res = await fetch(`/admin/banners/${banner.id}`, {
+      const res = await adminFetch<any>(`/admin/banners/${banner.id}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_active: !banner.is_active }),
+        body: { is_active: !banner.is_active },
       });
       if (res.ok) {
         toast.success("Updated", {
@@ -104,7 +103,7 @@ const BannersAdminPage = () => {
         });
         fetchBanners();
       } else {
-        toast.error("Failed to update status");
+        toast.error("Failed to update status", { description: res.error });
       }
     } catch {
       toast.error("Network error while updating banner");
@@ -117,12 +116,12 @@ const BannersAdminPage = () => {
       return;
     }
     try {
-      const res = await fetch(`/admin/banners/${id}`, { method: "DELETE" });
+      const res = await adminFetch<any>(`/admin/banners/${id}`, { method: "DELETE" });
       if (res.ok) {
         toast.success("Deleted", { description: "Carousel slide removed successfully." });
         fetchBanners();
       } else {
-        toast.error("Failed to delete banner");
+        toast.error("Failed to delete banner", { description: res.error });
       }
     } catch {
       toast.error("Network error while deleting banner");
@@ -135,10 +134,12 @@ const BannersAdminPage = () => {
       return;
     }
     try {
-      const res = await fetch("/admin/banners/seed", { method: "POST" });
+      const res = await adminFetch<any>("/admin/banners/seed", { method: "POST" });
       if (res.ok) {
         toast.success("Seeded", { description: "Default carousel banners seeded successfully." });
         fetchBanners();
+      } else {
+        toast.error("Error", { description: res.error || "Could not seed default banners." });
       }
     } catch {
       toast.error("Network error while seeding default banners");
@@ -158,10 +159,9 @@ const BannersAdminPage = () => {
       const isUpdate = Boolean(editingBanner.id);
       const url = isUpdate ? `/admin/banners/${editingBanner.id}` : "/admin/banners";
 
-      const res = await fetch(url, {
+      const res = await adminFetch<any>(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
           title: editingBanner.title,
           subtitle: editingBanner.subtitle,
           tag: editingBanner.tag,
@@ -173,7 +173,7 @@ const BannersAdminPage = () => {
           display_order: Number(editingBanner.display_order) || 1,
           is_active: editingBanner.is_active !== undefined ? editingBanner.is_active : true,
           bg_color: editingBanner.bg_color || "#1E3D2F",
-        }),
+        },
       });
 
       if (res.ok) {
@@ -184,11 +184,10 @@ const BannersAdminPage = () => {
         setEditingBanner(null);
         fetchBanners();
       } else {
-        const err = await res.json();
-        toast.error("Error", { description: err.message || "Failed to save banner." });
+        toast.error("Failed to save banner", { description: res.error });
       }
     } catch {
-      toast.error("Network Error", { description: "Failed to communicate with server." });
+      toast.error("Network error while saving banner");
     } finally {
       setIsSubmitting(false);
     }

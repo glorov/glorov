@@ -1,5 +1,6 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import React, { useState, useEffect, useMemo } from "react";
+import { adminFetch } from "../../utils/admin-client";
 import {
   Container,
   Heading,
@@ -155,9 +156,9 @@ const OffersAdminPage = () => {
   const fetchOffers = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/admin/offers");
+      const res = await adminFetch<any>("/admin/offers");
       if (res.ok) {
-        const data = await res.json();
+        const data = res.data;
         setOffers(data.offers || []);
         if (data.highlighted_offer) {
           setPreviewOfferId(data.highlighted_offer.id);
@@ -165,7 +166,7 @@ const OffersAdminPage = () => {
           setPreviewOfferId(data.offers[0].id);
         }
       } else {
-        toast.error("Error", { description: "Failed to load offers from backend API." });
+        toast.error("Error", { description: res.error || "Failed to load offers from backend API." });
       }
     } catch {
       toast.error("Connection Error", { description: "Could not reach /admin/offers endpoint." });
@@ -194,19 +195,18 @@ const OffersAdminPage = () => {
   // Handle active status toggle
   const handleToggleActive = async (offer: Offer) => {
     try {
-      const res = await fetch(`/admin/offers/${offer.id}`, {
+      const res = await adminFetch<any>(`/admin/offers/${offer.id}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_active: !offer.is_active }),
+        body: { is_active: !offer.is_active },
       });
       if (res.ok) {
-        const updated = await res.json();
+        const updated = res.data;
         setOffers((prev) => prev.map((o) => (o.id === offer.id ? updated.offer : o)));
         toast.success("Updated", {
           description: `Offer ${offer.code} is now ${!offer.is_active ? "Active" : "Inactive"}.`,
         });
       } else {
-        toast.error("Error", { description: "Failed to update offer status." });
+        toast.error("Error", { description: res.error || "Failed to update offer status." });
       }
     } catch {
       toast.error("Network Error", { description: "Could not update offer status." });
@@ -216,10 +216,9 @@ const OffersAdminPage = () => {
   // Handle highlighted toggle (featured on homepage welcome section)
   const handleToggleHighlighted = async (offer: Offer) => {
     try {
-      const res = await fetch(`/admin/offers/${offer.id}`, {
+      const res = await adminFetch<any>(`/admin/offers/${offer.id}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_highlighted: !offer.is_highlighted }),
+        body: { is_highlighted: !offer.is_highlighted },
       });
       if (res.ok) {
         await fetchOffers();
@@ -227,7 +226,7 @@ const OffersAdminPage = () => {
           description: `Offer ${offer.code} is now set as the Homepage Welcome Banner.`,
         });
       } else {
-        toast.error("Error", { description: "Failed to update featured offer." });
+        toast.error("Error", { description: res.error || "Failed to update featured offer." });
       }
     } catch {
       toast.error("Network Error", { description: "Could not update featured offer." });
@@ -240,12 +239,12 @@ const OffersAdminPage = () => {
       return;
     }
     try {
-      const res = await fetch(`/admin/offers/${id}`, { method: "DELETE" });
+      const res = await adminFetch<any>(`/admin/offers/${id}`, { method: "DELETE" });
       if (res.ok) {
         setOffers((prev) => prev.filter((o) => o.id !== id));
         toast.success("Deleted", { description: `Offer ${code} has been deleted.` });
       } else {
-        toast.error("Error", { description: "Failed to delete offer." });
+        toast.error("Error", { description: res.error || "Failed to delete offer." });
       }
     } catch {
       toast.error("Network Error", { description: "Could not delete offer." });
@@ -259,11 +258,13 @@ const OffersAdminPage = () => {
     }
     try {
       setLoading(true);
-      const res = await fetch("/admin/offers/seed", { method: "POST" });
+      const res = await adminFetch<any>("/admin/offers/seed", { method: "POST" });
       if (res.ok) {
-        const data = await res.json();
+        const data = res.data;
         setOffers(data.offers || []);
         toast.success("Restored", { description: "Default promotional offers restored." });
+      } else {
+        toast.error("Error", { description: res.error || "Could not seed default offers." });
       }
     } catch {
       toast.error("Error", { description: "Could not seed default offers." });
@@ -287,14 +288,13 @@ const OffersAdminPage = () => {
       const isEdit = Boolean(editingOffer.id);
       const url = isEdit ? `/admin/offers/${editingOffer.id}` : "/admin/offers";
 
-      const res = await fetch(url, {
+      const res = await adminFetch<any>(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingOffer),
+        body: editingOffer,
       });
 
       if (res.ok) {
-        const data = await res.json();
+        const data = res.data;
         toast.success(isEdit ? "Offer Updated" : "Offer Created", {
           description: `Offer ${data.offer.code} saved successfully.`,
         });
@@ -302,8 +302,7 @@ const OffersAdminPage = () => {
         setEditingOffer(null);
         await fetchOffers();
       } else {
-        const err = await res.json();
-        toast.error("Save Failed", { description: err.message || "Failed to save offer." });
+        toast.error("Save Failed", { description: res.error || "Failed to save offer." });
       }
     } catch {
       toast.error("Network Error", { description: "Failed to save offer." });

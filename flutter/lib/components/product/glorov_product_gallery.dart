@@ -500,7 +500,7 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
                                 vertical: 6,
                               ),
                               decoration: const BoxDecoration(
-                                color: Color(0xFF85102F), // Wine burgundy
+                                color: AppColors.tagDarkBlue, // Theme dark blue #0c2340
                                 borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(16),
                                   bottomRight: Radius.circular(14),

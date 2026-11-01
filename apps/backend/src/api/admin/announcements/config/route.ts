@@ -27,3 +27,9 @@ export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
     sendSanitizedError(res, error, 500);
   }
 };
+
+/**
+ * POST /admin/announcements/config
+ * Alias for PUT to seamlessly support clients sending POST.
+ */
+export const POST = PUT;

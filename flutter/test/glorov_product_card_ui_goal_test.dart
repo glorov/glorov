@@ -1,0 +1,134 @@
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shop/components/home/glorov_featured_products.dart';
+import 'package:shop/components/product/glorov_product_card.dart';
+import 'package:shop/core/theme/app_colors.dart';
+import 'package:shop/models/glorov/glorov_mock_data.dart';
+import 'package:shop/models/glorov/glorov_product.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  group('GlorovProductCard UI Goal Enhancements', () {
+    const culinaryHerbProduct = GlorovProduct(
+      id: 'glr-her-14',
+      slug: 'arugula-seeds-rocket-leaves',
+      title: 'Arugula Seeds (Rocket Leaves)',
+      botanicalName: 'Rocket Leaves',
+      shortDescription: 'Peppery fast-growing salad green.',
+      description: 'Heirloom Italian Rocket Arugula seeds.',
+      category: 'Seeds',
+      subcategory: 'Fruit & Herb Seeds',
+      productType: GlorovProductType.seeds,
+      price: 175.0,
+      discountPrice: 119.0,
+      discountPercent: 32,
+      rating: 4.9,
+      reviewCount: 51,
+      imageUrls: ['assets/images/products/herb-seeds/arugula-seeds-1.jpg'],
+      badges: ['Culinary Herb'],
+    );
+
+    testWidgets('Renders top-left capsule badge with theme dark blue, bolt icon and text',
+        (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 320,
+              height: 480,
+              child: GlorovProductCard(product: culinaryHerbProduct),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify tag text is CULINARY HERB
+      expect(find.text('CULINARY HERB'), findsOneWidget);
+
+      // Verify bolt icon is present
+      expect(find.byIcon(Icons.bolt), findsOneWidget);
+
+      // Verify theme dark blue background color on badge container
+      final badgeContainerFinder = find.ancestor(
+        of: find.text('CULINARY HERB'),
+        matching: find.byType(Container),
+      ).first;
+      final badgeContainer = tester.widget<Container>(badgeContainerFinder);
+      final decoration = badgeContainer.decoration as BoxDecoration?;
+      expect(decoration?.color, equals(AppColors.tagDarkBlue));
+    });
+
+    testWidgets('Favorite heart button is NOT visible on main card by default',
+        (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 320,
+              height: 480,
+              child: GlorovProductCard(product: culinaryHerbProduct),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // No wishlist hearts on the card
+      expect(find.byIcon(Icons.favorite_border), findsNothing);
+      expect(find.byIcon(Icons.favorite), findsNothing);
+    });
+
+    testWidgets('Renders rating badge with glassy frosted effect and high contrast',
+        (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 320,
+              height: 480,
+              child: GlorovProductCard(product: culinaryHerbProduct),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Rating value and review count visible
+      expect(find.text('4.9'), findsOneWidget);
+      expect(find.text('51'), findsOneWidget);
+      expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+
+      // Verify BackdropFilter with blur is present for glassy frosted effect
+      expect(find.byType(BackdropFilter), findsWidgets);
+      final backdrop = tester.widgetList<BackdropFilter>(find.byType(BackdropFilter)).first;
+      expect(backdrop.filter, isNotNull);
+    });
+  });
+
+  group('GlorovFeaturedProducts Homepage Simplification', () {
+    testWidgets('Caps products grid strictly to 8 items to prevent complex UI clutter',
+        (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: GlorovFeaturedProducts(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Invariant: GridView contains exactly 8 items (or up to 8)
+      final productCards = find.byType(GlorovProductCard);
+      expect(productCards.evaluate().length, lessThanOrEqualTo(8));
+      expect(productCards.evaluate().length, equals(8));
+
+      // Discovery exploration banner is present
+      expect(find.text('Explore Full Catalog (60+)'), findsWidgets);
+    });
+  });
+}

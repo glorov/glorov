@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_micro_interactions/flutter_micro_interactions.dart';
+import '../../components/home/glorov_hero_banner_slider_skeleton.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_spacing.dart';
@@ -369,3 +370,9 @@ class GlorovProductDetailsSkeleton extends StatelessWidget {
     );
   }
 }
+
+// -----------------------------------------------------------------------------
+// 6. GlorovSliderSkeleton - Responsive Hero Banner / Carousel Skeleton
+// -----------------------------------------------------------------------------
+typedef GlorovSliderSkeleton = GlorovHeroBannerSliderSkeleton;
+

@@ -3,13 +3,16 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, LayoutGrid, ShoppingBag, User } from 'lucide-react'
+import { Home, LayoutGrid, ShoppingBag } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
+import { useCustomer } from '@/context/CustomerContext'
+import { GuestUserIcon, UserProfileAvatar } from './icons/UserIcons'
 import styles from './MobileDock.module.css'
 
 export function MobileDock() {
   const pathname = usePathname()
   const { totalItems } = useCart()
+  const { customer, isAuthenticated } = useCustomer()
 
   const isHome = pathname === '/'
   const isCategories = pathname.startsWith('/categories') || pathname.startsWith('/category')
@@ -48,16 +51,20 @@ export function MobileDock() {
         <span>Categories</span>
       </Link>
 
-      {/* 3. Account */}
+      {/* 3. Dynamic Account Item */}
       <Link
-        href="/account"
+        href={isAuthenticated ? '/account' : '/account/login'}
         className={`${styles.dockItem} ${isAccount ? styles.dockItemActive : ''}`}
-        aria-label="Account"
+        aria-label={isAuthenticated ? 'Customer Account' : 'Sign In'}
       >
         <div className={styles.iconWrapper}>
-          <User className={styles.dockIcon} aria-hidden="true" />
+          {isAuthenticated && customer ? (
+            <UserProfileAvatar customer={customer} size={22} showStatusDot={false} />
+          ) : (
+            <GuestUserIcon size={20} className={styles.dockIcon} />
+          )}
         </div>
-        <span>Account</span>
+        <span>{isAuthenticated && customer?.first_name ? customer.first_name : isAuthenticated ? 'Account' : 'Sign In'}</span>
       </Link>
 
       {/* 4. Cart */}

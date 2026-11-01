@@ -115,7 +115,6 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
   Widget _buildTopHeader(BuildContext context, GlorovCartState state) {
     return Container(
       width: double.infinity,
-      color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -1674,14 +1673,17 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: AppTypography.primaryFont,
-            fontSize: 12.5,
-            color: Color(0xFF6B7280),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontFamily: AppTypography.primaryFont,
+              fontSize: 12.5,
+              color: Color(0xFF6B7280),
+            ),
           ),
         ),
+        const SizedBox(width: 8),
         Text(
           value,
           style: TextStyle(

@@ -1,5 +1,6 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import React, { useState, useEffect, useMemo } from "react";
+import { adminFetch } from "../../utils/admin-client";
 import {
   Container,
   Heading,
@@ -148,13 +149,12 @@ const TrustBadgesAdminPage = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/admin/trust-badges");
+      const res = await adminFetch<any>("/admin/trust-badges");
       if (res.ok) {
-        const data = await res.json();
-        setBadges(data.badges || []);
-        setSettings(data.settings || null);
+        setBadges(res.data.badges || []);
+        setSettings(res.data.settings || null);
       } else {
-        toast.error("Error", { description: "Failed to load trust badges from backend." });
+        toast.error("Error", { description: res.error || "Failed to load trust badges from backend." });
       }
     } catch {
       toast.error("Connection Error", { description: "Could not reach /admin/trust-badges endpoint." });
@@ -172,14 +172,15 @@ const TrustBadgesAdminPage = () => {
   // Direct toggle active
   const handleToggleActive = async (badge: TrustBadgeItem) => {
     try {
-      const res = await fetch(`/admin/trust-badges/${badge.id}`, {
+      const res = await adminFetch<any>(`/admin/trust-badges/${badge.id}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_active: !badge.is_active }),
+        body: { is_active: !badge.is_active },
       });
       if (res.ok) {
         toast.success(badge.is_active ? "Badge Disabled" : "Badge Activated");
         fetchData();
+      } else {
+        toast.error("Toggle Failed", { description: res.error });
       }
     } catch {
       toast.error("Toggle Failed");
@@ -198,14 +199,15 @@ const TrustBadgesAdminPage = () => {
 
     const ids = copy.map((b) => b.id);
     try {
-      const res = await fetch("/admin/trust-badges/reorder", {
+      const res = await adminFetch<any>("/admin/trust-badges/reorder", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids }),
+        body: { ids },
       });
       if (res.ok) {
         toast.success("Order Updated");
         fetchData();
+      } else {
+        toast.error("Reorder Failed", { description: res.error });
       }
     } catch {
       toast.error("Reorder Failed");
@@ -216,10 +218,12 @@ const TrustBadgesAdminPage = () => {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this trust badge?")) return;
     try {
-      const res = await fetch(`/admin/trust-badges/${id}`, { method: "DELETE" });
+      const res = await adminFetch<any>(`/admin/trust-badges/${id}`, { method: "DELETE" });
       if (res.ok) {
         toast.success("Badge Deleted");
         fetchData();
+      } else {
+        toast.error("Delete Failed", { description: res.error });
       }
     } catch {
       toast.error("Delete Failed");
@@ -239,10 +243,9 @@ const TrustBadgesAdminPage = () => {
       const isEdit = Boolean(editingBadge.id);
       const url = isEdit ? `/admin/trust-badges/${editingBadge.id}` : "/admin/trust-badges";
 
-      const res = await fetch(url, {
+      const res = await adminFetch<any>(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingBadge),
+        body: editingBadge,
       });
 
       if (res.ok) {
@@ -251,7 +254,7 @@ const TrustBadgesAdminPage = () => {
         setEditingBadge(null);
         fetchData();
       } else {
-        toast.error("Save Failed");
+        toast.error("Save Failed", { description: res.error });
       }
     } catch {
       toast.error("Save Error");
@@ -267,10 +270,9 @@ const TrustBadgesAdminPage = () => {
 
     try {
       setIsSubmitting(true);
-      const res = await fetch("/admin/trust-badges/settings", {
+      const res = await adminFetch<any>("/admin/trust-badges/settings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
+        body: settings,
       });
 
       if (res.ok) {
@@ -278,7 +280,7 @@ const TrustBadgesAdminPage = () => {
         setIsSettingsOpen(false);
         fetchData();
       } else {
-        toast.error("Settings Update Failed");
+        toast.error("Settings Update Failed", { description: res.error });
       }
     } catch {
       toast.error("Settings Error");
@@ -291,10 +293,12 @@ const TrustBadgesAdminPage = () => {
   const handleResetDefaults = async () => {
     if (!confirm("Reset all trust badges and green theme settings to botanical defaults?")) return;
     try {
-      const res = await fetch("/admin/trust-badges/seed", { method: "POST" });
+      const res = await adminFetch<any>("/admin/trust-badges/seed", { method: "POST" });
       if (res.ok) {
         toast.success("Reset to Defaults Successfully");
         fetchData();
+      } else {
+        toast.error("Reset Failed", { description: res.error });
       }
     } catch {
       toast.error("Reset Failed");

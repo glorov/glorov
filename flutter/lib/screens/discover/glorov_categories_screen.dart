@@ -451,15 +451,11 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
       color: Colors.white,
       child: SingleChildScrollView(
         controller: _rightScrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Category Header Banner Card
-            _buildCategoryHeaderCard(activeCategory),
-            const SizedBox(height: 16),
-
-            // 1. First Section: Subcategories / Popular Collections Grid
+            // 1. First Section: Subcategories / Popular Collections Grid Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -468,7 +464,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                     sectionTitle,
                     style: const TextStyle(
                       fontFamily: AppTypography.primaryFont,
-                      fontSize: 14.5,
+                      fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF111827),
                       letterSpacing: -0.2,
@@ -486,7 +482,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
             // 3-Column Grid of Subcategories
             GridView.builder(
@@ -505,9 +501,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
               },
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 24),
 
-            // 2. Second Section: Top Varieties / New & Upcoming Launches
+            // 2. Second Section: Top Varieties / New & Upcoming Launches Header
             if (activeCategory.launches.isNotEmpty) ...[
               Row(
                 children: [
@@ -522,7 +518,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                       isForYou ? 'New & Upcoming Launches' : 'Top Seeded Varieties',
                       style: const TextStyle(
                         fontFamily: AppTypography.primaryFont,
-                        fontSize: 14.5,
+                        fontSize: 15,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF111827),
                         letterSpacing: -0.2,
@@ -531,7 +527,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
 
               // 3-Column Grid of Product Launches
               GridView.builder(
@@ -553,84 +549,6 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
             const SizedBox(height: 32),
           ],
         ),
-      ),
-    );
-  }
-
-  /// Sleek Category Header Card
-  Widget _buildCategoryHeaderCard(CategoryModel activeCategory) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAF8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.spa_rounded,
-                      size: 16,
-                      color: AppColors.forestDeep,
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        activeCategory.title,
-                        style: const TextStyle(
-                          fontFamily: AppTypography.primaryFont,
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.forestDeep,
-                          letterSpacing: -0.3,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                decoration: BoxDecoration(
-                  color: AppColors.forestDeep.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '${activeCategory.count} Items',
-                  style: const TextStyle(
-                    fontFamily: AppTypography.primaryFont,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.forestDeep,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (activeCategory.description.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              activeCategory.description,
-              style: const TextStyle(
-                fontFamily: AppTypography.primaryFont,
-                fontSize: 11.5,
-                color: Color(0xFF6B7280),
-                height: 1.3,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ],
       ),
     );
   }

@@ -1,5 +1,6 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import React, { useState, useEffect, useMemo } from "react";
+import { adminFetch } from "../../utils/admin-client";
 import {
   Container,
   Heading,
@@ -113,11 +114,9 @@ export const AnnouncementsAdminPage = () => {
   const fetchAnnouncements = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/admin/announcements", {
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) throw new Error("Failed to load announcements");
-      const data = await res.json();
+      const res = await adminFetch<{ config: AnnouncementBarConfig; items: AnnouncementItem[] }>("/admin/announcements");
+      if (!res.ok) throw new Error(res.error || "Failed to load announcements");
+      const data = res.data;
       if (data.config) setConfigData(data.config);
       if (Array.isArray(data.items)) setItems(data.items);
     } catch {
@@ -158,17 +157,15 @@ export const AnnouncementsAdminPage = () => {
   const handleSaveConfig = async () => {
     setIsSavingConfig(true);
     try {
-      const res = await fetch("/admin/announcements/config", {
+      const res = await adminFetch<{ config: AnnouncementBarConfig }>("/admin/announcements/config", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(configData),
       });
-      if (!res.ok) throw new Error("Failed to save configuration");
-      const updated = await res.json();
-      if (updated.config) setConfigData(updated.config);
+      if (!res.ok) throw new Error(res.error || "Failed to save configuration");
+      if (res.data?.config) setConfigData(res.data.config);
       toast.success("Success", { description: "Announcement bar settings saved." });
-    } catch {
-      toast.error("Error", { description: "Failed to update announcement bar settings." });
+    } catch (err: any) {
+      toast.error("Error", { description: err.message || "Failed to update announcement bar settings." });
     } finally {
       setIsSavingConfig(false);
     }
@@ -177,32 +174,31 @@ export const AnnouncementsAdminPage = () => {
   const handleToggleItemStatus = async (item: AnnouncementItem) => {
     const updatedStatus = !item.is_active;
     try {
-      const res = await fetch(`/admin/announcements/${item.id}`, {
+      const res = await adminFetch<{ item: AnnouncementItem }>(`/admin/announcements/${item.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: updatedStatus }),
       });
-      if (!res.ok) throw new Error("Failed to toggle status");
+      if (!res.ok) throw new Error(res.error || "Failed to toggle status");
       setItems((prev) =>
         prev.map((i) => (i.id === item.id ? { ...i, is_active: updatedStatus } : i))
       );
       toast.success("Updated", {
         description: `Announcement set to ${updatedStatus ? "Active" : "Inactive"}.`,
       });
-    } catch {
-      toast.error("Error", { description: "Failed to update item status." });
+    } catch (err: any) {
+      toast.error("Error", { description: err.message || "Failed to update item status." });
     }
   };
 
   const handleDeleteItem = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this announcement item?")) return;
     try {
-      const res = await fetch(`/admin/announcements/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
+      const res = await adminFetch(`/admin/announcements/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error(res.error || "Failed to delete");
       setItems((prev) => prev.filter((i) => i.id !== id));
       toast.success("Deleted", { description: "Announcement removed successfully." });
-    } catch {
-      toast.error("Error", { description: "Failed to delete announcement." });
+    } catch (err: any) {
+      toast.error("Error", { description: err.message || "Failed to delete announcement." });
     }
   };
 
@@ -242,31 +238,29 @@ export const AnnouncementsAdminPage = () => {
     setIsSubmitting(true);
     try {
       if (editingItem) {
-        const res = await fetch(`/admin/announcements/${editingItem.id}`, {
+        const res = await adminFetch<{ item: AnnouncementItem }>(`/admin/announcements/${editingItem.id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
-        if (!res.ok) throw new Error("Failed to update");
-        const updated = await res.json();
+        if (!res.ok) throw new Error(res.error || "Failed to update");
+        const updated = res.data;
         setItems((prev) =>
           prev.map((i) => (i.id === editingItem.id ? updated.item : i)).sort((a, b) => a.display_order - b.display_order)
         );
         toast.success("Success", { description: "Announcement updated." });
       } else {
-        const res = await fetch("/admin/announcements", {
+        const res = await adminFetch<{ item: AnnouncementItem }>("/admin/announcements", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
-        if (!res.ok) throw new Error("Failed to create");
-        const created = await res.json();
+        if (!res.ok) throw new Error(res.error || "Failed to create");
+        const created = res.data;
         setItems((prev) => [...prev, created.item].sort((a, b) => a.display_order - b.display_order));
         toast.success("Success", { description: "Announcement item created." });
       }
       setIsModalOpen(false);
-    } catch {
-      toast.error("Error", { description: "Failed to save announcement." });
+    } catch (err: any) {
+      toast.error("Error", { description: err.message || "Failed to save announcement." });
     } finally {
       setIsSubmitting(false);
     }

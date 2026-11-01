@@ -10,6 +10,7 @@ import '../../core/theme/app_typography.dart';
 import '../../core/theme/glorov_horizontal_scroll_behavior.dart';
 import '../common/glorov_y_scroll_pass_through.dart';
 import '../../route/route_constants.dart';
+import '../../services/glorov_account_state.dart';
 import '../../services/glorov_cart_state.dart';
 import '../../services/glorov_header_scroll_notifier.dart';
 
@@ -333,13 +334,65 @@ class _GlorovHeaderState extends State<GlorovHeader> {
 
               const SizedBox(width: 32),
 
-              // Action 1: User / Profile with lightning bolt / membership badge (Image 1)
-              _HeaderActionButton(
-                icon: Icons.person_outline_rounded,
-                tooltip: 'Account',
-                badge:
-                    const Icon(Icons.bolt, size: 13, color: Color(0xFFF59E0B)),
-                onTap: () => Navigator.pushNamed(context, profileScreenRoute),
+              // Action 1: User / Profile: Dynamic based on authentication status
+              ListenableBuilder(
+                listenable: GlorovAccountState.instance,
+                builder: (context, _) {
+                  final accountState = GlorovAccountState.instance;
+                  final isAuthenticated = accountState.isAuthenticated;
+                  final profile = accountState.profile;
+
+                  if (isAuthenticated) {
+                    // Logged in: Profile avatar with user initials and active status dot
+                    return _HeaderActionButton(
+                      tooltip: profile.displayName.isNotEmpty
+                          ? 'Account (${profile.displayName})'
+                          : 'Customer Account',
+                      customIcon: Container(
+                        width: 26,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.forestDark,
+                          border: Border.all(color: AppColors.sage, width: 1.5),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          profile.initials,
+                          style: const TextStyle(
+                            fontFamily: AppTypography.displayFont,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      badge: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFF10B981),
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                      ),
+                      onTap: () =>
+                          Navigator.pushNamed(context, profileScreenRoute),
+                    );
+                  }
+
+                  // Not Logged In: Custom Guest SVG Icon
+                  return _HeaderActionButton(
+                    tooltip: 'Sign In / Register',
+                    customIcon: GlorovCategorySvgIcons.buildSvgIcon(
+                      GlorovCategorySvgIcons.guestUser,
+                      size: 22,
+                      color: const Color(0xFF1E293B),
+                    ),
+                    onTap: () =>
+                        Navigator.pushNamed(context, logInScreenRoute),
+                  );
+                },
               ),
 
               const SizedBox(width: 12),
@@ -743,7 +796,8 @@ class _HeaderCategoryNavItemState extends State<_HeaderCategoryNavItem>
 // Desktop Header Action Button with Soft Ripple & Badges
 // -----------------------------------------------------------------------------
 class _HeaderActionButton extends StatefulWidget {
-  final IconData icon;
+  final IconData? icon;
+  final Widget? customIcon;
   final String tooltip;
   final String? badgeText;
   final Color? badgeColor;
@@ -751,13 +805,14 @@ class _HeaderActionButton extends StatefulWidget {
   final VoidCallback onTap;
 
   const _HeaderActionButton({
-    required this.icon,
+    this.icon,
+    this.customIcon,
     required this.tooltip,
     this.badgeText,
     this.badgeColor,
     this.badge,
     required this.onTap,
-  });
+  }) : assert(icon != null || customIcon != null);
 
   @override
   State<_HeaderActionButton> createState() => _HeaderActionButtonState();
@@ -789,13 +844,14 @@ class _HeaderActionButtonState extends State<_HeaderActionButton> {
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(
-                  widget.icon,
-                  size: 22,
-                  color: _isHovered
-                      ? AppColors.forestDeep
-                      : const Color(0xFF1E293B),
-                ),
+                widget.customIcon ??
+                    Icon(
+                      widget.icon!,
+                      size: 22,
+                      color: _isHovered
+                          ? AppColors.forestDeep
+                          : const Color(0xFF1E293B),
+                    ),
                 if (widget.badge != null)
                   Positioned(
                     right: -4,

@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, Package, MapPin, User, LogOut } from 'lucide-react'
-import { logoutCustomerAction } from '@/lib/customer-actions'
+import { useCustomer } from '@/context/CustomerContext'
 import styles from './AccountNav.module.css'
 
 const NAV_ITEMS = [
@@ -17,12 +17,13 @@ const NAV_ITEMS = [
 export function AccountNav() {
   const pathname = usePathname()
   const router = useRouter()
+  const { logout } = useCustomer()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
-      await logoutCustomerAction()
+      await logout()
       router.push('/account/login')
       router.refresh()
     } finally {

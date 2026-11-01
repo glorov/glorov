@@ -12,6 +12,7 @@ import {
 } from '@/lib/customer-actions'
 import type { StoreCustomer } from '@/lib/customer'
 import { AccountNav } from '@/components/account/AccountNav'
+import { UserProfileAvatar } from '@/components/common/icons/UserIcons'
 import styles from './CustomerProfile.module.css'
 
 export default function ProfilePage() {
@@ -151,11 +152,14 @@ export default function ProfilePage() {
         </Link>
       </div>
 
-      <header className={styles.headerArea}>
-        <h1 className={styles.title}>Profile Settings</h1>
-        <p className={styles.subtitle}>
-          Update your personal details, contact numbers, and security credentials.
-        </p>
+      <header className={styles.headerArea} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <UserProfileAvatar customer={customer} size={52} />
+        <div>
+          <h1 className={styles.title}>Customer Profile Settings</h1>
+          <p className={styles.subtitle}>
+            Logged in as <strong>{customer?.email}</strong> • Update contact details and account security.
+          </p>
+        </div>
       </header>
 
       <div className={styles.profileLayout}>

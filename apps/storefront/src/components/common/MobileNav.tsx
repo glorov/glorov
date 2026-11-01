@@ -30,9 +30,12 @@ import {
   Coins,
   TreeDeciduous,
   Award,
+  LogOut,
 } from 'lucide-react'
 import styles from './MobileNav.module.css'
 import { SearchInput } from '@/components/common/SearchInput'
+import { useCustomer } from '@/context/CustomerContext'
+import { GuestUserIcon, UserProfileAvatar } from './icons/UserIcons'
 
 interface MobileNavItem {
   href: string
@@ -185,6 +188,7 @@ export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
   const pathname = usePathname()
+  const { customer, isAuthenticated, logout } = useCustomer()
 
   // Close on Escape key & manage body scroll lock
   useEffect(() => {
@@ -274,6 +278,65 @@ export function MobileNav() {
                 placeholder="Search seeds, plants..."
                 onSearchSubmitted={() => setIsOpen(false)}
               />
+            </div>
+
+            {/* Dynamic User Authentication Banner */}
+            <div style={{ padding: '0.75rem 1rem', backgroundColor: isAuthenticated ? '#f0fdf4' : '#faf9f5', borderBottom: '1px solid rgba(230, 222, 210, 0.7)' }}>
+              {isAuthenticated && customer ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', overflow: 'hidden' }}>
+                    <UserProfileAvatar customer={customer} size={32} />
+                    <div style={{ overflow: 'hidden' }}>
+                      <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: 'var(--ugaoo-dark, #0a4c36)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        Hi, {customer.first_name || 'Gardener'}
+                      </p>
+                      <p style={{ margin: 0, fontSize: '11px', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {customer.email}
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/account"
+                    onClick={() => setIsOpen(false)}
+                    style={{
+                      fontSize: '11.5px',
+                      fontWeight: 700,
+                      color: 'var(--ugaoo-dark, #0a4c36)',
+                      textDecoration: 'none',
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      backgroundColor: 'rgba(10, 76, 54, 0.08)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Dashboard
+                  </Link>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <GuestUserIcon size={20} style={{ color: '#64748b' }} />
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                      Welcome to GLOROV
+                    </span>
+                  </div>
+                  <Link
+                    href="/account/login"
+                    onClick={() => setIsOpen(false)}
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      color: '#ffffff',
+                      backgroundColor: 'var(--ugaoo-dark, #0a4c36)',
+                      padding: '5px 12px',
+                      borderRadius: '9999px',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Sign In
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Scrollable Navigation List */}
@@ -381,6 +444,35 @@ export function MobileNav() {
               >
                 Browse All Botanical Catalog
               </Link>
+
+              {isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setIsOpen(false)
+                    await logout()
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    width: '100%',
+                    minHeight: '40px',
+                    backgroundColor: '#fee2e2',
+                    color: '#dc2626',
+                    border: '1px solid #fecaca',
+                    borderRadius: 'var(--radius-pill)',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    marginTop: '0.5rem',
+                  }}
+                >
+                  <LogOut size={14} />
+                  <span>Sign Out of Account</span>
+                </button>
+              )}
             </div>
           </div>
         </>

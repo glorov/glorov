@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../core/icons/glorov_category_svg_icons.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../route/route_constants.dart';
+import '../../services/glorov_account_state.dart';
 import '../../services/glorov_cart_state.dart';
 import '../../services/glorov_header_scroll_notifier.dart';
 
@@ -132,16 +134,65 @@ class GlorovMobileBottomNav extends StatelessWidget {
                       },
                     ),
 
-                    // 4. Account / Profile
-                    _BottomNavItem(
-                      icon: Icons.person_outline_rounded,
-                      activeIcon: Icons.person_rounded,
-                      label: 'Account',
-                      isActive: activeRoute == profileScreenRoute,
-                      onTap: () {
-                        if (activeRoute != profileScreenRoute) {
-                          Navigator.pushNamed(context, profileScreenRoute);
+                    // 4. Account / Profile: Dynamic based on authentication status
+                    ListenableBuilder(
+                      listenable: GlorovAccountState.instance,
+                      builder: (context, _) {
+                        final accountState = GlorovAccountState.instance;
+                        final isAuthenticated = accountState.isAuthenticated;
+                        final profile = accountState.profile;
+
+                        if (isAuthenticated) {
+                          return _BottomNavItem(
+                            customIcon: Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.forestDark,
+                                border: Border.all(
+                                  color: AppColors.sage,
+                                  width: 1.2,
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                profile.initials,
+                                style: const TextStyle(
+                                  fontFamily: AppTypography.displayFont,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            label: 'Account',
+                            isActive: activeRoute == profileScreenRoute,
+                            onTap: () {
+                              if (activeRoute != profileScreenRoute) {
+                                Navigator.pushNamed(context, profileScreenRoute);
+                              }
+                            },
+                          );
                         }
+
+                        // Not Logged In: Guest Custom SVG Icon
+                        return _BottomNavItem(
+                          customIcon: GlorovCategorySvgIcons.buildSvgIcon(
+                            GlorovCategorySvgIcons.guestUser,
+                            size: 20,
+                            color: activeRoute == profileScreenRoute
+                                ? AppColors.forestDeep
+                                : const Color(0xFF6B7280),
+                          ),
+                          label: 'Sign In',
+                          isActive: activeRoute == logInScreenRoute,
+                          onTap: () {
+                            if (activeRoute != logInScreenRoute) {
+                              Navigator.pushNamed(context, logInScreenRoute);
+                            }
+                          },
+                        );
                       },
                     ),
                   ],
@@ -160,21 +211,25 @@ class GlorovMobileBottomNav extends StatelessWidget {
 // Interactive Mobile Bottom Nav Item with Botanical Spring Micro-Interactions
 // -----------------------------------------------------------------------------
 class _BottomNavItem extends StatefulWidget {
-  final IconData icon;
-  final IconData activeIcon;
+  final IconData? icon;
+  final IconData? activeIcon;
+  final Widget? customIcon;
+  final Widget? customActiveIcon;
   final String label;
   final bool isActive;
   final int badgeCount;
   final VoidCallback onTap;
 
   const _BottomNavItem({
-    required this.icon,
-    required this.activeIcon,
+    this.icon,
+    this.activeIcon,
+    this.customIcon,
+    this.customActiveIcon,
     required this.label,
     required this.isActive,
     this.badgeCount = 0,
     required this.onTap,
-  });
+  }) : assert(icon != null || customIcon != null);
 
   @override
   State<_BottomNavItem> createState() => _BottomNavItemState();
@@ -267,13 +322,20 @@ class _BottomNavItemState extends State<_BottomNavItem>
                     child: AnimatedBuilder(
                       animation: _scaleAnimation,
                       builder: (context, child) {
+                        final renderedWidget = (isActive
+                                ? widget.customActiveIcon ?? widget.customIcon
+                                : widget.customIcon) ??
+                            Icon(
+                              isActive
+                                  ? (widget.activeIcon ?? widget.icon!)
+                                  : widget.icon!,
+                              size: 22,
+                              color: color,
+                            );
+
                         return Transform.scale(
                           scale: isActive ? _scaleAnimation.value : 1.0,
-                          child: Icon(
-                            isActive ? widget.activeIcon : widget.icon,
-                            size: 22,
-                            color: color,
-                          ),
+                          child: renderedWidget,
                         );
                       },
                     ),

@@ -17,12 +17,18 @@ import {
   Truck,
   Heart,
   Calendar,
+  LayoutDashboard,
+  Package,
+  MapPin,
+  LogOut,
 } from 'lucide-react'
 import { AnnouncementBar } from './AnnouncementBar'
 import { MobileNav } from './MobileNav'
 import { SearchInput } from './SearchInput'
 import { CartNavButton } from '@/components/cart/CartNavButton'
 import { useWishlist } from '@/context/WishlistContext'
+import { useCustomer } from '@/context/CustomerContext'
+import { GuestUserIcon, UserProfileAvatar } from './icons/UserIcons'
 import styles from './Header.module.css'
 
 interface SubCategoryItem {
@@ -118,10 +124,13 @@ const DESKTOP_NAV_LINKS: NavLinkItem[] = [
 export function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const pathname = usePathname()
   const { totalItems: totalWishlistItems } = useWishlist()
+  const { customer, isAuthenticated, logout } = useCustomer()
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const profileRef = useRef<HTMLDivElement>(null)
 
   // Scroll detection for sticky shadow
   useEffect(() => {
@@ -149,6 +158,7 @@ export function Header() {
   // Close dropdowns on route navigation or Escape
   useEffect(() => {
     setActiveDropdown(null)
+    setProfileMenuOpen(false)
     setMobileSearchOpen(false)
   }, [pathname])
 
@@ -156,12 +166,29 @@ export function Header() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setActiveDropdown(null)
+        setProfileMenuOpen(false)
         setMobileSearchOpen(false)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleSignOut = async () => {
+    setProfileMenuOpen(false)
+    await logout()
+  }
 
   // Determine routes where top header should be hidden
   const isCategoryPage = pathname?.startsWith('/categories') || pathname?.startsWith('/category')
@@ -239,14 +266,134 @@ export function Header() {
             )}
           </Link>
 
-          <Link
-            href="/account"
-            className={styles.actionLink}
-            aria-label="Sign in to your account"
+          {/* User Account / Dynamic Profile Section */}
+          <div
+            className={styles.profileContainer}
+            ref={profileRef}
+            onMouseEnter={() => isAuthenticated && setProfileMenuOpen(true)}
+            onMouseLeave={() => isAuthenticated && setProfileMenuOpen(false)}
           >
-            <User size={16} aria-hidden="true" />
-            <span>Sign In</span>
-          </Link>
+            {isAuthenticated && customer ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                  className={`${styles.profileButton} ${profileMenuOpen ? styles.profileButtonActive : ''}`}
+                  aria-expanded={profileMenuOpen}
+                  aria-haspopup="true"
+                  aria-label={`Account menu for ${customer.first_name || 'Customer'}`}
+                >
+                  <UserProfileAvatar customer={customer} size={24} />
+                  <span>{customer.first_name || 'Account'}</span>
+                  <ChevronDown
+                    size={12}
+                    style={{
+                      transition: 'transform 180ms ease',
+                      transform: profileMenuOpen ? 'rotate(180deg)' : 'none',
+                    }}
+                    aria-hidden="true"
+                  />
+                </button>
+
+                {profileMenuOpen && (
+                  <div className={styles.profileDropdown} role="menu" aria-label="Customer account options">
+                    <div className={styles.dropdownUserHeader}>
+                      <UserProfileAvatar customer={customer} size={36} />
+                      <div className={styles.dropdownUserInfo}>
+                        <span className={styles.dropdownUserName}>
+                          {customer.first_name} {customer.last_name || ''}
+                        </span>
+                        <span className={styles.dropdownUserEmail} title={customer.email}>
+                          {customer.email}
+                        </span>
+                        <span className={styles.dropdownBadge}>Verified Customer</span>
+                      </div>
+                    </div>
+
+                    <ul className={styles.dropdownLinksList} role="none">
+                      <li role="none">
+                        <Link
+                          href="/account"
+                          className={styles.dropdownLinkItem}
+                          onClick={() => setProfileMenuOpen(false)}
+                          role="menuitem"
+                        >
+                          <LayoutDashboard size={15} aria-hidden="true" style={{ color: 'var(--ugaoo-dark, #0a4c36)' }} />
+                          <span>Account Dashboard</span>
+                        </Link>
+                      </li>
+                      <li role="none">
+                        <Link
+                          href="/account/orders"
+                          className={styles.dropdownLinkItem}
+                          onClick={() => setProfileMenuOpen(false)}
+                          role="menuitem"
+                        >
+                          <Package size={15} aria-hidden="true" style={{ color: 'var(--ugaoo-dark, #0a4c36)' }} />
+                          <span>Orders &amp; Tracking</span>
+                        </Link>
+                      </li>
+                      <li role="none">
+                        <Link
+                          href="/account/addresses"
+                          className={styles.dropdownLinkItem}
+                          onClick={() => setProfileMenuOpen(false)}
+                          role="menuitem"
+                        >
+                          <MapPin size={15} aria-hidden="true" style={{ color: 'var(--ugaoo-dark, #0a4c36)' }} />
+                          <span>Saved Addresses</span>
+                        </Link>
+                      </li>
+                      <li role="none">
+                        <Link
+                          href="/account/profile"
+                          className={styles.dropdownLinkItem}
+                          onClick={() => setProfileMenuOpen(false)}
+                          role="menuitem"
+                        >
+                          <User size={15} aria-hidden="true" style={{ color: 'var(--ugaoo-dark, #0a4c36)' }} />
+                          <span>Profile &amp; Password</span>
+                        </Link>
+                      </li>
+                      <li role="none">
+                        <Link
+                          href="/wishlist"
+                          className={styles.dropdownLinkItem}
+                          onClick={() => setProfileMenuOpen(false)}
+                          role="menuitem"
+                        >
+                          <Heart size={15} aria-hidden="true" style={{ color: 'var(--ugaoo-maroon, #722f37)' }} />
+                          <span>Botanical Wishlist</span>
+                        </Link>
+                      </li>
+                    </ul>
+
+                    <hr className={styles.dropdownDivider} aria-hidden="true" />
+
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className={styles.dropdownLogoutBtn}
+                      role="menuitem"
+                      aria-label="Sign out of GLOROV account"
+                    >
+                      <LogOut size={15} aria-hidden="true" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <Link
+                href="/account/login"
+                className={styles.actionLink}
+                aria-label="Sign in to your account"
+              >
+                <GuestUserIcon size={18} aria-hidden="true" />
+                <span>Sign In</span>
+              </Link>
+            )}
+          </div>
 
           {/* Mobile search toggle button */}
           <button

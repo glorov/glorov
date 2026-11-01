@@ -5,6 +5,7 @@ import { Footer } from '@/components/common/Footer'
 import { MobileDock } from '@/components/common/MobileDock'
 import { CartProvider } from '@/context/CartContext'
 import { WishlistProvider } from '@/context/WishlistContext'
+import { CustomerProvider } from '@/context/CustomerContext'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import './globals.css'
 import styles from './RootLayout.module.css'
@@ -106,17 +107,19 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <CartProvider>
-          <WishlistProvider>
-            <Header />
-            <CartDrawer />
-            <main id="main-content" tabIndex={-1} className={styles.main}>
-              {children}
-            </main>
-            <Footer />
-            <MobileDock />
-          </WishlistProvider>
-        </CartProvider>
+        <CustomerProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <Header />
+              <CartDrawer />
+              <main id="main-content" tabIndex={-1} className={styles.main}>
+                {children}
+              </main>
+              <Footer />
+              <MobileDock />
+            </WishlistProvider>
+          </CartProvider>
+        </CustomerProvider>
       </body>
     </html>
   )

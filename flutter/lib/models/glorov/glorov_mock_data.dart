@@ -108,7 +108,7 @@ class GlorovMockData {
       ],
       isBestSeller: true,
       isFeatured: true,
-      badges: ['98% GERMINATION', '1 Crore + Happy Customers'],
+      badges: ['98% GERMINATION'],
       variants: [
         GlorovProductVariant(
           id: 'var-glr-seed-01-1',

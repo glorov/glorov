@@ -13,10 +13,11 @@ import {
   PlusCircle,
   Heart,
   Headphones,
-  Sparkles,
+  CheckCircle2,
 } from 'lucide-react'
 import { getCurrentCustomerAction, getCustomerOrdersAction } from '@/lib/customer-actions'
 import { AccountNav } from '@/components/account/AccountNav'
+import { UserProfileAvatar } from '@/components/common/icons/UserIcons'
 import { formatINR } from '@/lib/utils'
 import styles from './AccountDashboard.module.css'
 
@@ -57,18 +58,21 @@ export default async function AccountDashboardPage() {
         </Link>
       </div>
 
-      {/* Header Greeting */}
-      <header className={styles.headerArea}>
-        <div className={styles.accountBadge}>
-          <Sprout size={14} aria-hidden="true" />
-          <span>Verified Customer Account</span>
+      {/* Header Greeting with Profile Avatar */}
+      <header className={styles.headerArea} style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <UserProfileAvatar customer={customer} size={56} />
+        <div>
+          <div className={styles.accountBadge}>
+            <CheckCircle2 size={13} aria-hidden="true" style={{ color: '#059669' }} />
+            <span>Verified Customer • Pan-India Delivery</span>
+          </div>
+          <h1 className={styles.greetingTitle}>
+            Welcome back, {customer.first_name || 'Gardener'}!
+          </h1>
+          <p className={styles.greetingSub}>
+            Logged in as <strong>{customer.email}</strong> • Manage your orders, delivery destinations, and profile.
+          </p>
         </div>
-        <h1 className={styles.greetingTitle}>
-          Welcome back, {customer.first_name || 'Gardener'}!
-        </h1>
-        <p className={styles.greetingSub}>
-          Manage your botanical orders, delivery destinations, and account settings.
-        </p>
       </header>
 
       <div className={styles.dashboardLayout}>
@@ -124,12 +128,12 @@ export default async function AccountDashboardPage() {
             </div>
           </section>
 
-          {/* Available Only Services Section */}
-          <section className={styles.servicesSection} aria-labelledby="available-services-heading">
+          {/* Standard Account Quick Actions Section */}
+          <section className={styles.servicesSection} aria-labelledby="quick-actions-heading">
             <div className={styles.servicesSectionHeader}>
-              <h2 id="available-services-heading" className={styles.servicesSectionTitle}>
-                <Sparkles size={18} aria-hidden="true" style={{ color: '#0a4c36' }} />
-                <span>My Available Services</span>
+              <h2 id="quick-actions-heading" className={styles.servicesSectionTitle}>
+                <CheckCircle2 size={18} aria-hidden="true" style={{ color: '#0a4c36' }} />
+                <span>Account Management &amp; Quick Actions</span>
               </h2>
             </div>
 

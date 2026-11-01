@@ -360,6 +360,147 @@ class _GlorovProductDetailsScreenState
     );
   }
 
+  void _showGuaranteeTermsModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.verified_user_outlined,
+                      size: 20, color: Color(0xFF854D0E)),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Guarantee Terms & Conditions',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(height: 20, color: Color(0xFFE5E7EB)),
+              const Text(
+                'At GLOROV, every botanical product is carefully verified and packaged in transit-safe breathable containers. Our terms & conditions include:',
+                style: TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: 13,
+                  color: Color(0xFF4B5563),
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildTermsBullet(
+                title: 'Transit & Delivery Guarantee',
+                description:
+                    'If your plant or seeds arrive damaged or stressed from travel, notify us within 48 hours for an immediate free replacement.',
+              ),
+              const SizedBox(height: 10),
+              _buildTermsBullet(
+                title: '30-Day Health Warranty',
+                description:
+                    'Follow our plant care instructions. If your plant declines within 30 days despite proper care, our botanists will assist you or replace it.',
+              ),
+              const SizedBox(height: 10),
+              _buildTermsBullet(
+                title: 'Hassle-Free Replacement',
+                description:
+                    'Share 2 clear photos and your order number via WhatsApp or support to initiate an instant claim.',
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(
+                        context, shippingAndTrustPolicyScreenRoute);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.forestDeep),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'View Full Policies & Guarantee Details',
+                    style: TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.forestDeep,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTermsBullet(
+      {required String title, required String description}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(top: 2),
+          child: Icon(Icons.check_circle_outline,
+              size: 16, color: Color(0xFF16A34A)),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                description,
+                style: const TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: 12,
+                  color: Color(0xFF6B7280),
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   // Pincode estimator state
   final TextEditingController _pincodeController =
       TextEditingController(text: '700059');
@@ -2130,8 +2271,18 @@ class _GlorovProductDetailsScreenState
   }
 
   Widget _buildTrustReassuranceBadges() {
+    final isPlant = widget.product.productType == GlorovProductType.plants;
+    final isSeeds = widget.product.productType == GlorovProductType.seeds;
+
+    final String guaranteeTitle = isPlant
+        ? '30-Day Plant Guarantee'
+        : (isSeeds
+            ? 'Verified Germination Guarantee'
+            : 'Safe Transit Guarantee');
+
     return Column(
       children: [
+        // 1. Guarantee Row (Service specific to product type with clickable T&C)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
@@ -2139,15 +2290,15 @@ class _GlorovProductDetailsScreenState
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: const Color(0xFFFEF08A)),
           ),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.verified_user_outlined,
+              const Icon(Icons.verified_user_outlined,
                   size: 18, color: Color(0xFF854D0E)),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '30-Day Plant Guarantee',
-                  style: TextStyle(
+                  guaranteeTitle,
+                  style: const TextStyle(
                     fontFamily: AppTypography.primaryFont,
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
@@ -2155,21 +2306,30 @@ class _GlorovProductDetailsScreenState
                   ),
                 ),
               ),
-              SizedBox(width: 8),
-              Text(
-                'T&C',
-                style: TextStyle(
-                  fontFamily: AppTypography.primaryFont,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF854D0E),
-                  decoration: TextDecoration.underline,
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: _showGuaranteeTermsModal,
+                borderRadius: BorderRadius.circular(4),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Text(
+                    'T&C',
+                    style: TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF854D0E),
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 8),
+
+        // 2. Additional Services (Only available services shown)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
@@ -2177,32 +2337,34 @@ class _GlorovProductDetailsScreenState
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: const Color(0xFFFEF08A)),
           ),
-          child: const Row(
+          child: Row(
             children: [
-              Expanded(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.chat_bubble_outline,
-                        size: 17, color: Color(0xFF854D0E)),
-                    SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        'Plant Care Support',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: AppTypography.primaryFont,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF713F12),
+              if (isPlant) ...[
+                const Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.chat_bubble_outline,
+                          size: 17, color: Color(0xFF854D0E)),
+                      SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          'Plant Care Support',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: AppTypography.primaryFont,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF713F12),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(width: 8),
-              Expanded(
+                const SizedBox(width: 8),
+              ],
+              const Expanded(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -2334,17 +2496,25 @@ class _GlorovProductDetailsScreenState
   // ---------------------------------------------------------------------------
   Widget _buildQuantityAndAddToCart(BuildContext context) {
     final isDesktop = AppBreakpoints.isDesktop(context);
+    const double buttonHeight = 48.0;
 
     final quantityStepper = Container(
+      height: buttonHeight,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFD1D5DB)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFD1D5DB), width: 1.2),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           IconButton(
             icon: const Icon(Icons.remove, size: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            constraints:
+                const BoxConstraints(minWidth: 36, minHeight: buttonHeight),
+            splashRadius: 18,
             onPressed:
                 _quantity > 1 ? () => setState(() => _quantity--) : null,
           ),
@@ -2362,77 +2532,90 @@ class _GlorovProductDetailsScreenState
           ),
           IconButton(
             icon: const Icon(Icons.add, size: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            constraints:
+                const BoxConstraints(minWidth: 36, minHeight: buttonHeight),
+            splashRadius: 18,
             onPressed: () => setState(() => _quantity++),
           ),
         ],
       ),
     );
 
-    final addToCartBtn = ElevatedButton(
-      onPressed:
-          _isAddingToCart ? null : () => _handleAddToCart(navigateToCart: false),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.forestDeep, // Signature Green
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+    final addToCartBtn = SizedBox(
+      height: buttonHeight,
+      child: ElevatedButton(
+        onPressed: _isAddingToCart
+            ? null
+            : () => _handleAddToCart(navigateToCart: false),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.forestDeep, // Signature Green
+          foregroundColor: Colors.white,
+          minimumSize: const Size(0, buttonHeight),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          GlorovCustomIcons.cart(size: 18, color: Colors.white),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              _isAddingToCart ? 'Adding...' : 'Add To Cart',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontFamily: AppTypography.primaryFont,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GlorovCustomIcons.cart(size: 18, color: Colors.white),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                _isAddingToCart ? 'Adding...' : 'Add To Cart',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.2,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
 
-    final buyNowBtn = ElevatedButton(
-      onPressed:
-          _isAddingToCart ? null : () => _handleAddToCart(navigateToCart: true),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFD97706), // Warm Amber
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+    final buyNowBtn = SizedBox(
+      height: buttonHeight,
+      child: ElevatedButton(
+        onPressed:
+            _isAddingToCart ? null : () => _handleAddToCart(navigateToCart: true),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFD97706), // Warm Amber
+          foregroundColor: Colors.white,
+          minimumSize: const Size(0, buttonHeight),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          GlorovCustomIcons.buy(size: 17, color: Colors.white),
-          const SizedBox(width: 8),
-          const Flexible(
-            child: Text(
-              'Buy Now',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: AppTypography.primaryFont,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GlorovCustomIcons.buy(size: 17, color: Colors.white),
+            const SizedBox(width: 8),
+            const Flexible(
+              child: Text(
+                'Buy Now',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.2,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
 
@@ -2473,127 +2656,130 @@ class _GlorovProductDetailsScreenState
   // Component 8: Delivery Estimate Pincode Checker (Video frame 5 style)
   // ---------------------------------------------------------------------------
   Widget _buildDeliveryEstimatePincode() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAF8),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(Icons.local_shipping_outlined,
+                size: 18, color: AppColors.forestDeep),
+            SizedBox(width: 8),
+            Text(
+              'Delivery Estimate',
+              style: TextStyle(
+                fontFamily: AppTypography.primaryFont,
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        // Modern single-border pincode check component (no duplicate/outer container borders)
+        Container(
+          height: 44,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: _isPincodeChecked
+                  ? const Color(0xFF16A34A)
+                  : const Color(0xFFD1D5DB),
+              width: 1.2,
+            ),
+          ),
+          child: Row(
             children: [
-              Icon(Icons.local_shipping_outlined,
-                  size: 18, color: AppColors.forestDeep),
-              SizedBox(width: 8),
-              Text(
-                'Delivery Estimate',
+              Expanded(
+                child: TextField(
+                  controller: _pincodeController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  style: const TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                  decoration: const InputDecoration(
+                    counterText: '',
+                    hintText: 'Enter 6-digit Pincode',
+                    hintStyle: TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 12.5,
+                      color: Color(0xFF94A3B8),
+                      fontWeight: FontWeight.w400,
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    isDense: true,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                  onSubmitted: (_) => _handleCheckPincode(),
+                ),
+              ),
+              TapFeedback(
+                onTap: _handleCheckPincode,
+                effect: TapAnimationType.scale,
+                scaleDown: 0.94,
+                duration: GlorovInteractionConfig.durationFast,
+                child: Container(
+                  height: 44,
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  decoration: const BoxDecoration(
+                    color: AppColors.forestDeep,
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(7),
+                      bottomRight: Radius.circular(7),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'CHECK',
+                    style: TextStyle(
+                      fontFamily: AppTypography.primaryFont,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(
+              _isPincodeChecked ? Icons.check_circle : Icons.error_outline,
+              size: 15,
+              color: _isPincodeChecked ? const Color(0xFF16A34A) : Colors.red,
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                _deliveryEstimateText,
                 style: TextStyle(
                   fontFamily: AppTypography.primaryFont,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF111827),
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: _isPincodeChecked
+                      ? const Color(0xFF15803D)
+                      : Colors.red.shade700,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          // Unified single-border pincode check component (no duplicate/multiple borders)
-          Container(
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFCBD5E1), width: 1.2),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _pincodeController,
-                    keyboardType: TextInputType.number,
-                    maxLength: 6,
-                    style: const TextStyle(
-                      fontFamily: AppTypography.primaryFont,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF111827),
-                    ),
-                    decoration: const InputDecoration(
-                      counterText: '',
-                      hintText: 'Enter 6-digit Pincode',
-                      hintStyle: TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 12.5,
-                        color: Color(0xFF94A3B8),
-                        fontWeight: FontWeight.w400,
-                      ),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    ),
-                    onSubmitted: (_) => _handleCheckPincode(),
-                  ),
-                ),
-                TapFeedback(
-                  onTap: _handleCheckPincode,
-                  effect: TapAnimationType.scale,
-                  scaleDown: 0.94,
-                  duration: GlorovInteractionConfig.durationFast,
-                  child: Container(
-                    height: 40,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: const BoxDecoration(
-                      color: AppColors.forestDeep,
-                      borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(7),
-                        bottomRight: Radius.circular(7),
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Text(
-                      'CHECK',
-                      style: TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(
-                _isPincodeChecked ? Icons.check_circle : Icons.error_outline,
-                size: 15,
-                color: _isPincodeChecked ? const Color(0xFF16A34A) : Colors.red,
-              ),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  _deliveryEstimateText,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: _isPincodeChecked
-                        ? const Color(0xFF15803D)
-                        : Colors.red,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 

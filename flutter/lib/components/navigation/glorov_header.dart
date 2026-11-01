@@ -525,6 +525,26 @@ class _GlorovHeaderState extends State<GlorovHeader> {
               ),
             ),
           ),
+
+          const SizedBox(width: 8),
+
+          // 3. Cart Navigation Action Button with Live Item Badge (after search)
+          ListenableBuilder(
+            listenable: GlorovCartState.instance,
+            builder: (context, _) {
+              final count = GlorovCartState.instance.itemCount;
+              return _HeaderActionButton(
+                customIcon: GlorovCustomIcons.cart(
+                  size: 21,
+                  color: const Color(0xFF1E293B),
+                ),
+                tooltip: 'Cart',
+                badgeText: count > 0 ? '$count' : null,
+                badgeColor: AppColors.forestDeep,
+                onTap: () => Navigator.pushNamed(context, cartScreenRoute),
+              );
+            },
+          ),
         ],
       ),
     );

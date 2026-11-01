@@ -373,6 +373,65 @@ void main() {
       // Collapsed again
       expect(find.text('Botanical Name'), findsNothing);
     });
+
+    testWidgets('Tapping T&C opens Guarantee Terms & Conditions modal',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final product =
+          GlorovMockData.products.firstWhere((p) => p.id == 'glr-ind-19');
+      await tester.pumpWidget(buildTestableDetails(product));
+      await tester.pumpAndSettle();
+
+      // Scroll to T&C link
+      final tcLink = find.text('T&C');
+      await tester.drag(
+        find.byType(SingleChildScrollView).first,
+        const Offset(0, -800),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(tcLink);
+      await tester.pumpAndSettle();
+
+      // Verify Guarantee modal appears
+      expect(find.text('Guarantee Terms & Conditions'), findsOneWidget);
+      expect(
+          find.text('View Full Policies & Guarantee Details'), findsOneWidget);
+
+      // Dismiss modal
+      await tester.tap(find.byIcon(Icons.close));
+      await tester.pumpAndSettle();
+      expect(find.text('Guarantee Terms & Conditions'), findsNothing);
+    });
+
+    testWidgets('Quantity stepper and Add To Cart button have matching height 48',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final product =
+          GlorovMockData.products.firstWhere((p) => p.id == 'glr-ind-19');
+      await tester.pumpWidget(buildTestableDetails(product));
+      await tester.pumpAndSettle();
+
+      // Scroll to Add To Cart
+      await tester.drag(
+        find.byType(SingleChildScrollView).first,
+        const Offset(0, -500),
+      );
+      await tester.pumpAndSettle();
+
+      final addToCartFinder = find.widgetWithText(ElevatedButton, 'Add To Cart');
+      expect(addToCartFinder, findsOneWidget);
+      final btnSize = tester.getSize(addToCartFinder);
+      expect(btnSize.height, 48.0);
+    });
   });
 
   group('GlorovProductGallery Component & Zoom Preview Tests', () {

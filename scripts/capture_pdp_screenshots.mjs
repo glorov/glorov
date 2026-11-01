@@ -123,6 +123,52 @@ export async function captureScreenshot(url, filename, width, height, isMobile =
   }
 }
 
+export async function captureClickScenario(url, filename, width, height, scrollY, clickX, clickY) {
+  const port = 9330 + Math.floor(Math.random() * 100);
+  const session = await createChrome(port, width, height, true);
+  try {
+    await session.send('Page.navigate', { url });
+    await new Promise((r) => setTimeout(r, 4500));
+
+    if (scrollY > 0) {
+      await session.send('Input.dispatchMouseEvent', {
+        type: 'mouseWheel',
+        x: Math.floor(width / 2),
+        y: Math.floor(height / 2),
+        deltaX: 0,
+        deltaY: scrollY,
+      });
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+
+    await session.send('Input.dispatchMouseEvent', {
+      type: 'mousePressed',
+      x: clickX,
+      y: clickY,
+      button: 'left',
+      clickCount: 1,
+    });
+    await session.send('Input.dispatchMouseEvent', {
+      type: 'mouseReleased',
+      x: clickX,
+      y: clickY,
+      button: 'left',
+      clickCount: 1,
+    });
+
+    await new Promise((r) => setTimeout(r, 1500));
+
+    const { data } = await session.send('Page.captureScreenshot', { format: 'png' });
+    const filePath = path.join(ARTIFACT_DIR, filename);
+    writeFileSync(filePath, Buffer.from(data, 'base64'));
+    console.log(`Saved screenshot to: ${filePath}`);
+    return filePath;
+  } finally {
+    session.ws.close();
+    session.chrome.kill('SIGTERM');
+  }
+}
+
 async function main() {
   const targetUrl = 'http://localhost:3000/product_details?id=glr-ind-19';
 
@@ -131,6 +177,13 @@ async function main() {
 
   console.log('2. Capturing Mobile PDP middle (scroll 450)...');
   await captureScreenshot(targetUrl, 'pdp_mobile_middle_view.png', 390, 844, true, 450);
+
+  console.log('2b. Capturing T&C modal on Mobile PDP...');
+  try {
+    await captureClickScenario(targetUrl, 'pdp_mobile_tc_modal.png', 390, 844, 450, 345, 728);
+  } catch (e) {
+    console.warn('Could not capture T&C modal click:', e.message);
+  }
 
   console.log('3. Capturing Mobile PDP scrolled down (scroll 950)...');
   await captureScreenshot(targetUrl, 'pdp_mobile_scrolled_sticky_bar.png', 390, 844, true, 950);

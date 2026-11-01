@@ -305,7 +305,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
             LayoutBuilder(
               builder: (context, constraints) {
                 final trackWidth = constraints.maxWidth;
-                const nodeSize = 20.0;
+                const nodeSize = 25.0;
                 final availableWidth = trackWidth - nodeSize;
 
                 final node1Reached = subtotal >= 999.0;
@@ -315,7 +315,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                 final fillWidth = fraction * availableWidth;
 
                 return SizedBox(
-                  height: 22,
+                  height: 27,
                   child: Stack(
                     alignment: Alignment.centerLeft,
                     children: [
@@ -375,10 +375,11 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
     );
   }
 
-  Widget _milestoneNodeCircle(String label, bool isReached, {double size = 20}) {
+  Widget _milestoneNodeCircle(String label, bool isReached, {double size = 25}) {
     return Container(
       width: size,
       height: size,
+      padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: isReached ? const Color(0xFF0A4C36) : Colors.white,
         shape: BoxShape.circle,
@@ -395,14 +396,21 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
         ],
       ),
       child: Center(
-        child: Text(
-          label,
-          style: TextStyle(
-            fontFamily: AppTypography.primaryFont,
-            fontSize: size <= 20 ? 8.5 : 9.5,
-            fontWeight: FontWeight.w800,
-            color: isReached ? Colors.white : const Color(0xFF0A4C36),
-            height: 1.0,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            maxLines: 1,
+            softWrap: false,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: AppTypography.primaryFont,
+              fontSize: 9.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.2,
+              color: isReached ? Colors.white : const Color(0xFF0A4C36),
+              height: 1.0,
+            ),
           ),
         ),
       ),

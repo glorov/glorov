@@ -47,8 +47,7 @@ class GlorovMobileBottomNav extends StatelessWidget {
     return ListenableBuilder(
       listenable: GlorovHeaderScrollNotifier.instance,
       builder: (context, _) {
-        final effectiveVisible = isVisible ??
-            GlorovHeaderScrollNotifier.instance.isBottomNavVisible;
+        final effectiveVisible = isVisible ?? true;
 
         return IgnorePointer(
           ignoring: !effectiveVisible,

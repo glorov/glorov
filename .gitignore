@@ -55,3 +55,9 @@ backups/
 
 # Firebase
 .firebase/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+

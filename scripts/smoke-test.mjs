@@ -14,7 +14,7 @@
 
 const backendUrl = (process.argv[2] || process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000').replace(/\/$/, '')
 const webUrl = (process.argv[3] || process.env.STOREFRONT_URL || process.env.FLUTTER_WEB_URL || 'https://glorov-store.web.app').replace(/\/$/, '')
-const publishableKey = process.env.MEDUSA_PUBLISHABLE_KEY || process.env.STORE_PUBLISHABLE_KEY || 'pk_2550b4af7f0ff9f2f1ff1b5f9b16c11e753ba1b574d55e1d9221d496085a7ef8'
+const publishableKey = process.env.MEDUSA_PUBLISHABLE_KEY || process.env.STORE_PUBLISHABLE_KEY || 'pk_3e00679a810ca538ba78aedc23b336788d82631606792292cbecad4fc422316a'
 const authHeaders = publishableKey ? { 'x-publishable-api-key': publishableKey } : {}
 
 console.log('🌿 [GLOROV] Initiating Smoke Test Suite...')
@@ -79,8 +79,12 @@ async function main() {
   })
 
   // 3. Medusa Admin Dashboard Route
-  await runCheck('Medusa Admin Dashboard (/app)', async () => {
-    const res = await fetchWithTimeout(`${backendUrl}/app`)
+  await runCheck('Medusa Admin Dashboard (Firebase / Local)', async () => {
+    const adminUrl = process.env.ADMIN_URL || 'https://glorov-admin.web.app'
+    let res = await fetchWithTimeout(`${backendUrl}/app`).catch(() => null)
+    if (!res || res.status !== 200) {
+      res = await fetchWithTimeout(adminUrl)
+    }
     if (res.status !== 200) {
       throw new Error(`Expected HTTP 200 for Admin Dashboard but received ${res.status}`)
     }

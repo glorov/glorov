@@ -128,7 +128,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-veg-01',
       slug: 'brinjal-banarshi-giant-seeds',
-      title: 'GLOROV Brinjal Banarasi Giant Seeds',
+      title: 'Brinjal Banarasi Giant Seeds',
       botanicalName: 'Solanum melongena',
       shortDescription: 'Brinjal Banarasi Giant is a classic Indian vegetable known for its large, meaty fruits and rich flavour; a must-have in...',
       description: 'Brinjal Banarasi Giant is a classic Indian vegetable known for its large, meaty fruits and rich flavour; a must-have in any home kitchen garden. Large, deep purple, firm fruits perfect for baingan bharta, curries, and stir-fries. Rich in fibre, vitamin B6, and antioxidants. Grows well in large pots, grow bags, and garden beds. Grow it organically in GLOROV\'s Veggie Mix Soil, chemical-free brinjal all season long. Approx. seeds per gram: 220',
@@ -154,7 +154,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-veg-02',
       slug: 'chinese-cabbage-seeds',
-      title: 'GLOROV Green Head Cabbage Seeds',
+      title: 'Green Head Cabbage Seeds',
       botanicalName: 'Brassica oleracea var. capitata',
       shortDescription: 'Chinese Cabbage (Napa Cabbage) is a fast-growing, mild-flavoured cool-season vegetable that grows beautifully in Indian...',
       description: 'Chinese Cabbage (Napa Cabbage) is a fast-growing, mild-flavoured cool-season vegetable that grows beautifully in Indian winters. Crisp, light, and endlessly useful in Asian and Indian cooking. Crisp, mild leaves great in stir-fries, soups, noodles, and salads. Rich in vitamin C, vitamin K, folate, and antioxidants. Quick-growing cool-season crop ready in under 10 weeks. Grow it organically with GLOROV\'s Veggie Mix Soil, chemical-free greens all winter long. Approx. seeds per gram: 230',
@@ -179,7 +179,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-veg-03',
       slug: 'green-onion-seeds-leek',
-      title: 'GLOROV Red Onion Seeds (Pyaj / Vengayam)',
+      title: 'Red Onion Seeds (Pyaj / Vengayam)',
       botanicalName: 'Allium cepa',
       shortDescription: 'Green Onions or Spring Onions are a kitchen garden essential; quick to grow, endlessly useful, and freshest when cut rig...',
       description: 'Green Onions or Spring Onions are a kitchen garden essential; quick to grow, endlessly useful, and freshest when cut right from your own pot. Fresh green tops with a mild, crisp onion flavour for everyday use. Rich in vitamin C, vitamin K, and folate. Both green leaves and white bulb are edible; nothing goes to waste. Grow it organically in GLOROV\'s Veggie Mix Soil, fresh spring onions whenever you need them. Approx. seeds per gram: 125',
@@ -204,7 +204,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-veg-04',
       slug: 'drumstick-seeds-moringa',
-      title: 'GLOROV Drumstick Vegetable Seeds (Moringa)',
+      title: 'Drumstick Vegetable Seeds (Moringa)',
       botanicalName: 'Moringa oleifera',
       shortDescription: 'Drumstick, or Moringa, is a fast-growing tree and one of the most nutritious plants you can grow in an Indian home garde...',
       description: 'Drumstick, or Moringa, is a fast-growing tree and one of the most nutritious plants you can grow in an Indian home garden. Every part of it is useful, from the leaves to the pods to the flowers. Leaves, pods, and flowers are all edible and packed with iron, calcium, protein, and vitamin C. One of the most nutrient-dense plants to grow at home, used daily in Indian cooking. Grows fast, handles heat and drought, and needs very little attention once established. Grow it organically with GLOROV\'s Organic Veggie Mix for a healthy start. Approx. seeds per gram: 3',
@@ -229,7 +229,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-veg-05',
       slug: 'watermelon-seeds',
-      title: 'GLOROV Heirloom Tomato Vegetable Seeds',
+      title: 'Heirloom Tomato Vegetable Seeds',
       botanicalName: 'Solanum lycopersicum',
       shortDescription: 'Heirloom GLOROV tomato seeds. Produces juicy, richly flavored, plump red tomatoes perfect for garden pots and kitchen gardens...',
       description: 'Heirloom GLOROV tomato vegetable seeds directly from our Shopsy botanical line. Produces juicy, richly flavored, plump red tomatoes perfect for garden pots and kitchen gardens. High germination rate and vigorous growth. Approx. seeds per pack: 1500-6000',
@@ -254,7 +254,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-veg-06',
       slug: 'white-cucumber-seeds-khira',
-      title: 'GLOROV Cucumber Vegetable Seeds (Kheera)',
+      title: 'Cucumber Vegetable Seeds (Kheera)',
       botanicalName: 'Cucumis sativus',
       shortDescription: 'As far as the textural quality of a salad is concerned, white cucumbers are preferred in salads due to their crispier na...',
       description: 'As far as the textural quality of a salad is concerned, white cucumbers are preferred in salads due to their crispier nature. Both the green and white cucumbers are packed with nutrients and fibres and have a high water content. Growing your own cucumbers makes them an even better choice for munching for people watching their weight and even kids Approx. seeds per gram: 42',
@@ -279,7 +279,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-flo-07',
       slug: 'petunia-mix-seeds',
-      title: 'GLOROV Vivid Blue Butterfly Pea Seeds (Aparajita)',
+      title: 'Vivid Blue Butterfly Pea Seeds (Aparajita)',
       botanicalName: 'Clitoria ternatea',
       shortDescription: 'Petunia Mix is a trailing, free-flowering annual. It\'s known for its trumpet-shaped blooms in bright colours. A gorgeous...',
       description: 'Petunia Mix is a trailing, free-flowering annual. It\'s known for its trumpet-shaped blooms in bright colours. A gorgeous choice for hanging baskets and balconies. Produces trumpet-shaped blooms in pink, purple, red, white, and bicolour patterns One of the best flowers for continuous colour through the season Great for hanging baskets, window boxes, pots, and garden borders Grow it organically in GLOROV\'s Potting Mix, chemical-free blooms all season long Number of seeds per gram (aprox): 13044',
@@ -304,7 +304,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-flo-08',
       slug: 'dahlia-seeds',
-      title: 'GLOROV Dahlia Annual Flower Seeds',
+      title: 'Dahlia Annual Flower Seeds',
       botanicalName: 'Dahlia pinnata',
       shortDescription: 'Dahlia is a striking flowering plant. It\'s known for its bold, layered blooms in a range of shapes and colours. A show-s...',
       description: 'Dahlia is a striking flowering plant. It\'s known for its bold, layered blooms in a range of shapes and colours. A show-stopping choice for Indian winter gardens. Produces vibrant blooms in red, pink, orange, yellow, and white A rewarding flower for gardeners who want big, eye-catching colour Great for pots, borders, garden beds, and cut flower arrangements Grow it organically in GLOROV\'s Potting Mix, chemical-free blooms all season long Number of seeds per gram (aprox): 123',
@@ -330,7 +330,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-flo-09',
       slug: 'marigold-african-double-seeds',
-      title: 'GLOROV Marigold Flower Seeds (Genda Phool)',
+      title: 'Marigold Flower Seeds (Genda Phool)',
       botanicalName: 'Tagetes erecta',
       shortDescription: 'Marigold African Double is a tall, robust flowering plant. It\'s known for its large, fully double blooms. A festive favo...',
       description: 'Marigold African Double is a tall, robust flowering plant. It\'s known for its large, fully double blooms. A festive favourite in Indian gardens. Produces large, dense blooms in warm shades of yellow, orange, and gold A classic choice for festivals, temple offerings, rangoli, and garlands Great for borders, pots, garden beds, and cut flowers Grow it organically in GLOROV\'s Potting Mix, chemical-free blooms all season long Number of seeds per gram (aprox): 295',
@@ -356,7 +356,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-flo-10',
       slug: 'cosmos-mix-seeds',
-      title: 'GLOROV Mixed Winter Cosmos Flower Seeds',
+      title: 'Mixed Winter Cosmos Flower Seeds',
       botanicalName: 'Cosmos bipinnatus',
       shortDescription: 'Cosmos Mix is a light, airy flowering plant. It\'s known for its delicate, daisy-like blooms. An easy, fuss-free way to a...',
       description: 'Cosmos Mix is a light, airy flowering plant. It\'s known for its delicate, daisy-like blooms. An easy, fuss-free way to add movement and colour to Indian gardens. Produces delicate, daisy-like blooms in pink, red, white, and magenta One of the easiest and fastest-flowering annuals, great for beginners Great for borders, pots, garden beds, and cut flower arrangements Grow it organically in GLOROV\'s Potting Mix, chemical-free blooms all season long Number of seeds per gram (aprox): 135',
@@ -382,7 +382,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-flo-11',
       slug: 'chrysanthemum-mix-250-seeds',
-      title: 'GLOROV Vining Climbing Rose Seeds',
+      title: 'Vining Climbing Rose Seeds',
       botanicalName: 'Rosa multiflora',
       shortDescription: 'Chrysanthemum Mix is a hardy, festive flowering plant. It\'s loved in Indian gardens for its abundant blooms and long flo...',
       description: 'Chrysanthemum Mix is a hardy, festive flowering plant. It\'s loved in Indian gardens for its abundant blooms and long flowering season. Produces bright, cheerful blooms in yellow, white, pink, orange, and bronze A classic choice for festive décor, temple offerings, and garden colour Great for borders, pots, garden beds, and cut flowers Grow it organically in GLOROV\'s Potting Mix, chemical-free blooms all season long Number of seeds per gram (aprox): 335',
@@ -407,7 +407,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-flo-12',
       slug: 'portulaca-mix-seeds',
-      title: 'GLOROV Gomphrena Globe Amaranth Seeds',
+      title: 'Gomphrena Globe Amaranth Seeds',
       botanicalName: 'Gomphrena globosa',
       shortDescription: 'Portulaca Mix is a low-growing, heat-loving annual. It\'s known for its vibrant, rose-like blooms that open wide in full...',
       description: 'Portulaca Mix is a low-growing, heat-loving annual. It\'s known for its vibrant, rose-like blooms that open wide in full sun. A tough, cheerful choice for Indian summer gardens. Produces bright blooms in pink, red, orange, yellow, and white Thrives in heat and needs very little care once established Great for borders, hanging pots, rock gardens, and sunny balconies Grow it organically in GLOROV\'s Pot-o-Mix, chemical-free blooms all season long Number of seeds per gram (aprox): 11420',
@@ -432,7 +432,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-her-13',
       slug: 'italian-basil-1000-seeds',
-      title: 'GLOROV Coriander Planting Seeds (Dhania)',
+      title: 'Coriander Planting Seeds (Dhania)',
       botanicalName: 'Coriandrum sativum',
       shortDescription: 'Italian Basil is a fragrant, fast-growing herb with large, glossy leaves and a sweet, peppery flavour, a staple in Itali...',
       description: 'Italian Basil is a fragrant, fast-growing herb with large, glossy leaves and a sweet, peppery flavour, a staple in Italian cooking and surprisingly easy to grow at home. Rich in vitamins A, C, and K, packed with antioxidants and anti-inflammatory properties Perfect for pesto, pasta, fresh salads, and more Thrives in India\'s warm weather, grows beautifully in pots, windowsills, and balconies',
@@ -458,7 +458,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-her-14',
       slug: 'arugula-seeds-rocket-leaves',
-      title: 'GLOROV Fenugreek Seeds (Methi Bij)',
+      title: 'Fenugreek Seeds (Methi Bij)',
       botanicalName: 'Trigonella foenum-graecum',
       shortDescription: 'Arugula is a peppery, fast-growing salad green. It\'s a great way to add a bit of bite to home-grown greens. One of the q...',
       description: 'Arugula is a peppery, fast-growing salad green. It\'s a great way to add a bit of bite to home-grown greens. One of the quickest crops to go from seed to plate. Rich in vitamin K, vitamin C, and folate One of the fastest greens to harvest, ready in just a few weeks Toss it into salads, sandwiches, pastas, or as a peppery garnish Grow it organically in GLOROV\'s Veggie Mix Soil, chemical-free arugula all year round',
@@ -483,7 +483,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-her-15',
       slug: 'tulsi-seeds-holy-basil',
-      title: 'GLOROV Holy Basil (Tulsi) Seeds',
+      title: 'Holy Basil (Tulsi) Seeds',
       botanicalName: 'Ocimum sanctum (Holy Basil)',
       shortDescription: 'Tulsi is a sacred, aromatic herb. It\'s deeply rooted in Indian homes. Easy to grow, and valued for its medicinal and spi...',
       description: 'Tulsi is a sacred, aromatic herb. It\'s deeply rooted in Indian homes. Easy to grow, and valued for its medicinal and spiritual significance. Rich in antioxidants and essential oils, and known for its immunity-boosting properties One of the easiest ways to bring a daily wellness ritual into your home Use it in teas (kadha), fresh chewing, or as part of your daily puja Grow it organically in GLOROV\'s Veggie Mix Soil, chemical-free tulsi all year round Approx. seeds per gram: 4000',
@@ -509,7 +509,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-her-16',
       slug: 'parsley-1000-seeds',
-      title: 'GLOROV Red Spinach Seeds (Lal Saag)',
+      title: 'Red Spinach Seeds (Lal Saag)',
       botanicalName: 'Amaranthus tricolor',
       shortDescription: 'Parsley is that superhero that goes well not only as garnishing but also as a flavour enhancing addition to your culinar...',
       description: 'Parsley is that superhero that goes well not only as garnishing but also as a flavour enhancing addition to your culinary experiments. You will find Parsley in the list of ingredients in numerous recipes for soups, salads and main course meals. Now, parsley has a great flavour profile but it is also nutritious, which makes it great for those who are conscious of eating a balanced meal. Approx. seeds per gram: 590',
@@ -535,7 +535,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-her-17',
       slug: 'oregano-1500-seeds',
-      title: 'GLOROV White Radish Seeds (Mooli)',
+      title: 'White Radish Seeds (Mooli)',
       botanicalName: 'Raphanus sativus var. longipinnatus',
       shortDescription: 'Oregano is a low-growing, richly aromatic herb. It\'s a favourite for Italian and Mediterranean-style home cooking. Hardy...',
       description: 'Oregano is a low-growing, richly aromatic herb. It\'s a favourite for Italian and Mediterranean-style home cooking. Hardy, compact, and easy to keep going. Rich in antioxidants, vitamin K, and essential oils One of the easiest herbs to dry and store for later use Toss it into pastas, pizzas, salad dressings, or roasted vegetables Grow it organically in GLOROV\'s Veggie Mix Soil, chemical-free oregano all year round',
@@ -560,7 +560,7 @@ class GlorovMockData {
     GlorovProduct(
       id: 'glr-her-18',
       slug: 'thyme-750-seeds',
-      title: 'GLOROV Dark Purple Round Beetroot Seeds (Chukandar)',
+      title: 'Dark Purple Round Beetroot Seeds (Chukandar)',
       botanicalName: 'Beta vulgaris',
       shortDescription: 'Thyme is a low-growing, aromatic herb. It\'s valued for its intense flavour and fragrance. A great addition to home kitch...',
       description: 'Thyme is a low-growing, aromatic herb. It\'s valued for its intense flavour and fragrance. A great addition to home kitchen gardens. Rich in vitamin C, vitamin A, iron, and antioxidants One of the easiest ways to add fresh herb flavour to everyday cooking Toss it into soups, roasted vegetables, marinades, or herbal teas Grow it organically in GLOROV\'s Veggie Mix Soil, chemical-free thyme all year round',

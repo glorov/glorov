@@ -269,7 +269,7 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold>
               ),
 
             // 3. Fixed/Sticky Floating Mobile Bottom Navigation Dock
-            // Always visible on Category, Cart, Account / Profile, and Policy screens (or when alwaysShowBottomNav is true)
+            // Always visible across mobile storefront screens (Home, Category, Account, etc.)
             if (!isDesktop && widget.showBottomNav && widget.bottomNavigationBar == null)
               Positioned(
                 bottom: 0,
@@ -277,17 +277,7 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold>
                 right: 0,
                 child: GlorovMobileBottomNav(
                   currentRoute: widget.currentRoute,
-                  isVisible: (widget.alwaysShowBottomNav ||
-                          widget.currentRoute == discoverScreenRoute ||
-                          widget.currentRoute == cartScreenRoute ||
-                          widget.currentRoute == profileScreenRoute ||
-                          widget.currentRoute == privacyPolicyScreenRoute ||
-                          widget.currentRoute == termsOfServicesScreenRoute ||
-                          widget.currentRoute ==
-                              shippingAndTrustPolicyScreenRoute ||
-                          widget.currentRoute == policiesScreenRoute)
-                      ? true
-                      : null,
+                  isVisible: true,
                 ),
               ),
           ],

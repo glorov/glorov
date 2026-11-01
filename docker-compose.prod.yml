@@ -108,45 +108,7 @@ services:
       - glorov-public
 
   # ----------------------------------------------------------------------------
-  # 4. Next.js 15 Storefront
-  # ----------------------------------------------------------------------------
-  storefront:
-    build:
-      context: .
-      dockerfile: apps/storefront/Dockerfile
-      args:
-        NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${NEXT_PUBLIC_MEDUSA_BACKEND_URL:-https://api.glorov.in}
-        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY}
-        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-https://glorov.in}
-        NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-"GLOROV — Indian Botanical Seeds & Live Plants"}
-    container_name: glorov-prod-storefront
-    restart: unless-stopped
-    depends_on:
-      backend:
-        condition: service_healthy
-    environment:
-      NODE_ENV: production
-      PORT: 3000
-      NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${NEXT_PUBLIC_MEDUSA_BACKEND_URL:-https://api.glorov.in}
-      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY}
-      NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-https://glorov.in}
-      NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-"GLOROV — Indian Botanical Seeds & Live Plants"}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
-          cpus: "1.0"
-    networks:
-      - glorov-internal
-      - glorov-public
-
-  # ----------------------------------------------------------------------------
-  # 5. Reverse Proxy & Automated SSL (Caddy)
+  # 4. Reverse Proxy & Automated SSL (Caddy)
   # ----------------------------------------------------------------------------
   caddy:
     image: caddy:2-alpine
@@ -160,8 +122,6 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
-      storefront:
-        condition: service_healthy
       backend:
         condition: service_healthy
     networks:

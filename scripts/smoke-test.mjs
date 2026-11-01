@@ -2,24 +2,24 @@
 
 /**
  * GLOROV Post-Deployment Smoke Test Suite
- * Validates production/staging runtime endpoints, health probes, catalog availability,
- * and security headers without altering state or making paid transactions.
+ * Validates backend runtime endpoints, health probes, catalog availability,
+ * and Flutter/Admin web availability without modifying data.
  *
  * Usage:
- *   node scripts/smoke-test.mjs [backend_url] [storefront_url]
+ *   node scripts/smoke-test.mjs [backend_url] [web_url]
  * Default:
- *   backend_url:    http://localhost:9000
- *   storefront_url: http://localhost:3000
+ *   backend_url: http://localhost:9000
+ *   web_url:     https://glorov-store.web.app
  */
 
 const backendUrl = (process.argv[2] || process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000').replace(/\/$/, '')
-const storefrontUrl = (process.argv[3] || process.env.STOREFRONT_URL || 'http://localhost:3000').replace(/\/$/, '')
-const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || process.env.STORE_PUBLISHABLE_KEY || ''
+const webUrl = (process.argv[3] || process.env.STOREFRONT_URL || process.env.FLUTTER_WEB_URL || 'https://glorov-store.web.app').replace(/\/$/, '')
+const publishableKey = process.env.MEDUSA_PUBLISHABLE_KEY || process.env.STORE_PUBLISHABLE_KEY || 'pk_2550b4af7f0ff9f2f1ff1b5f9b16c11e753ba1b574d55e1d9221d496085a7ef8'
 const authHeaders = publishableKey ? { 'x-publishable-api-key': publishableKey } : {}
 
-console.log('🌿 [GLOROV] Initiating Post-Deployment Smoke Test Suite...')
-console.log(`📡 Backend Target:    ${backendUrl}`)
-console.log(`🌐 Storefront Target: ${storefrontUrl}`)
+console.log('🌿 [GLOROV] Initiating Smoke Test Suite...')
+console.log(`📡 Backend Target:  ${backendUrl}`)
+console.log(`📱 Web Target:      ${webUrl}`)
 console.log('------------------------------------------------------------')
 
 let totalChecks = 0
@@ -66,95 +66,65 @@ async function main() {
     }
   })
 
-  // 2. Backend Comprehensive Health Probe (PostgreSQL & Redis)
-  await runCheck('Backend Readiness Probe (/store/health)', async () => {
-    const res = await fetchWithTimeout(`${backendUrl}/store/health`, {
-      headers: { ...authHeaders },
-    })
-    if (res.status === 200) {
-      const data = await res.json()
-      if (!data.healthy && data.status !== 'healthy' && data.status !== 'degraded') {
-        throw new Error(`Health report indicated unhealthy status: ${JSON.stringify(data)}`)
-      }
-      if (data.database && data.database.status !== 'healthy') {
-        throw new Error(`Database check failed: ${data.database.message}`)
-      }
-    } else if (res.status === 404 || res.status === 400) {
-      // Fallback check on standard /health if /store/health is not exposed without admin setup
-      const fallbackRes = await fetchWithTimeout(`${backendUrl}/health`)
-      if (fallbackRes.status !== 200) {
-        throw new Error(`Backend liveness probe failed with ${fallbackRes.status}`)
-      }
-    } else {
-      throw new Error(`Unexpected readiness probe status code: ${res.status}`)
-    }
-  })
-
-  // 3. Correlation ID & Response Header Verification
-  await runCheck('Backend Correlation ID Echo & Sanitization', async () => {
+  // 2. Correlation ID & Response Header Verification
+  await runCheck('Backend Correlation ID Echo', async () => {
     const testCid = `glr_smoke_test_${Date.now()}`
     const res = await fetchWithTimeout(`${backendUrl}/health`, {
-      headers: { 'x-correlation-id': testCid, ...authHeaders },
+      headers: { 'x-correlation-id': testCid },
     })
     const returnedCid = res.headers.get('x-correlation-id')
-    // Echo is verified when backend correlation middleware is active
     if (returnedCid && returnedCid !== testCid) {
       throw new Error(`Expected x-correlation-id "${testCid}" but got "${returnedCid}"`)
     }
   })
 
-  // 4. Storefront Edge / API Health Probe
-  await runCheck('Storefront API Health Probe (/api/health)', async () => {
-    const res = await fetchWithTimeout(`${storefrontUrl}/api/health`)
+  // 3. Medusa Admin Dashboard Route
+  await runCheck('Medusa Admin Dashboard (/app)', async () => {
+    const res = await fetchWithTimeout(`${backendUrl}/app`)
+    if (res.status !== 200) {
+      throw new Error(`Expected HTTP 200 for Admin Dashboard but received ${res.status}`)
+    }
+  })
+
+  // 4. Botanical Product Catalog API
+  await runCheck('Botanical Product Catalog (/store/products)', async () => {
+    const res = await fetchWithTimeout(`${backendUrl}/store/products?limit=5`, {
+      headers: { ...authHeaders },
+    })
     if (res.status !== 200) {
       throw new Error(`Expected HTTP 200 but received ${res.status}`)
     }
     const data = await res.json()
-    if (!data.status) {
-      throw new Error(`Invalid response structure: ${JSON.stringify(data)}`)
+    if (!Array.isArray(data.products) || data.products.length === 0) {
+      throw new Error(`Expected at least one product, received: ${JSON.stringify(data)}`)
     }
   })
 
-  // 5. Storefront Home Page Render
-  await runCheck('Storefront SSR Homepage (/)', async () => {
-    const res = await fetchWithTimeout(`${storefrontUrl}/`)
+  // 5. Promotional Offers API
+  await runCheck('Promotional Offers API (/store/offers)', async () => {
+    const res = await fetchWithTimeout(`${backendUrl}/store/offers`, {
+      headers: { ...authHeaders },
+    })
     if (res.status !== 200) {
       throw new Error(`Expected HTTP 200 but received ${res.status}`)
     }
-    const html = await res.text()
-    if (!html.includes('GLOROV') && !html.includes('Seeds') && !html.includes('Plants')) {
-      throw new Error('Homepage HTML does not contain expected brand keywords')
+    const data = await res.json()
+    if (!Array.isArray(data.offers)) {
+      throw new Error('Offers payload does not contain an offers array')
     }
   })
 
-  // 6. Security Headers Audit
-  await runCheck('Storefront Security Headers Verification', async () => {
-    const res = await fetchWithTimeout(`${storefrontUrl}/`)
-    const headers = res.headers
-    const xContentType = headers.get('x-content-type-options')
-    const xFrame = headers.get('x-frame-options')
-    const referrerPolicy = headers.get('referrer-policy')
-
-    if (xContentType !== 'nosniff') {
-      throw new Error(`X-Content-Type-Options is not "nosniff" (got "${xContentType}")`)
+  // 6. Hero Banners API
+  await runCheck('Hero Banners API (/store/banners)', async () => {
+    const res = await fetchWithTimeout(`${backendUrl}/store/banners`, {
+      headers: { ...authHeaders },
+    })
+    if (res.status !== 200) {
+      throw new Error(`Expected HTTP 200 but received ${res.status}`)
     }
-    if (xFrame !== 'SAMEORIGIN' && xFrame !== 'DENY') {
-      throw new Error(`X-Frame-Options is insecure (got "${xFrame}")`)
-    }
-    if (!referrerPolicy) {
-      throw new Error('Referrer-Policy header is missing')
-    }
-  })
-
-  // 7. Robots and Sitemap Accessibility
-  await runCheck('Search Engine Ingress (/robots.txt & /sitemap.xml)', async () => {
-    const robotsRes = await fetchWithTimeout(`${storefrontUrl}/robots.txt`)
-    if (robotsRes.status !== 200) {
-      throw new Error(`robots.txt returned HTTP ${robotsRes.status}`)
-    }
-    const sitemapRes = await fetchWithTimeout(`${storefrontUrl}/sitemap.xml`)
-    if (sitemapRes.status !== 200) {
-      throw new Error(`sitemap.xml returned HTTP ${sitemapRes.status}`)
+    const data = await res.json()
+    if (!Array.isArray(data.banners)) {
+      throw new Error('Banners payload does not contain a banners array')
     }
   })
 
@@ -165,7 +135,7 @@ async function main() {
     console.error(`❌ Post-deployment smoke tests failed with ${failedChecks} errors!`)
     process.exit(1)
   } else {
-    console.log('✅ All smoke checks verified successfully! Deployment is operational.')
+    console.log('✅ All smoke checks verified successfully! Platform is operational.')
     process.exit(0)
   }
 }

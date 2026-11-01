@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
@@ -356,6 +355,9 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
                                           ? Image.asset(
                                               images[idx],
                                               fit: BoxFit.cover,
+                                              cacheWidth: 100,
+                                              cacheHeight: 100,
+                                              filterQuality: FilterQuality.medium,
                                               errorBuilder: (_, __, ___) => Container(
                                                 color: Colors.white10,
                                                 child: const Icon(
@@ -368,6 +370,9 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
                                           : Image.network(
                                               images[idx],
                                               fit: BoxFit.cover,
+                                              cacheWidth: 100,
+                                              cacheHeight: 100,
+                                              filterQuality: FilterQuality.medium,
                                               errorBuilder: (_, __, ___) => Container(
                                                 color: Colors.white10,
                                                 child: const Icon(
@@ -454,6 +459,9 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
                                   currentImg,
                                   key: ValueKey<String>(currentImg),
                                   fit: BoxFit.cover,
+                                  cacheWidth: 1000,
+                                  cacheHeight: 1000,
+                                  filterQuality: FilterQuality.medium,
                                   width: double.infinity,
                                   height: double.infinity,
                                   errorBuilder: (context, error, stackTrace) {
@@ -473,6 +481,9 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
                                   currentImg,
                                   key: ValueKey<String>(currentImg),
                                   fit: BoxFit.cover,
+                                  cacheWidth: 1000,
+                                  cacheHeight: 1000,
+                                  filterQuality: FilterQuality.medium,
                                   width: double.infinity,
                                   height: double.infinity,
                                   errorBuilder: (context, error, stackTrace) {
@@ -769,6 +780,9 @@ class _GalleryThumbnailItemState extends State<_GalleryThumbnailItem> {
                 ? Image.asset(
                     widget.imageUrl,
                     fit: BoxFit.cover,
+                    cacheWidth: 120,
+                    cacheHeight: 120,
+                    filterQuality: FilterQuality.medium,
                     errorBuilder: (_, __, ___) => Container(
                       color: const Color(0xFFF3F4F6),
                       child: const Icon(
@@ -781,6 +795,9 @@ class _GalleryThumbnailItemState extends State<_GalleryThumbnailItem> {
                 : Image.network(
                     widget.imageUrl,
                     fit: BoxFit.cover,
+                    cacheWidth: 120,
+                    cacheHeight: 120,
+                    filterQuality: FilterQuality.medium,
                     errorBuilder: (_, __, ___) => Container(
                       color: const Color(0xFFF3F4F6),
                       child: const Icon(

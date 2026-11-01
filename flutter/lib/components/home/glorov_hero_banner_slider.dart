@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_micro_interactions/flutter_micro_interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
@@ -333,6 +332,10 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && mounted) {
       _loadRemoteBanners();
+      _resumeAutoScroll();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _pauseAutoScroll();
     }
   }
 
@@ -688,42 +691,51 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
             );
           }
         },
-        child: Container(
-          height: height,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: slide.backgroundColor,
-            boxShadow: AppShadows.card,
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              _buildResponsiveImage(
-                activeImageUrl,
-                alignment: isWidescreen ? Alignment.centerLeft : Alignment.topCenter,
-              ),
-              if (!slide.isImageOnly)
-                _buildEditorialOverlay(context, slide: slide, isDesktop: isWidescreen),
-            ],
+        child: RepaintBoundary(
+          child: Container(
+            height: height,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: slide.backgroundColor,
+              boxShadow: AppShadows.card,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _buildResponsiveImage(
+                  activeImageUrl,
+                  alignment: isWidescreen ? Alignment.centerLeft : Alignment.topCenter,
+                  isDesktop: isWidescreen,
+                ),
+                if (!slide.isImageOnly)
+                  _buildEditorialOverlay(context, slide: slide, isDesktop: isWidescreen),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  /// Renders either a local asset or network image with shimmer placeholder and high filter quality
-  Widget _buildResponsiveImage(String pathOrUrl, {Alignment alignment = Alignment.center}) {
+  /// Renders either a local asset or network image with shimmer placeholder and medium filter quality
+  Widget _buildResponsiveImage(
+    String pathOrUrl, {
+    Alignment alignment = Alignment.center,
+    bool isDesktop = true,
+  }) {
+    final cacheW = isDesktop ? 1600 : 800;
     if (pathOrUrl.startsWith('assets/')) {
       return Image.asset(
         pathOrUrl,
         fit: BoxFit.cover,
         alignment: alignment,
-        filterQuality: FilterQuality.high,
+        cacheWidth: cacheW,
+        filterQuality: FilterQuality.medium,
         errorBuilder: (context, error, stackTrace) {
-        debugPrint('[GlorovHeroBannerSlider] Image failed to load: $pathOrUrl ($error)');
-        return _buildFallback();
-      },
+          debugPrint('[GlorovHeroBannerSlider] Image failed to load: $pathOrUrl ($error)');
+          return _buildFallback();
+        },
       );
     }
 
@@ -731,7 +743,8 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
       pathOrUrl,
       fit: BoxFit.cover,
       alignment: alignment,
-      filterQuality: FilterQuality.high,
+      cacheWidth: cacheW,
+      filterQuality: FilterQuality.medium,
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
         if (wasSynchronouslyLoaded || frame != null) {
           return AnimatedOpacity(

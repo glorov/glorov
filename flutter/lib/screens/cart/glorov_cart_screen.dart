@@ -787,6 +787,9 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                   ? Image.asset(
                       item.product.primaryImage,
                       fit: BoxFit.cover,
+                      cacheWidth: 120,
+                      cacheHeight: 120,
+                      filterQuality: FilterQuality.medium,
                       errorBuilder: (_, __, ___) => const Icon(
                         Icons.yard_outlined,
                         color: Color(0xFF16A34A),
@@ -796,6 +799,9 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                   : Image.network(
                       item.product.primaryImage,
                       fit: BoxFit.cover,
+                      cacheWidth: 120,
+                      cacheHeight: 120,
+                      filterQuality: FilterQuality.medium,
                       errorBuilder: (_, __, ___) => const Icon(
                         Icons.yard_outlined,
                         color: Color(0xFF16A34A),
@@ -1199,6 +1205,8 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                     ? Image.asset(
                         product.primaryImage,
                         fit: BoxFit.cover,
+                        cacheWidth: 360,
+                        filterQuality: FilterQuality.medium,
                         errorBuilder: (_, __, ___) => Container(
                           color: const Color(0xFFF3F4F6),
                           child: const Icon(Icons.yard_outlined, color: Color(0xFF16A34A)),
@@ -1207,6 +1215,8 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                     : Image.network(
                         product.primaryImage,
                         fit: BoxFit.cover,
+                        cacheWidth: 360,
+                        filterQuality: FilterQuality.medium,
                         errorBuilder: (_, __, ___) => Container(
                           color: const Color(0xFFF3F4F6),
                           child: const Icon(Icons.yard_outlined, color: Color(0xFF16A34A)),

@@ -88,6 +88,7 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
   bool _isLoading = false;
   bool _isSubmitted = false;
   Timer? _debounceTimer;
+  int _searchRequestId = 0;
 
   @override
   void initState() {
@@ -152,7 +153,7 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
       _isSubmitted = false;
     });
 
-    _debounceTimer = Timer(const Duration(milliseconds: 150), () {
+    _debounceTimer = Timer(const Duration(milliseconds: 250), () {
       _executeSearch(query, isSubmitted: false);
     });
   }
@@ -168,6 +169,7 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
       return;
     }
 
+    final currentRequestId = ++_searchRequestId;
     setState(() => _isLoading = true);
 
     try {
@@ -177,20 +179,21 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
         sortBy: _selectedSort,
       );
 
-      if (mounted) {
-        setState(() {
-          _searchResult = result;
-          _isLoading = false;
-          _isSubmitted = isSubmitted;
-        });
+      // Discard stale out-of-order responses
+      if (!mounted || currentRequestId != _searchRequestId) return;
 
-        if (isSubmitted) {
-          GlorovSearchService.instance.addRecentSearch(clean);
-          _loadRecentSearches();
-        }
+      setState(() {
+        _searchResult = result;
+        _isLoading = false;
+        _isSubmitted = isSubmitted;
+      });
+
+      if (isSubmitted) {
+        GlorovSearchService.instance.addRecentSearch(clean);
+        _loadRecentSearches();
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && currentRequestId == _searchRequestId) {
         setState(() => _isLoading = false);
       }
     }

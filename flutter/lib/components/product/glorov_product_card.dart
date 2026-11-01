@@ -343,12 +343,12 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                 final isCompact = constraints.maxWidth < 230 || widget.forceCircularAction;
                 final availableHeight = constraints.maxHeight;
                 final showSubtitle = !isCompact &&
-                    availableHeight >= 110 &&
+                    availableHeight >= 125 &&
                     product.shortDescription.isNotEmpty;
 
                 final bodyPadding = isCompact
-                    ? const EdgeInsets.fromLTRB(10, 8, 10, 10)
-                    : const EdgeInsets.fromLTRB(12, 10, 12, 12);
+                    ? const EdgeInsets.fromLTRB(10, 6, 10, 8)
+                    : const EdgeInsets.fromLTRB(12, 8, 12, 8);
 
                 return Padding(
                   padding: bodyPadding,
@@ -357,39 +357,41 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // Product Title & Subtitle (Display Serif matching Reference Images 1, 3, & 4)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            product.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: AppTypography.displayFont,
-                              fontSize: isCompact ? 14.5 : 15.5,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0F2F24),
-                              height: 1.22,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                          if (showSubtitle) ...[
-                            const SizedBox(height: 3),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
                             Text(
-                              product.shortDescription,
-                              maxLines: 1,
+                              product.title,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontFamily: AppTypography.primaryFont,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xFF6B7280),
-                                height: 1.2,
+                              style: TextStyle(
+                                fontFamily: AppTypography.displayFont,
+                                fontSize: isCompact ? 14.5 : 15.5,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F2F24),
+                                height: 1.22,
+                                letterSpacing: -0.2,
                               ),
                             ),
+                            if (showSubtitle) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                product.shortDescription,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontFamily: AppTypography.primaryFont,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF6B7280),
+                                  height: 1.2,
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
 
                       // Bottom Row: Price on Left, Green Button on Right
@@ -468,21 +470,23 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
       child: cardBody,
     );
 
-    // Keyboard focus & mouse region wrapper
-    return FocusableActionDetector(
-      enabled: true,
-      onShowFocusHighlight: (v) => setState(() => _isFocused = v),
-      onShowHoverHighlight: (v) => setState(() => _isHovered = v),
-      mouseCursor: SystemMouseCursors.click,
-      actions: {
-        ActivateIntent: CallbackAction<ActivateIntent>(
-          onInvoke: (_) {
-            _navigateToProduct();
-            return null;
-          },
-        ),
-      },
-      child: cardBody,
+    // Keyboard focus & mouse region wrapper with RepaintBoundary for isolated rendering
+    return RepaintBoundary(
+      child: FocusableActionDetector(
+        enabled: true,
+        onShowFocusHighlight: (v) => setState(() => _isFocused = v),
+        onShowHoverHighlight: (v) => setState(() => _isHovered = v),
+        mouseCursor: SystemMouseCursors.click,
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              _navigateToProduct();
+              return null;
+            },
+          ),
+        },
+        child: cardBody,
+      ),
     );
   }
 

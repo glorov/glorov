@@ -83,8 +83,8 @@ class _GlorovProductDetailsScreenState
     return isRight ? _lastRightColumnHeight : _lastGalleryHeight;
   }
 
-  // Dynamic Sticky Cart Bar visibility (only shown when scrolled past in-page button)
-  bool _showStickyBottomBar = false;
+  // Dynamic Sticky Cart Bar visibility ValueNotifier (isolates rebuilds from full page)
+  final ValueNotifier<bool> _showStickyBottomBar = ValueNotifier<bool>(false);
   final GlobalKey _inPageCartKey = GlobalKey();
 
   // Multi-attribute variant selection state (Plant Size, Planter, Color)
@@ -104,11 +104,11 @@ class _GlorovProductDetailsScreenState
       final box = ctx.findRenderObject() as RenderBox?;
       if (box != null && box.hasSize) {
         final pos = box.localToGlobal(Offset.zero);
-        final isPast = (pos.dy + box.size.height) < 120;
-        if (isPast != _showStickyBottomBar) {
-          setState(() {
-            _showStickyBottomBar = isPast;
-          });
+        final isPast = (pos.dy + box.size.height) < 250 ||
+            (_pageScrollController.hasClients &&
+                _pageScrollController.offset > 350);
+        if (isPast != _showStickyBottomBar.value) {
+          _showStickyBottomBar.value = isPast;
         }
         return;
       }
@@ -116,10 +116,8 @@ class _GlorovProductDetailsScreenState
 
     if (_pageScrollController.hasClients) {
       final isPast = _pageScrollController.offset > 450;
-      if (isPast != _showStickyBottomBar) {
-        setState(() {
-          _showStickyBottomBar = isPast;
-        });
+      if (isPast != _showStickyBottomBar.value) {
+        _showStickyBottomBar.value = isPast;
       }
     }
   }
@@ -656,7 +654,7 @@ class _GlorovProductDetailsScreenState
           ? widget.product.variants.first
           : null;
       _initVariantState();
-      _showStickyBottomBar = false;
+      _showStickyBottomBar.value = false;
       _isSpecsExpanded = false;
       _selectedStageIndex = 0;
       _fetchReviews();
@@ -670,6 +668,7 @@ class _GlorovProductDetailsScreenState
   void dispose() {
     GlorovMetaService.instance.resetToDefault();
     _pageScrollController.removeListener(_onPageScroll);
+    _showStickyBottomBar.dispose();
     _pincodeController.dispose();
     _pageScrollController.dispose();
     super.dispose();
@@ -803,12 +802,17 @@ class _GlorovProductDetailsScreenState
       isContentScrollable: true,
       bottomNavigationBar:
           (!isSticky && mediaWidth <= AppBreakpoints.productMobileMax)
-              ? AnimatedSize(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeOutCubic,
-                  child: _showStickyBottomBar
-                      ? _buildMobileStickyBottomBar()
-                      : const SizedBox.shrink(),
+              ? ValueListenableBuilder<bool>(
+                  valueListenable: _showStickyBottomBar,
+                  builder: (context, showBar, _) {
+                    return AnimatedSize(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOutCubic,
+                      child: showBar
+                          ? _buildMobileStickyBottomBar()
+                          : const SizedBox.shrink(),
+                    );
+                  },
                 )
               : null,
       child: NotificationListener<ScrollNotification>(
@@ -836,7 +840,11 @@ class _GlorovProductDetailsScreenState
           constraints: const BoxConstraints(
             maxWidth: AppBreakpoints.maxContentWidth,
           ),
-          child: Row(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
             children: [
               InkWell(
                 key: const Key('pdp_back_button'),
@@ -972,8 +980,9 @@ class _GlorovProductDetailsScreenState
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   // ---------------------------------------------------------------------------
   // Desktop & Landscape Tablet 2-Column Layout (Sticky Gallery + Scrollable Details)
@@ -1106,8 +1115,8 @@ class _GlorovProductDetailsScreenState
                   }
                 }
               }
-              return Padding(
-                padding: EdgeInsets.only(top: stickyOffset),
+              return Transform.translate(
+                offset: Offset(0, stickyOffset),
                 child: child,
               );
             },

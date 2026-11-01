@@ -405,6 +405,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                                   ? Image.asset(
                                       cat.image,
                                       fit: BoxFit.cover,
+                                      cacheWidth: 120,
+                                      cacheHeight: 120,
+                                      filterQuality: FilterQuality.medium,
                                       errorBuilder:
                                           (context, error, stackTrace) =>
                                               const Center(
@@ -418,6 +421,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                                   : Image.network(
                                       cat.image,
                                       fit: BoxFit.cover,
+                                      cacheWidth: 120,
+                                      cacheHeight: 120,
+                                      filterQuality: FilterQuality.medium,
                                       errorBuilder:
                                           (context, error, stackTrace) =>
                                               const Center(
@@ -613,6 +619,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                   ? Image.asset(
                       sub.image,
                       fit: BoxFit.cover,
+                      cacheWidth: 150,
+                      cacheHeight: 150,
+                      filterQuality: FilterQuality.medium,
                       errorBuilder: (context, error, stackTrace) =>
                           const Center(
                         child: Icon(
@@ -625,6 +634,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                   : Image.network(
                       sub.image,
                       fit: BoxFit.cover,
+                      cacheWidth: 150,
+                      cacheHeight: 150,
+                      filterQuality: FilterQuality.medium,
                       errorBuilder: (context, error, stackTrace) =>
                           const Center(
                         child: Icon(
@@ -701,6 +713,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                       ? Image.asset(
                           launch.image,
                           fit: BoxFit.cover,
+                          cacheWidth: 200,
+                          cacheHeight: 200,
+                          filterQuality: FilterQuality.medium,
                           errorBuilder: (context, error, stackTrace) =>
                               const Center(
                             child: Icon(
@@ -713,6 +728,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                       : Image.network(
                           launch.image,
                           fit: BoxFit.cover,
+                          cacheWidth: 200,
+                          cacheHeight: 200,
+                          filterQuality: FilterQuality.medium,
                           errorBuilder: (context, error, stackTrace) =>
                               const Center(
                             child: Icon(
@@ -1188,8 +1206,20 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                   width: 120,
                   height: 120,
                   child: category.image.startsWith('assets/')
-                      ? Image.asset(category.image, fit: BoxFit.cover)
-                      : Image.network(category.image, fit: BoxFit.cover),
+                      ? Image.asset(
+                          category.image,
+                          fit: BoxFit.cover,
+                          cacheWidth: 240,
+                          cacheHeight: 240,
+                          filterQuality: FilterQuality.medium,
+                        )
+                      : Image.network(
+                          category.image,
+                          fit: BoxFit.cover,
+                          cacheWidth: 240,
+                          cacheHeight: 240,
+                          filterQuality: FilterQuality.medium,
+                        ),
                 ),
               ),
               const SizedBox(width: AppSpacing.xl),
@@ -1324,6 +1354,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                           ? Image.asset(
                               sub.image,
                               fit: BoxFit.cover,
+                              cacheWidth: 240,
+                              cacheHeight: 240,
+                              filterQuality: FilterQuality.medium,
                               errorBuilder: (context, error, stackTrace) => Container(
                                 color: const Color(0xFFE8F0EA),
                                 child: const Center(
@@ -1334,6 +1367,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                           : Image.network(
                               sub.image,
                               fit: BoxFit.cover,
+                              cacheWidth: 240,
+                              cacheHeight: 240,
+                              filterQuality: FilterQuality.medium,
                               errorBuilder: (context, error, stackTrace) => Container(
                                 color: const Color(0xFFE8F0EA),
                                 child: const Center(
@@ -1452,6 +1488,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                                 ? Image.asset(
                                     launch.image,
                                     fit: BoxFit.cover,
+                                    cacheWidth: 320,
+                                    cacheHeight: 320,
+                                    filterQuality: FilterQuality.medium,
                                     errorBuilder: (context, error, stackTrace) => Container(
                                       color: const Color(0xFFF0F4F1),
                                       child: const Center(
@@ -1462,6 +1501,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                                 : Image.network(
                                     launch.image,
                                     fit: BoxFit.cover,
+                                    cacheWidth: 320,
+                                    cacheHeight: 320,
+                                    filterQuality: FilterQuality.medium,
                                     errorBuilder: (context, error, stackTrace) => Container(
                                       color: const Color(0xFFF0F4F1),
                                       child: const Center(
@@ -1564,6 +1606,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                         ? Image.asset(
                             cat.image,
                             fit: BoxFit.cover,
+                            cacheWidth: 600,
+                            cacheHeight: 340,
+                            filterQuality: FilterQuality.medium,
                             errorBuilder: (context, error, stackTrace) =>
                                 Container(
                               color: AppColors.surfaceMuted,
@@ -1576,6 +1621,9 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                         : Image.network(
                             cat.image,
                             fit: BoxFit.cover,
+                            cacheWidth: 600,
+                            cacheHeight: 340,
+                            filterQuality: FilterQuality.medium,
                             errorBuilder: (context, error, stackTrace) =>
                                 Container(
                               color: AppColors.surfaceMuted,

@@ -206,7 +206,8 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold>
                 top: 0,
                 left: 0,
                 right: 0,
-                child: Listener(
+                child: RepaintBoundary(
+                  child: Listener(
                   behavior: HitTestBehavior.translucent,
                   onPointerSignal: (pointerSignal) {
                     if (pointerSignal is PointerScrollEvent &&
@@ -268,6 +269,7 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold>
                   ),
                 ),
               ),
+            ),
 
             // 3. Fixed/Sticky Floating Mobile Bottom Navigation Dock
             // Dynamic scroll visibility for mobile storefront screens (slides in on scroll down, slides out on scroll up)
@@ -276,16 +278,18 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold>
                 bottom: 0,
                 left: 0,
                 right: 0,
-                child: ListenableBuilder(
-                  listenable: GlorovHeaderScrollNotifier.instance,
-                  builder: (context, _) {
-                    final isBottomVisible =
-                        GlorovHeaderScrollNotifier.instance.isBottomNavVisible;
-                    return GlorovMobileBottomNav(
-                      currentRoute: widget.currentRoute,
-                      isVisible: isBottomVisible,
-                    );
-                  },
+                child: RepaintBoundary(
+                  child: ListenableBuilder(
+                    listenable: GlorovHeaderScrollNotifier.instance,
+                    builder: (context, _) {
+                      final isBottomVisible =
+                          GlorovHeaderScrollNotifier.instance.isBottomNavVisible;
+                      return GlorovMobileBottomNav(
+                        currentRoute: widget.currentRoute,
+                        isVisible: isBottomVisible,
+                      );
+                    },
+                  ),
                 ),
               ),
           ],

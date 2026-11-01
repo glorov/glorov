@@ -994,14 +994,27 @@ class _GlorovCheckoutScreenState extends State<GlorovCheckoutScreen> {
                   children: [
                     ClipRRect(
                       borderRadius: AppRadii.roundedSm,
-                      child: Image.network(
-                        item.product.primaryImage,
-                        width: 44,
-                        height: 44,
-                        fit: BoxFit.cover,
-                        errorBuilder: (ctx, err, stack) =>
-                            const Icon(Icons.yard, color: AppColors.sage),
-                      ),
+                      child: item.product.primaryImage.startsWith('assets/')
+                          ? Image.asset(
+                              item.product.primaryImage,
+                              width: 44,
+                              height: 44,
+                              cacheWidth: 100,
+                              cacheHeight: 100,
+                              fit: BoxFit.cover,
+                              errorBuilder: (ctx, err, stack) =>
+                                  const Icon(Icons.yard, color: AppColors.sage),
+                            )
+                          : Image.network(
+                              item.product.primaryImage,
+                              width: 44,
+                              height: 44,
+                              cacheWidth: 100,
+                              cacheHeight: 100,
+                              fit: BoxFit.cover,
+                              errorBuilder: (ctx, err, stack) =>
+                                  const Icon(Icons.yard, color: AppColors.sage),
+                            ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(

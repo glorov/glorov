@@ -72,15 +72,23 @@ async function createChrome(port, width, height, isMobile) {
 
 async function run() {
   const baseUrl = 'http://localhost:8086';
-  const port = 9600 + Math.floor(Math.random() * 100);
+  const port = 9600 + Math.floor(Math.random() * 200);
   console.log(`Starting Chrome session on port ${port}...`);
 
-  // --- Session 1: Mobile Product Cards Verification (390x844) ---
-  const mobileSession = await createChrome(port, 390, 844, true);
+  const session = await createChrome(port, 1280, 1024, false);
   try {
-    const { send } = mobileSession;
+    const { send } = session;
 
-    console.log('1. Navigating to Mobile Home...');
+    // --- Step 1: Mobile Product Cards Verification (390x844) ---
+    console.log('1. Setting viewport to Mobile (390x844)...');
+    await send('Emulation.setDeviceMetricsOverride', {
+      width: 390,
+      height: 844,
+      deviceScaleFactor: 2,
+      mobile: true,
+    });
+
+    console.log('Navigating to Mobile Home...');
     await send('Page.navigate', { url: `${baseUrl}/` });
     await new Promise((r) => setTimeout(r, 4500));
 
@@ -137,71 +145,67 @@ async function run() {
     writeFileSync(filePath, Buffer.from(screenshot.data, 'base64'));
     console.log(`Saved screenshot: ${filePath}`);
 
-  } finally {
-    mobileSession.ws.close();
-    mobileSession.chrome.kill('SIGTERM');
-  }
+    // --- Step 2: Tablet Verification (768x1024) ---
+    console.log('5. Setting viewport to Tablet (768x1024)...');
+    await send('Emulation.setDeviceMetricsOverride', {
+      width: 768,
+      height: 1024,
+      deviceScaleFactor: 2,
+      mobile: false,
+    });
 
-  // --- Session 2: Tablet Catalog Grid (768x1024) ---
-  const tabletPort = port + 1;
-  console.log(`Starting Tablet Chrome session on port ${tabletPort}...`);
-  const tabletSession = await createChrome(tabletPort, 768, 1024, false);
-  try {
-    const { send } = tabletSession;
-
-    console.log('5. Navigating to tablet /discover/...');
-    await send('Page.navigate', { url: `${baseUrl}/discover/` });
+    console.log('Navigating to tablet Home...');
+    await send('Page.navigate', { url: `${baseUrl}/` });
     await new Promise((r) => setTimeout(r, 4500));
 
-    // Scroll to products
+    // Scroll to Featured Seeds & Plants in 3-column tablet view
+    console.log('5b. Scrolling to Featured Seeds & Plants in tablet mode...');
     await send('Input.dispatchMouseEvent', {
       type: 'mouseWheel',
       x: 384,
       y: 500,
       deltaX: 0,
-      deltaY: 300,
+      deltaY: 2450,
     });
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 2000));
 
-    const screenshot = await send('Page.captureScreenshot', { format: 'png' });
-    const filePath = path.join(ARTIFACT_DIR, 'glorov_tablet_product_grid_verified.png');
+    screenshot = await send('Page.captureScreenshot', { format: 'png' });
+    filePath = path.join(ARTIFACT_DIR, 'glorov_tablet_product_grid_verified.png');
     writeFileSync(filePath, Buffer.from(screenshot.data, 'base64'));
     console.log(`Saved screenshot: ${filePath}`);
 
-  } finally {
-    tabletSession.ws.close();
-    tabletSession.chrome.kill('SIGTERM');
-  }
+    // --- Step 3: Desktop Verification (1280x800) ---
+    console.log('6. Setting viewport to Desktop (1280x800)...');
+    await send('Emulation.setDeviceMetricsOverride', {
+      width: 1280,
+      height: 800,
+      deviceScaleFactor: 2,
+      mobile: false,
+    });
 
-  // --- Session 3: Desktop Verification (1280x800) ---
-  const desktopPort = port + 2;
-  console.log(`Starting Desktop Chrome session on port ${desktopPort}...`);
-  const desktopSession = await createChrome(desktopPort, 1280, 800, false);
-  try {
-    const { send } = desktopSession;
-
-    console.log('6. Navigating to desktop /discover/...');
-    await send('Page.navigate', { url: `${baseUrl}/discover/` });
+    console.log('Navigating to desktop Home...');
+    await send('Page.navigate', { url: `${baseUrl}/` });
     await new Promise((r) => setTimeout(r, 4500));
 
-    // Scroll to products
+    // Scroll to Featured Seeds & Plants in 4-column desktop view
+    console.log('6b. Scrolling to Featured Seeds & Plants in desktop mode...');
     await send('Input.dispatchMouseEvent', {
       type: 'mouseWheel',
       x: 640,
       y: 400,
       deltaX: 0,
-      deltaY: 280,
+      deltaY: 2300,
     });
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 2000));
 
-    const screenshot = await send('Page.captureScreenshot', { format: 'png' });
-    const filePath = path.join(ARTIFACT_DIR, 'glorov_desktop_product_grid_verified.png');
+    screenshot = await send('Page.captureScreenshot', { format: 'png' });
+    filePath = path.join(ARTIFACT_DIR, 'glorov_desktop_product_grid_verified.png');
     writeFileSync(filePath, Buffer.from(screenshot.data, 'base64'));
     console.log(`Saved screenshot: ${filePath}`);
 
   } finally {
-    desktopSession.ws.close();
-    desktopSession.chrome.kill('SIGTERM');
+    session.ws.close();
+    session.chrome.kill('SIGTERM');
   }
 
   console.log('All product card verification screenshots captured successfully!');

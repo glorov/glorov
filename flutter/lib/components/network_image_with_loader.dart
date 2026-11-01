@@ -24,6 +24,8 @@ class NetworkImageWithLoader extends StatelessWidget {
         child: Image.asset(
           src,
           fit: fit,
+          cacheWidth: 800,
+          filterQuality: FilterQuality.medium,
           errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
         ),
       );
@@ -33,6 +35,11 @@ class NetworkImageWithLoader extends StatelessWidget {
       child: CachedNetworkImage(
         fit: fit,
         imageUrl: src,
+        memCacheWidth: 800,
+        memCacheHeight: 800,
+        maxWidthDiskCache: 1200,
+        maxHeightDiskCache: 1200,
+        filterQuality: FilterQuality.medium,
         imageBuilder: (context, imageProvider) => Container(
           decoration: BoxDecoration(
             image: DecorationImage(

@@ -3,7 +3,7 @@
 # GLOROV — Master Automated Deployment Pipeline
 # 1. Pushes code changes to GitHub (elsesourav/glorov.com)
 # 2. Deploys Backend to Azure VM (20.244.48.139)
-# 3. Deploys Frontend to Firebase Hosting (glorov-store.web.app)
+# 3. Deploys Frontend to Firebase Hosting (glorovs.web.app & glorova.web.app)
 # ==============================================================================
 set -e
 
@@ -37,6 +37,7 @@ echo ""
 echo "=========================================================="
 echo "🎉 ALL DEPLOYMENTS COMPLETED SUCCESSFULLY!"
 echo "• GitHub Repo:      https://github.com/elsesourav/glorov.com"
-echo "• Firebase Hosting: https://glorov-store.web.app"
+echo "• Storefront:       https://glorovs.web.app"
+echo "• Admin Dashboard:  https://glorova.web.app"
 echo "• VM Backend API:   https://20.244.48.139.sslip.io/medusa"
 echo "=========================================================="

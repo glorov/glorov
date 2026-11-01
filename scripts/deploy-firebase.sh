@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# GLOROV — Automated Flutter Web & Admin Firebase Hosting Deployment Script
-# Account: elsesourav@gmail.com
-# Project: glorov-store (https://glorov-store.web.app)
+# GLOROV — Automated Firebase Hosting Deployment Script
+# Storefront: https://glorovs.web.app (site: glorovs)
+# Admin:      https://glorova.web.app (site: glorova)
+# Account:    elsesourav@gmail.com
 # Usage:
 #   ./scripts/deploy-firebase.sh              (builds & deploys both Storefront & Admin)
 #   ./scripts/deploy-firebase.sh --store      (builds & deploys Storefront only)
@@ -34,6 +35,8 @@ esac
 MODE_UPPER=$(echo "${MODE}" | tr '[:lower:]' '[:upper:]')
 echo "=========================================================="
 echo "🌿 GLOROV: Deploying to Firebase Hosting [Mode: ${MODE_UPPER}]"
+echo "🌐 Storefront: https://glorovs.web.app"
+echo "🛡️ Admin:      https://glorova.web.app"
 echo "=========================================================="
 
 # 1. Verify Tools
@@ -78,11 +81,10 @@ if [[ "${MODE}" == "all" || "${MODE}" == "store" ]]; then
   echo ""
   echo "🔨 [2/2] Compiling Flutter Web Storefront (flutter/build/web)..."
 
-  # Clean stale web build artifacts to prevent caching old chunks
-  rm -rf flutter/build/web
-
   (
     cd flutter
+    flutter clean
+    flutter pub get
     flutter build web --release \
       --dart-define="MEDUSA_BASE_URL=${MEDUSA_URL}" \
       --dart-define="MEDUSA_PUBLISHABLE_KEY=${PUBLISHABLE_KEY}"
@@ -104,10 +106,11 @@ fi
 # 5. Deploy to Firebase Hosting
 echo ""
 echo "🚀 Uploading sites to Firebase project '${PROJECT_ID}'..."
+rm -rf .firebase/hosting.*.cache
 if [[ "${MODE}" == "store" ]]; then
-  firebase deploy --only hosting:glorov-store,hosting:glorov-com,hosting:glorov-app --project "${PROJECT_ID}"
+  firebase deploy --only hosting:glorovs --project "${PROJECT_ID}"
 elif [[ "${MODE}" == "admin" ]]; then
-  firebase deploy --only hosting:glorov-admin --project "${PROJECT_ID}"
+  firebase deploy --only hosting:glorova --project "${PROJECT_ID}"
 else
   firebase deploy --only hosting --project "${PROJECT_ID}"
 fi
@@ -117,22 +120,28 @@ echo ""
 echo "🩺 Verifying live public CDN responses..."
 sleep 2
 
-STORE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://glorov-store.web.app" || true)
-STORE_CACHE=$(curl -s -I "https://glorov-store.web.app/main.dart.js" | grep -i "cache-control" | tr -d '\r' || true)
+if [[ "${MODE}" == "all" || "${MODE}" == "store" ]]; then
+  STORE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://glorovs.web.app" || true)
+  STORE_CACHE=$(curl -s -I "https://glorovs.web.app/main.dart.js" | grep -i "cache-control" | tr -d '\r' || true)
+  echo "📊 Storefront (https://glorovs.web.app): HTTP ${STORE_STATUS}"
+  echo "📊 main.dart.js Cache Header: ${STORE_CACHE}"
+  if [[ "${STORE_STATUS}" != "200" ]]; then
+    echo "⚠️ Warning: Expected HTTP 200 from https://glorovs.web.app, received ${STORE_STATUS}"
+  fi
+fi
 
-echo "📊 Storefront Status: HTTP ${STORE_STATUS}"
-echo "📊 main.dart.js Cache Header: ${STORE_CACHE}"
-
-if [[ "${STORE_STATUS}" != "200" ]]; then
-  echo "⚠️ Warning: Expected HTTP 200 from https://glorov-store.web.app, received ${STORE_STATUS}"
+if [[ "${MODE}" == "all" || "${MODE}" == "admin" ]]; then
+  ADMIN_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://glorova.web.app" || true)
+  echo "📊 Admin Dashboard (https://glorova.web.app): HTTP ${ADMIN_STATUS}"
+  if [[ "${ADMIN_STATUS}" != "200" ]]; then
+    echo "⚠️ Warning: Expected HTTP 200 from https://glorova.web.app, received ${ADMIN_STATUS}"
+  fi
 fi
 
 echo ""
 echo "=========================================================="
-echo "✅ Deployment to Firebase complete!"
-echo "🌐 Storefront (Primary): https://glorov-store.web.app"
-echo "🌐 Storefront (Com):     https://glorov-com.web.app"
-echo "🌐 Storefront (App):     https://glorov-app.web.app"
-echo "🛡️ Admin Dashboard:      https://glorov-admin.web.app"
+echo "✅ Deployment complete!"
+echo "🌐 Storefront:      https://glorovs.web.app"
+echo "🛡️ Admin Dashboard: https://glorova.web.app"
 echo "📊 Console: https://console.firebase.google.com/project/glorov-store/overview"
 echo "=========================================================="

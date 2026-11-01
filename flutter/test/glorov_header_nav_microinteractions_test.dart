@@ -179,5 +179,96 @@ void main() {
       expect(find.byIcon(Icons.shopping_cart_outlined), findsNothing);
       expect(find.byIcon(Icons.bolt), findsNothing);
     });
+
+    testWidgets(
+        'Header search label rotates automatically every 5 seconds with vertical bottom-to-top transition',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          onGenerateRoute: (settings) => MaterialPageRoute(
+            builder: (_) => const Scaffold(body: Text('Destination')),
+          ),
+          home: const Scaffold(
+            body: GlorovHeader(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Initial hint (index 0)
+      expect(find.text('Search for plants, seeds, fertilizers & pots...'),
+          findsOneWidget);
+
+      // Verify ClipRect and AnimatedSwitcher are present for smooth vertical clipping
+      expect(find.byType(ClipRect), findsWidgets);
+      expect(find.byType(AnimatedSwitcher), findsOneWidget);
+
+      // Advance by 5 seconds
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      // Next hint (index 1)
+      expect(find.text('Search "Desi Heirloom & Hybrid Seeds"...'), findsOneWidget);
+      expect(find.text('Search for plants, seeds, fertilizers & pots...'),
+          findsNothing);
+
+      // Advance by another 5 seconds
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      // Next hint (index 2)
+      expect(find.text('Search "Air Purifying Live Houseplants"...'),
+          findsOneWidget);
+    });
+
+    testWidgets(
+        'Typing into search input hides animated hint and shows clear button',
+        (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          onGenerateRoute: (settings) => MaterialPageRoute(
+            builder: (_) => const Scaffold(body: Text('Destination')),
+          ),
+          home: const Scaffold(
+            body: GlorovHeader(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Clear icon initially absent
+      expect(find.byIcon(Icons.clear), findsNothing);
+      expect(find.text('Search for plants, seeds, fertilizers & pots...'),
+          findsOneWidget);
+
+      // Enter text
+      await tester.enterText(find.byType(TextField), 'Bonsai');
+      await tester.pumpAndSettle();
+
+      // Animated hint hidden
+      expect(find.text('Search for plants, seeds, fertilizers & pots...'),
+          findsNothing);
+      // Clear button visible
+      expect(find.byIcon(Icons.clear), findsOneWidget);
+
+      // Tapping clear button clears text and restores hint
+      await tester.tap(find.byIcon(Icons.clear));
+      await tester.pumpAndSettle();
+
+      final textField = tester.widget<TextField>(find.byType(TextField));
+      expect(textField.controller?.text, '');
+      expect(find.text('Search for plants, seeds, fertilizers & pots...'),
+          findsOneWidget);
+    });
   });
 }

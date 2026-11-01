@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +64,65 @@ class GlorovHeader extends StatefulWidget implements PreferredSizeWidget {
 
 class _GlorovHeaderState extends State<GlorovHeader> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   final ScrollController _categoryScrollController = ScrollController();
+  Timer? _hintTimer;
+  int _currentHintIndex = 0;
+
+  /// Rotating search queries tailored to GLOROV's botanical offerings
+  static const List<String> _desktopSearchHints = [
+    'Search for plants, seeds, fertilizers & pots...',
+    'Search "Desi Heirloom & Hybrid Seeds"...',
+    'Search "Air Purifying Live Houseplants"...',
+    'Search "Artisan Ceramic & Clay Planters"...',
+    'Search "Organic Plant Food & Vermicompost"...',
+    'Search "Fresh Kitchen Herbs & Mint"...',
+    'Search "Seasonal Flower Seeds & Bulbs"...',
+    'Search "Garden Tools & Pruning Shears"...',
+  ];
+
+  static const List<String> _mobileSearchHints = [
+    'Search for plants, seeds, pots...',
+    'Search "Heirloom Seeds"...',
+    'Search "Indoor Plants"...',
+    'Search "Ceramic Pots"...',
+    'Search "Organic Fertilizer"...',
+    'Search "Kitchen Herbs"...',
+    'Search "Flower Seeds"...',
+    'Search "Garden Tools"...',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_handleSearchChanged);
+    _searchFocusNode.addListener(_handleFocusChanged);
+    _startHintTimer();
+  }
+
+  void _handleSearchChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _handleFocusChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _startHintTimer() {
+    _hintTimer?.cancel();
+    _hintTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (mounted && _searchController.text.isEmpty && !_searchFocusNode.hasFocus) {
+        setState(() {
+          _currentHintIndex =
+              (_currentHintIndex + 1) % _desktopSearchHints.length;
+        });
+      }
+    });
+  }
 
   // 8 Botanical Categories (Centered, with custom SVG icons matching user specifications)
   static const List<_CategoryNavItem> _categories = [
@@ -127,6 +186,10 @@ class _GlorovHeaderState extends State<GlorovHeader> {
 
   @override
   void dispose() {
+    _hintTimer?.cancel();
+    _searchController.removeListener(_handleSearchChanged);
+    _searchFocusNode.removeListener(_handleFocusChanged);
+    _searchFocusNode.dispose();
     _searchController.dispose();
     _categoryScrollController.dispose();
     super.dispose();
@@ -295,74 +358,9 @@ class _GlorovHeaderState extends State<GlorovHeader> {
 
               const SizedBox(width: 32),
 
-              // Central Rounded Pill Search Bar (Image 1 style)
+              // Central Rounded Pill Search Bar with Animated Rotating Hints
               Expanded(
-                child: InputFocus(
-                  borderRadius: BorderRadius.circular(22),
-                  scale: 1.005,
-                  elevation: 2.0,
-                  shadowColor: AppColors.forestDeep.withValues(alpha: 0.12),
-                  duration: GlorovInteractionConfig.durationFast,
-                  child: Container(
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: const Color(
-                          0xFFF4F4F5), // Soft grey background matching Image 1
-                      borderRadius: BorderRadius.circular(22), // Sleek pill
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      textInputAction: TextInputAction.search,
-                      onSubmitted: _handleSearchSubmit,
-                      onTap: () => _openSearchScreen(),
-                      style: const TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 13.5,
-                        color: AppColors.textPrimary,
-                      ),
-                      decoration: InputDecoration(
-                        hintText:
-                            'Search for plants, seeds, fertilizers & pots...',
-                        hintStyle: const TextStyle(
-                          fontFamily: AppTypography.primaryFont,
-                          color: Color(0xFF9CA3AF),
-                          fontSize: 13.5,
-                        ),
-                        prefixIcon: InkWell(
-                          onTap: () => _openSearchScreen(_searchController.text),
-                          borderRadius: BorderRadius.circular(20),
-                          child: const Icon(
-                            Icons.search,
-                            color: AppColors.forestDeep, // Match botanical theme
-                            size: 20,
-                          ),
-                        ),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear,
-                                    size: 16, color: Color(0xFF9CA3AF)),
-                                onPressed: () {
-                                  setState(() {
-                                    _searchController.clear();
-                                  });
-                                },
-                              )
-                            : null,
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        errorBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                        focusedErrorBorder: InputBorder.none,
-                        filled: false,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                child: _buildSearchPill(isDesktop: true),
               ),
 
               const SizedBox(width: 32),
@@ -476,54 +474,9 @@ class _GlorovHeaderState extends State<GlorovHeader> {
 
           const SizedBox(width: 10),
 
-          // 2. Expanded Rounded Pill Search Field (fills remaining row width)
+          // 2. Expanded Rounded Pill Search Field with Animated Rotating Hints
           Expanded(
-            child: Container(
-              height: 38,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF4F4F5), // Soft gray pill
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: TextField(
-                controller: _searchController,
-                textInputAction: TextInputAction.search,
-                onSubmitted: _handleSearchSubmit,
-                onTap: () => _openSearchScreen(),
-                style: const TextStyle(
-                  fontFamily: AppTypography.primaryFont,
-                  fontSize: 13,
-                  color: AppColors.textPrimary,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Search for plants, seeds, pots...',
-                  hintStyle: const TextStyle(
-                    fontFamily: AppTypography.primaryFont,
-                    color: Color(0xFF9CA3AF),
-                    fontSize: 12.5,
-                  ),
-                  prefixIcon: InkWell(
-                    onTap: () => _openSearchScreen(_searchController.text),
-                    borderRadius: BorderRadius.circular(20),
-                    child: const Icon(
-                      Icons.search,
-                      color: AppColors.forestDeep, // Match botanical theme
-                      size: 19,
-                    ),
-                  ),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  focusedErrorBorder: InputBorder.none,
-                  filled: false,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                ),
-              ),
-            ),
+            child: _buildSearchPill(isDesktop: false),
           ),
 
           const SizedBox(width: 8),
@@ -548,6 +501,182 @@ class _GlorovHeaderState extends State<GlorovHeader> {
         ],
       ),
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Search Pill Component: High-craft UI with bottom-to-top animated rotating hints
+  // ---------------------------------------------------------------------------
+  Widget _buildSearchPill({required bool isDesktop}) {
+    final hints = isDesktop ? _desktopSearchHints : _mobileSearchHints;
+    final hint = hints[_currentHintIndex % hints.length];
+    final hasFocus = _searchFocusNode.hasFocus;
+    final hasText = _searchController.text.isNotEmpty;
+    final radius = BorderRadius.circular(isDesktop ? 22 : 20);
+
+    final pillContent = Container(
+      height: isDesktop ? 42 : 38,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F4F5),
+        borderRadius: radius,
+        border: Border.all(
+          color: hasFocus
+              ? AppColors.forestDeep.withValues(alpha: 0.35)
+              : const Color(0xFFE5E7EB),
+          width: 1.0,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Left Search Icon
+          InkWell(
+            onTap: () => _openSearchScreen(_searchController.text),
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isDesktop ? 12 : 9,
+                vertical: 6,
+              ),
+              child: Icon(
+                Icons.search,
+                color: AppColors.forestDeep,
+                size: isDesktop ? 20 : 19,
+              ),
+            ),
+          ),
+
+          // Central Animated Rotating Hint Label + Text Field
+          Expanded(
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                // Animated rotating placeholder (only text moves bottom-to-top)
+                if (!hasText)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ClipRect(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 380),
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeInCubic,
+                            layoutBuilder: (Widget? currentChild,
+                                List<Widget> previousChildren) {
+                              return Stack(
+                                alignment: Alignment.centerLeft,
+                                children: <Widget>[
+                                  ...previousChildren,
+                                  if (currentChild != null) currentChild,
+                                ],
+                              );
+                            },
+                            transitionBuilder:
+                                (Widget child, Animation<double> animation) {
+                              final inAnimation = Tween<Offset>(
+                                begin: const Offset(0.0, 1.2),
+                                end: Offset.zero,
+                              ).animate(animation);
+
+                              final outAnimation = Tween<Offset>(
+                                begin: const Offset(0.0, -1.2),
+                                end: Offset.zero,
+                              ).animate(animation);
+
+                              final isCurrent =
+                                  child.key == ValueKey<int>(_currentHintIndex);
+
+                              return SlideTransition(
+                                position: isCurrent ? inAnimation : outAnimation,
+                                child: FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: Text(
+                              hint,
+                              key: ValueKey<int>(_currentHintIndex),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: AppTypography.primaryFont,
+                                color: const Color(0xFF9CA3AF),
+                                fontSize: isDesktop ? 13.5 : 12.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // Primary user text input
+                TextField(
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: _handleSearchSubmit,
+                  onTap: () => _openSearchScreen(),
+                  style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: isDesktop ? 13.5 : 13.0,
+                    color: AppColors.textPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    filled: false,
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 2,
+                      vertical: isDesktop ? 10 : 8,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Suffix clear button when text is present
+          if (hasText)
+            IconButton(
+              icon: const Icon(
+                Icons.clear,
+                size: 16,
+                color: Color(0xFF9CA3AF),
+              ),
+              splashRadius: 16,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              constraints: const BoxConstraints(),
+              onPressed: () {
+                setState(() {
+                  _searchController.clear();
+                });
+              },
+            )
+          else
+            const SizedBox(width: 8),
+        ],
+      ),
+    );
+
+    if (isDesktop) {
+      return InputFocus(
+        borderRadius: radius,
+        scale: 1.005,
+        elevation: 2.0,
+        shadowColor: AppColors.forestDeep.withValues(alpha: 0.12),
+        duration: GlorovInteractionConfig.durationFast,
+        child: pillContent,
+      );
+    }
+
+    return pillContent;
   }
 
   // ---------------------------------------------------------------------------

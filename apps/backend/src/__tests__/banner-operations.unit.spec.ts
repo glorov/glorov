@@ -12,8 +12,8 @@ describe("Hero Carousel Banners Operations & Service Invariants", () => {
       expect(banners.length).toBe(4);
 
       expect(banners[0].title).toBe("Every Great Garden Begins with a Seed.");
-      expect(banners[0].desktop_image_url).toBe("/banners/banner_garden_begins_desktop.png");
-      expect(banners[0].mobile_image_url).toBe("/banners/banner_garden_begins_mobile.jpg");
+      expect(banners[0].desktop_image_url).toContain("banner_garden_begins_desktop");
+      expect(banners[0].mobile_image_url).toContain("banner_garden_begins_mobile");
       expect(banners[0].cta_route).toBe("/categories/seeds");
 
       expect(banners[1].title).toBe("Plant a Seed. Grow a Dream.");

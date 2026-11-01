@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/icons/glorov_category_svg_icons.dart';
 import '../../../core/interactions/interactions.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radii.dart';
@@ -84,6 +85,11 @@ class GlorovAccountOverviewSection extends StatelessWidget {
         final profile = GlorovAccountState.instance.profile;
         final cartState = GlorovCartState.instance;
         final accountState = GlorovAccountState.instance;
+
+        // If unauthenticated, render the clean guest overview landing
+        if (!accountState.isAuthenticated) {
+          return _buildGuestOverview(context);
+        }
 
         final ordersCount = cartState.orders.length;
         final wishlistCount = cartState.wishlistIds.length;

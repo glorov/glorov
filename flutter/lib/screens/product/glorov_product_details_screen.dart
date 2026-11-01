@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../components/common/glorov_y_scroll_pass_through.dart';
 import '../../components/navigation/glorov_footer.dart';
 import '../../components/navigation/glorov_storefront_scaffold.dart';
@@ -11,6 +12,7 @@ import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/theme/glorov_horizontal_scroll_behavior.dart';
 import '../../models/glorov/glorov_mock_data.dart';
+import '../../models/glorov/glorov_offer.dart';
 import '../../models/glorov/glorov_product.dart';
 import '../../models/glorov/glorov_review.dart';
 import '../../repositories/glorov_repositories.dart';
@@ -20,19 +22,19 @@ import '../../services/glorov_header_scroll_notifier.dart';
 
 /// GLOROV Production-Grade Product Details & Ordering Screen
 /// Matches the authentic mobile & desktop ordering experience:
-/// - Breadcrumbs & Social proof ("1 Crore + Happy Customers")
+/// - Breadcrumbs & clean verified rating/reviews
 /// - Square product gallery with dynamic docked promotional badge and sowing advice overlay
-/// - 3 Botanical Lifecycle Metric Cards (Germination %, Sprout Days, Maturity Days)
-/// - Variant packet size selection chips
-/// - Live pricing with tax note & handwritten gift note option
-/// - "Offers for you:" coupon cards carousel
+/// - Contextual Botanical Lifecycle Metric Cards tailored to seeds, plants, or supplies
+/// - Variant size selection chips
+/// - Live pricing with tax note & clean discount breakdown
+/// - Backend-connected "Offers for you:" coupon cards carousel
 /// - Quantity selector & green "Add To Cart" button
-/// - Pincode delivery estimator with instant date calculation
-/// - 5-Stage botanical growing tabs (Germination, Transplanting, Growing, Aftercare, Harvesting)
+/// - Pincode delivery estimator with dynamic date calculation
+/// - Botanical growing tabs for seeds & live plants
 /// - "Frequently bought together" 3-item bundle upsell with live total & 1-tap cart addition
-/// - "From a seed..." editorial botanical story banner
-/// - "You may also like" related product cards
-/// - Customer ratings with "Why customers love this" AI summary & reviews
+/// - Editorial botanical story banner
+/// - Backend-connected related product recommendations
+/// - Customer ratings with AI summary & reviews
 /// - Sticky mobile bottom bar with price and green ADD TO CART button
 class GlorovProductDetailsScreen extends StatefulWidget {
   final GlorovProduct product;

@@ -79,19 +79,19 @@ fi
 # 4. Build Flutter Web Release (if mode is all or store)
 if [[ "${MODE}" == "all" || "${MODE}" == "store" ]]; then
   echo ""
-  echo "🔨 [2/2] Compiling Flutter Web Storefront (flutter/build/web)..."
+  echo "🔨 [2/2] Compiling Flutter Web Storefront with WebAssembly (flutter/build/web)..."
 
   (
     cd flutter
     flutter clean
     flutter pub get
-    flutter build web --release \
+    flutter build web --wasm --release -O4 \
       --dart-define="MEDUSA_BASE_URL=${MEDUSA_URL}" \
       --dart-define="MEDUSA_PUBLISHABLE_KEY=${PUBLISHABLE_KEY}"
   )
 
-  if [[ ! -f "flutter/build/web/main.dart.js" || ! -f "flutter/build/web/index.html" ]]; then
-    echo "❌ Error: Flutter web build failed to generate main.dart.js or index.html"
+  if [[ ! -f "flutter/build/web/main.dart.wasm" || ! -f "flutter/build/web/index.html" ]]; then
+    echo "❌ Error: Flutter web build failed to generate main.dart.wasm or index.html"
     exit 1
   fi
 
@@ -100,7 +100,7 @@ if [[ "${MODE}" == "all" || "${MODE}" == "store" ]]; then
     cp "flutter/web/flutter_service_worker.js" "flutter/build/web/flutter_service_worker.js"
   fi
 
-  echo "✅ Flutter Web Storefront compiled successfully ($(ls -lh flutter/build/web/main.dart.js | awk '{print $5}'))."
+  echo "✅ Flutter Web Storefront compiled successfully (Wasm: $(ls -lh flutter/build/web/main.dart.wasm | awk '{print $5}'), JS: $(ls -lh flutter/build/web/main.dart.js | awk '{print $5}'))."
 fi
 
 # 5. Deploy to Firebase Hosting
@@ -122,11 +122,13 @@ sleep 2
 
 if [[ "${MODE}" == "all" || "${MODE}" == "store" ]]; then
   STORE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://glorovs.web.app" || true)
-  STORE_CACHE=$(curl -s -I "https://glorovs.web.app/main.dart.js" | grep -i "cache-control" | tr -d '\r' || true)
+  STORE_WASM=$(curl -s -o /dev/null -w "%{http_code}" "https://glorovs.web.app/main.dart.wasm" || true)
+  STORE_CACHE=$(curl -s -I "https://glorovs.web.app/main.dart.wasm" | grep -i "cache-control" | tr -d '\r' || true)
   echo "📊 Storefront (https://glorovs.web.app): HTTP ${STORE_STATUS}"
-  echo "📊 main.dart.js Cache Header: ${STORE_CACHE}"
-  if [[ "${STORE_STATUS}" != "200" ]]; then
-    echo "⚠️ Warning: Expected HTTP 200 from https://glorovs.web.app, received ${STORE_STATUS}"
+  echo "📊 main.dart.wasm Status: HTTP ${STORE_WASM}"
+  echo "📊 main.dart.wasm Cache Header: ${STORE_CACHE}"
+  if [[ "${STORE_STATUS}" != "200" || "${STORE_WASM}" != "200" ]]; then
+    echo "⚠️ Warning: Verification check received non-200 status!"
   fi
 fi
 

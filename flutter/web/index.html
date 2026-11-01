@@ -41,25 +41,91 @@
   <title>GLOROV — Premium Seeds, Live Plants & Gardening Supplies</title>
   <link rel="manifest" href="manifest.json">
 
-  <!-- Service Worker & Cache Storage Reset -->
+  <!-- Resource Preconnects for CDN & API -->
+  <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+  <link rel="preconnect" href="https://20.244.48.139.sslip.io" crossorigin>
+
+  <!-- Clean up obsolete service workers once if present -->
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
         for (var i = 0; i < registrations.length; i++) {
-          registrations[i].unregister();
-        }
-      }).catch(function() {});
-    }
-    if ('caches' in window) {
-      caches.keys().then(function(cacheNames) {
-        for (var i = 0; i < cacheNames.length; i++) {
-          caches.delete(cacheNames[i]);
+          if (registrations[i].active && registrations[i].active.scriptURL.indexOf('flutter_service_worker') !== -1) {
+            registrations[i].unregister();
+          }
         }
       }).catch(function() {});
     }
   </script>
 </head>
-<body>
+<body style="margin: 0; padding: 0; background-color: #FAF8F5;">
+  <!-- Instant Native Botanical Splash Screen (Removed on first Flutter render frame) -->
+  <div id="glorov-splash" style="
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #FAF8F5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    transition: opacity 0.4s ease-out;
+  ">
+    <div style="position: relative; width: 64px; height: 64px; margin-bottom: 20px;">
+      <div style="
+        box-sizing: border-box;
+        position: absolute;
+        width: 64px;
+        height: 64px;
+        border: 3px solid rgba(30, 58, 47, 0.12);
+        border-top-color: #1E3A2F;
+        border-radius: 50%;
+        animation: glr-spin 0.9s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+      "></div>
+      <div style="
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1E3A2F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L12 22"></path>
+          <path d="M17 7C17 7 13 8 12 12C11 8 7 7 7 7"></path>
+          <path d="M17 14C17 14 13 15 12 19C11 15 7 14 7 14"></path>
+        </svg>
+      </div>
+    </div>
+    <div style="color: #1E3A2F; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;">
+      GLOROV
+    </div>
+    <div style="color: #6B7280; font-size: 13px; margin-top: 6px; letter-spacing: 0.04em;">
+      Botanical Nursery &amp; Seeds
+    </div>
+  </div>
+  <style>
+    @keyframes glr-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  <script>
+    (function() {
+      function dismissSplash() {
+        var splash = document.getElementById('glorov-splash');
+        if (splash && splash.style.display !== 'none') {
+          splash.style.opacity = '0';
+          setTimeout(function() {
+            if (splash.parentNode) splash.parentNode.removeChild(splash);
+          }, 400);
+        }
+      }
+      window.addEventListener('flutter-first-frame', dismissSplash);
+      setTimeout(dismissSplash, 4000);
+    })();
+  </script>
+
   <!-- Dynamically inject flutter_bootstrap.js with cache-busting query parameter -->
   <script>
     (function() {

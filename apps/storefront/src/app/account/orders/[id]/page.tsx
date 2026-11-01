@@ -20,14 +20,12 @@ import {
   getOrderReturnRequestsAction,
 } from '@/lib/customer-actions'
 import { AccountNav } from '@/components/account/AccountNav'
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { formatINR } from '@/lib/utils'
 import { ShipmentTracker } from '@/components/shipping/ShipmentTracker'
 import { OrderCancellationButton } from '@/components/orders/OrderCancellationButton'
 import { OrderReturnRequestModal } from '@/components/orders/OrderReturnRequestModal'
 import { OrderReturnStatusSection } from '@/components/orders/OrderReturnStatusSection'
+import styles from './CustomerOrderDetail.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -51,32 +49,27 @@ export default async function CustomerOrderDetailsPage({ params }: OrderDetailsP
   if (!success || !order) {
     const isForbidden = status === 403
     return (
-      <div className="container mx-auto px-4 py-12 sm:px-6 max-w-6xl">
-        <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className={styles.container}>
+        <div className={styles.orderDetailLayout}>
           <AccountNav />
-          <div className="flex-1 w-full">
-            <Card className="text-center py-16 px-6 border-destructive/30 bg-destructive/5">
-              <ShieldAlert className="mx-auto h-12 w-12 text-destructive mb-3" />
-              <h2 className="text-xl font-bold text-foreground">
+          <div className={styles.mainContent}>
+            <div style={{ textAlign: 'center', padding: '60px 24px', backgroundColor: '#fff', borderRadius: 16, border: '1px solid #fee2e2' }}>
+              <ShieldAlert size={48} color="#dc2626" style={{ margin: '0 auto 16px' }} />
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 8px' }}>
                 {isForbidden ? 'Access Denied' : 'Order Not Available'}
               </h2>
-              <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+              <p style={{ fontSize: '0.875rem', color: '#64748b', maxWidth: 440, margin: '0 auto 24px' }}>
                 {isForbidden
                   ? 'You do not have permission to access this order. This order belongs to a different customer account.'
                   : error || `Could not find order ${id}. Please verify the order reference.`}
               </p>
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                <Button asChild variant="outline">
-                  <Link href="/account/orders">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Order History
-                  </Link>
-                </Button>
-                <Button asChild className="bg-botanical-700 hover:bg-botanical-800 text-white">
-                  <Link href="/categories/seeds">Continue Shopping</Link>
-                </Button>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                <Link href="/account/orders" className={styles.backLink}>
+                  <ArrowLeft size={16} aria-hidden="true" />
+                  <span>Back to Order History</span>
+                </Link>
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </div>
@@ -104,35 +97,38 @@ export default async function CustomerOrderDetailsPage({ params }: OrderDetailsP
     minute: '2-digit',
   })
 
+  const isFulfilled =
+    order.fulfillment_status === 'fulfilled' ||
+    order.fulfillment_status === 'shipped'
+
+  const isPaid =
+    order.payment_status === 'captured' || order.status === 'completed'
+
   return (
-    <div className="container mx-auto px-4 py-8 sm:px-6 max-w-6xl">
+    <div className={styles.container}>
       {/* Breadcrumb / Back button */}
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-          <Link href="/account/orders">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Orders
-          </Link>
-        </Button>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/categories/seeds">
-            <ShoppingBag className="mr-2 h-4 w-4" />
-            Continue Shopping
-          </Link>
-        </Button>
+      <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Link href="/account/orders" className={styles.backLink}>
+          <ArrowLeft size={16} aria-hidden="true" />
+          <span>Back to Order History</span>
+        </Link>
+        <Link href="/store" className={styles.backLink}>
+          <ShoppingBag size={14} aria-hidden="true" />
+          <span>Continue Shopping</span>
+        </Link>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className={styles.orderDetailLayout}>
         <AccountNav />
 
-        <div className="flex-1 w-full space-y-6">
+        <main className={styles.mainContent} aria-label="Customer order details">
           {/* Canceled Order Alert Banner */}
           {order.status === 'canceled' && (
-            <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/70 text-xs text-rose-950 flex items-start gap-3">
-              <ShieldAlert className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="font-bold text-sm text-rose-900">This order has been canceled</p>
-                <p className="text-rose-800">
+            <div style={{ padding: 16, borderRadius: 12, border: '1px solid #fecaca', backgroundColor: '#fef2f2', fontSize: '0.8125rem', color: '#991b1b', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <ShieldAlert size={20} color="#dc2626" style={{ flexShrink: 0, marginTop: 2 }} />
+              <div>
+                <p style={{ fontWeight: 700, margin: '0 0 2px' }}>This order has been canceled</p>
+                <p style={{ margin: 0 }}>
                   All reserved inventory has been returned to available stock at Pune Central Nursery Hub,
                   and uncaptured payments or payment collections have been canceled.
                 </p>
@@ -144,60 +140,38 @@ export default async function CustomerOrderDetailsPage({ params }: OrderDetailsP
           <OrderReturnStatusSection returnRequests={returnRequests} />
 
           {/* Live Shipment Tracking Card */}
-          <ShipmentTracker orderId={order.id} />
+          <div className={styles.shipmentWrapper}>
+            <ShipmentTracker orderId={order.id} />
+          </div>
 
-          {/* Order Header Card */}
-          <Card className="border-border shadow-sm">
-            <CardHeader className="p-5 sm:p-6 pb-4 border-b bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          {/* Order Details Card */}
+          <article className={styles.orderCard}>
+            <div className={styles.cardHeader}>
               <div>
-                <span className="text-xs font-semibold text-botanical-700 uppercase tracking-wider block mb-1">
+                <span style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#0a4c36', display: 'block', marginBottom: 2 }}>
                   Order Details
                 </span>
-                <CardTitle className="text-2xl font-black text-foreground">
-                  Order {displayId}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
+                <h1 className={styles.orderTitle}>Order {displayId}</h1>
+                <p className={styles.orderMetaText}>
+                  <Calendar size={12} aria-hidden="true" style={{ display: 'inline', marginRight: 4 }} />
                   Placed on {orderDate}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge
-                  variant="outline"
-                  className={
-                    order.fulfillment_status === 'fulfilled' ||
-                    order.fulfillment_status === 'shipped'
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200 text-xs py-1'
-                      : 'bg-amber-50 text-amber-800 border-amber-200 text-xs py-1'
-                  }
-                >
-                  <Truck className="mr-1.5 h-3.5 w-3.5" />
-                  Fulfillment:{' '}
+              <div className={styles.badgesGroup}>
+                <span className={isFulfilled ? styles.badgeSuccess : styles.badgeWarning}>
+                  <Truck size={12} aria-hidden="true" />
                   {order.fulfillment_status
                     ? order.fulfillment_status.replace('_', ' ')
                     : 'Processing'}
-                </Badge>
+                </span>
 
-                <Badge
-                  variant="outline"
-                  className={
-                    order.payment_status === 'captured' || order.status === 'completed'
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200 text-xs py-1'
-                      : 'bg-blue-50 text-blue-800 border-blue-200 text-xs py-1'
-                  }
-                >
-                  <CreditCard className="mr-1.5 h-3.5 w-3.5" />
-                  Payment: {order.payment_status || 'Authorized'}
-                </Badge>
+                <span className={isPaid ? styles.badgeSuccess : styles.badgeInfo}>
+                  <CreditCard size={12} aria-hidden="true" />
+                  {order.payment_status || 'Authorized'}
+                </span>
 
-                {order.status === 'canceled' && (
-                  <Badge variant="outline" className="bg-rose-50 text-rose-800 border-rose-200 text-xs py-1">
-                    Status: Canceled
-                  </Badge>
-                )}
-
-                {/* Cancellation & Return Action Triggers */}
+                {/* Actions */}
                 <OrderCancellationButton
                   orderId={order.id}
                   displayId={order.display_id}
@@ -219,160 +193,135 @@ export default async function CustomerOrderDetailsPage({ params }: OrderDetailsP
                   }))}
                 />
               </div>
-            </CardHeader>
+            </div>
 
-            <CardContent className="p-5 sm:p-6 space-y-6">
-              {/* Ordered Botanical Items */}
+            <div style={{ padding: '20px 20px 0' }}>
+              <h2 className={styles.cardTitle}>
+                <Package size={16} aria-hidden="true" />
+                <span>Items in this order ({items.length})</span>
+              </h2>
+            </div>
+
+            {/* Items List */}
+            <ul className={styles.itemsList} aria-label="Items in this order">
+              {items.map((item) => (
+                <li key={item.id} className={styles.itemRow}>
+                  <div className={styles.itemLeft}>
+                    {item.thumbnail ? (
+                      <div className={styles.itemThumb}>
+                        <Image
+                          src={item.thumbnail}
+                          alt={item.title}
+                          width={56}
+                          height={56}
+                          unoptimized
+                          className={styles.thumbImg}
+                        />
+                      </div>
+                    ) : (
+                      <div className={styles.itemThumb}>
+                        <Sprout size={24} color="#0a4c36" aria-hidden="true" />
+                      </div>
+                    )}
+                    <div className={styles.itemDetails}>
+                      <p className={styles.itemTitle}>{item.title}</p>
+                      {item.variant_title && (
+                        <p className={styles.itemSubtitle}>
+                          Variant: <strong>{item.variant_title}</strong>
+                        </p>
+                      )}
+                      {item.variant_sku && (
+                        <p style={{ fontSize: '0.6875rem', fontFamily: 'monospace', color: '#94a3b8', margin: 0 }}>
+                          SKU: {item.variant_sku}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'right' }}>
+                    <p className={styles.itemQty}>
+                      Qty: {item.quantity} × {formatINR(item.unit_price || 0)}
+                    </p>
+                    <div className={styles.itemSubtotal}>
+                      {formatINR(item.total || (item.unit_price || 0) * (item.quantity || 1))}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            {/* Delivery and Shipping Info */}
+            <div className={styles.infoGrid}>
               <div>
-                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                  <Package className="h-4 w-4 text-botanical-700" />
-                  Items in this order ({items.length})
+                <h3 className={styles.infoBlockTitle}>
+                  <MapPin size={14} aria-hidden="true" />
+                  <span>Delivery Destination</span>
                 </h3>
-
-                <div className="divide-y divide-border border rounded-xl overflow-hidden">
-                  {items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card"
-                    >
-                      <div className="flex items-center gap-3">
-                        {item.thumbnail ? (
-                          <div className="relative h-14 w-14 rounded-lg overflow-hidden border shrink-0 bg-earth-50">
-                            <Image
-                              src={item.thumbnail}
-                              alt={item.title}
-                              fill
-                              sizes="56px"
-                              className="object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="h-14 w-14 rounded-lg bg-earth-100 flex items-center justify-center text-botanical-700 shrink-0">
-                            <Sprout className="h-6 w-6" />
-                          </div>
-                        )}
-                        <div className="space-y-0.5">
-                          <p className="font-semibold text-sm text-foreground">{item.title}</p>
-                          {item.variant_title && (
-                            <p className="text-xs text-muted-foreground">
-                              Variant: <span className="font-medium text-foreground">{item.variant_title}</span>
-                            </p>
-                          )}
-                          {item.variant_sku && (
-                            <p className="text-[11px] font-mono text-muted-foreground">
-                              SKU: {item.variant_sku}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between sm:justify-end gap-6 sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0">
-                        <div className="text-xs text-muted-foreground">
-                          <span>Qty: </span>
-                          <span className="font-semibold text-foreground">{item.quantity}</span>
-                          <span className="mx-1">×</span>
-                          <span>{formatINR(item.unit_price || 0)}</span>
-                        </div>
-                        <div className="text-sm font-bold text-foreground min-w-[80px]">
-                          {formatINR(item.total || (item.unit_price || 0) * (item.quantity || 1))}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {shippingAddress ? (
+                  <div className={styles.infoBlockContent}>
+                    <p><strong>{shippingAddress.first_name} {shippingAddress.last_name}</strong></p>
+                    <p>{shippingAddress.address_1}</p>
+                    {shippingAddress.address_2 && <p>{shippingAddress.address_2}</p>}
+                    <p>{shippingAddress.city}, {shippingAddress.province} — {shippingAddress.postal_code}</p>
+                    <p>India</p>
+                    <p style={{ fontFamily: 'monospace', fontSize: '0.75rem', marginTop: 4 }}>
+                      Phone: +91 {shippingAddress.phone || 'None provided'}
+                    </p>
+                  </div>
+                ) : (
+                  <p className={styles.infoBlockContent}>Standard Delivery Address</p>
+                )}
               </div>
 
-              {/* Delivery and Shipping Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                {/* Shipping Address */}
-                <div className="p-4 rounded-xl border bg-earth-50/40 space-y-2">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-botanical-700" />
-                    Delivery Destination
-                  </span>
-                  {shippingAddress ? (
-                    <div className="text-xs text-muted-foreground space-y-0.5">
-                      <p className="font-bold text-foreground text-sm">
-                        {shippingAddress.first_name} {shippingAddress.last_name}
-                      </p>
-                      <p>{shippingAddress.address_1}</p>
-                      {shippingAddress.address_2 && <p>{shippingAddress.address_2}</p>}
-                      <p>
-                        {shippingAddress.city}, {shippingAddress.province} -{' '}
-                        <span className="font-semibold text-foreground">
-                          {shippingAddress.postal_code}
-                        </span>
-                      </p>
-                      <p>India</p>
-                      <p className="font-mono pt-1 text-foreground">
-                        Phone: {shippingAddress.phone || 'None provided'}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">No address on file</p>
-                  )}
-                </div>
-
-                {/* Shipping Method */}
-                <div className="p-4 rounded-xl border bg-earth-50/40 space-y-2">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                    <Truck className="h-3.5 w-3.5 text-botanical-700" />
-                    Selected Shipping Method
-                  </span>
-                  {selectedShipping ? (
-                    <div className="text-xs text-muted-foreground space-y-1">
-                      <p className="font-bold text-foreground text-sm">
-                        {selectedShipping.name}
-                      </p>
-                      <p>
-                        Air/surface botanical express routing with thermal packing protection.
-                      </p>
-                      <p className="font-semibold text-foreground pt-1">
-                        Shipping Fee: {formatINR(selectedShipping.amount || 0)}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">Standard Delivery (India)</p>
-                  )}
+              <div>
+                <h3 className={styles.infoBlockTitle}>
+                  <Truck size={14} aria-hidden="true" />
+                  <span>Selected Shipping Method</span>
+                </h3>
+                <div className={styles.infoBlockContent}>
+                  <p><strong>{selectedShipping?.name || 'Standard Botanical Delivery'}</strong></p>
+                  <p>Air/surface botanical express routing with thermal packing protection from Pune Central Nursery Hub.</p>
+                  <p style={{ marginTop: 4, fontWeight: 600 }}>
+                    Shipping Fee: {formatINR(selectedShipping?.amount || 0)}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              {/* Order Financial Summary */}
-              <div className="border-t pt-4">
-                <div className="max-w-xs ml-auto space-y-2 text-xs">
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Items Subtotal</span>
-                    <span className="font-medium text-foreground">{formatINR(subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Shipping Fee</span>
-                    <span className="font-medium text-foreground">{formatINR(shippingTotal)}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>GST (CGST/SGST 0% Seeds / Included)</span>
-                    <span className="font-medium text-foreground">₹0</span>
-                  </div>
-                  <div className="border-t pt-2 flex justify-between text-sm font-extrabold text-foreground">
-                    <span>Grand Total</span>
-                    <span className="text-base text-botanical-800">{formatINR(total)}</span>
-                  </div>
-                </div>
+            {/* Financial Summary */}
+            <div className={styles.financialSummary}>
+              <div className={styles.summaryRow}>
+                <span>Items Subtotal</span>
+                <span className={styles.summaryVal}>{formatINR(subtotal)}</span>
               </div>
-            </CardContent>
+              <div className={styles.summaryRow}>
+                <span>Shipping Fee</span>
+                <span className={styles.summaryVal}>{formatINR(shippingTotal)}</span>
+              </div>
+              <div className={styles.summaryTax}>
+                <span>GST (CGST/SGST 0% Seeds / Included)</span>
+                <span className={styles.exemptTag}>₹0 (0% Exempt)</span>
+              </div>
+              <div className={styles.grandTotalRow}>
+                <span className={styles.grandTotalLabel}>Grand Total</span>
+                <span className={styles.grandTotalVal}>{formatINR(total)}</span>
+              </div>
+            </div>
 
-            <CardFooter className="bg-muted/20 p-5 sm:p-6 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <span className="text-xs text-muted-foreground">
-                For order support or botanical replacement claims, contact support@glorov.in
+            <div className={styles.actionsBar}>
+              <span style={{ fontSize: '0.75rem', color: '#64748b', flex: 1 }}>
+                For order support or botanical replacement claims, contact <strong>support@glorov.in</strong>
               </span>
-              <Button asChild className="bg-botanical-700 hover:bg-botanical-800 text-white">
-                <Link href="/categories/seeds">
-                  Continue Shopping
-                  <ShoppingBag className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
+              <Link
+                href="/store"
+                className={styles.backLink}
+                style={{ fontWeight: 700 }}
+              >
+                <span>Explore More Seeds &amp; Plants</span>
+              </Link>
+            </div>
+          </article>
+        </main>
       </div>
     </div>
   )

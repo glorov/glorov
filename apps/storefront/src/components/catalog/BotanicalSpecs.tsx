@@ -18,6 +18,7 @@ import {
   Info,
 } from 'lucide-react'
 import type { SeedMetadata } from '@glorov/types'
+import styles from './BotanicalSpecs.module.css'
 
 interface BotanicalSpecsProps {
   metadata?: SeedMetadata
@@ -109,14 +110,14 @@ export function BotanicalSpecs({ metadata = {} }: BotanicalSpecsProps) {
       value: metadata.spacing,
     },
     {
-      icon: Calendar,
-      label: 'Sowing Season',
-      value: getSeasonLabel(metadata.season),
+      icon: Sun,
+      label: 'Sunlight Exposure',
+      value: getSunlightLabel(metadata.sunlight),
     },
     {
-      icon: Sun,
-      label: 'Sunlight Requirement',
-      value: getSunlightLabel(metadata.sunlight),
+      icon: Calendar,
+      label: 'Optimal Sowing Season',
+      value: getSeasonLabel(metadata.season),
     },
     {
       icon: Droplets,
@@ -149,15 +150,15 @@ export function BotanicalSpecs({ metadata = {} }: BotanicalSpecsProps) {
   }
 
   return (
-    <section aria-labelledby="botanical-specs-heading" className="space-y-8">
-      <div>
+    <section aria-labelledby="botanical-specs-heading" className={styles.section}>
+      <div className={styles.header}>
         <h2
           id="botanical-specs-heading"
-          className="text-xl sm:text-2xl font-black text-botanical-950 tracking-tight"
+          className={styles.title}
         >
           Botanical &amp; Cultivation Specifications
         </h2>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+        <p className={styles.subtitle}>
           Verified agricultural parameters and growing guidelines calibrated for Indian domestic climates.
         </p>
       </div>
@@ -167,26 +168,21 @@ export function BotanicalSpecs({ metadata = {} }: BotanicalSpecsProps) {
         <div
           role="region"
           aria-label="Botanical specifications grid"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          className={styles.specsGrid}
         >
           {specItems.map((item, idx) => {
             const Icon = item.icon
             return (
-              <div
-                key={idx}
-                className="p-4 rounded-xl border border-border bg-card shadow-2xs hover:border-botanical-300 transition-colors"
-              >
-                <div className="flex items-center gap-2 text-botanical-700 mb-1.5">
-                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground truncate">
+              <div key={idx} className={styles.specCard}>
+                <div className={styles.specHeader}>
+                  <div className={styles.specIconWrap}>
+                    <Icon size={14} aria-hidden="true" />
+                  </div>
+                  <span className={styles.specLabel}>
                     {item.label}
                   </span>
                 </div>
-                <p
-                  className={`font-semibold text-sm text-botanical-950 ${
-                    item.isItalic ? 'font-serif italic' : ''
-                  }`}
-                >
+                <p className={`${styles.specValue} ${item.isItalic ? styles.italic : ''}`}>
                   {item.value}
                 </p>
               </div>
@@ -196,37 +192,41 @@ export function BotanicalSpecs({ metadata = {} }: BotanicalSpecsProps) {
       )}
 
       {/* Sowing Guidelines & Packaging Shield Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className={styles.guidelineGrid}>
         {hasPlantingInstructions && (
-          <div className="p-6 rounded-2xl border border-botanical-200 bg-botanical-50/50 space-y-3">
-            <div className="flex items-center gap-2 text-botanical-900">
-              <BookOpen className="h-5 w-5 text-botanical-700" aria-hidden="true" />
-              <h3 className="font-bold text-base">Sowing &amp; Propagation Guidelines</h3>
+          <div className={styles.guidelineCard}>
+            <div className={styles.guidelineHeader}>
+              <div className={styles.specIconWrap}>
+                <BookOpen size={16} aria-hidden="true" />
+              </div>
+              <h3 className={styles.guidelineTitle}>Sowing &amp; Propagation Guidelines</h3>
             </div>
-            <p className="text-xs sm:text-sm text-botanical-950/85 leading-relaxed whitespace-pre-line">
+            <p className={styles.guidelineText}>
               {metadata.planting_instructions}
             </p>
           </div>
         )}
 
         {hasPackagingNotes && (
-          <div className="p-6 rounded-2xl border border-earth-300 bg-earth-50/70 space-y-3">
-            <div className="flex items-center gap-2 text-botanical-900">
-              <Package className="h-5 w-5 text-botanical-700" aria-hidden="true" />
-              <h3 className="font-bold text-base">Packaging &amp; Safe Viability Shield</h3>
+          <div className={styles.guidelineCard}>
+            <div className={styles.guidelineHeader}>
+              <div className={styles.specIconWrap}>
+                <Package size={16} aria-hidden="true" />
+              </div>
+              <h3 className={styles.guidelineTitle}>Packaging &amp; Safe Viability Shield</h3>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            <p className={styles.guidelineText}>
               {metadata.packaging_notes}
             </p>
           </div>
         )}
       </div>
 
-      {/* Realistic Germination & Cultivation Notice */}
-      <div className="p-4 rounded-xl border border-border/80 bg-earth-50/50 text-xs text-muted-foreground flex items-start gap-3">
-        <Info className="h-4 w-4 text-botanical-700 shrink-0 mt-0.5" aria-hidden="true" />
-        <p className="leading-relaxed">
-          <strong className="text-foreground">Cultivation Notice:</strong> Germination time and plant performance depend on local weather, ambient temperature, soil moisture, and correct sowing depth. While GLOROV batches are viability-tested at our Pune hub, results vary naturally based on individual gardening care.
+      {/* Realistic Germination Notice */}
+      <div className={styles.cultivationNotice}>
+        <Info size={16} style={{ color: 'var(--ugaoo-green)', flexShrink: 0, marginTop: '2px' }} aria-hidden="true" />
+        <p className={styles.noticeText}>
+          <strong style={{ color: 'var(--ugaoo-green)' }}>Cultivation Notice:</strong> Germination time and plant performance depend on local weather, ambient temperature, soil moisture, and correct sowing depth. While GLOROV batches are viability-tested at our Pune hub, results vary naturally based on individual gardening care.
         </p>
       </div>
     </section>

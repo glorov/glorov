@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Leaf, Lock, Mail, User, Phone, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
+import { Lock, Mail, User, Phone, ArrowRight, AlertCircle, Loader2 } from 'lucide-react'
 import { registerCustomerAction, getCurrentCustomerAction } from '@/lib/customer-actions'
 import { getSafeRedirectUrl } from '@/lib/security'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
+import styles from '../AuthPage.module.css'
 
 function RegisterForm() {
   const router = useRouter()
@@ -99,197 +98,212 @@ function RegisterForm() {
 
   if (isCheckingAuth) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-botanical-700" />
+      <div className={styles.spinnerCenter} aria-label="Checking authentication status">
+        <Loader2 className={styles.spinAnimation} size={28} color="#0a4c36" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-lg">
-        <div className="text-center mb-6">
-          <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
-            <div className="h-10 w-10 rounded-xl bg-botanical-700 flex items-center justify-center text-white shadow-sm group-hover:bg-botanical-800 transition-colors">
-              <Leaf className="h-5 w-5 text-emerald-200" />
-            </div>
-            <span className="font-extrabold tracking-tight text-2xl text-botanical-900">
-              GLOROV
-            </span>
+    <main className={styles.authWrapper}>
+      <div className={styles.authContainer}>
+        {/* Header Branding */}
+        <div className={styles.authHeader}>
+          <Link href="/" className={styles.logoLink} aria-label="GLOROV Botanicals Homepage">
+            <Image
+              src="/glorov-logo.svg"
+              alt="GLOROV"
+              width={160}
+              height={44}
+              priority
+              className={styles.authLogoImg}
+            />
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Create an Account
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className={styles.authTitle}>Create an Account</h1>
+          <p className={styles.authSubtitle}>
             Join GLOROV for express delivery of live plants, seed viability tracking, and care guides
           </p>
         </div>
 
-        <Card className="shadow-md border-border/80">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-lg">Customer Registration</CardTitle>
-            <CardDescription className="text-xs">
+        {/* Auth Card */}
+        <div className={styles.authCard}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Customer Registration</h2>
+            <p className={styles.cardDescription}>
               Fill in your details to set up your verified GLOROV profile
-            </CardDescription>
-          </CardHeader>
+            </p>
+          </div>
 
-          <CardContent>
+          <div className={styles.cardBody}>
             {errorMessage && (
-              <div
-                role="alert"
-                className="mb-4 flex items-start gap-2.5 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive"
-              >
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <div role="alert" aria-live="polite" className={styles.alertError}>
+                <AlertCircle size={16} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
                 <span>{errorMessage}</span>
               </div>
             )}
 
-            <form onSubmit={handleRegister} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground" htmlFor="firstName">
+            <form onSubmit={handleRegister} className={styles.form} aria-label="Customer registration form">
+              <div className={styles.formRowTwoCol}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label} htmlFor="firstName">
                     First Name *
                   </label>
-                  <div className="relative">
-                    <Input
+                  <div className={styles.inputWrapper}>
+                    <User className={styles.inputIcon} aria-hidden="true" />
+                    <input
                       id="firstName"
                       type="text"
                       required
+                      aria-required="true"
                       placeholder="Aarav"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="pl-9"
+                      className={styles.input}
                     />
-                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground" htmlFor="lastName">
+                <div className={styles.formGroup}>
+                  <label className={styles.label} htmlFor="lastName">
                     Last Name *
                   </label>
-                  <Input
+                  <input
                     id="lastName"
                     type="text"
                     required
+                    aria-required="true"
                     placeholder="Sharma"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    className={styles.input}
+                    style={{ paddingLeft: 14 }}
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground" htmlFor="regEmail">
+              <div className={styles.formGroup}>
+                <label className={styles.label} htmlFor="regEmail">
                   Email Address *
                 </label>
-                <div className="relative">
-                  <Input
+                <div className={styles.inputWrapper}>
+                  <Mail className={styles.inputIcon} aria-hidden="true" />
+                  <input
                     id="regEmail"
                     type="email"
                     required
+                    aria-required="true"
                     autoComplete="email"
                     placeholder="aarav.sharma@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-9"
+                    className={styles.input}
                   />
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground" htmlFor="regPhone">
+              <div className={styles.formGroup}>
+                <label className={styles.label} htmlFor="regPhone">
                   Mobile Number (Optional)
                 </label>
-                <div className="relative">
-                  <Input
+                <div className={styles.inputWrapper}>
+                  <Phone className={styles.inputIcon} aria-hidden="true" />
+                  <input
                     id="regPhone"
                     type="tel"
                     maxLength={10}
                     placeholder="9876543210 (10 digits)"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                    className="pl-9"
+                    className={styles.input}
                   />
-                  <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground" htmlFor="regPassword">
+              <div className={styles.formRowTwoCol}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label} htmlFor="regPassword">
                     Password * (8+ chars)
                   </label>
-                  <div className="relative">
-                    <Input
+                  <div className={styles.inputWrapper}>
+                    <Lock className={styles.inputIcon} aria-hidden="true" />
+                    <input
                       id="regPassword"
                       type="password"
                       required
+                      aria-required="true"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-9"
+                      className={styles.input}
                     />
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground" htmlFor="confirmPassword">
+                <div className={styles.formGroup}>
+                  <label className={styles.label} htmlFor="confirmPassword">
                     Confirm Password *
                   </label>
-                  <Input
+                  <input
                     id="confirmPassword"
                     type="password"
                     required
+                    aria-required="true"
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    className={styles.input}
+                    style={{ paddingLeft: 14 }}
                   />
                 </div>
               </div>
 
-              <Button
+              <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-botanical-700 hover:bg-botanical-800 text-white font-medium mt-2"
+                className={styles.submitBtn}
+                aria-label={isLoading ? 'Creating account' : 'Create verified account'}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
+                    <Loader2 className={styles.spinAnimation} size={16} aria-hidden="true" />
+                    <span>Creating account...</span>
                   </>
                 ) : (
                   <>
-                    Create Verified Account
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <span>Create Verified Account</span>
+                    <ArrowRight size={16} aria-hidden="true" />
                   </>
                 )}
-              </Button>
+              </button>
             </form>
-          </CardContent>
+          </div>
 
-          <CardFooter className="pt-0 border-t border-border/50 text-center">
-            <div className="text-xs text-muted-foreground mt-4 w-full">
+          <div className={styles.cardFooter}>
+            <p className={styles.footerText}>
               Already have an account?{' '}
               <Link
                 href={`/account/login${callbackUrl !== '/account' ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ''}`}
-                className="font-semibold text-botanical-700 hover:text-botanical-800 hover:underline"
+                className={styles.footerLink}
               >
                 Sign In
               </Link>
-            </div>
-          </CardFooter>
-        </Card>
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
   )
 }
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="min-h-[50vh] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-botanical-700" /></div>}>
+    <Suspense
+      fallback={
+        <div className={styles.spinnerCenter} aria-label="Loading registration page">
+          <Loader2 className={styles.spinAnimation} size={28} color="#0a4c36" />
+        </div>
+      }
+    >
       <RegisterForm />
     </Suspense>
   )

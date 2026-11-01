@@ -14,12 +14,13 @@ import {
   Truck,
   ArrowRight,
   Sparkles,
+  Heart,
 } from 'lucide-react'
 import type { StoreCatalogProduct } from '@glorov/types'
 import { useCart } from '@/context/CartContext'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { useWishlist } from '@/context/WishlistContext'
 import { getVariantStockAvailability, getVariantPriceINR } from '@/lib/catalog'
+import styles from './VariantSelector.module.css'
 
 interface VariantSelectorProps {
   product: StoreCatalogProduct
@@ -27,7 +28,9 @@ interface VariantSelectorProps {
 
 export function VariantSelector({ product }: VariantSelectorProps) {
   const variants = useMemo(() => product.variants || [], [product.variants])
-  const { addToCart, error: cartError, clearError, totalItems } = useCart()
+  const { addToCart, error: cartError, clearError, totalItems, openDrawer } = useCart()
+  const { isInWishlist, toggleWishlist } = useWishlist()
+  const isFavorited = isInWishlist(product.id)
 
   // Select first in-stock variant by default, or the first variant
   const initialVariantId = useMemo(() => {
@@ -44,6 +47,23 @@ export function VariantSelector({ product }: VariantSelectorProps) {
   const [isAdding, setIsAdding] = useState<boolean>(false)
   const [addSuccess, setAddSuccess] = useState<boolean>(false)
   const [localError, setLocalError] = useState<string | null>(null)
+  const actionContainerRef = React.useRef<HTMLDivElement>(null)
+  const [showStickyBar, setShowStickyBar] = useState<boolean>(false)
+
+  React.useEffect(() => {
+    const el = actionContainerRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyBar(!entry.isIntersecting)
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   const selectedVariant = useMemo(() => {
     return variants.find((v) => v.id === selectedVariantId) || variants[0]
@@ -66,7 +86,13 @@ export function VariantSelector({ product }: VariantSelectorProps) {
 
   const priceFormatted = selectedVariant ? getVariantPriceINR(selectedVariant) : 'Price on request'
 
-  // Variant metadata (e.g., packet_size_label, approx_seeds_per_packet, weight_grams)
+  // Dynamic Total Price Calculation
+  const inrPrice = selectedVariant?.prices?.find((p) => p.currency_code?.toLowerCase() === 'inr')
+  const unitAmountPaise = inrPrice ? inrPrice.amount : 0
+  const totalAmountPaise = unitAmountPaise * quantity
+  const totalPriceFormatted = unitAmountPaise > 0 ? `₹${(totalAmountPaise / 100).toFixed(0)}` : priceFormatted
+
+  // Variant metadata
   const variantMetadata = (selectedVariant?.metadata || {}) as Record<string, unknown>
   const approxSeeds = variantMetadata.approx_seeds_per_packet
     ? Number(variantMetadata.approx_seeds_per_packet)
@@ -111,6 +137,7 @@ export function VariantSelector({ product }: VariantSelectorProps) {
       const success = await addToCart(selectedVariant.id, quantity)
       if (success) {
         setAddSuccess(true)
+        openDrawer()
         setTimeout(() => setAddSuccess(false), 4000)
       } else {
         setLocalError(cartError || 'Could not add variant to cart. Check stock availability.')
@@ -124,57 +151,55 @@ export function VariantSelector({ product }: VariantSelectorProps) {
 
   if (variants.length === 0) {
     return (
-      <div className="p-4 rounded-xl border border-destructive/20 bg-destructive/5 text-destructive text-sm flex items-center gap-2">
-        <AlertCircle className="h-4 w-4 shrink-0" />
+      <div style={{ padding: '1rem', borderRadius: '12px', border: '1px solid var(--ugaoo-sale-red)', backgroundColor: '#fff5f5', color: 'var(--ugaoo-sale-red)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <AlertCircle size={16} style={{ flexShrink: 0 }} />
         <span>No purchasable options are currently active for this botanical product.</span>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className={styles.container}>
       {/* 1. Price & Stock Status Banner */}
-      <div className="pb-4 border-b border-border space-y-2">
-        <div className="flex items-baseline justify-between gap-4 flex-wrap">
-          <div>
-            <span className="text-3xl sm:text-4xl font-black text-botanical-950 tracking-tight">
-              {priceFormatted}
-            </span>
-            <span className="text-xs text-muted-foreground ml-2">
-              (0% GST on agricultural seeds / HSN 1209)
-            </span>
-          </div>
+      <div style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--ugaoo-border)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div className={styles.priceSection}>
+          <span className={styles.currentPrice}>
+            {priceFormatted}
+          </span>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ugaoo-green)', backgroundColor: 'var(--ugaoo-cream-light)', padding: '0.25rem 0.625rem', borderRadius: '9999px', border: '1px solid var(--ugaoo-border)' }}>
+            0% GST on agricultural seeds / HSN 1209
+          </span>
 
-          <div>
+          <div style={{ marginLeft: 'auto' }}>
             {availability.status === 'out_of_stock' ? (
-              <Badge variant="destructive" className="text-xs font-bold gap-1 py-1 px-2.5">
-                <AlertCircle className="h-3.5 w-3.5" />
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 700, color: 'var(--ugaoo-sale-red)', backgroundColor: '#fff0f0', padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #ffd0d0' }}>
+                <AlertCircle size={14} />
                 <span>Out of Stock</span>
-              </Badge>
+              </span>
             ) : availability.status === 'low_stock' ? (
-              <Badge variant="warning" className="text-xs font-bold gap-1 py-1 px-2.5">
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 700, color: '#b45309', backgroundColor: '#fffbeb', padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid #fef3c7' }}>
                 <span>Low Stock: Only {availability.availableQuantity} left</span>
-              </Badge>
+              </span>
             ) : (
-              <Badge variant="botanical" className="text-xs font-semibold gap-1 py-1 px-2.5">
-                <ShieldCheck className="h-3.5 w-3.5" />
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, color: 'var(--ugaoo-green)', backgroundColor: 'var(--ugaoo-cream)', padding: '0.25rem 0.75rem', borderRadius: '9999px', border: '1px solid var(--ugaoo-border)' }}>
+                <ShieldCheck size={14} />
                 <span>In Stock &amp; Verified</span>
-              </Badge>
+              </span>
             )}
           </div>
         </div>
 
         {/* Selected Variant SKU & Details */}
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap pt-0.5">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '11px', color: 'var(--ugaoo-text-muted)', flexWrap: 'wrap' }}>
           {selectedVariant?.sku && (
-            <span className="font-mono uppercase bg-earth-100 px-2 py-0.5 rounded border border-border">
+            <span className={styles.skuLabel}>
               SKU: {selectedVariant.sku}
             </span>
           )}
 
           {(approxSeeds || weightGrams || packetLabel) && (
-            <div className="flex items-center gap-2 text-botanical-800 font-medium">
-              <Sparkles className="h-3 w-3 text-botanical-600" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--ugaoo-text-dark)', fontWeight: 600 }}>
+              <Sparkles size={12} style={{ color: 'var(--ugaoo-maroon)' }} />
               {approxSeeds && <span>Approx. {approxSeeds} Seeds</span>}
               {approxSeeds && weightGrams && <span>•</span>}
               {weightGrams && <span>{weightGrams}g Net</span>}
@@ -184,20 +209,23 @@ export function VariantSelector({ product }: VariantSelectorProps) {
         </div>
       </div>
 
-      {/* 2. Option / Variant Selection Cards */}
-      <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-botanical-900 mb-2.5">
+      {/* 2. Variant Selection Grid */}
+      <div className={styles.variantGridSection}>
+        <label className={styles.sectionLabel}>
           Select Variant / Packet Size:
         </label>
         <div
           role="radiogroup"
           aria-label="Product Variants and Packet Sizes"
-          className="grid grid-cols-2 sm:grid-cols-3 gap-2.5"
+          className={styles.variantGrid}
         >
           {variants.map((v, vIdx) => {
             const isSelected = v.id === selectedVariantId
             const vAvail = getVariantStockAvailability(v)
             const vPrice = getVariantPriceINR(v)
+            const vMeta = (v.metadata || {}) as Record<string, unknown>
+            const vApprox = vMeta.approx_seeds_per_packet ? Number(vMeta.approx_seeds_per_packet) : undefined
+            const vWt = vMeta.weight_grams ? Number(vMeta.weight_grams) : undefined
 
             return (
               <button
@@ -224,28 +252,35 @@ export function VariantSelector({ product }: VariantSelectorProps) {
                     radios?.[nextIdx]?.focus()
                   }
                 }}
-                className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 cursor-pointer min-h-[44px] ${
-                  isSelected
-                    ? 'border-botanical-700 bg-botanical-50/80 ring-1 ring-botanical-700 shadow-xs'
-                    : 'border-border bg-background hover:border-botanical-300 hover:bg-earth-50/40'
-                } ${!vAvail.isAvailable ? 'opacity-65 bg-earth-100/40' : ''}`}
+                className={`${styles.variantCard} ${isSelected ? styles.variantSelected : ''} ${!vAvail.isAvailable ? styles.variantDisabled : ''}`}
               >
-                <div className="flex items-center justify-between gap-1 w-full">
-                  <span className="font-bold text-xs sm:text-sm text-botanical-950">
-                    {v.title}
-                  </span>
-                  {!vAvail.isAvailable && (
-                    <span className="text-[9px] font-bold text-destructive uppercase tracking-wider bg-destructive/10 px-1.5 py-0.5 rounded">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <span className={styles.variantTitle}>{v.title}</span>
+                  {!vAvail.isAvailable ? (
+                    <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--ugaoo-sale-red)', textTransform: 'uppercase', backgroundColor: '#fee2e2', padding: '1px 6px', borderRadius: '9999px' }}>
                       Sold Out
                     </span>
-                  )}
-                </div>
-                <div className="flex items-baseline justify-between mt-2 pt-1 border-t border-border/40 text-xs">
-                  <span className="font-semibold text-botanical-900">{vPrice}</span>
-                  {vAvail.isAvailable && vAvail.status === 'low_stock' && (
-                    <span className="text-[10px] text-amber-700 font-medium">
+                  ) : vAvail.status === 'low_stock' ? (
+                    <span style={{ fontSize: '9px', fontWeight: 700, color: '#b45309', textTransform: 'uppercase', backgroundColor: '#fef3c7', padding: '1px 6px', borderRadius: '9999px' }}>
                       {vAvail.availableQuantity} left
                     </span>
+                  ) : isSelected ? (
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--ugaoo-green)' }} aria-hidden="true" />
+                  ) : null}
+                </div>
+
+                {(vApprox || vWt) && (
+                  <div style={{ fontSize: '10px', color: 'var(--ugaoo-text-muted)', marginTop: '2px' }}>
+                    {vApprox && <span>~{vApprox} Seeds</span>}
+                    {vApprox && vWt && <span> • </span>}
+                    {vWt && <span>{vWt}g</span>}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: '6px', paddingTop: '4px', borderTop: '1px solid var(--ugaoo-border)', width: '100%', fontSize: '12px' }}>
+                  <span className={styles.variantPrice}>{vPrice}</span>
+                  {vAvail.isAvailable && (
+                    <span style={{ fontSize: '10px', color: 'var(--ugaoo-green)', fontWeight: 600 }}>Verified</span>
                   )}
                 </div>
               </button>
@@ -254,8 +289,8 @@ export function VariantSelector({ product }: VariantSelectorProps) {
         </div>
       </div>
 
-      {/* Screen Reader Live Region for Variant and Stock Changes */}
-      <div className="sr-only" aria-live="polite" role="status">
+      {/* Screen Reader Live Region */}
+      <div className={styles.srOnly} aria-live="polite" role="status">
         {selectedVariant
           ? `Selected variant ${selectedVariant.title}, price ${priceFormatted}, ${
               availability.isAvailable ? 'In stock' : 'Out of stock'
@@ -263,127 +298,225 @@ export function VariantSelector({ product }: VariantSelectorProps) {
           : ''}
       </div>
 
-      {/* 3. Quantity & Add to Cart Actions */}
-      <div className="space-y-4 pt-2">
-        <div className="flex items-center gap-4">
-          <span id="variant-quantity-label" className="text-xs font-bold uppercase tracking-wider text-botanical-900 shrink-0">
-            Quantity:
-          </span>
-
-          <div
-            role="group"
-            aria-labelledby="variant-quantity-label"
-            className="flex items-center border border-border rounded-lg bg-background shadow-xs overflow-hidden"
-          >
+      {/* 3. Action Row: Quantity Stepper + Add to Cart */}
+      <div ref={actionContainerRef} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div className={styles.actionRow}>
+          {/* Stepper */}
+          <div className={styles.quantityStepper}>
+            <span id="variant-quantity-label" className={styles.srOnly}>Quantity:</span>
             <button
               type="button"
               onClick={() => handleQuantityChange(-1)}
               disabled={quantity <= 1 || !availability.isAvailable || isAdding}
-              className="h-9 w-9 flex items-center justify-center hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-botanical-600"
+              className={styles.stepperBtn}
               aria-label="Decrease quantity"
             >
-              <Minus className="h-3.5 w-3.5" />
+              <Minus size={14} />
             </button>
-            <span
-              id="variant-quantity"
-              aria-live="polite"
-              aria-atomic="true"
-              className="px-3 text-sm font-bold text-botanical-950 min-w-[2.5rem] text-center select-none"
+            <div
+              role="group"
+              aria-labelledby="variant-quantity-label"
+              style={{ padding: '0 0.5rem', display: 'flex', alignItems: 'baseline', gap: '2px' }}
             >
-              {quantity}
-            </span>
+              <span
+                id="variant-quantity"
+                aria-live="polite"
+                aria-atomic="true"
+                className={styles.stepperValue}
+              >
+                {quantity}
+              </span>
+              <span style={{ fontSize: '11px', color: 'var(--ugaoo-text-muted)' }}>
+                {quantity === 1 ? 'pack' : 'packs'}
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => handleQuantityChange(1)}
-              disabled={
-                !availability.isAvailable ||
-                quantity >= maxAvailable ||
-                isAdding
-              }
-              className="h-9 w-9 flex items-center justify-center hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-botanical-600"
+              disabled={!availability.isAvailable || quantity >= maxAvailable || isAdding}
+              className={styles.stepperBtn}
               aria-label="Increase quantity"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus size={14} />
             </button>
           </div>
 
-          <span className="text-xs text-muted-foreground">
-            {availability.isAvailable
-              ? `Max ${maxAvailable} per order`
-              : 'Variant unavailable'}
-          </span>
-        </div>
-
-        {/* Error Notification */}
-        {(localError || cartError) && (
-          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>{localError || cartError}</span>
-          </div>
-        )}
-
-        {/* Add to Cart Button & Success Feedback */}
-        <div className="space-y-2">
-          <Button
+          {/* Add To Cart CTA Button */}
+          <button
             type="button"
             onClick={handleAddToCart}
             disabled={!availability.isAvailable || isAdding}
-            variant="botanical"
-            size="lg"
-            className="w-full py-6 font-bold text-sm shadow-md gap-2 rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed"
+            className={`${styles.addToCartBtn} ${addSuccess ? styles.addedFeedback : ''}`}
+            aria-label={
+              isAdding
+                ? 'Checking stock'
+                : !availability.isAvailable
+                ? 'Selected Variant Out of Stock'
+                : `Add to Botanical Cart • ${totalPriceFormatted}`
+            }
           >
             {isAdding ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 size={16} className={styles.spinner} />
                 <span>Checking Pune Hub Stock...</span>
               </>
             ) : addSuccess ? (
               <>
-                <Check className="h-4 w-4 text-emerald-300" />
+                <Check size={16} />
                 <span>Added {quantity} to Botanical Cart!</span>
               </>
             ) : !availability.isAvailable ? (
               <>
-                <AlertCircle className="h-4 w-4" />
+                <AlertCircle size={16} />
                 <span>Selected Variant Out of Stock</span>
               </>
             ) : (
               <>
-                <ShoppingBag className="h-4 w-4" />
-                <span>Add to Botanical Cart • {priceFormatted}</span>
+                <ShoppingBag size={16} />
+                <span>Add to Botanical Cart • {totalPriceFormatted}</span>
               </>
             )}
-          </Button>
+          </button>
 
-          {/* Quick Cart Navigation CTA upon success */}
-          {addSuccess && (
-            <div className="p-3 rounded-xl bg-botanical-50 border border-botanical-200 flex items-center justify-between text-xs animate-in fade-in-0 duration-150">
-              <span className="text-botanical-900 font-semibold flex items-center gap-1.5">
-                <Check className="h-4 w-4 text-emerald-600" />
-                <span>{selectedVariant.title} is now in your cart.</span>
-              </span>
-              <Button asChild variant="outline" size="sm" className="h-7 text-xs border-botanical-300 gap-1 bg-white">
-                <Link href="/cart">
-                  <span>View Cart ({totalItems})</span>
-                  <ArrowRight className="h-3 w-3" />
-                </Link>
-              </Button>
-            </div>
-          )}
+          {/* Wishlist / Favorite Button on PDP */}
+          <button
+            type="button"
+            onClick={() =>
+              toggleWishlist({
+                id: product.id,
+                title: product.title,
+                handle: product.handle || '',
+                thumbnail: product.thumbnail,
+                pricePaise: unitAmountPaise || 0,
+                variantId: selectedVariant?.id,
+                categoryName: product.categories?.[0]?.name || 'Botanical',
+              })
+            }
+            className={`${styles.wishlistBtnPdp} ${isFavorited ? styles.wishlistBtnPdpActive : ''}`}
+            aria-label={
+              isFavorited
+                ? `Remove ${product.title} from wishlist`
+                : `Add ${product.title} to wishlist`
+            }
+            title={isFavorited ? 'Remove from wishlist' : 'Save to wishlist'}
+          >
+            <Heart
+              size={20}
+              style={{
+                fill: isFavorited ? '#e53935' : 'none',
+                color: isFavorited ? '#e53935' : 'currentColor',
+              }}
+              aria-hidden="true"
+            />
+          </button>
         </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: 'var(--ugaoo-text-muted)', padding: '0 4px' }}>
+          <span>{availability.isAvailable ? `Max ${maxAvailable} packets per order` : 'Variant unavailable'}</span>
+          <span style={{ color: 'var(--ugaoo-green)', fontWeight: 600 }}>Free shipping on orders above ₹499</span>
+        </div>
+
+        {/* Error Notification */}
+        {(localError || cartError) && (
+          <div style={{ padding: '0.75rem', borderRadius: '8px', backgroundColor: '#fee2e2', color: 'var(--ugaoo-sale-red)', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <AlertCircle size={16} style={{ flexShrink: 0 }} />
+            <span>{localError || cartError}</span>
+          </div>
+        )}
+
+        {/* Quick Cart Navigation CTA upon success */}
+        {addSuccess && (
+          <div style={{ padding: '0.75rem 1rem', borderRadius: '12px', backgroundColor: 'var(--ugaoo-cream)', border: '1px solid var(--ugaoo-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px' }}>
+            <span style={{ color: 'var(--ugaoo-green)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Check size={16} />
+              <span>{selectedVariant.title} is now in your cart.</span>
+            </span>
+            <Link
+              href="/cart"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '0.25rem 0.75rem', borderRadius: '9999px', backgroundColor: 'var(--ugaoo-white)', border: '1px solid var(--ugaoo-border)', color: 'var(--ugaoo-text-dark)', fontWeight: 600, textDecoration: 'none' }}
+            >
+              <span>View Cart ({totalItems})</span>
+              <ArrowRight size={12} />
+            </Link>
+          </div>
+        )}
       </div>
 
-      {/* 4. Fulfillment & Assurance Micro-Features */}
-      <div className="pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Truck className="h-4 w-4 text-botanical-700 shrink-0" />
+      {/* 4. Fulfillment Micro-Features */}
+      <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--ugaoo-border)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', fontSize: '12px', color: 'var(--ugaoo-text-muted)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--ugaoo-cream)', color: 'var(--ugaoo-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Truck size={16} aria-hidden="true" />
+          </div>
           <span>Dispatched from Pune Hub (PIN 411001)</span>
         </div>
-        <div className="flex items-center gap-2">
-          <PackageCheck className="h-4 w-4 text-botanical-700 shrink-0" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--ugaoo-cream)', color: 'var(--ugaoo-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <PackageCheck size={16} aria-hidden="true" />
+          </div>
           <span>Moisture-sealed protective barrier pouch</span>
         </div>
       </div>
+
+      {/* Mobile Sticky Bottom Action Bar */}
+      {showStickyBar && (
+        <div
+          role="region"
+          aria-label="Quick Add Sticky Bar"
+          className={styles.stickyBottomBar}
+        >
+          <div className={styles.stickyInfo}>
+            <div className={styles.stickyTitle}>
+              {selectedVariant?.title || product.title}
+            </div>
+            <div className={styles.stickyPrice}>
+              {totalPriceFormatted}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!availability.isAvailable || isAdding}
+              className={styles.stickyBtn}
+            >
+              {isAdding ? 'Adding...' : addSuccess ? 'Added!' : `Add • ${totalPriceFormatted}`}
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                toggleWishlist({
+                  id: product.id,
+                  title: product.title,
+                  handle: product.handle || '',
+                  thumbnail: product.thumbnail,
+                  pricePaise: unitAmountPaise || 0,
+                  variantId: selectedVariant?.id,
+                  categoryName: product.categories?.[0]?.name || 'Botanical',
+                })
+              }
+              className={`${styles.wishlistBtnPdp} ${isFavorited ? styles.wishlistBtnPdpActive : ''}`}
+              style={{ width: '40px', height: '40px', minWidth: '40px' }}
+              aria-label={
+                isFavorited
+                  ? `Remove ${product.title} from wishlist`
+                  : `Add ${product.title} to wishlist`
+              }
+            >
+              <Heart
+                size={18}
+                style={{
+                  fill: isFavorited ? '#e53935' : 'none',
+                  color: isFavorited ? '#e53935' : 'currentColor',
+                }}
+                aria-hidden="true"
+              />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

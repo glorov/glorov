@@ -11,6 +11,9 @@ importers:
 
   .:
     devDependencies:
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
       prettier:
         specifier: ^3.2.5
         version: 3.9.10
@@ -193,6 +196,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.20
         version: 10.6.1(postcss@8.5.31)
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
       eslint:
         specifier: ^9.17.0
         version: 9.39.5(jiti@1.21.7)
@@ -3533,6 +3539,7 @@ packages:
   '@smithy/core@3.36.2':
     resolution: {integrity: sha512-oRw0rB9QSUiCZfEs23G5F4Af+b2rQt1lItIICWu5IejFNd+uPM8SWqiKLMpQ6bX1Q7slsLbjuoE2niErFtkVPQ==}
     engines: {node: '>=18.0.0'}
+    deprecated: Deprecated due to a bug in custom logger data redaction. See https://github.com/aws/aws-sdk-js-v3/issues/8393.
 
   '@smithy/credential-provider-imds@4.5.2':
     resolution: {integrity: sha512-A9uSdn72ozbRUSit0eib0TW7nXuNPlaeM0zcGkJ+nE6tFcSDbnmtwoxbTCFBukVQcszDAyvsd7+rTduPTXpygg==}

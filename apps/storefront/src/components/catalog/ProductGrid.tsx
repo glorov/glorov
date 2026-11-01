@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Sprout, RotateCcw } from 'lucide-react'
 import type { StoreCatalogProduct } from '@glorov/types'
 import { ProductCard } from './ProductCard'
-import { Button } from '@/components/ui/button'
+import styles from './ProductGrid.module.css'
 
 interface ProductGridProps {
   products: StoreCatalogProduct[]
@@ -20,30 +20,26 @@ export function ProductGrid({
 }: ProductGridProps) {
   if (products.length === 0) {
     return (
-      <div className="py-16 px-4 rounded-2xl border border-dashed border-border bg-earth-50/50 flex flex-col items-center justify-center text-center space-y-4">
-        <div className="h-16 w-16 rounded-full bg-botanical-100 flex items-center justify-center text-botanical-700">
-          <Sprout className="h-8 w-8" />
+      <div className={styles.emptyState}>
+        <div className={styles.emptyIconCircle}>
+          <Sprout size={32} />
         </div>
-        <div className="max-w-md space-y-1">
-          <h3 className="text-lg font-bold text-botanical-950">No Botanical Items Found</h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {emptyMessage}
-          </p>
+        <div>
+          <h3 className={styles.emptyTitle}>No Botanical Items Found</h3>
+          <p className={styles.emptyDescription}>{emptyMessage}</p>
         </div>
         {resetHref && (
-          <Button asChild variant="outline" size="sm" className="gap-2 text-xs">
-            <Link href={resetHref}>
-              <RotateCcw className="h-3.5 w-3.5" />
-              <span>Reset Filters &amp; View All</span>
-            </Link>
-          </Button>
+          <Link href={resetHref} className={styles.resetButton}>
+            <RotateCcw size={14} />
+            <span>Reset Filters &amp; View All</span>
+          </Link>
         )}
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className={styles.gridContainer}>
       {products.map((product, index) => (
         <ProductCard
           key={product.id}

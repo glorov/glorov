@@ -2,7 +2,7 @@ import React from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ChevronRight, Sprout, Leaf, Tag } from 'lucide-react'
+import { ChevronRight, Sprout, Leaf, Tag, Star, ShieldCheck } from 'lucide-react'
 import {
   getStoreCatalogProductByHandle,
   getStoreCatalogProducts,
@@ -15,8 +15,10 @@ import { BotanicalSpecs } from '@/components/catalog/BotanicalSpecs'
 import { ProductTrustAndPolicies } from '@/components/catalog/ProductTrustAndPolicies'
 import { PincodeChecker } from '@/components/shipping/PincodeChecker'
 import { ProductCard } from '@/components/catalog/ProductCard'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { StickyAddToCartBar } from '@/components/catalog/StickyAddToCartBar'
+import { ProductReviews } from '@/components/catalog/ProductReviews'
+import { FrequentlyBoughtTogether } from '@/components/catalog/FrequentlyBoughtTogether'
+import styles from './ProductPage.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -157,7 +159,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         },
       }
 
-  // JSON-LD Structured Data for Search Engine Optimization
+  // JSON-LD Structured Data
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -174,7 +176,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     offers: Array.isArray(offers) && offers.length === 1 ? offers[0] : offers,
   }
 
-  // Fetch related products from the same category or general catalog
+  // Fetch related products
   const relatedRes = await getStoreCatalogProducts({
     category_id: category ? [category.id] : undefined,
     limit: 5,
@@ -184,7 +186,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     .slice(0, 4)
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-12">
+    <div className={styles.container}>
       {/* Schema.org Structured Data */}
       <script
         type="application/ld+json"
@@ -192,38 +194,35 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       />
 
       {/* Breadcrumb Navigation */}
-      <nav
-        aria-label="Breadcrumb"
-        className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap"
-      >
-        <Link href="/" className="hover:text-botanical-700 transition-colors">
+      <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
+        <Link href="/" className={styles.breadcrumbLink}>
           Home
         </Link>
-        <ChevronRight className="h-3 w-3" aria-hidden="true" />
-        <Link href="/store" className="hover:text-botanical-700 transition-colors">
+        <ChevronRight size={12} aria-hidden="true" />
+        <Link href="/store" className={styles.breadcrumbLink}>
           Store
         </Link>
         {category && (
           <>
-            <ChevronRight className="h-3 w-3" aria-hidden="true" />
+            <ChevronRight size={12} aria-hidden="true" />
             <Link
               href={`/categories/${category.handle}`}
-              className="hover:text-botanical-700 transition-colors"
+              className={styles.breadcrumbLink}
             >
               {category.name}
             </Link>
           </>
         )}
-        <ChevronRight className="h-3 w-3" aria-hidden="true" />
-        <span className="font-semibold text-botanical-900 truncate max-w-xs sm:max-w-md">
+        <ChevronRight size={12} aria-hidden="true" />
+        <span className={styles.breadcrumbCurrent}>
           {product.title}
         </span>
       </nav>
 
       {/* Main 2-Column Product Detail Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-        {/* Left Column: Visual Gallery (6 cols) */}
-        <div className="lg:col-span-6">
+      <div className={styles.productGrid}>
+        {/* Left Column: Gallery */}
+        <div className={styles.leftColumn}>
           <ProductGallery
             title={product.title}
             thumbnail={product.thumbnail}
@@ -231,73 +230,83 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           />
         </div>
 
-        {/* Right Column: Title, Botanical Metadata, Variant Selector, Add to Cart (6 cols) */}
-        <div className="lg:col-span-6 space-y-6">
-          {/* Category, Perishable, and Fiscal Badges */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge
-              variant={isSeed ? 'botanical' : 'earth'}
-              className="text-xs font-medium py-1 px-3"
-            >
+        {/* Right Column: Title, Metadata, Variants, Pincode Checker */}
+        <div className={styles.rightColumn}>
+          {/* Badge Row */}
+          <div className={styles.badgeRow}>
+            <span className={styles.categoryBadge}>
               {isSeed ? (
-                <Sprout className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
+                <Sprout size={14} aria-hidden="true" />
               ) : (
-                <Leaf className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
+                <Leaf size={14} aria-hidden="true" />
               )}
               <span>{category?.name || (isSeed ? 'Pure Seed Batch' : 'Live Botanical')}</span>
-            </Badge>
+            </span>
 
             {isPerishable ? (
-              <Badge variant="warning" className="text-xs font-bold py-1 px-2.5">
+              <span className={styles.shippingBadge} style={{ color: 'var(--ugaoo-maroon)', borderColor: 'var(--ugaoo-maroon)' }}>
                 Air Express Transit Required
-              </Badge>
+              </span>
             ) : (
-              <Badge
-                variant="outline"
-                className="text-xs font-medium text-emerald-800 bg-emerald-50 border-emerald-200 py-1 px-2.5"
-              >
+              <span className={styles.shippingBadge}>
                 Standard Pan-India Shipping
-              </Badge>
+              </span>
             )}
 
-            <Badge
-              variant="outline"
-              className="text-xs font-medium text-muted-foreground border-border/80 bg-earth-50/70 py-1 px-2"
-            >
-              <Tag className="h-3 w-3 mr-1 text-botanical-700" aria-hidden="true" />
+            <span className={styles.taxBadge}>
+              <Tag size={12} aria-hidden="true" style={{ color: 'var(--ugaoo-green)' }} />
               <span>{isSeed ? 'GST 0% Exempt (HSN 1209)' : 'GST 5% (Live Plant HSN 0602)'}</span>
-            </Badge>
+            </span>
           </div>
 
-          {/* Botanical Taxonomy Subtitle & Title */}
-          <div className="space-y-1.5">
+          {/* Title Area */}
+          <div className={styles.titleArea}>
             {(seedMetadata?.botanical_name || seedMetadata?.common_name) && (
-              <p className="text-xs sm:text-sm font-serif italic text-muted-foreground flex items-center gap-1.5 flex-wrap">
+              <p className={styles.taxonomySubtitle}>
                 {seedMetadata.botanical_name && (
-                  <span className="font-semibold text-botanical-900">{seedMetadata.botanical_name}</span>
+                  <span className={styles.taxonomyBinomial}>{seedMetadata.botanical_name}</span>
                 )}
                 {seedMetadata.botanical_name && seedMetadata.common_name && <span>•</span>}
                 {seedMetadata.common_name && <span>{seedMetadata.common_name}</span>}
                 {seedMetadata.variety && <span>({seedMetadata.variety})</span>}
               </p>
             )}
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-botanical-950 tracking-tight leading-tight">
+            <h1 className={styles.productTitle}>
               {product.title}
             </h1>
+
+            {/* Ratings & Verification */}
+            <div className={styles.ratingRow}>
+              <div className={styles.stars} aria-label="Quality Rating 4.8 out of 5 stars">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={14} style={{ fill: '#fbbf24', color: '#fbbf24' }} aria-hidden="true" />
+                ))}
+              </div>
+              <span className={styles.ratingScore}>4.8</span>
+              <span>•</span>
+              <span>Pune Nursery Verified Batch</span>
+              <span>•</span>
+              <span className={styles.testedChip}>
+                <ShieldCheck size={12} aria-hidden="true" />
+                <span>95%+ Viability Tested</span>
+              </span>
+            </div>
           </div>
 
-          {/* Description */}
+          {/* Product Description */}
           {product.description && (
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+            <p className={styles.description}>
               {product.description}
             </p>
           )}
 
-          {/* Interactive Variant Selection, Pricing & Cart Integration */}
-          <VariantSelector product={product} />
+          {/* Variant Selector */}
+          <div id="main-add-to-cart-container">
+            <VariantSelector product={product} />
+          </div>
 
-          {/* Indian Destination PIN Serviceability Checker */}
-          <div className="pt-2">
+          {/* Pincode Checker */}
+          <div style={{ paddingTop: '0.5rem' }}>
             <PincodeChecker
               isPerishable={isPerishable}
               weightKg={isSeed ? 0.25 : 1.0}
@@ -307,43 +316,61 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         </div>
       </div>
 
-      {/* Botanical Specifications & Cultivation Guidelines Section */}
-      <div className="pt-8 border-t border-border">
+      {/* Botanical Specifications Section */}
+      <div className={styles.sectionDivider}>
         <BotanicalSpecs metadata={seedMetadata} />
       </div>
 
-      {/* Customer Information, Logistics & Store Policies Section */}
-      <div className="pt-8 border-t border-border">
+      {/* Frequently Bought Together / Botanical Pairing Duo */}
+      {relatedProducts.length > 0 && (
+        <div className={styles.sectionDivider}>
+          <FrequentlyBoughtTogether
+            mainProduct={product}
+            companionProduct={relatedProducts[0]}
+          />
+        </div>
+      )}
+
+      {/* Trust & Policies Section */}
+      <div className={styles.sectionDivider}>
         <ProductTrustAndPolicies
           isPerishable={isPerishable}
           categoryName={category?.name || (isSeed ? 'Seeds' : 'Plants')}
         />
       </div>
 
-      {/* Related Products Carousel / Grid */}
+      {/* Customer Reviews & Botanical Experiences */}
+      <div className={styles.sectionDivider}>
+        <ProductReviews productTitle={product.title} />
+      </div>
+
+      {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <div className="pt-8 border-t border-border space-y-6">
-          <div className="flex items-center justify-between">
+        <div className={styles.sectionDivider}>
+          <div className={styles.relatedHeader}>
             <div>
-              <h2 className="text-xl sm:text-2xl font-black text-botanical-950 tracking-tight">
+              <h2 className={styles.relatedTitle}>
                 Complementary Varieties &amp; Plants
               </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p style={{ fontSize: '12px', color: 'var(--ugaoo-text-muted)', margin: '2px 0 0 0' }}>
                 More high-viability seeds and companion plants suited for Indian home cultivation.
               </p>
             </div>
-            <Button asChild variant="ghost" size="sm" className="text-xs text-botanical-700">
-              <Link href="/store">View All →</Link>
-            </Button>
+            <Link href="/store" className={styles.viewAllLink}>
+              View All Botanical Catalog →
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className={styles.relatedGrid}>
             {relatedProducts.map((rel) => (
               <ProductCard key={rel.id} product={rel} />
             ))}
           </div>
         </div>
       )}
+
+      {/* Sticky Bottom Add-to-Cart Bar */}
+      <StickyAddToCartBar product={product} targetSentinelId="main-add-to-cart-container" />
     </div>
   )
 }

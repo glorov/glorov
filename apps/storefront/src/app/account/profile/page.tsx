@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Mail, Phone, Building2, CheckCircle2, AlertCircle, Loader2, Lock } from 'lucide-react'
+import Link from 'next/link'
+import { User, Mail, Phone, Building2, CheckCircle2, AlertCircle, Loader2, Lock, ArrowLeft } from 'lucide-react'
 
 import {
   getCurrentCustomerAction,
@@ -11,10 +12,7 @@ import {
 } from '@/lib/customer-actions'
 import type { StoreCustomer } from '@/lib/customer'
 import { AccountNav } from '@/components/account/AccountNav'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import styles from './CustomerProfile.module.css'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -137,234 +135,263 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-botanical-700" />
+      <div className={styles.spinnerContainer} aria-label="Loading customer profile">
+        <Loader2 size={32} color="#0a4c36" className={styles.spinner} />
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 sm:px-6 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-          Profile Settings
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Update your personal details and contact numbers.
-        </p>
+    <div className={styles.container}>
+      {/* Mobile Back Bar */}
+      <div className={styles.mobileTopBar}>
+        <Link href="/account" className={styles.mobileBackBtn} aria-label="Back to Account Dashboard">
+          <ArrowLeft size={16} aria-hidden="true" />
+          <span>Back to Account</span>
+        </Link>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+      <header className={styles.headerArea}>
+        <h1 className={styles.title}>Profile Settings</h1>
+        <p className={styles.subtitle}>
+          Update your personal details, contact numbers, and security credentials.
+        </p>
+      </header>
+
+      <div className={styles.profileLayout}>
         <AccountNav />
 
-        <div className="flex-1 w-full space-y-6">
-          <Card className="shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <User className="h-5 w-5 text-botanical-700" />
-                Personal Information
-              </CardTitle>
-              <CardDescription className="text-xs">
+        <main className={styles.mainContent} aria-label="Customer profile and settings">
+          {/* Personal Information Card */}
+          <section className={styles.profileCard} aria-labelledby="personal-info-heading">
+            <div className={styles.cardHeader}>
+              <h2 id="personal-info-heading" className={styles.cardTitle}>
+                <User size={18} aria-hidden="true" />
+                <span>Personal Information</span>
+              </h2>
+              <p className={styles.cardSubtitle}>
                 These details will be used for delivery coordination and order updates.
-              </CardDescription>
-            </CardHeader>
+              </p>
+            </div>
 
-            <CardContent>
+            <div className={styles.cardBody}>
               {successMessage && (
-                <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600" />
+                <div role="status" aria-live="polite" className={styles.alertSuccess}>
+                  <CheckCircle2 size={16} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
                   <span>{successMessage}</span>
                 </div>
               )}
 
               {errorMessage && (
-                <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <div role="alert" aria-live="polite" className={styles.alertError}>
+                  <AlertCircle size={16} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
                   <span>{errorMessage}</span>
                 </div>
               )}
 
-              <form onSubmit={handleSave} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-foreground">
+              <form onSubmit={handleSave} className={styles.form} aria-label="Update personal details">
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} htmlFor="profile-first-name">
                       First Name *
                     </label>
-                    <Input
+                    <input
+                      id="profile-first-name"
                       required
+                      aria-required="true"
+                      autoComplete="given-name"
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
+                      className={styles.input}
+                      style={{ paddingLeft: 14 }}
                     />
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-foreground">
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} htmlFor="profile-last-name">
                       Last Name *
                     </label>
-                    <Input
+                    <input
+                      id="profile-last-name"
                       required
+                      aria-required="true"
+                      autoComplete="family-name"
                       type="text"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
+                      className={styles.input}
+                      style={{ paddingLeft: 14 }}
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-foreground">
+                <div className={styles.formGroup}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label className={styles.label} htmlFor="profile-email">
                       Email Address
                     </label>
-                    <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 600, padding: '2px 8px', borderRadius: 9999, backgroundColor: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0' }}>
                       Primary Auth Identity
-                    </Badge>
+                    </span>
                   </div>
-                  <div className="relative">
-                    <Input
+                  <div className={styles.inputWrapper}>
+                    <Mail className={styles.inputIcon} aria-hidden="true" />
+                    <input
+                      id="profile-email"
                       disabled
                       type="email"
                       value={customer?.email || ''}
-                      className="bg-muted text-muted-foreground pl-9 cursor-not-allowed"
+                      className={`${styles.input} ${styles.inputDisabled}`}
                     />
-                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    To modify your login email address, contact customer care.
+                  <p style={{ fontSize: '0.6875rem', color: '#64748b', margin: '2px 0 0' }}>
+                    To modify your login email address, contact customer care at support@glorov.in.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-foreground">
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} htmlFor="profile-phone">
                       Mobile Number
                     </label>
-                    <div className="relative">
-                      <Input
+                    <div className={styles.inputWrapper}>
+                      <Phone className={styles.inputIcon} aria-hidden="true" />
+                      <input
+                        id="profile-phone"
                         type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
                         maxLength={10}
                         placeholder="9876543210 (10 digits)"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                        className="pl-9"
+                        className={styles.input}
                       />
-                      <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-foreground">
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} htmlFor="profile-company">
                       Company / Organization (Optional)
                     </label>
-                    <div className="relative">
-                      <Input
+                    <div className={styles.inputWrapper}>
+                      <Building2 className={styles.inputIcon} aria-hidden="true" />
+                      <input
+                        id="profile-company"
                         type="text"
+                        autoComplete="organization"
                         placeholder="Nursery, Garden Club, etc."
                         value={companyName}
                         onChange={(e) => setCompanyName(e.target.value)}
-                        className="pl-9"
+                        className={styles.input}
                       />
-                      <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  <Button
-                    type="submit"
-                    disabled={isSaving}
-                    className="bg-botanical-700 hover:bg-botanical-800 text-white"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving changes...
-                      </>
-                    ) : (
-                      'Save Changes'
-                    )}
-                  </Button>
-                </div>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className={styles.submitBtn}
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 size={16} className={styles.spinner} aria-hidden="true" />
+                      <span>Saving changes...</span>
+                    </>
+                  ) : (
+                    <span>Save Changes</span>
+                  )}
+                </button>
               </form>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
 
           {/* Security & Password Card */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Lock className="h-5 w-5 text-botanical-700" />
-                Security &amp; Password
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Update your account password to keep your orders and saved data safe.
-              </CardDescription>
-            </CardHeader>
+          <section className={styles.profileCard} aria-labelledby="security-password-heading">
+            <div className={styles.cardHeader}>
+              <h2 id="security-password-heading" className={styles.cardTitle}>
+                <Lock size={18} aria-hidden="true" />
+                <span>Security &amp; Password</span>
+              </h2>
+              <p className={styles.cardSubtitle}>
+                Update your account password to keep your botanical orders and saved data safe.
+              </p>
+            </div>
 
-            <CardContent>
+            <div className={styles.cardBody}>
               {passwordSuccess && (
-                <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600" />
+                <div role="status" aria-live="polite" className={styles.alertSuccess}>
+                  <CheckCircle2 size={16} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
                   <span>{passwordSuccess}</span>
                 </div>
               )}
 
               {passwordError && (
-                <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <div role="alert" aria-live="polite" className={styles.alertError}>
+                  <AlertCircle size={16} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
                   <span>{passwordError}</span>
                 </div>
               )}
 
-              <form onSubmit={handlePasswordChange} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-foreground">
+              <form onSubmit={handlePasswordChange} className={styles.form} aria-label="Update password">
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} htmlFor="profile-new-password">
                       New Password * (8+ chars)
                     </label>
-                    <Input
+                    <input
+                      id="profile-new-password"
                       required
+                      aria-required="true"
                       type="password"
+                      autoComplete="new-password"
                       placeholder="••••••••"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
+                      className={styles.input}
+                      style={{ paddingLeft: 14 }}
                     />
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-foreground">
+                  <div className={styles.formGroup}>
+                    <label className={styles.label} htmlFor="profile-confirm-password">
                       Confirm New Password *
                     </label>
-                    <Input
+                    <input
+                      id="profile-confirm-password"
                       required
+                      aria-required="true"
                       type="password"
+                      autoComplete="new-password"
                       placeholder="••••••••"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={styles.input}
+                      style={{ paddingLeft: 14 }}
                     />
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  <Button
-                    type="submit"
-                    disabled={isUpdatingPassword}
-                    className="bg-botanical-700 hover:bg-botanical-800 text-white"
-                  >
-                    {isUpdatingPassword ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Updating Password...
-                      </>
-                    ) : (
-                      'Update Password'
-                    )}
-                  </Button>
-                </div>
+                <button
+                  type="submit"
+                  disabled={isUpdatingPassword}
+                  className={styles.submitBtn}
+                >
+                  {isUpdatingPassword ? (
+                    <>
+                      <Loader2 size={16} className={styles.spinner} aria-hidden="true" />
+                      <span>Updating Password...</span>
+                    </>
+                  ) : (
+                    <span>Update Password</span>
+                  )}
+                </button>
               </form>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </section>
+        </main>
       </div>
     </div>
   )

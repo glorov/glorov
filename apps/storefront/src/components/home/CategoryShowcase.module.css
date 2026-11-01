@@ -1,0 +1,236 @@
+/**
+ * CategoryShowcase.module.css
+ * Pure CSS Module for Ugaoo-style Circular Category Rail & Botanical Taxonomy Cards
+ * Extracted from Ugaoo home-tlpc.css
+ * Zero Tailwind classes used.
+ */
+
+/* 1. Circular Story Rail */
+.storyRailSection {
+  background-color: var(--ugaoo-butter, #fff3d9);
+  padding: 1.25rem 0;
+  border-bottom: 1px solid rgba(230, 222, 210, 0.6);
+  width: 100%;
+}
+
+.storyRailContainer {
+  max-width: var(--max-content-width, 1440px);
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.storyTrack {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.5rem;
+  scrollbar-width: none;
+}
+
+.storyTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.storyItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  flex-shrink: 0;
+  width: 80px;
+  cursor: pointer;
+  transition: transform var(--transition-fast, 150ms ease);
+}
+
+.storyItem:hover {
+  transform: translateY(-2px);
+}
+
+.circleAvatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--ugaoo-maroon, #93113a) 0%, var(--ugaoo-yellow-badge, #ffd51f) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.circleAvatarInner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #ffffff;
+  position: relative;
+  border: 2px solid #ffffff;
+}
+
+.storyLabel {
+  font-family: var(--font-heading);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ugaoo-text-dark, #042018);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* 2. Taxonomy Cards Grid Section */
+.taxonomySection {
+  background-color: var(--ugaoo-canvas, #FAF9F7);
+  padding: 3rem 1rem;
+}
+
+.taxonomyContainer {
+  max-width: var(--max-content-width, 1440px);
+  margin: 0 auto;
+}
+
+.sectionHeader {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 2.5rem;
+}
+
+.sectionHeading {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--ugaoo-text-dark, #042018);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem 0;
+}
+
+.sectionSubtitle {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+  margin: 0;
+  line-height: 1.5;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.categoryCard {
+  background-color: #ffffff;
+  border: 1px solid rgba(4, 32, 24, 0.08);
+  border-radius: var(--radius-card, 18px);
+  overflow: hidden;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-card, 0 1px 4px rgba(0, 0, 0, 0.04));
+  transition: transform var(--transition-fast, 150ms ease), box-shadow var(--transition-smooth, 250ms ease), border-color var(--transition-fast, 150ms ease);
+}
+
+.categoryCard:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover, 0 8px 24px rgba(0, 0, 0, 0.08));
+  border-color: rgba(147, 17, 58, 0.25);
+}
+
+.cardImageWrap {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background-color: #f7f7f7;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.categoryCard:hover .cardImage {
+  transform: scale(1.05);
+}
+
+.cardContent {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ugaoo-text-dark, #042018);
+  margin: 0;
+  transition: color var(--transition-fast, 150ms ease);
+}
+
+.categoryCard:hover .cardTitle {
+  color: var(--ugaoo-maroon, #93113a);
+}
+
+.cardDesc {
+  font-size: 0.85rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+  line-height: 1.5;
+  margin: 0;
+}
+
+.exploreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ugaoo-maroon, #93113a);
+  margin-top: 0.5rem;
+}
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+  .cardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .storyItem {
+    width: 64px;
+  }
+  .circleAvatar {
+    width: 58px;
+    height: 58px;
+  }
+  .storyLabel {
+    font-size: 10px;
+  }
+  .sectionHeading {
+    font-size: 1.6rem;
+  }
+  .cardsGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .cardImageWrap {
+    height: 170px;
+  }
+}

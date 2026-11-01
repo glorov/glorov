@@ -15,7 +15,7 @@ import {
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 import { CatalogFilters } from '@/components/catalog/CatalogFilters'
 import { Pagination } from '@/components/catalog/Pagination'
-import { Button } from '@/components/ui/button'
+import styles from './StorePage.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -90,31 +90,29 @@ export default async function StorePage({ searchParams }: StorePageProps) {
     }
   }
 
-  // 3. Fetch products from Medusa Store API (using backend search query & category id if available)
+  // 3. Fetch products from Medusa Store API & authentic botanical catalog
   const productsRes = await getStoreCatalogProducts({
     q,
     category_id: categoryIds,
-    limit: 100, // Fetch catalog specimens for rich faceted filtering and sorting
+    limit: 100,
   })
 
   // Handle API failure gracefully
   if (!productsRes.success && productsRes.products.length === 0) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 py-12 space-y-6">
-        <div className="p-8 rounded-2xl border border-destructive/30 bg-destructive/5 text-center space-y-4 max-w-lg mx-auto">
-          <div className="h-12 w-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
-            <AlertCircle className="h-6 w-6" />
+      <div className={styles.container}>
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIconWrap}>
+            <AlertCircle size={24} style={{ color: 'var(--ugaoo-sale-red)' }} />
           </div>
-          <h2 className="text-lg font-bold text-foreground">Catalog Unavailable</h2>
-          <p className="text-xs text-muted-foreground">
+          <h2 className={styles.emptyTitle}>Catalog Unavailable</h2>
+          <p className={styles.emptyText}>
             We encountered a temporary issue connecting to the botanical catalog. Please try again or return home.
           </p>
-          <Button asChild variant="outline" size="sm" className="gap-2">
-            <Link href="/store">
-              <RefreshCw className="h-3.5 w-3.5" />
-              <span>Retry Catalog</span>
-            </Link>
-          </Button>
+          <Link href="/store" className={styles.viewAllCatalogBtn}>
+            <RefreshCw size={14} style={{ marginRight: '4px' }} />
+            <span>Retry Catalog</span>
+          </Link>
         </div>
       </div>
     )
@@ -145,33 +143,40 @@ export default async function StorePage({ searchParams }: StorePageProps) {
   const paginatedProducts = sortedProducts.slice((page - 1) * pageSize, page * pageSize)
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+    <div className={styles.container}>
       {/* Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Link href="/" className="hover:text-botanical-700 transition-colors">
+      <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
+        <Link href="/" className={styles.breadcrumbLink}>
           Home
         </Link>
-        <ChevronRight className="h-3 w-3" aria-hidden="true" />
-        <span className="font-semibold text-foreground">Botanical Store</span>
+        <ChevronRight size={12} aria-hidden="true" />
+        <span className={styles.breadcrumbCurrent}>Botanical Store</span>
         {activeCategoryName && (
           <>
-            <ChevronRight className="h-3 w-3" aria-hidden="true" />
-            <span className="font-semibold text-botanical-800">{activeCategoryName}</span>
+            <ChevronRight size={12} aria-hidden="true" />
+            <span className={styles.breadcrumbActiveCategory}>{activeCategoryName}</span>
           </>
         )}
       </nav>
 
       {/* Header Banner */}
-      <div className="pb-6 border-b border-border space-y-2">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-botanical-100 flex items-center justify-center text-botanical-700">
-            <Sprout className="h-4 w-4" />
+      <div className={styles.headerBanner}>
+        <div className={styles.badgeRow}>
+          <span className={styles.nurseryBadge}>
+            Pune Propagation Nursery
+          </span>
+          <span className={styles.dispatchText}>• Pan-India Dispatch</span>
+        </div>
+
+        <div className={styles.titleRow}>
+          <div className={styles.iconWrap}>
+            <Sprout size={20} aria-hidden="true" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-botanical-950 tracking-tight">
+          <h1 className={styles.title}>
             {activeCategoryName || (q ? `Search: "${q}"` : 'All Botanical & Seed Varieties')}
           </h1>
         </div>
-        <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl">
+        <p className={styles.description}>
           Authentic Indian heirloom and adapted seed varieties and potted plants dispatched directly from our Pune nursery hub across India.
         </p>
       </div>
@@ -201,30 +206,30 @@ export default async function StorePage({ searchParams }: StorePageProps) {
       {paginatedProducts.length > 0 ? (
         <ProductGrid products={paginatedProducts} />
       ) : (
-        <div className="py-16 px-4 rounded-2xl border border-dashed border-border bg-earth-50/50 flex flex-col items-center justify-center text-center space-y-5">
-          <div className="h-16 w-16 rounded-full bg-botanical-100 flex items-center justify-center text-botanical-700">
-            <Search className="h-8 w-8" />
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIconWrap}>
+            <Search size={28} aria-hidden="true" />
           </div>
-          <div className="max-w-md space-y-1.5">
-            <h3 className="text-lg font-bold text-botanical-950">
+          <div>
+            <h3 className={styles.emptyTitle}>
               {q ? `No specimens found for "${q}"` : 'No specimens match your filters'}
             </h3>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className={styles.emptyText}>
               {q
-                ? `We couldn't find any botanical seeds, plants, or gardening items matching "${q}". Try checking for spelling errors or searching for broad terms.`
+                ? `We couldn't find any botanical seeds or plants matching "${q}". Try checking for spelling errors or searching for broad terms.`
                 : 'Try adjusting your price range, removing specific seed type or season filters, or clearing all filters to see more botanical items.'}
             </p>
           </div>
 
           {/* Quick Alternative Suggestions */}
-          <div className="space-y-2">
-            <span className="text-[11px] font-semibold text-muted-foreground">Popular searches:</span>
-            <div className="flex flex-wrap justify-center gap-1.5">
+          <div className={styles.suggestionsRow}>
+            <span className={styles.suggestionsLabel}>Popular searches:</span>
+            <div className={styles.suggestionsPills}>
               {['Tomato Seeds', 'Marigold', 'Krishna Tulsi', 'Snake Plant', 'Coriander'].map((term) => (
                 <Link
                   key={term}
                   href={`/store?q=${encodeURIComponent(term)}`}
-                  className="px-2.5 py-1 rounded-full bg-white border border-border hover:border-botanical-400 text-xs font-medium text-foreground transition-colors"
+                  className={styles.suggestionChip}
                 >
                   {term}
                 </Link>
@@ -232,10 +237,10 @@ export default async function StorePage({ searchParams }: StorePageProps) {
             </div>
           </div>
 
-          <div className="pt-2">
-            <Button asChild variant="botanical" size="sm">
-              <Link href="/store">View All Botanical Catalog</Link>
-            </Button>
+          <div style={{ paddingTop: '0.5rem' }}>
+            <Link href="/store" className={styles.viewAllCatalogBtn}>
+              View All Botanical Catalog
+            </Link>
           </div>
         </div>
       )}

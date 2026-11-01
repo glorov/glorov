@@ -1,0 +1,533 @@
+/* ==========================================================================
+   GLOROV Botanical Nursery & Horticultural Careers Styles
+   100% Component-Separated Pure CSS Module backed by variables.css
+   Authentic Ugaoo evergreen baseline (#0a4c36 green, #fff6f4 ivory, #ffd51f gold)
+   ========================================================================== */
+
+.pageContainer {
+  min-height: 100vh;
+  background-color: var(--ugaoo-bg-soft, #fff6f4);
+  color: var(--ugaoo-text-dark, #042018);
+  padding-bottom: 5rem;
+}
+
+/* Breadcrumbs */
+.breadcrumbNav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 0.5rem;
+}
+
+.breadcrumbList {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+}
+
+.breadcrumbLink {
+  color: var(--ugaoo-green, #0a4c36);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 150ms ease;
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+  color: var(--ugaoo-maroon, #93113a);
+}
+
+.breadcrumbSeparator {
+  opacity: 0.5;
+}
+
+.breadcrumbCurrent {
+  color: var(--ugaoo-text-dark, #042018);
+  font-weight: 600;
+}
+
+/* Hero Section */
+.heroSection {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3.5rem;
+  text-align: center;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.2rem;
+  border-radius: 9999px;
+  background-color: var(--ugaoo-green-pill-bg, rgba(0, 168, 89, 0.08));
+  border: 1px solid var(--ugaoo-green-pill-border, rgba(0, 168, 89, 0.32));
+  color: var(--ugaoo-green, #0a4c36);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: 3.25rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  line-height: 1.65;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.75));
+  max-width: 760px;
+  margin: 0 auto 2.5rem;
+}
+
+/* Culture Stats Bar */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.statCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  box-shadow: 0 2px 8px rgba(4, 32, 24, 0.03);
+}
+
+.statValue {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0;
+}
+
+.statLabel {
+  font-size: 0.8125rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* Section Wrapper */
+.sectionWrapper {
+  max-width: 1200px;
+  margin: 4.5rem auto 0;
+  padding: 0 1.5rem;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 2.75rem;
+}
+
+.sectionPreheading {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ugaoo-maroon, #93113a);
+  margin-bottom: 0.5rem;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0 0 0.75rem;
+}
+
+.sectionSubtitle {
+  font-size: 1rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.7));
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.55;
+}
+
+/* Department Filter Tabs */
+.filterTabsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  min-height: 44px;
+  padding: 0.5rem 1.25rem;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 9999px;
+  background-color: #ffffff;
+  color: var(--ugaoo-text-dark, #042018);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 180ms ease;
+}
+
+.filterBtn:hover {
+  border-color: var(--ugaoo-green, #0a4c36);
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+}
+
+.filterBtnActive {
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+  border-color: var(--ugaoo-green, #0a4c36);
+}
+
+/* Open Roles Grid */
+.rolesGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.roleCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  box-shadow: 0 4px 16px rgba(4, 32, 24, 0.04);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.roleCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(4, 32, 24, 0.08);
+}
+
+.roleInfo {
+  flex-grow: 1;
+}
+
+.roleBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.departmentBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ugaoo-maroon, #93113a);
+  background-color: var(--ugaoo-butter, #fff3d9);
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.typeBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ugaoo-green, #0a4c36);
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.roleTitle {
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0 0 0.5rem;
+}
+
+.roleDesc {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.75));
+  margin: 0 0 0.75rem;
+  max-width: 720px;
+}
+
+.roleMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.8125rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+}
+
+.roleMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.applyBtn {
+  min-height: 44px;
+  padding: 0.65rem 1.75rem;
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 150ms ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.applyBtn:hover {
+  background-color: var(--ugaoo-green-dark, #042018);
+}
+
+/* Application Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(4, 32, 24, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.modalContent {
+  background-color: #ffffff;
+  border-radius: 16px;
+  max-width: 560px;
+  width: 100%;
+  padding: 2.25rem;
+  box-shadow: 0 10px 40px rgba(4, 32, 24, 0.2);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalCloseBtn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: transparent;
+  border: none;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.5));
+  cursor: pointer;
+  padding: 0.5rem;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalTitle {
+  font-family: var(--font-heading);
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0 0 0.35rem;
+}
+
+.modalSubtitle {
+  font-size: 0.875rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.7));
+  margin: 0 0 1.5rem;
+  line-height: 1.45;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.formLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ugaoo-text-dark, #042018);
+}
+
+.formInput,
+.formTextarea {
+  min-height: 44px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formInput:focus,
+.formTextarea:focus {
+  outline: none;
+  border-color: var(--ugaoo-green, #0a4c36);
+  box-shadow: 0 0 0 3px rgba(10, 76, 54, 0.12);
+}
+
+.modalSubmitBtn {
+  min-height: 48px;
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 150ms ease;
+  margin-top: 0.5rem;
+}
+
+.modalSubmitBtn:hover {
+  background-color: var(--ugaoo-green-dark, #042018);
+}
+
+/* Receipt Card */
+.receiptCard {
+  text-align: center;
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.receiptCode {
+  display: inline-block;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  background-color: var(--ugaoo-butter, #fff3d9);
+  color: var(--ugaoo-maroon, #93113a);
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border: 1px dashed var(--ugaoo-maroon, #93113a);
+}
+
+/* Culture & Benefits Pillars */
+.pillarsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.pillarCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 16px rgba(4, 32, 24, 0.03);
+}
+
+.pillarIconWrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+  color: var(--ugaoo-green, #0a4c36);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.pillarTitle {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0 0 0.5rem;
+}
+
+.pillarDesc {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.7));
+  margin: 0;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 992px) {
+  .heroTitle {
+    font-size: 2.35rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .roleCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+
+  .applyBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pillarsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .heroSection {
+    padding: 1.75rem 1rem 2.25rem;
+  }
+
+  .heroTitle {
+    font-size: 1.875rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pillarsGrid {
+    grid-template-columns: 1fr;
+  }
+}

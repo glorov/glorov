@@ -4,10 +4,8 @@ import {
   Layers,
   Droplets,
   Sun,
-  Compass,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import styles from './GardeningGuide.module.css'
 
 const SEASONS = [
   {
@@ -56,84 +54,61 @@ const RULES = [
 
 export function GardeningGuide() {
   return (
-    <section id="sowing-calendar" className="py-16 bg-earth-50/70 border-b border-border/50">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <Badge variant="botanical" className="text-xs mb-2">
-            Horticultural Knowledge
-          </Badge>
-          <h2 className="text-2xl sm:text-3xl font-black text-botanical-950 tracking-tight">
+    <section id="sowing-calendar" className={styles.section}>
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <span className={styles.badge}>Horticultural Knowledge</span>
+          <h2 className={styles.title}>
             Indian Sowing &amp; Cultivation Calendar
           </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed">
+          <p className={styles.subtitle}>
             Cultivate with confidence using seasonal guidelines calibrated specifically for Indian regional weather patterns and container gardening.
           </p>
         </div>
 
         {/* 3 Indian Agricultural Seasons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className={styles.seasonsGrid}>
           {SEASONS.map((season) => (
-            <Card
-              key={season.name}
-              className="bg-card border-border/70 hover:border-botanical-300 transition-colors shadow-2xs"
-            >
-              <CardHeader className="p-5 pb-3">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <Badge variant="earth" className="text-[10px] font-semibold">
-                    {season.tag}
-                  </Badge>
-                  <span className="text-[11px] text-muted-foreground font-mono flex items-center gap-1">
-                    <Calendar className="h-3 w-3 text-botanical-700" />
+            <div key={season.name} className={styles.seasonCard}>
+              <div className={styles.seasonHeader}>
+                <div className={styles.seasonMeta}>
+                  <span className={styles.seasonTag}>{season.tag}</span>
+                  <span className={styles.seasonTimeline}>
+                    <Calendar size={13} color="var(--ugaoo-green)" />
                     {season.timeline}
                   </span>
                 </div>
-                <h3 className="text-base font-bold text-botanical-950">{season.name}</h3>
-              </CardHeader>
-              <CardContent className="p-5 pt-0 space-y-3 text-xs">
+                <h3 className={styles.seasonName}>{season.name}</h3>
+              </div>
+              <div className={styles.seasonBody}>
                 <div>
-                  <span className="font-semibold text-botanical-900 block mb-0.5">
-                    Recommended Seeds:
-                  </span>
-                  <p className="text-muted-foreground">{season.crops}</p>
+                  <span className={styles.cropsLabel}>Recommended Seeds:</span>
+                  <p className={styles.cropsText}>{season.crops}</p>
                 </div>
-                <div className="p-3 rounded-lg bg-earth-100/60 border border-border/40 text-botanical-950/80 leading-relaxed">
-                  <span className="font-bold text-botanical-800">Cultivation Note: </span>
+                <div className={styles.cultivationNote}>
+                  <strong>Cultivation Note: </strong>
                   {season.tip}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* 3 Golden Germination Rules */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-botanical-900 to-botanical-950 text-white shadow-md">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-botanical-800">
-            <div>
-              <div className="flex items-center gap-2 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-1">
-                <Compass className="h-4 w-4" />
-                <span>Nursery Best Practices</span>
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold">
-                Fundamental Guidelines for High Seed Germination
-              </h3>
-            </div>
-            <p className="text-xs text-botanical-200/80 max-w-sm">
-              Tested principles practiced at our Pune propagation facility for optimal emergence.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Essential Botanical Germination Rules */}
+        <div className={styles.rulesSection}>
+          <h3 className={styles.rulesTitle}>Core Seed Sowing Foundations</h3>
+          <div className={styles.rulesGrid}>
             {RULES.map((rule) => {
               const Icon = rule.icon
               return (
-                <div key={rule.title} className="space-y-2">
-                  <div className="h-9 w-9 rounded-lg bg-botanical-800/80 border border-botanical-700/60 flex items-center justify-center text-emerald-300">
-                    <Icon className="h-4 w-4" />
+                <div key={rule.title} className={styles.ruleCard}>
+                  <div className={styles.ruleIconWrapper}>
+                    <Icon size={22} />
                   </div>
-                  <h4 className="font-bold text-sm text-white">{rule.title}</h4>
-                  <p className="text-xs text-botanical-200/80 leading-relaxed">
-                    {rule.description}
-                  </p>
+                  <div className={styles.ruleContent}>
+                    <h4 className={styles.ruleHeading}>{rule.title}</h4>
+                    <p className={styles.ruleDesc}>{rule.description}</p>
+                  </div>
                 </div>
               )
             })}

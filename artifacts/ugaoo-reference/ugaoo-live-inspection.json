@@ -1,0 +1,393 @@
+{
+  "title": "Ugaoo | India's One-Stop Gardening Shop",
+  "annBar": {
+    "text": "⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW\n⚡ DIWALI SALE IS LIVE NOW",
+    "styles": {
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(33, 35, 38)",
+      "height": "36px",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "padding": "0px",
+      "fontFamily": "Outfit, sans-serif"
+    },
+    "html": "<div id=\"shopify-section-sections--28247250993284__announcement-bar\" class=\"shopify-section shopify-section-group-header-group shopify-section-announcement-bar\"><style data-shopify=\"\">#shopify-section-sections--28247250993284__announcement-bar {\n      --section-padding-top: 0px;\n      --section-padding-bottom: 0px;\n      --gradient-background: #93113a;\n      --color-background: 147, 17, 58;\n      --color-foreground: 255, 255, 255;\n    }\n\n    :root {\n      --announcement-height: calc(36px + (0px "
+  },
+  "header": {
+    "styles": {
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "height": "114.797px",
+      "position": "relative",
+      "borderBottom": "0px none rgb(33, 35, 38)"
+    },
+    "navLinks": [
+      {
+        "text": "Log in",
+        "href": "/account/login",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit, sans-serif",
+          "letterSpacing": "0.6px",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "⚡ Diwali Sale",
+        "href": "/collections/festive-sale",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "uppercase"
+        }
+      },
+      {
+        "text": "Limited Time Offer",
+        "href": "/collections/limited-stock-sale",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "uppercase"
+        }
+      },
+      {
+        "text": "Plants",
+        "href": "/collections/plants",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "Indoor Plants",
+        "href": "/collections/indoor-plants",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "XL plants",
+        "href": "/collections/xl-plants",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "Bundles",
+        "href": "/collections/all-plant-bundles",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "Low Light Plants",
+        "href": "/collections/low-light",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "Cacti and Succulents",
+        "href": "/collections/cacti-succulents",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "Hanging Plants",
+        "href": "/collections/hanging-plants",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "Fruit Plants",
+        "href": "/collections/fruit-plant",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "Shop by Location",
+        "href": "/collections/shop-by-collection",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "Balcony",
+        "href": "/collections/balcony",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "Workspace",
+        "href": "/collections/workspace",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      },
+      {
+        "text": "Living Room",
+        "href": "/collections/living-room",
+        "styles": {
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "color": "rgb(10, 76, 54)",
+          "fontFamily": "Outfit",
+          "letterSpacing": "normal",
+          "textTransform": "none"
+        }
+      }
+    ]
+  },
+  "categoryCircles": {
+    "imgStyles": {
+      "width": "117.109px",
+      "height": "117.109px",
+      "borderRadius": "0px",
+      "border": "0px none rgb(0, 0, 238)"
+    }
+  },
+  "productCard": {
+    "cardStyles": {
+      "backgroundColor": "rgb(255, 255, 255)",
+      "borderRadius": "18px",
+      "boxShadow": "none",
+      "border": "0px none rgb(33, 35, 38)",
+      "padding": "0px",
+      "overflow": "hidden"
+    },
+    "cardImgStyles": {
+      "aspectRatio": "auto 600 / 600",
+      "objectFit": "cover",
+      "borderRadius": "0px"
+    },
+    "cardTitleStyles": {
+      "fontSize": "22px",
+      "fontWeight": "500",
+      "fontFamily": "GooperDeck-medium",
+      "color": "rgb(4, 32, 24)",
+      "lineHeight": "normal"
+    },
+    "cardPriceStyles": {
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "fontFamily": "Outfit, sans-serif",
+      "color": "rgb(33, 35, 38)"
+    },
+    "cardBtnStyles": {
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(33, 35, 38)",
+      "borderRadius": "0px",
+      "height": "54px",
+      "padding": "0px",
+      "fontSize": "16px",
+      "fontWeight": "400"
+    }
+  },
+  "sections": [
+    {
+      "id": "shopify-section-sections--28247250993284__announcement-bar",
+      "className": "shopify-section shopify-section-group-header-group shopify-section-announcement-bar"
+    },
+    {
+      "id": "shopify-section-sections--28247250993284__header",
+      "className": "shopify-section shopify-section-group-header-group shopify-section-header",
+      "firstHeading": ""
+    },
+    {
+      "id": "shopify-section-sections--28247250993284__mobile_app_banner",
+      "className": "shopify-section shopify-section-group-header-group section-mobile-app-banner"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__image_slideshow_RUUPtq",
+      "className": "shopify-section"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__trust_badges_bar_6V9KdQ",
+      "className": "shopify-section section"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__our_categories_MFkima",
+      "className": "shopify-section index-section our-categories-section collection-category"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__collection_section_8RD9bx",
+      "className": "shopify-section index-section collection-slider-section",
+      "firstHeading": "Gifts Made For Festive"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__collection_section_XPyzBc",
+      "className": "shopify-section index-section collection-slider-section",
+      "firstHeading": "The Premium XL Plants"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__collection_section_L98j46",
+      "className": "shopify-section index-section collection-slider-section",
+      "firstHeading": "Beginner Friendly"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__rich_text_block_FnLmnA",
+      "className": "shopify-section index-section rich-text-block-section",
+      "firstHeading": "Gifted & Loved"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__1792577258d14ffb50",
+      "className": "shopify-section section"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__collection_section_HDQThY",
+      "className": "shopify-section index-section collection-slider-section",
+      "firstHeading": "Most loved"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__farm_to_home_RHbLUe",
+      "className": "shopify-section index-section farm-to-home-section",
+      "firstHeading": "From Our Farm to Your Home"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__collection_section_Gjya4x",
+      "className": "shopify-section index-section collection-slider-section",
+      "firstHeading": "New Arrivals"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__home_table_ugaoo_Knddb3",
+      "className": "shopify-section",
+      "firstHeading": "Ugaoo vs the Rest"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__offers_for_you_cards_Pq3Db3",
+      "className": "shopify-section",
+      "firstHeading": "Offers for You"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__banner_section_iyKD4C",
+      "className": "shopify-section index-section banner-section",
+      "firstHeading": "Grow your\nown Garden"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__custom_store_section_qbqgz6",
+      "className": "shopify-section index-section custom-store-section",
+      "firstHeading": "Find Your Nearest Ugaoo Store."
+    },
+    {
+      "id": "shopify-section-template--28247255580804__garden_service_drqF8L",
+      "className": "shopify-section",
+      "firstHeading": "Garden services by Ugaoo"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__image_slideshow_Xe7caT",
+      "className": "shopify-section"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__marquee_logos_6KdcKW",
+      "className": "shopify-section index-section marquee-section"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__founder_section_tMwxFp",
+      "className": "shopify-section index-section founder-section",
+      "firstHeading": "Our Story"
+    },
+    {
+      "id": "shopify-section-template--28247255580804__review_section_HXeJnB",
+      "className": "shopify-section index-section plant-parents-section",
+      "firstHeading": "1,00,000+ plant parents and counting."
+    },
+    {
+      "id": "shopify-section-template--28247255580804__blog_slider_3cXdFU",
+      "className": "shopify-section index-section blog-slider-section",
+      "firstHeading": "Plant care, simplified"
+    },
+    {
+      "id": "shopify-section-sections--28247250960516__wrapper_banner_section_3bNqAQ",
+      "className": "shopify-section shopify-section-group-footer-group index-section whatsapp-banner-section",
+      "firstHeading": "Stuck with plant care?"
+    },
+    {
+      "id": "shopify-section-sections--28247250960516__footer_section_custom_UcnV6n",
+      "className": "shopify-section shopify-section-group-footer-group custom-footer-section"
+    },
+    {
+      "id": "shopify-section-sections--28247250960516__footer_section_custom_UcnV6n",
+      "className": "relative"
+    },
+    {
+      "id": "shopify-section-sections--28247251026052__mobile-dock",
+      "className": "shopify-section shopify-section-group-overlay-group shopify-section-mobile-dock"
+    },
+    {
+      "id": "shopify-section-searchtap",
+      "className": "shopify-section"
+    }
+  ],
+  "footer": {
+    "styles": {
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "color": "rgb(33, 35, 38)",
+      "padding": "0px"
+    }
+  }
+}

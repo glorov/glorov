@@ -1,0 +1,624 @@
+/* ==========================================================================
+   GLOROV Indian Sowing Calendar & Planting Planner Styles
+   100% Component-Separated Pure CSS Module backed by variables.css
+   Authentic Ugaoo evergreen baseline (#0a4c36 green, #fff6f4 ivory, #ffd51f gold)
+   ========================================================================== */
+
+.pageContainer {
+  min-height: 100vh;
+  background-color: var(--ugaoo-bg-soft, #fff6f4);
+  color: var(--ugaoo-text-dark, #042018);
+  padding-bottom: 5rem;
+}
+
+/* Breadcrumbs */
+.breadcrumbNav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 0.5rem;
+}
+
+.breadcrumbList {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+}
+
+.breadcrumbLink {
+  color: var(--ugaoo-green, #0a4c36);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 150ms ease;
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+  color: var(--ugaoo-maroon, #93113a);
+}
+
+.breadcrumbSeparator {
+  opacity: 0.5;
+}
+
+.breadcrumbCurrent {
+  color: var(--ugaoo-text-dark, #042018);
+  font-weight: 600;
+}
+
+/* Hero Section */
+.heroSection {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3rem;
+  text-align: center;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  background-color: var(--ugaoo-green-pill-bg, rgba(0, 168, 89, 0.08));
+  border: 1px solid var(--ugaoo-green-pill-border, rgba(0, 168, 89, 0.32));
+  color: var(--ugaoo-green, #0a4c36);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  line-height: 1.65;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.75));
+  max-width: 760px;
+  margin: 0 auto 2.5rem;
+}
+
+/* Seasons Overview Bar */
+.seasonsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.seasonCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 12px;
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(4, 32, 24, 0.03);
+  position: relative;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.seasonCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(4, 32, 24, 0.06);
+}
+
+.activeSeasonCard {
+  border-color: var(--ugaoo-green, #0a4c36);
+  background: linear-gradient(180deg, #ffffff 0%, var(--ugaoo-green-subtle, #f0f7f4) 100%);
+  box-shadow: 0 0 0 2px var(--ugaoo-green, #0a4c36);
+}
+
+.currentSeasonBadge {
+  position: absolute;
+  top: -10px;
+  background-color: var(--ugaoo-yellow-badge, #ffd029);
+  color: var(--ugaoo-green-dark, #042018);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.seasonIconWrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+  color: var(--ugaoo-green, #0a4c36);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seasonName {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0;
+}
+
+.seasonTiming {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ugaoo-maroon, #93113a);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.seasonDesc {
+  font-size: 0.8125rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.7));
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Section Wrapper */
+.sectionWrapper {
+  max-width: 1200px;
+  margin: 3.5rem auto 0;
+  padding: 0 1.5rem;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 2.25rem;
+}
+
+.sectionBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background-color: var(--ugaoo-butter, #fff3d9);
+  color: var(--ugaoo-text-dark, #042018);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.75rem;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0 0 0.75rem;
+}
+
+.sectionSubtitle {
+  font-size: 1rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.75));
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.55;
+}
+
+/* Sowing Matrix Tool Container */
+.matrixCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 20px rgba(4, 32, 24, 0.05);
+}
+
+/* Agro-Climatic Zone Selector */
+.zoneSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.zoneBtn {
+  min-height: 44px;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 9999px;
+  background-color: #ffffff;
+  color: var(--ugaoo-text-dark, #042018);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 180ms ease;
+}
+
+.zoneBtn:hover {
+  border-color: var(--ugaoo-green, #0a4c36);
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+}
+
+.zoneBtnActive {
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+  border-color: var(--ugaoo-green, #0a4c36);
+}
+
+/* Month Tabs Carousel / Grid */
+.monthGrid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 2.5rem;
+  background-color: var(--ugaoo-bg-soft, #fff6f4);
+  padding: 0.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+}
+
+.monthBtn {
+  min-height: 44px;
+  padding: 0.5rem 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--ugaoo-text-dark, #042018);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  transition: all 150ms ease;
+  position: relative;
+}
+
+.monthBtn:hover {
+  background-color: #ffffff;
+  border-color: var(--ugaoo-border, #e6ded2);
+}
+
+.monthBtnActive {
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(10, 76, 54, 0.2);
+}
+
+.monthSub {
+  font-size: 0.625rem;
+  opacity: 0.75;
+  text-transform: uppercase;
+}
+
+.nowDot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--ugaoo-sale-red, #d93025);
+}
+
+/* Category Filter Tabs (Vegetables, Flowers, Herbs) */
+.categoryFilterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--ugaoo-border, #e6ded2);
+  flex-wrap: wrap;
+}
+
+.categoryTabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.categoryBtn {
+  min-height: 44px;
+  padding: 0.5rem 1.15rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  background-color: #ffffff;
+  color: var(--ugaoo-text-dark, #042018);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 150ms ease;
+}
+
+.categoryBtn:hover {
+  border-color: var(--ugaoo-green, #0a4c36);
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+}
+
+.categoryBtnActive {
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+  border-color: var(--ugaoo-green, #0a4c36);
+}
+
+.currentSelectionSummary {
+  font-size: 0.875rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.7));
+}
+
+/* Varieties Grid */
+.varietiesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.varietyCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  position: relative;
+}
+
+.varietyCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(4, 32, 24, 0.06);
+}
+
+.varietyTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.varietyName {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0 0 0.2rem;
+}
+
+.varietyBotanical {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+}
+
+.gstBadge {
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+  color: var(--ugaoo-green, #0a4c36);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+/* Sowing Vital Stats Grid */
+.vitalsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--ugaoo-border, #e6ded2);
+  border-bottom: 1px solid var(--ugaoo-border, #e6ded2);
+}
+
+.vitalItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--ugaoo-text-dark, #042018);
+}
+
+.vitalIcon {
+  color: var(--ugaoo-green, #0a4c36);
+  flex-shrink: 0;
+}
+
+.varietyDesc {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.75));
+  margin: 0;
+}
+
+.companionTip {
+  background-color: var(--ugaoo-bg-soft, #fff6f4);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--ugaoo-text-dark, #042018);
+  border-left: 3px solid var(--ugaoo-maroon, #93113a);
+  margin-top: auto;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.priceTag {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+}
+
+.addSeedBtn {
+  min-height: 44px;
+  padding: 0.5rem 1.25rem;
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background-color 150ms ease;
+}
+
+.addSeedBtn:hover {
+  background-color: var(--ugaoo-green-dark, #042018);
+}
+
+/* Sowing Reassurance / Statutory Banner */
+.guaranteeBanner {
+  background: linear-gradient(135deg, var(--ugaoo-green, #0a4c36) 0%, var(--ugaoo-green-dark, #042018) 100%);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: 4rem;
+}
+
+.guaranteeText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.guaranteeTitle {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  color: var(--ugaoo-yellow-badge, #ffd029);
+  margin: 0;
+}
+
+.guaranteeSubtitle {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  max-width: 580px;
+}
+
+.seedShopBtn {
+  min-height: 48px;
+  padding: 0.75rem 1.75rem;
+  background-color: var(--ugaoo-yellow-badge, #ffd029);
+  color: var(--ugaoo-green-dark, #042018);
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  transition: opacity 150ms ease;
+}
+
+.seedShopBtn:hover {
+  opacity: 0.95;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 992px) {
+  .heroTitle {
+    font-size: 2.25rem;
+  }
+
+  .seasonsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .monthGrid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .guaranteeBanner {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .seedShopBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroSection {
+    padding: 1.75rem 1rem 2rem;
+  }
+
+  .heroTitle {
+    font-size: 1.875rem;
+  }
+
+  .matrixCard {
+    padding: 1.5rem 1rem;
+  }
+
+  .monthGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .zoneSelector {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .zoneBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .categoryFilterBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .categoryTabs {
+    width: 100%;
+  }
+
+  .categoryBtn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .varietiesGrid {
+    grid-template-columns: 1fr;
+  }
+}

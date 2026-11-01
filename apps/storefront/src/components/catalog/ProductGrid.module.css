@@ -1,0 +1,91 @@
+/**
+ * ProductGrid.module.css
+ * Pure CSS Module for Responsive Botanical Product Grid
+ * Extracted from Ugaoo section-collection-section.css
+ * Zero Tailwind classes used.
+ */
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.emptyState {
+  padding: 4rem 1.5rem;
+  border-radius: var(--radius-xl, 16px);
+  border: 1px dashed rgba(230, 222, 210, 0.9);
+  background-color: var(--ugaoo-light-bg, #fef8ec);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1rem;
+  grid-column: 1 / -1;
+}
+
+.emptyIconCircle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: var(--ugaoo-butter, #fff3d9);
+  color: var(--ugaoo-green, #0a4c36);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyTitle {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ugaoo-text-dark, #042018);
+  margin: 0;
+}
+
+.emptyDescription {
+  font-size: 0.85rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+  max-width: 400px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.resetButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-pill, 9999px);
+  border: 1px solid var(--ugaoo-maroon, #93113a);
+  background-color: transparent;
+  color: var(--ugaoo-maroon, #93113a);
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast, 150ms ease), color var(--transition-fast, 150ms ease);
+}
+
+.resetButton:hover {
+  background-color: var(--ugaoo-maroon, #93113a);
+  color: #ffffff;
+}
+
+/* Responsive Grid Columns */
+@media (max-width: 1024px) {
+  .gridContainer {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .gridContainer {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}

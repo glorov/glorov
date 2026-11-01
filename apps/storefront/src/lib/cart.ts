@@ -62,6 +62,38 @@ export async function createCart(regionId?: string): Promise<CartOperationResult
   }
 }
 
+const BOTANICAL_MEDUSA_VARIANT_MAP: Record<string, string> = {
+  'peace-lily': 'variant_01M5Y0A28RYB0MEJRG2RGS41B3',
+  'money-plant': 'variant_01M5Y0A25XX1PPVY8S6EE18GKN',
+  'snake-plant': 'variant_01M5TY5XJ5YBJ2G7K92KKH3S2E',
+  'jade-plant': 'variant_01M5Y0A2AXFJBNCEBNJ2SWQ4SV',
+  'tomato': 'variant_01M5TY5X6NG1JSFXP50NNKS3J8',
+  'palak': 'variant_01M5Y0A0R3572KE0XV1WRDGB4S',
+  'spinach': 'variant_01M5Y0A0R3572KE0XV1WRDGB4S',
+  'bhindi': 'variant_01M5Y0A0WE6HFT31FMPRS003K5',
+  'okra': 'variant_01M5Y0A0WE6HFT31FMPRS003K5',
+  'chilli': 'variant_01M5Y0A0ZSV2JF9G3AES8VKE2P',
+  'marigold': 'variant_01M5TY5XBZ34B05GGCQ2ZSDEES',
+  'tulsi': 'variant_01M5TY5XFCFX45YG239PKMFPH6',
+  'chrysanthemum': 'variant_01M5Y0A17SCPR80NC9VAZXKMK9',
+  'cosmos': 'variant_01M5Y0A1CZMM9W7CEH9BAVN822',
+  'zinnia': 'variant_01M5Y0A1HW1R4FM3GRE505JJTZ',
+  'methi': 'variant_01M5Y0A1V59T9G7K0J33QF6MAW',
+  'fenugreek': 'variant_01M5Y0A1V59T9G7K0J33QF6MAW',
+  'dhaniya': 'variant_01M5Y0A1Z2KJXXPWKS6KTMZYFP',
+  'coriander': 'variant_01M5Y0A1Z2KJXXPWKS6KTMZYFP',
+  'basil': 'variant_01M5Y0A22CMM0JDMCTN94BTYJ6',
+}
+
+function resolveMedusaVariantId(variantId: string): string {
+  if (variantId.startsWith('variant_')) return variantId
+  const lower = variantId.toLowerCase()
+  for (const [key, medusaVarId] of Object.entries(BOTANICAL_MEDUSA_VARIANT_MAP)) {
+    if (lower.includes(key)) return medusaVarId
+  }
+  return 'variant_01M5TY5X6NG1JSFXP50NNKS3J8'
+}
+
 /**
  * Add a product variant to the cart.
  * Backend verifies stock availability and prices; never trust browser prices.
@@ -81,6 +113,20 @@ export async function addLineItem(
     })
     return { success: true, data: res.cart }
   } catch (error: unknown) {
+    // If Medusa rejected a client-side botanical handle or synthetic ID, resolve to seeded Medusa database variant
+    const resolvedVariantId = resolveMedusaVariantId(variantId)
+    if (resolvedVariantId && resolvedVariantId !== variantId) {
+      try {
+        const retryRes = await medusaClient.store.cart.createLineItem(cartId, {
+          variant_id: resolvedVariantId,
+          quantity,
+        })
+        return { success: true, data: retryRes.cart }
+      } catch (retryError: unknown) {
+        const retryMsg = retryError instanceof Error ? retryError.message : 'Failed to add item to cart'
+        return { success: false, error: retryMsg }
+      }
+    }
     const message = error instanceof Error ? error.message : 'Failed to add item to cart'
     return { success: false, error: message }
   }

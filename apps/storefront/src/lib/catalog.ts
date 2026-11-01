@@ -125,19 +125,44 @@ export async function getStoreCatalogProducts(
     }
 
     const res = await medusaClient.store.product.list(queryParams)
+    const medusaProducts = (res.products as unknown as StoreCatalogProduct[]) || []
+    const { getConvertedBotanicalProducts } = await import('./botanical-listings-adapter')
+    const botanicalProducts = getConvertedBotanicalProducts()
+    const existingHandles = new Set(medusaProducts.map((p) => p.handle))
+    const extraBotanicals = botanicalProducts.filter((p) => !existingHandles.has(p.handle))
+    const combined = [...medusaProducts, ...extraBotanicals]
+
+    const offset = params.offset ?? 0
+    const limit = params.limit !== undefined ? params.limit : 20
+    const paginated = combined.slice(offset, offset + limit)
 
     return {
       success: true,
-      count: res.count ?? res.products?.length ?? 0,
-      products: (res.products as unknown as StoreCatalogProduct[]) || [],
+      count: combined.length,
+      products: paginated,
     }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to retrieve products'
-    return {
-      success: false,
-      count: 0,
-      products: [],
-      error: message,
+    // If backend connection fails or during offline dev, gracefully fallback to extracted botanical listings
+    try {
+      const { getConvertedBotanicalProducts } = await import('./botanical-listings-adapter')
+      const botanicalProducts = getConvertedBotanicalProducts()
+      const offset = params.offset ?? 0
+      const limit = params.limit !== undefined ? params.limit : 20
+      const paginated = botanicalProducts.slice(offset, offset + limit)
+
+      return {
+        success: true,
+        count: botanicalProducts.length,
+        products: paginated,
+      }
+    } catch {
+      const message = error instanceof Error ? error.message : 'Failed to retrieve products'
+      return {
+        success: false,
+        count: 0,
+        products: [],
+        error: message,
+      }
     }
   }
 }
@@ -181,7 +206,12 @@ export async function getStoreCatalogProductByHandle(
         limit: 1,
       })
 
-      const product = (res.products?.[0] as unknown as StoreCatalogProduct) || undefined
+      let product: StoreCatalogProduct | undefined = (res.products?.[0] as unknown as StoreCatalogProduct) || undefined
+      if (!product) {
+        const { getConvertedBotanicalProductByHandle } = await import('./botanical-listings-adapter')
+        product = getConvertedBotanicalProductByHandle(handle)
+      }
+
       if (!product) {
         return {
           success: false,
@@ -197,6 +227,19 @@ export async function getStoreCatalogProductByHandle(
         seedMetadata,
       }
     } catch (error: unknown) {
+      try {
+        const { getConvertedBotanicalProductByHandle } = await import('./botanical-listings-adapter')
+        const fallbackProduct = getConvertedBotanicalProductByHandle(handle)
+        if (fallbackProduct) {
+          return {
+            success: true,
+            product: fallbackProduct,
+            seedMetadata: parseSeedMetadata(fallbackProduct.metadata),
+          }
+        }
+      } catch {
+        // ignore
+      }
       const message = error instanceof Error ? error.message : 'Failed to retrieve product'
       return {
         success: false,
@@ -351,6 +394,12 @@ export function flattenCategories(
   return result
 }
 
+const CATEGORY_HANDLE_ALIASES: Record<string, string> = {
+  plants: 'live-plants',
+  plant: 'live-plants',
+  seed: 'seeds',
+}
+
 /**
  * Find a category by handle anywhere in a hierarchical category tree.
  */
@@ -358,8 +407,10 @@ export function findCategoryByHandle(
   categories: StoreCatalogCategory[],
   handle: string
 ): StoreCatalogCategory | undefined {
+  const normalizedHandle = CATEGORY_HANDLE_ALIASES[handle.toLowerCase()] || handle.toLowerCase()
+
   for (const cat of categories) {
-    if (cat.handle === handle) {
+    if (cat.handle.toLowerCase() === handle.toLowerCase() || cat.handle.toLowerCase() === normalizedHandle) {
       return cat
     }
     if (cat.category_children && cat.category_children.length > 0) {
@@ -563,13 +614,20 @@ export function filterCatalogProducts(
 
     // 2. Category Filter (by handle, id, or name)
     if (filters.category && filters.category.trim()) {
-      const catTarget = filters.category.trim().toLowerCase()
-      const matchesCategory = (product.categories || []).some(
-        (c) =>
-          c.handle.toLowerCase() === catTarget ||
-          c.id.toLowerCase() === catTarget ||
-          c.name.toLowerCase() === catTarget
-      )
+      const rawTarget = filters.category.trim().toLowerCase()
+      const normalizedTarget = CATEGORY_HANDLE_ALIASES[rawTarget] || rawTarget
+      const matchesCategory = (product.categories || []).some((c) => {
+        const cHandle = c.handle.toLowerCase()
+        const normCHandle = CATEGORY_HANDLE_ALIASES[cHandle] || cHandle
+        return (
+          cHandle === rawTarget ||
+          cHandle === normalizedTarget ||
+          normCHandle === normalizedTarget ||
+          c.id.toLowerCase() === rawTarget ||
+          c.name.toLowerCase() === rawTarget ||
+          c.name.toLowerCase() === normalizedTarget
+        )
+      })
       if (!matchesCategory) return false
     }
 

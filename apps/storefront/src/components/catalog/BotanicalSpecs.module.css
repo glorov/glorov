@@ -1,0 +1,154 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ugaoo-green);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--ugaoo-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Specifications Grid */
+.specsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.specCard {
+  padding: 1.125rem;
+  border-radius: var(--ugaoo-radius-md);
+  border: 1px solid var(--ugaoo-border);
+  background-color: var(--ugaoo-white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: border-color var(--ugaoo-transition-fast);
+}
+
+.specCard:hover {
+  border-color: var(--ugaoo-green);
+}
+
+.specHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.specIconWrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--ugaoo-cream);
+  color: var(--ugaoo-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.specLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ugaoo-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.specValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ugaoo-text-dark);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.italic {
+  font-family: var(--font-heading);
+  font-style: italic;
+}
+
+/* Double Guideline Cards */
+.guidelineGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .guidelineGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.guidelineCard {
+  padding: 1.5rem;
+  border-radius: var(--ugaoo-radius-lg);
+  border: 1px solid var(--ugaoo-border);
+  background-color: var(--ugaoo-cream-light);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.guidelineHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--ugaoo-green);
+}
+
+.guidelineTitle {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ugaoo-green);
+  margin: 0;
+}
+
+.guidelineText {
+  font-size: 13px;
+  color: var(--ugaoo-text-dark);
+  line-height: 1.6;
+  white-space: pre-line;
+  margin: 0;
+}
+
+/* Cultivation Notice */
+.cultivationNotice {
+  padding: 1rem 1.25rem;
+  border-radius: var(--ugaoo-radius-md);
+  border: 1px solid var(--ugaoo-border);
+  background-color: var(--ugaoo-cream);
+  font-size: 12px;
+  color: var(--ugaoo-text-dark);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.noticeText {
+  line-height: 1.6;
+  margin: 0;
+}

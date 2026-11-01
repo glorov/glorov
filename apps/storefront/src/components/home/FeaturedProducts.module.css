@@ -1,0 +1,243 @@
+/**
+ * FeaturedProducts.module.css
+ * Pure CSS Module for Featured Seeds & Botanicals Section
+ * Extracted from Ugaoo section-collection-section.css
+ * Zero Tailwind classes used.
+ */
+
+.section {
+  padding: 3.5rem 1rem;
+  background-color: var(--ugaoo-canvas, #FAF9F7);
+  border-bottom: 1px solid rgba(230, 222, 210, 0.6);
+  width: 100%;
+}
+
+.container {
+  max-width: var(--max-content-width, 1440px);
+  margin: 0 auto;
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.headerInfo {
+  max-width: 600px;
+}
+
+.badgeRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.bestsellerBadge {
+  background-color: var(--top-tag-dark-blue, #0c2340);
+  color: var(--top-tag-text-white, #ffffff);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill, 9999px);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 1px 3px rgba(12, 35, 64, 0.15);
+}
+
+.testedBadge {
+  font-size: 11.5px;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+  font-weight: 500;
+}
+
+.heading {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--ugaoo-text-dark, #042018);
+  margin: 0 0 0.4rem 0;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+  margin: 0;
+  line-height: 1.5;
+}
+
+.viewAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1.35rem;
+  border-radius: var(--radius-pill, 9999px);
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  background-color: #ffffff;
+  color: var(--ugaoo-maroon, #93113a);
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: border-color var(--transition-fast, 150ms ease), background-color var(--transition-fast, 150ms ease);
+}
+
+.viewAllBtn:hover {
+  background-color: var(--ugaoo-light-bg, #fef8ec);
+  border-color: var(--ugaoo-maroon, #93113a);
+}
+
+/* Category Filter Chips Bar */
+.filterChipsBar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.75rem;
+  scrollbar-width: none;
+}
+
+.filterChipsBar::-webkit-scrollbar {
+  display: none;
+}
+
+.filterChip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0.45rem 1.15rem;
+  border-radius: var(--radius-pill, 9999px);
+  text-decoration: none;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  background-color: #ffffff;
+  color: var(--ugaoo-text-dark, #042018);
+  cursor: pointer;
+  outline: none;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.filterChip:focus-visible {
+  outline: 2px solid var(--top-tag-dark-blue, #0c2340);
+  outline-offset: 2px;
+}
+
+.filterChipActive {
+  background-color: var(--top-tag-dark-blue, #0c2340);
+  color: #ffffff;
+  border-color: var(--top-tag-dark-blue, #0c2340);
+  box-shadow: 0 2px 8px rgba(12, 35, 64, 0.22);
+}
+
+.filterChip:not(.filterChipActive):hover {
+  background-color: var(--ugaoo-light-bg, #fef8ec);
+  border-color: var(--top-tag-dark-blue, #0c2340);
+  color: var(--top-tag-dark-blue, #0c2340);
+}
+
+.filterChipLink {
+  border-style: dashed;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+}
+
+.filterChipLink:hover {
+  border-style: solid;
+}
+
+/* Bottom Explore Catalog Banner Card */
+.bottomExploreCard {
+  margin-top: 2.5rem;
+  padding: 1.75rem 2rem;
+  background: linear-gradient(135deg, #f7f5f0 0%, #f0ede4 100%);
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: var(--radius-card, 18px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.bottomExploreContent {
+  max-width: 680px;
+}
+
+.bottomExploreTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--top-tag-dark-blue, #0c2340);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+
+.bottomExploreTitle {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--ugaoo-text-dark, #042018);
+  margin: 0 0 0.35rem 0;
+}
+
+.bottomExploreDesc {
+  font-size: 0.875rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+  margin: 0;
+  line-height: 1.5;
+}
+
+.bottomExploreBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.6rem;
+  border-radius: var(--radius-pill, 9999px);
+  background-color: var(--top-tag-dark-blue, #0c2340);
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color var(--transition-fast, 150ms ease), transform var(--transition-fast, 150ms ease), box-shadow var(--transition-fast, 150ms ease);
+  box-shadow: 0 2px 8px rgba(12, 35, 64, 0.18);
+  white-space: nowrap;
+}
+
+.bottomExploreBtn:hover {
+  background-color: var(--top-tag-dark-blue-hover, #08192e);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(12, 35, 64, 0.28);
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 2.25rem 0.75rem;
+  }
+  .heading {
+    font-size: 1.6rem;
+  }
+  .bottomExploreCard {
+    padding: 1.25rem 1.25rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .bottomExploreBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}

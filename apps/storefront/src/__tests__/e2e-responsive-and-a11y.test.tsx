@@ -140,10 +140,9 @@ describe('Storefront Responsive UX and Accessibility (a11y) Verification', () =>
       expect(mobileMenuBtn).toBeInTheDocument()
       expect(mobileMenuBtn).toHaveAttribute('aria-expanded', 'false')
 
-      // Desktop navigation should contain hidden lg:flex class for responsive collapse
+      // Desktop navigation uses pure CSS module desktopNav class for responsive collapse
       const mainNav = screen.getByRole('navigation', { name: /main navigation/i })
-      expect(mainNav.className).toContain('hidden')
-      expect(mainNav.className).toContain('lg:flex')
+      expect(mainNav.className).toContain('desktopNav')
 
       // Click mobile menu to open drawer
       fireEvent.click(mobileMenuBtn)
@@ -151,12 +150,12 @@ describe('Storefront Responsive UX and Accessibility (a11y) Verification', () =>
       expect(mobileDrawer).toBeInTheDocument()
       expect(mobileDrawer).toHaveAttribute('aria-modal', 'true')
 
-      // Mobile drawer links are accessible and meet >= 44px touch targets
+      // Mobile drawer links are accessible and meet >= 44px touch targets via navLink pure CSS module
       const drawerNav = within(mobileDrawer).getByRole('navigation', { name: /mobile menu/i })
       expect(drawerNav).toBeInTheDocument()
       const seedLink = within(drawerNav).getByRole('link', { name: /seeds/i })
       expect(seedLink).toBeInTheDocument()
-      expect(seedLink.className).toContain('min-h-[44px]')
+      expect(seedLink.className).toContain('navLink')
     })
 
     it('adapts ValuePropositions with responsive grid classes for mobile and desktop', () => {

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Search, X, Loader2, Sprout, ArrowRight } from 'lucide-react'
+import styles from './SearchInput.module.css'
 
 export interface SearchPreviewItem {
   id: string
@@ -33,7 +34,7 @@ interface SearchInputProps {
 
 function SearchInputInner({
   initialQuery,
-  placeholder = 'Search seeds, plants, pots...',
+  placeholder = 'Search live plants, organic seeds, varieties...',
   className = '',
   inputClassName = '',
   onSearchSubmitted,
@@ -91,32 +92,34 @@ function SearchInputInner({
       return
     }
 
-    // Cancel prior in-flight request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
     }
     abortControllerRef.current = new AbortController()
 
     setIsLoading(true)
+
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(searchTerm.trim())}&limit=5`, {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(searchTerm.trim())}&limit=6`, {
         signal: abortControllerRef.current.signal,
       })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.success && Array.isArray(data.products)) {
-          setSuggestions(data.products)
-          setIsOpen(true)
-          setSelectedIndex(-1)
-        }
+
+      if (!res.ok) {
+        throw new Error('Search failed')
+      }
+
+      const data = await res.json()
+      if (data.success && Array.isArray(data.products)) {
+        setSuggestions(data.products)
+        setIsOpen(true)
+        setSelectedIndex(-1)
+      } else {
+        setSuggestions([])
       }
     } catch (err: unknown) {
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        // Request aborted due to new keystroke; ignore
-        return
+      if (err instanceof Error && err.name !== 'AbortError') {
+        setSuggestions([])
       }
-      // Fail gracefully on search errors without disrupting the UI
-      setSuggestions([])
     } finally {
       setIsLoading(false)
     }
@@ -127,7 +130,6 @@ function SearchInputInner({
     if (!trimmed) {
       setSuggestions([])
       setIsOpen(false)
-      setIsLoading(false)
       return
     }
 
@@ -135,20 +137,13 @@ function SearchInputInner({
       fetchSuggestions(trimmed)
     }, 250)
 
-    return () => {
-      clearTimeout(timer)
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
-      }
-    }
+    return () => clearTimeout(timer)
   }, [query, fetchSuggestions])
 
-  // Form submission: redirect to /store?q=...
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setIsOpen(false)
 
-    // If an item in dropdown was highlighted via arrow keys, navigate to that product
     if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
       const item = suggestions[selectedIndex]
       router.push(`/products/${item.handle}`)
@@ -174,7 +169,6 @@ function SearchInputInner({
     inputRef.current?.focus()
   }
 
-  // Keyboard navigation for dropdown
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isOpen || suggestions.length === 0) {
       if (e.key === 'Escape') {
@@ -196,15 +190,12 @@ function SearchInputInner({
   }
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
-      <form role="search" onSubmit={handleSubmit} className="relative flex items-center">
-        <label htmlFor={id} className="sr-only">
+    <div ref={containerRef} className={`${styles.container} ${className}`}>
+      <form role="search" onSubmit={handleSubmit} className={styles.searchForm}>
+        <label htmlFor={id} className={styles.srOnly}>
           Search seeds, plants, and botanical supplies
         </label>
-        <Search
-          className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none"
-          aria-hidden="true"
-        />
+        <Search className={styles.searchIcon} aria-hidden="true" />
 
         <input
           ref={inputRef}
@@ -220,6 +211,7 @@ function SearchInputInner({
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
+          aria-label="Search seeds, plants, and botanical supplies"
           autoFocus={autoFocus}
           autoComplete="off"
           aria-autocomplete="list"
@@ -230,20 +222,21 @@ function SearchInputInner({
               ? `${id}-option-${selectedIndex}`
               : undefined
           }
-          className={`w-full h-9 rounded-full border border-border bg-earth-50/80 pl-9 pr-14 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-botanical-600 focus:bg-background transition-all ${inputClassName}`}
+          className={`${styles.searchInput} ${inputClassName}`}
         />
 
-        {/* Screen Reader Live Region for Search Results */}
-        <div className="sr-only" aria-live="polite" aria-atomic="true">
+        <div className={styles.srOnly} aria-live="polite" aria-atomic="true">
           {isOpen && suggestions.length > 0
             ? `${suggestions.length} botanical suggestions found. Use arrow keys to navigate.`
             : ''}
         </div>
 
-        <div className="absolute right-2.5 flex items-center gap-1">
+        <div className={styles.actionsRight}>
           {isLoading && (
             <Loader2
-              className="h-3.5 w-3.5 animate-spin text-botanical-600"
+              size={14}
+              className={styles.spinner}
+              style={{ color: 'var(--ugaoo-green)' }}
               aria-label="Searching catalog..."
             />
           )}
@@ -252,10 +245,10 @@ function SearchInputInner({
             <button
               type="button"
               onClick={handleClear}
-              className="h-6 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full hover:bg-earth-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600"
+              className={styles.clearBtn}
               aria-label="Clear search query"
             >
-              <X className="h-3 w-3" />
+              <X size={12} />
             </button>
           )}
         </div>
@@ -267,18 +260,18 @@ function SearchInputInner({
           id={`${id}-suggestions`}
           role="listbox"
           aria-label="Search suggestions"
-          className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-background border border-border rounded-2xl shadow-xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-100 max-h-[80vh] sm:max-h-96 overflow-y-auto"
+          className={styles.dropdown}
         >
           {suggestions.length > 0 ? (
             <div>
-              <div className="px-3.5 py-2 bg-earth-50/70 border-b border-border/60 text-[11px] font-semibold text-muted-foreground flex items-center justify-between">
+              <div className={styles.dropdownHeader}>
                 <span>Botanical Suggestions</span>
-                <span className="text-[10px] text-botanical-700 font-normal">
+                <span style={{ color: 'var(--ugaoo-maroon)', fontWeight: 600 }}>
                   {suggestions.length} {suggestions.length === 1 ? 'match' : 'matches'}
                 </span>
               </div>
 
-              <ul className="divide-y divide-border/40">
+              <ul className={styles.suggestionsList}>
                 {suggestions.map((item, index) => {
                   const isSelected = selectedIndex === index
                   return (
@@ -287,9 +280,7 @@ function SearchInputInner({
                       id={`${id}-option-${index}`}
                       role="option"
                       aria-selected={isSelected}
-                      className={`transition-colors ${
-                        isSelected ? 'bg-botanical-50' : 'hover:bg-earth-50/80'
-                      }`}
+                      className={`${styles.suggestionItem} ${isSelected ? styles.suggestionSelected : ''}`}
                     >
                       <Link
                         href={`/products/${item.handle}`}
@@ -297,45 +288,34 @@ function SearchInputInner({
                           setIsOpen(false)
                           onSearchSubmitted?.()
                         }}
-                        className="flex items-center gap-3 p-3 text-xs group"
+                        className={styles.suggestionLink}
                       >
-                        {/* Thumbnail or Botanical Icon */}
-                        <div className="h-10 w-10 rounded-lg bg-earth-100 border border-border/60 overflow-hidden flex items-center justify-center shrink-0">
+                        <div className={styles.thumbWrap}>
                           {item.thumbnail ? (
                             <Image
                               src={item.thumbnail}
                               alt={item.title}
                               width={40}
                               height={40}
-                              className="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             />
                           ) : (
-                            <Sprout className="h-5 w-5 text-botanical-600" />
+                            <Sprout size={20} style={{ color: 'var(--ugaoo-green)' }} />
                           )}
                         </div>
 
-                        {/* Title and Botanical Variety Details */}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-foreground truncate group-hover:text-botanical-800 transition-colors">
-                            {item.title}
-                          </p>
-                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p className={styles.itemTitle}>{item.title}</p>
+                          <div className={styles.itemMeta}>
                             {item.variety && <span>{item.variety}</span>}
                             {item.variety && item.categoryName && <span>•</span>}
                             {item.categoryName && <span>{item.categoryName}</span>}
                           </div>
                         </div>
 
-                        {/* Price & Stock status */}
-                        <div className="text-right shrink-0">
-                          <span className="font-bold text-botanical-900 block text-xs">
-                            {item.priceFormatted}
-                          </span>
-                          <span
-                            className={`text-[10px] font-medium ${
-                              item.hasStock ? 'text-botanical-700' : 'text-amber-700'
-                            }`}
-                          >
+                        <div className={styles.priceBlock}>
+                          <span className={styles.priceText}>{item.priceFormatted}</span>
+                          <span className={`${styles.stockStatus} ${item.hasStock ? styles.inStock : styles.outOfStock}`}>
                             {item.hasStock ? 'In Stock' : 'Out of Stock'}
                           </span>
                         </div>
@@ -345,39 +325,28 @@ function SearchInputInner({
                 })}
               </ul>
 
-              {/* View All Results CTA Footer */}
-              <div className="p-2.5 bg-earth-50 border-t border-border">
+              <div className={styles.viewAllFooter}>
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-botanical-800 text-white hover:bg-botanical-900 text-xs font-semibold transition-colors shadow-xs"
+                  className={styles.viewAllBtn}
                 >
                   <span>View all results for &ldquo;{query.trim()}&rdquo;</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight size={14} />
                 </button>
               </div>
             </div>
           ) : !isLoading ? (
-            <div className="p-6 text-center space-y-2">
-              <div className="h-9 w-9 rounded-full bg-earth-100 flex items-center justify-center mx-auto text-muted-foreground">
-                <Search className="h-4 w-4" />
+            <div style={{ padding: '1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--ugaoo-cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ugaoo-green)' }}>
+                <Search size={16} />
               </div>
-              <p className="text-xs font-medium text-foreground">
+              <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ugaoo-text-dark)', margin: 0 }}>
                 No botanical varieties matching &ldquo;{query.trim()}&rdquo;
               </p>
-              <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
+              <p style={{ fontSize: '11px', color: 'var(--ugaoo-text-muted)', margin: 0 }}>
                 Try searching for general terms like &ldquo;tomato&rdquo;, &ldquo;marigold&rdquo;, or &ldquo;tulsi&rdquo;.
               </p>
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-botanical-700 hover:text-botanical-900"
-                >
-                  <span>Search full catalog</span>
-                  <ArrowRight className="h-3 w-3" />
-                </button>
-              </div>
             </div>
           ) : null}
         </div>
@@ -388,15 +357,8 @@ function SearchInputInner({
 
 export function SearchInput(props: SearchInputProps) {
   return (
-    <React.Suspense
-      fallback={
-        <div className={`relative flex items-center ${props.className || ''}`}>
-          <div className="w-full h-9 rounded-full border border-border bg-earth-50/80" />
-        </div>
-      }
-    >
+    <React.Suspense fallback={<div className={styles.fallbackInput} />}>
       <SearchInputInner {...props} />
     </React.Suspense>
   )
 }
-

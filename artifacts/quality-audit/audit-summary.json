@@ -1,0 +1,4264 @@
+[
+  {
+    "pageName": "home",
+    "viewport": "360x800",
+    "suffix": "mobile-360",
+    "url": "http://localhost:3000/",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 360,
+      "winWidth": 360,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Cultivate Vitality. Living Botanicals & Pure Seeds.",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Botanical Transit Packaging",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Browse by Botanical Category",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Desi Vegetable Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Festive Flower Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Medicinal & Herb Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Live Indoor Plants",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Pots & Planters",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "All Garden Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Featured Seeds & Botanicals",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Winter & Monsoon Sowing Festival",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "Explore All Collections",
+        "width": 177,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "View Full Store",
+        "width": 134,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Tomato Seeds (Desi / Pusa Ruby",
+        "width": 115,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Marigold Seeds (Pusa Narangi G",
+        "width": 118,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Krishna Tulsi Seeds (Holy Basi",
+        "width": 105,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Snake Plant Golden Hahnii (San",
+        "width": 110,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Read Transit & Return Policy",
+        "width": 189,
+        "height": 32
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "home",
+    "viewport": "390x844",
+    "suffix": "mobile-390",
+    "url": "http://localhost:3000/",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 390,
+      "winWidth": 390,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Cultivate Vitality. Living Botanicals & Pure Seeds.",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Botanical Transit Packaging",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Browse by Botanical Category",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Desi Vegetable Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Festive Flower Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Medicinal & Herb Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Live Indoor Plants",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Pots & Planters",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "All Garden Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Featured Seeds & Botanicals",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Winter & Monsoon Sowing Festival",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "Explore All Collections",
+        "width": 177,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "View Full Store",
+        "width": 134,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Tomato Seeds (Desi / Pusa Ruby",
+        "width": 115,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Marigold Seeds (Pusa Narangi G",
+        "width": 118,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Krishna Tulsi Seeds (Holy Basi",
+        "width": 136,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Snake Plant Golden Hahnii (San",
+        "width": 110,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Read Transit & Return Policy",
+        "width": 189,
+        "height": 32
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "home",
+    "viewport": "768x1024",
+    "suffix": "tablet-768",
+    "url": "http://localhost:3000/",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 768,
+      "winWidth": 768,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Cultivate Vitality. Living Botanicals & Pure Seeds.",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Botanical Transit Packaging",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Browse by Botanical Category",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Desi Vegetable Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Festive Flower Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Medicinal & Herb Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Live Indoor Plants",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Pots & Planters",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "All Garden Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Featured Seeds & Botanicals",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Winter & Monsoon Sowing Festival",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "home",
+    "viewport": "1280x800",
+    "suffix": "laptop-1280",
+    "url": "http://localhost:3000/",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 1280,
+      "winWidth": 1280,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Cultivate Vitality. Living Botanicals & Pure Seeds.",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Botanical Transit Packaging",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Browse by Botanical Category",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Desi Vegetable Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Festive Flower Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Medicinal & Herb Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Live Indoor Plants",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Pots & Planters",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "All Garden Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Featured Seeds & Botanicals",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Winter & Monsoon Sowing Festival",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "home",
+    "viewport": "1440x900",
+    "suffix": "desktop-1440",
+    "url": "http://localhost:3000/",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 1440,
+      "winWidth": 1440,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Cultivate Vitality. Living Botanicals & Pure Seeds.",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Botanical Transit Packaging",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Browse by Botanical Category",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Desi Vegetable Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Festive Flower Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Medicinal & Herb Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Live Indoor Plants",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Pots & Planters",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "All Garden Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Featured Seeds & Botanicals",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Winter & Monsoon Sowing Festival",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "listing",
+    "viewport": "360x800",
+    "suffix": "mobile-360",
+    "url": "http://localhost:3000/store",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 377,
+      "winWidth": 377,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "All Botanical & Seed Varieties",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "Home",
+        "width": 34,
+        "height": 16
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Filters",
+        "width": 81,
+        "height": 32
+      },
+      {
+        "tag": "BUTTON",
+        "text": "In Stock Only",
+        "width": 102,
+        "height": 26
+      },
+      {
+        "tag": "SELECT",
+        "text": "Featured & RelevancePrice: Low",
+        "width": 175,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "All Products",
+        "width": 97,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "Seeds",
+        "width": 64,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "Live Plants",
+        "width": 90,
+        "height": 28
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "listing",
+    "viewport": "390x844",
+    "suffix": "mobile-390",
+    "url": "http://localhost:3000/store",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 392,
+      "winWidth": 392,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "All Botanical & Seed Varieties",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "Home",
+        "width": 34,
+        "height": 16
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Filters",
+        "width": 81,
+        "height": 32
+      },
+      {
+        "tag": "BUTTON",
+        "text": "In Stock Only",
+        "width": 102,
+        "height": 26
+      },
+      {
+        "tag": "SELECT",
+        "text": "Featured & RelevancePrice: Low",
+        "width": 175,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "All Products",
+        "width": 97,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "Seeds",
+        "width": 64,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "Live Plants",
+        "width": 90,
+        "height": 28
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "listing",
+    "viewport": "768x1024",
+    "suffix": "tablet-768",
+    "url": "http://localhost:3000/store",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 768,
+      "winWidth": 768,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "All Botanical & Seed Varieties",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "listing",
+    "viewport": "1280x800",
+    "suffix": "laptop-1280",
+    "url": "http://localhost:3000/store",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 1280,
+      "winWidth": 1280,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [],
+      "h1Count": 0
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "listing",
+    "viewport": "1440x900",
+    "suffix": "desktop-1440",
+    "url": "http://localhost:3000/store",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 1440,
+      "winWidth": 1440,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "All Botanical & Seed Varieties",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "category",
+    "viewport": "360x800",
+    "suffix": "mobile-360",
+    "url": "http://localhost:3000/categories/seeds",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 360,
+      "winWidth": 360,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "No Botanical Items Found",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "Home",
+        "width": 34,
+        "height": 16
+      },
+      {
+        "tag": "A",
+        "text": "Store",
+        "width": 30,
+        "height": 16
+      },
+      {
+        "tag": "A",
+        "text": "Vegetable Seeds",
+        "width": 123,
+        "height": 26
+      },
+      {
+        "tag": "A",
+        "text": "Flower Seeds",
+        "width": 104,
+        "height": 26
+      },
+      {
+        "tag": "A",
+        "text": "Herb Seeds",
+        "width": 93,
+        "height": 26
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Filters",
+        "width": 81,
+        "height": 32
+      },
+      {
+        "tag": "BUTTON",
+        "text": "In Stock Only",
+        "width": 102,
+        "height": 26
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "category",
+    "viewport": "390x844",
+    "suffix": "mobile-390",
+    "url": "http://localhost:3000/categories/seeds",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 390,
+      "winWidth": 390,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "No Botanical Items Found",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "Home",
+        "width": 34,
+        "height": 16
+      },
+      {
+        "tag": "A",
+        "text": "Store",
+        "width": 30,
+        "height": 16
+      },
+      {
+        "tag": "A",
+        "text": "Vegetable Seeds",
+        "width": 123,
+        "height": 26
+      },
+      {
+        "tag": "A",
+        "text": "Flower Seeds",
+        "width": 104,
+        "height": 26
+      },
+      {
+        "tag": "A",
+        "text": "Herb Seeds",
+        "width": 93,
+        "height": 26
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Filters",
+        "width": 81,
+        "height": 32
+      },
+      {
+        "tag": "BUTTON",
+        "text": "In Stock Only",
+        "width": 102,
+        "height": 26
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "category",
+    "viewport": "768x1024",
+    "suffix": "tablet-768",
+    "url": "http://localhost:3000/categories/seeds",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 768,
+      "winWidth": 768,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "No Botanical Items Found",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "category",
+    "viewport": "1280x800",
+    "suffix": "laptop-1280",
+    "url": "http://localhost:3000/categories/seeds",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 1280,
+      "winWidth": 1280,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [],
+      "h1Count": 0
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "category",
+    "viewport": "1440x900",
+    "suffix": "desktop-1440",
+    "url": "http://localhost:3000/categories/seeds",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 1440,
+      "winWidth": 1440,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "No Botanical Items Found",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "pdp",
+    "viewport": "360x800",
+    "suffix": "mobile-360",
+    "url": "http://localhost:3000/products/tomato-seeds-desi",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 360,
+      "winWidth": 360,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [],
+      "h1Count": 0
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Contact Customer Support Place",
+        "width": 241,
+        "height": 16
+      },
+      {
+        "tag": "A",
+        "text": "All Products",
+        "width": 68,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Seeds Collection",
+        "width": 96,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Vegetable Seeds",
+        "width": 96,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Flower Seeds",
+        "width": 77,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Herb Seeds",
+        "width": 67,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Live Houseplants",
+        "width": 97,
+        "height": 15
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "pdp",
+    "viewport": "390x844",
+    "suffix": "mobile-390",
+    "url": "http://localhost:3000/products/tomato-seeds-desi",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 390,
+      "winWidth": 390,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Delivery Availability & Timeline",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Botanical & Cultivation Specifications",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Sowing & Propagation Guidelines",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Packaging & Safe Viability Shield",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Delivery, Guarantees & Customer Support",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Shipping Logistics & Transit Expectations",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Transit Damage Replacement & Perishables Policy",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Gardening Helpdesk & Order Support",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Complementary Varieties & Plants",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "Home",
+        "width": 34,
+        "height": 16
+      },
+      {
+        "tag": "A",
+        "text": "Store",
+        "width": 30,
+        "height": 16
+      },
+      {
+        "tag": "A",
+        "text": "Vegetable Seeds",
+        "width": 96,
+        "height": 16
+      },
+      {
+        "tag": "A",
+        "text": "View All →",
+        "width": 87,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Coriander Heirloom (Certified ",
+        "width": 110,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Coriander Heirloom (Certified ",
+        "width": 110,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Coriander Heirloom (Certified ",
+        "width": 110,
+        "height": 32
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "pdp",
+    "viewport": "768x1024",
+    "suffix": "tablet-768",
+    "url": "http://localhost:3000/products/tomato-seeds-desi",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 768,
+      "winWidth": 768,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Delivery Availability & Timeline",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Botanical & Cultivation Specifications",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Sowing & Propagation Guidelines",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Packaging & Safe Viability Shield",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Delivery, Guarantees & Customer Support",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Shipping Logistics & Transit Expectations",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Transit Damage Replacement & Perishables Policy",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Gardening Helpdesk & Order Support",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Complementary Varieties & Plants",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "pdp",
+    "viewport": "1280x800",
+    "suffix": "laptop-1280",
+    "url": "http://localhost:3000/products/tomato-seeds-desi",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 1280,
+      "winWidth": 1280,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Delivery Availability & Timeline",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Botanical & Cultivation Specifications",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Sowing & Propagation Guidelines",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Packaging & Safe Viability Shield",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Delivery, Guarantees & Customer Support",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Shipping Logistics & Transit Expectations",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Transit Damage Replacement & Perishables Policy",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Gardening Helpdesk & Order Support",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Complementary Varieties & Plants",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "pdp",
+    "viewport": "1440x900",
+    "suffix": "desktop-1440",
+    "url": "http://localhost:3000/products/tomato-seeds-desi",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 1440,
+      "winWidth": 1440,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [],
+      "h1Count": 0
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "cart-populated",
+    "viewport": "360x800",
+    "suffix": "mobile-360",
+    "url": "http://localhost:3000/cart",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 360,
+      "winWidth": 360,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Shopping Cart3 items",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Order Summary",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Delivery Availability & Timeline",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "← Continue Shopping",
+        "width": 151,
+        "height": 32
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Contact Customer Support Place",
+        "width": 241,
+        "height": 16
+      },
+      {
+        "tag": "A",
+        "text": "All Products",
+        "width": 68,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Seeds Collection",
+        "width": 96,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Vegetable Seeds",
+        "width": 96,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Flower Seeds",
+        "width": 77,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Herb Seeds",
+        "width": 67,
+        "height": 15
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "cart-populated",
+    "viewport": "390x844",
+    "suffix": "mobile-390",
+    "url": "http://localhost:3000/cart",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 390,
+      "winWidth": 390,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Shopping Cart3 items",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Order Summary",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Delivery Availability & Timeline",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "← Continue Shopping",
+        "width": 151,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Tomato Seeds (Desi / Pusa Ruby",
+        "width": 225,
+        "height": 20
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Contact Customer Support Place",
+        "width": 241,
+        "height": 16
+      },
+      {
+        "tag": "A",
+        "text": "All Products",
+        "width": 68,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Seeds Collection",
+        "width": 96,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Vegetable Seeds",
+        "width": 96,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Flower Seeds",
+        "width": 77,
+        "height": 15
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "cart-populated",
+    "viewport": "768x1024",
+    "suffix": "tablet-768",
+    "url": "http://localhost:3000/cart",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 768,
+      "winWidth": 768,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Shopping Cart3 items",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Order Summary",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Delivery Availability & Timeline",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "cart-populated",
+    "viewport": "1280x800",
+    "suffix": "laptop-1280",
+    "url": "http://localhost:3000/cart",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 1280,
+      "winWidth": 1280,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Shopping Cart3 items",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Order Summary",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Delivery Availability & Timeline",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "cart-populated",
+    "viewport": "1440x900",
+    "suffix": "desktop-1440",
+    "url": "http://localhost:3000/cart",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 1440,
+      "winWidth": 1440,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Shopping Cart3 items",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Order Summary",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Delivery Availability & Timeline",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "cart-empty",
+    "viewport": "390x844",
+    "suffix": "mobile-390",
+    "url": "http://localhost:3000/cart",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 390,
+      "winWidth": 390,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Your Shopping Cart is Empty",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Contact Customer Support Place",
+        "width": 241,
+        "height": 16
+      },
+      {
+        "tag": "A",
+        "text": "All Products",
+        "width": 68,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Seeds Collection",
+        "width": 96,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Vegetable Seeds",
+        "width": 96,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Flower Seeds",
+        "width": 77,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Herb Seeds",
+        "width": 67,
+        "height": 15
+      },
+      {
+        "tag": "A",
+        "text": "Live Houseplants",
+        "width": 97,
+        "height": 15
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "cart-empty",
+    "viewport": "1440x900",
+    "suffix": "desktop-1440",
+    "url": "http://localhost:3000/cart",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 1440,
+      "winWidth": 1440,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Your Shopping Cart is Empty",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "drawer-nav",
+    "viewport": "390x844",
+    "suffix": "mobile-390",
+    "url": "http://localhost:3000/",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 390,
+      "winWidth": 390,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "Cultivate Vitality. Living Botanicals & Pure Seeds.",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Botanical Transit Packaging",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Browse by Botanical Category",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Desi Vegetable Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Festive Flower Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Medicinal & Herb Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Live Indoor Plants",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Pots & Planters",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "All Garden Seeds",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Featured Seeds & Botanicals",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h2",
+          "text": "Winter & Monsoon Sowing Festival",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "GLOROV Homepage",
+        "width": 96,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "Explore All Collections",
+        "width": 177,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "View Full Store",
+        "width": 134,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Tomato Seeds (Desi / Pusa Ruby",
+        "width": 115,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Marigold Seeds (Pusa Narangi G",
+        "width": 118,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Krishna Tulsi Seeds (Holy Basi",
+        "width": 136,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Snake Plant Golden Hahnii (San",
+        "width": 110,
+        "height": 32
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "drawer-cart",
+    "viewport": "390x844",
+    "suffix": "mobile-390",
+    "url": "http://localhost:3000/store",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 392,
+      "winWidth": 392,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h2",
+          "text": "Your Botanical Cart (3)",
+          "visible": true
+        },
+        {
+          "tag": "h1",
+          "text": "All Botanical & Seed Varieties",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "Tomato Seeds (Desi / Pusa Ruby",
+        "width": 191,
+        "height": 20
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Decrease quantity",
+        "width": 32,
+        "height": 32
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Increase quantity",
+        "width": 32,
+        "height": 32
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Remove",
+        "width": 76,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "Marigold Seeds (Pusa Narangi G",
+        "width": 191,
+        "height": 20
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Decrease quantity",
+        "width": 32,
+        "height": 32
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Increase quantity",
+        "width": 32,
+        "height": 32
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  },
+  {
+    "pageName": "modal-filter",
+    "viewport": "390x844",
+    "suffix": "mobile-390",
+    "url": "http://localhost:3000/store",
+    "consoleErrors": [],
+    "overflow": {
+      "docWidth": 392,
+      "winWidth": 392,
+      "hasOverflow": false,
+      "offendingElements": []
+    },
+    "headingHierarchy": {
+      "headings": [
+        {
+          "tag": "h1",
+          "text": "All Botanical & Seed Varieties",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Tomato Seeds (Desi / Pusa Ruby)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Marigold Seeds (Pusa Narangi Gainda)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Krishna Tulsi Seeds (Holy Basil)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Snake Plant Golden Hahnii (Sansevieria)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        },
+        {
+          "tag": "h3",
+          "text": "Coriander Heirloom (Certified Organic)",
+          "visible": true
+        }
+      ],
+      "h1Count": 1
+    },
+    "orphanedInputs": [],
+    "imagesMissingAlt": [],
+    "smallTouchTargets": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "width": 1,
+        "height": 1
+      },
+      {
+        "tag": "A",
+        "text": "Home",
+        "width": 34,
+        "height": 16
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Filters",
+        "width": 81,
+        "height": 32
+      },
+      {
+        "tag": "BUTTON",
+        "text": "In Stock Only",
+        "width": 102,
+        "height": 26
+      },
+      {
+        "tag": "SELECT",
+        "text": "Featured & RelevancePrice: Low",
+        "width": 175,
+        "height": 32
+      },
+      {
+        "tag": "A",
+        "text": "All Products",
+        "width": 97,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "Seeds",
+        "width": 64,
+        "height": 28
+      },
+      {
+        "tag": "A",
+        "text": "Live Plants",
+        "width": 90,
+        "height": 28
+      }
+    ],
+    "contrastChecks": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      },
+      {
+        "tag": "ASIDE",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgb(7, 83, 42)",
+        "ratio": "8.91"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Pan-India Safe-Transit Live Pl",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Free Express Shipping on Seed ",
+        "fg": "rgb(255, 255, 255)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Root-Safe Protective Packaging",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "SPAN",
+        "text": "•",
+        "fg": "rgba(255, 255, 255, 0.4)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.03"
+      },
+      {
+        "tag": "SPAN",
+        "text": "Desi & Hybrid Seeds",
+        "fg": "rgb(253, 251, 247)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "1.00"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "fg": "rgb(21, 40, 32)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "ratio": "14.98"
+      }
+    ],
+    "screenshotSaved": true
+  }
+]

@@ -183,6 +183,36 @@ const BotanicalDetailsWidget = ({ data }: DetailWidgetProps<AdminProduct>) => {
           </Text>
         </div>
       )}
+
+      {/* Storefront Product Card Badge Status */}
+      <div className="mt-4 pt-3 border-t border-ui-border-base flex items-center justify-between">
+        <div>
+          <Text className="text-xs font-medium text-ui-fg-muted uppercase tracking-wider">
+            🏷️ Storefront Product Card Tag
+          </Text>
+          <Text className="text-xs text-ui-fg-subtle mt-0.5">
+            Live badge shown on mobile & web cards. If no tag is set in the dashboard database, the card renders cleanly without any badge.
+          </Text>
+        </div>
+        <div>
+          {(() => {
+            const configuredBadge =
+              (Array.isArray(data.tags) && data.tags[0]?.value) ||
+              (Array.isArray(metadata.badges) && metadata.badges[0]) ||
+              (typeof metadata.badge === "string" && metadata.badge) ||
+              null;
+            return configuredBadge ? (
+              <Badge color="purple" size="small">
+                ⚡ {String(configuredBadge).toUpperCase()}
+              </Badge>
+            ) : (
+              <span className="text-xs text-ui-fg-muted italic">
+                No Tag (Clean Card)
+              </span>
+            );
+          })()}
+        </div>
+      </div>
     </Container>
   );
 };

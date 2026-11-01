@@ -2,12 +2,11 @@
 
 import React, { useState, Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
-import { Leaf, Lock, KeyRound, CheckCircle2, AlertCircle, Loader2, ArrowRight } from 'lucide-react'
+import { Lock, KeyRound, CheckCircle2, AlertCircle, Loader2, ArrowRight } from 'lucide-react'
 import { resetCustomerPasswordAction } from '@/lib/customer-actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
+import styles from '../AuthPage.module.css'
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams()
@@ -63,153 +62,155 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
-            <div className="h-10 w-10 rounded-xl bg-botanical-700 flex items-center justify-center text-white shadow-sm group-hover:bg-botanical-800 transition-colors">
-              <Leaf className="h-5 w-5 text-emerald-200" />
-            </div>
-            <span className="font-extrabold tracking-tight text-2xl text-botanical-900">
-              GLOROV
-            </span>
+    <main className={styles.authWrapper}>
+      <div className={styles.authContainer}>
+        {/* Header Branding */}
+        <div className={styles.authHeader}>
+          <Link href="/" className={styles.logoLink} aria-label="GLOROV Botanicals Homepage">
+            <Image
+              src="/glorov-logo.svg"
+              alt="GLOROV"
+              width={160}
+              height={44}
+              priority
+              className={styles.authLogoImg}
+            />
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Set New Password
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className={styles.authTitle}>Set New Password</h1>
+          <p className={styles.authSubtitle}>
             Choose a secure 8+ character password for your account
           </p>
         </div>
 
-        <Card className="shadow-md border-border/80">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-lg">Account Recovery</CardTitle>
-            <CardDescription className="text-xs">
+        {/* Auth Card */}
+        <div className={styles.authCard}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Account Recovery</h2>
+            <p className={styles.cardDescription}>
               Enter your reset token and new account password
-            </CardDescription>
-          </CardHeader>
+            </p>
+          </div>
 
-          <CardContent>
+          <div className={styles.cardBody}>
             {isSuccess ? (
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-start gap-3 text-xs">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <div className={styles.alertSuccess} role="status">
+                  <CheckCircle2 size={18} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
                   <div>
-                    <h4 className="font-bold text-sm text-emerald-950 mb-1">
+                    <h3 style={{ margin: '0 0 4px', fontSize: '0.875rem', fontWeight: 700 }}>
                       Password Successfully Reset!
-                    </h4>
-                    <p>
+                    </h3>
+                    <p style={{ margin: 0 }}>
                       Your account credentials have been updated. You can now sign in with your new
                       password.
                     </p>
                   </div>
                 </div>
 
-                <Button
-                  asChild
-                  className="w-full bg-botanical-700 hover:bg-botanical-800 text-white font-medium"
+                <Link
+                  href="/account/login"
+                  className={styles.submitBtn}
+                  style={{ textDecoration: 'none' }}
                 >
-                  <Link href="/account/login">
-                    Sign In with New Password
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+                  <span>Sign In with New Password</span>
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className={styles.form} aria-label="Reset password form">
                 {errorMessage && (
-                  <div
-                    role="alert"
-                    className="flex items-start gap-2.5 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive"
-                  >
-                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <div role="alert" aria-live="polite" className={styles.alertError}>
+                    <AlertCircle size={16} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
                     <span>{errorMessage}</span>
                   </div>
                 )}
 
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground" htmlFor="token">
+                <div className={styles.formGroup}>
+                  <label className={styles.label} htmlFor="token">
                     Reset Token *
                   </label>
-                  <div className="relative">
-                    <Input
+                  <div className={styles.inputWrapper}>
+                    <KeyRound className={styles.inputIcon} aria-hidden="true" />
+                    <input
                       id="token"
                       type="text"
                       required
+                      aria-required="true"
                       placeholder="Paste reset token here"
                       value={token}
                       onChange={(e) => setToken(e.target.value)}
-                      className="pl-9 font-mono text-xs"
+                      className={styles.input}
+                      style={{ fontFamily: 'monospace', fontSize: '0.8125rem' }}
                     />
-                    <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground" htmlFor="newPassword">
+                <div className={styles.formGroup}>
+                  <label className={styles.label} htmlFor="newPassword">
                     New Password * (8+ chars)
                   </label>
-                  <div className="relative">
-                    <Input
+                  <div className={styles.inputWrapper}>
+                    <Lock className={styles.inputIcon} aria-hidden="true" />
+                    <input
                       id="newPassword"
                       type="password"
                       required
+                      aria-required="true"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-9"
+                      className={styles.input}
                     />
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground" htmlFor="confirmNewPassword">
+                <div className={styles.formGroup}>
+                  <label className={styles.label} htmlFor="confirmNewPassword">
                     Confirm New Password *
                   </label>
-                  <Input
+                  <input
                     id="confirmNewPassword"
                     type="password"
                     required
+                    aria-required="true"
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    className={styles.input}
+                    style={{ paddingLeft: 14 }}
                   />
                 </div>
 
-                <Button
+                <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-botanical-700 hover:bg-botanical-800 text-white font-medium"
+                  className={styles.submitBtn}
+                  aria-label={isLoading ? 'Updating password' : 'Reset password'}
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating Password...
+                      <Loader2 className={styles.spinAnimation} size={16} aria-hidden="true" />
+                      <span>Updating Password...</span>
                     </>
                   ) : (
-                    'Reset Password'
+                    <span>Reset Password</span>
                   )}
-                </Button>
+                </button>
               </form>
             )}
-          </CardContent>
+          </div>
 
-          <CardFooter className="pt-0 border-t border-border/50 text-center">
-            <div className="text-xs text-muted-foreground mt-4 w-full">
+          <div className={styles.cardFooter}>
+            <p className={styles.footerText}>
               Remember your password?{' '}
-              <Link
-                href="/account/login"
-                className="font-semibold text-botanical-700 hover:text-botanical-800 hover:underline"
-              >
+              <Link href="/account/login" className={styles.footerLink}>
                 Back to Sign In
               </Link>
-            </div>
-          </CardFooter>
-        </Card>
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
   )
 }
 
@@ -217,8 +218,8 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-[50vh] flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-botanical-700" />
+        <div className={styles.spinnerCenter} aria-label="Loading password reset page">
+          <Loader2 className={styles.spinAnimation} size={28} color="#0a4c36" />
         </div>
       }
     >

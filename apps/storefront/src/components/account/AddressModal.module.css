@@ -1,0 +1,207 @@
+/* AddressModal.module.css - Pure CSS Module for Address Modal Dialog */
+
+.modalContent {
+  width: 100%;
+  max-width: 520px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid var(--color-border, #e2e8f0);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  padding: 24px;
+}
+
+.modalHeader {
+  margin-bottom: 20px;
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-foreground, #1e293b);
+  margin: 0 0 4px;
+}
+
+.modalDescription {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.alertError {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 0.8125rem;
+  margin-bottom: 16px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 480px) {
+  .formRow {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-foreground, #1e293b);
+}
+
+.input {
+  width: 100%;
+  height: 44px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #cbd5e1);
+  background-color: #ffffff;
+  color: var(--color-foreground, #1e293b);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus {
+  border-color: var(--color-primary, #0a4c36);
+  box-shadow: 0 0 0 3px rgba(10, 76, 54, 0.12);
+}
+
+.select {
+  width: 100%;
+  height: 44px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #cbd5e1);
+  background-color: #ffffff;
+  color: var(--color-foreground, #1e293b);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.select:focus {
+  border-color: var(--color-primary, #0a4c36);
+  box-shadow: 0 0 0 3px rgba(10, 76, 54, 0.12);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.checkboxInput {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary, #0a4c36);
+  cursor: pointer;
+}
+
+.checkboxLabel {
+  font-size: 0.8125rem;
+  color: var(--color-foreground, #1e293b);
+  cursor: pointer;
+  user-select: none;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 14px;
+  margin-top: 6px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #cbd5e1);
+  background-color: #ffffff;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cancelBtn:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.cancelBtn:focus-visible {
+  outline: 2px solid var(--color-primary, #0a4c36);
+  outline-offset: 2px;
+}
+
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 22px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--color-primary, #0a4c36);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(10, 76, 54, 0.2);
+  transition: all 0.15s ease;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background-color: #073828;
+}
+
+.saveBtn:focus-visible {
+  outline: 2px solid var(--color-primary, #0a4c36);
+  outline-offset: 2px;
+}
+
+.saveBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

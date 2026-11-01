@@ -1,0 +1,132 @@
+.galleryContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mainViewport {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  border-radius: var(--ugaoo-radius-lg);
+  background-color: var(--ugaoo-cream-light);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ugaoo-border);
+}
+
+.mainImage {
+  object-fit: cover;
+  object-position: center;
+  transition: transform var(--ugaoo-transition-normal);
+}
+
+.mainViewport:hover .mainImage {
+  transform: scale(1.03);
+}
+
+.verifiedBadge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  color: var(--ugaoo-green);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid var(--ugaoo-border);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  pointer-events: none;
+}
+
+.greenDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--ugaoo-green);
+}
+
+.counterBadge {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  color: var(--ugaoo-text-dark);
+  font-size: 11px;
+  font-family: monospace;
+  font-weight: 700;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid var(--ugaoo-border);
+  pointer-events: none;
+}
+
+.placeholderWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.placeholderIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--ugaoo-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ugaoo-green);
+}
+
+/* Thumbnails Strip */
+.thumbnailStrip {
+  display: flex;
+  gap: 0.625rem;
+  overflow-x: auto;
+  padding-bottom: 0.375rem;
+  scrollbar-width: none;
+}
+
+.thumbnailStrip::-webkit-scrollbar {
+  display: none;
+}
+
+.thumbnailBtn {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  min-width: 68px;
+  min-height: 68px;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: var(--ugaoo-cream-light);
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--ugaoo-transition-fast);
+}
+
+.thumbnailBtn:hover {
+  opacity: 0.9;
+}
+
+.thumbnailActive {
+  border-color: var(--ugaoo-green);
+  box-shadow: 0 0 0 2px rgba(10, 76, 54, 0.15);
+}
+
+.thumbImage {
+  object-fit: cover;
+  object-position: center;
+}

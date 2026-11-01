@@ -52,6 +52,7 @@ export interface StoreCatalogCategory {
   description?: string | null
   parent_category_id?: string | null
   category_children?: StoreCatalogCategory[]
+  metadata?: Record<string, unknown> | null
 }
 
 export interface StoreCatalogCollection {

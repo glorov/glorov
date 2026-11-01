@@ -30,3 +30,27 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
 }))
+
+// Mock next/font/google
+vi.mock('next/font/google', () => ({
+  Fraunces: () => ({
+    variable: '--font-fraunces',
+    className: 'font-fraunces',
+    style: { fontFamily: 'Fraunces, serif' },
+  }),
+  Plus_Jakarta_Sans: () => ({
+    variable: '--font-plus-jakarta',
+    className: 'font-plus-jakarta',
+    style: { fontFamily: 'Plus Jakarta Sans, sans-serif' },
+  }),
+  Outfit: () => ({
+    variable: '--font-outfit',
+    className: 'font-outfit',
+    style: { fontFamily: 'Outfit, sans-serif' },
+  }),
+  Inter: () => ({
+    variable: '--font-inter',
+    className: 'font-inter',
+    style: { fontFamily: 'Inter, sans-serif' },
+  }),
+}))

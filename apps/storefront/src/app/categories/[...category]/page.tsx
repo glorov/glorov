@@ -16,6 +16,7 @@ import {
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 import { CatalogFilters } from '@/components/catalog/CatalogFilters'
 import { Pagination } from '@/components/catalog/Pagination'
+import styles from '@/app/store/StorePage.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -158,51 +159,56 @@ export default async function CategoryPage({
   const subcategories = targetCategory.category_children || []
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
-      {/* Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
-        <Link href="/" className="hover:text-botanical-700 transition-colors">
+    <div className={styles.container}>
+      {/* Breadcrumbs Navigation */}
+      <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
+        <Link href="/" className={styles.breadcrumbLink}>
           Home
         </Link>
-        <ChevronRight className="h-3 w-3" aria-hidden="true" />
-        <Link href="/store" className="hover:text-botanical-700 transition-colors">
+        <ChevronRight size={12} aria-hidden="true" />
+        <Link href="/store" className={styles.breadcrumbLink}>
           Store
         </Link>
-        <ChevronRight className="h-3 w-3" aria-hidden="true" />
-        <span className="font-semibold text-botanical-900">{targetCategory.name}</span>
+        <ChevronRight size={12} aria-hidden="true" />
+        <span className={styles.breadcrumbActiveCategory}>{targetCategory.name}</span>
       </nav>
 
       {/* Category Header */}
-      <div className="pb-6 border-b border-border space-y-3">
-        <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-botanical-100 flex items-center justify-center text-botanical-700 shadow-inner">
-            <Sprout className="h-5 w-5" />
+      <div className={styles.headerBanner}>
+        <div className={styles.badgeRow}>
+          <span className={styles.nurseryBadge}>
+            Category Collection
+          </span>
+          <span className={styles.dispatchText}>• Pune Nursery Dispatch</span>
+        </div>
+
+        <div className={styles.titleRow}>
+          <div className={styles.iconWrap}>
+            <Sprout size={20} aria-hidden="true" />
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-botanical-950 tracking-tight">
-              {targetCategory.name}
-            </h1>
-          </div>
+          <h1 className={styles.title}>
+            {targetCategory.name}
+          </h1>
         </div>
 
         {targetCategory.description && (
-          <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
+          <p className={styles.description}>
             {targetCategory.description}
           </p>
         )}
 
         {/* Subcategory Quick Links */}
         {subcategories.length > 0 && (
-          <div className="pt-2 flex items-center gap-2 flex-wrap text-xs">
-            <span className="text-muted-foreground font-semibold flex items-center gap-1">
-              <FolderTree className="h-3.5 w-3.5 text-botanical-700" />
+          <div style={{ paddingTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '12px' }}>
+            <span style={{ color: 'var(--ugaoo-text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <FolderTree size={14} style={{ color: 'var(--ugaoo-green)' }} />
               Subcategories:
             </span>
             {subcategories.map((sub) => (
               <Link
                 key={sub.id}
                 href={`/categories/${sub.handle}`}
-                className="px-3 py-1 rounded-full border border-border bg-earth-50 hover:bg-earth-100 hover:border-botanical-300 text-botanical-950 transition-colors font-medium text-xs"
+                className={styles.suggestionChip}
               >
                 {sub.name}
               </Link>

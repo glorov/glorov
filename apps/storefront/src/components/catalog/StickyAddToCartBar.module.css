@@ -1,0 +1,171 @@
+.stickyBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  background-color: #ffffff;
+  border-top: 1px solid var(--ugaoo-border, #e6ded2);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  padding: 0.75rem 1rem;
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+@media (max-width: 749px) {
+  .stickyBar {
+    bottom: calc(var(--mobile-dock-height, 56px));
+    padding: 0.65rem 0.85rem;
+  }
+}
+
+.stickyBarVisible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.innerContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.productInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.thumbWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  background-color: var(--ugaoo-canvas, #faf9f7);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.thumbImage {
+  object-fit: cover;
+}
+
+.textGroup {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.productTitle {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ugaoo-text-dark, #042018);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.variantLabel {
+  font-size: 0.75rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actionsGroup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.priceGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.price {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ugaoo-green, #0a4c36);
+  line-height: 1.1;
+}
+
+.taxNote {
+  font-size: 0.65rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.6));
+}
+
+.addBtn {
+  min-height: 44px;
+  min-width: 150px;
+  background-color: var(--ugaoo-maroon, #93113a);
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.addBtn:hover:not(:disabled) {
+  background-color: var(--ugaoo-maroon-hover, #7b0e30);
+}
+
+.addBtn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.addBtn:disabled {
+  background-color: #e5e5e5;
+  color: #999999;
+  cursor: not-allowed;
+}
+
+.wishlistStickyBtn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ugaoo-border, rgba(4, 32, 24, 0.15));
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ugaoo-text-muted, #556b62);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.wishlistStickyBtn:hover {
+  border-color: var(--ugaoo-maroon, #93113a);
+  color: var(--ugaoo-maroon, #93113a);
+}
+
+.wishlistStickyBtnActive {
+  color: #e53935;
+  border-color: #e53935;
+  background-color: #fff5f5;
+}

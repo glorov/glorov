@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GLOROV — Indian Seeds & Live Plants | Pan-India Botanical Nursery</title>
+  <meta name="description" content="Order authentic Indian heirloom vegetable seeds, organic flower seeds, herbs, and potted live plants online with protective nursery packaging dispatched from Pune.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <style>
+    :root {
+      --primary: #1B4D3E;
+      --primary-dark: #123329;
+      --primary-light: #2A6F5A;
+      --accent: #E89234;
+      --accent-light: #FFF8F0;
+      --bg-cream: #FBF9F5;
+      --text-dark: #1F2937;
+      --text-muted: #6B7280;
+      --border-color: #E5E7EB;
+      --card-bg: #FFFFFF;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-cream);
+      color: var(--text-dark);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Announcement Bar */
+    .announcement-bar {
+      background-color: var(--primary);
+      color: #FFFFFF;
+      text-align: center;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .announcement-badge {
+      background-color: var(--accent);
+      color: #FFFFFF;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Header */
+    header {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--primary);
+    }
+
+    .logo-img {
+      height: 38px;
+      width: auto;
+    }
+
+    .search-box {
+      flex: 1;
+      max-width: 560px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 16px 10px 42px;
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+      font-size: 0.95rem;
+      outline: none;
+      background-color: #F9FAFB;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      background-color: #FFFFFF;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      width: 18px;
+      height: 18px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .backend-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: #ECFDF5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #10B981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 24px 64px 24px;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #FFFFFF;
+      border-radius: var(--radius);
+      padding: 48px 36px;
+      margin-bottom: 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .hero-banner::after {
+      content: "";
+      position: absolute;
+      right: -20px;
+      bottom: -20px;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(232, 146, 52, 0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      padding: 4px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      max-width: 640px;
+    }
+
+    .hero-subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin-bottom: 24px;
+      max-width: 580px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .meta-chip {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    /* Section Heading */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-count {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* Catalog Grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+
+    .product-card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .product-thumb {
+      width: 100%;
+      height: 220px;
+      background-color: #F3F4F6;
+      object-fit: cover;
+      display: block;
+    }
+
+    .product-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-category {
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .product-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+
+    .product-specs {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      flex: 1;
+    }
+
+    .product-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .product-price {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .btn-add {
+      background-color: var(--primary);
+      color: #FFFFFF;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-add:hover {
+      background-color: var(--primary-light);
+    }
+
+    /* Trust Features */
+    .trust-banner {
+      background-color: #FFFFFF;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      padding: 32px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .trust-icon {
+      font-size: 1.8rem;
+      color: var(--primary);
+    }
+
+    .trust-text h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 4px;
+    }
+
+    .trust-text p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--primary-dark);
+      color: #FFFFFF;
+      padding: 48px 24px 32px 24px;
+      border-top: 1px solid var(--primary);
+    }
+
+    .footer-content {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 32px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-brand {
+      max-width: 360px;
+    }
+
+    .footer-brand p {
+      font-size: 0.85rem;
+      opacity: 0.8;
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+
+    .footer-bottom {
+      max-width: 1280px;
+      margin: 24px auto 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .hero-title {
+        font-size: 1.85rem;
+      }
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div class="announcement-bar">
+    <span class="announcement-badge">0% GST Special</span>
+    <span>🌿 Authentic Indian Heirloom Seeds & Nursery Plants | Free Express Delivery on orders above ₹499</span>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <a href="/" class="logo-container">
+        <img src="/glorov-logo.svg" alt="GLOROV" class="logo-img" onerror="this.onerror=null; this.src='/glorov-g-symbol.svg'">
+      </a>
+
+      <div class="search-box">
+        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search heirloom seeds, medicinal herbs, live indoor plants...">
+      </div>
+
+      <div class="header-actions">
+        <div class="backend-status-pill">
+          <span class="status-dot"></span>
+          <span id="backendStatus">Live VM Backend Active</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Hero Banner -->
+    <div class="hero-banner">
+      <div class="hero-tag">🌱 Botanical Heritage • Dispatched from Pune Nursery</div>
+      <h1 class="hero-title">Every Great Garden Begins with a Seed.</h1>
+      <p class="hero-subtitle">
+        Preserving 100% natural Indian open-pollinated heirloom seeds and nurturing live potted plants with zero chemical synthetic coats.
+      </p>
+      <div class="hero-meta">
+        <span class="meta-chip">🇮🇳 100% Desi Heirloom Varieties</span>
+        <span class="meta-chip">📦 Protective Clamshell Packaging</span>
+        <span class="meta-chip">⚡ 48-Hour Dispatch from Pune Hub</span>
+      </div>
+    </div>
+
+    <!-- Product Catalog Section -->
+    <div class="section-header">
+      <h2 class="section-title">
+        <span>Curated Botanical Catalog</span>
+      </h2>
+      <span class="section-count" id="catalogCount">25 varieties in stock</span>
+    </div>
+
+    <div class="product-grid" id="productGrid">
+      <!-- Live Products injected here via JavaScript -->
+    </div>
+
+    <!-- Trust Reassurance -->
+    <div class="trust-banner">
+      <div class="trust-item">
+        <div class="trust-icon">🌱</div>
+        <div class="trust-text">
+          <h4>Certified 0% GST Seeds</h4>
+          <p>Indian Agricultural GST compliance with zero hidden cess or levies.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-icon">📦</div>
+        <div class="trust-text">
+          <h4>Safe Transit Guarantee</h4>
+          <p>Moisture-locked breathable packaging designed for pan-India transit.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-icon">🩺</div>
+        <div class="trust-text">
+          <h4>Free Plant Doctor Support</h4>
+          <p>Dedicated botanical care guidance from certified agronomists.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-icon">⚡</div>
+        <div class="trust-text">
+          <h4>Same-Day Fulfillment</h4>
+          <p>Fast dispatch directly from Pune Central Botanical Nursery Hub.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-brand">
+        <img src="/glorov-logo.svg" alt="GLOROV" style="height: 32px; filter: brightness(0) invert(1);" onerror="this.style.display='none'">
+        <p>GLOROV — Rooted in India's botanical heritage. Dedicated to empowering urban gardeners, balcony growers, and farm stewards across the nation.</p>
+      </div>
+      <div class="footer-links">
+        <p style="font-weight: 600; margin-bottom: 8px;">Regional Hub</p>
+        <p style="font-size: 0.85rem; opacity: 0.8;">Pune Central Nursery Hub, Maharashtra (PIN: 411001)</p>
+        <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 4px;">Fulfillment Partner: Shiprocket India & Manual Courier</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 GLOROV. All rights reserved.</span>
+      <span>Hosted on Firebase Hosting (elacesourav@gmail.com) • Backend Powered by Azure VM</span>
+    </div>
+  </footer>
+
+  <script>
+    // Configuration
+    const BACKEND_URL = 'http://20.244.48.139/medusa';
+    const PUBLISHABLE_KEY = 'pk_3e00679a810ca538ba78aedc23b336788d82631606792292cbecad4fc422316a';
+
+    // Seeded fallback botanical catalog (rendered immediately, refreshed live from backend)
+    const SEED_CATALOG = [
+      { id: '1', title: 'Brinjal Banarasi Giant Seeds', price: 99, category: 'Vegetable Seeds', specs: 'Heirloom • 85-90 Days • 80%+ Germination', img: 'https://res.cloudinary.com/dtljonz0f/image/upload/v1740807800/brinjal-banarasi-giant_c982xa.jpg' },
+      { id: '2', title: 'Chinese Cabbage Seeds', price: 129, category: 'Vegetable Seeds', specs: 'Crunchy Napa • 60-70 Days • Crisp Texture', img: 'https://res.cloudinary.com/dtljonz0f/image/upload/v1740807802/chinese-cabbage_p82zqa.jpg' },
+      { id: '3', title: 'Green Onion Seeds (Leek)', price: 99, category: 'Vegetable Seeds', specs: 'Mild Onion Flavor • 100-120 Days', img: 'https://res.cloudinary.com/dtljonz0f/image/upload/v1740807804/green-onion-leek_m837ya.jpg' },
+      { id: '4', title: 'Drumstick Seeds (Moringa)', price: 149, category: 'Vegetable Seeds', specs: 'PKM-1 Variety • High Yield • Year-Round', img: 'https://res.cloudinary.com/dtljonz0f/image/upload/v1740807806/moringa-drumstick_b183na.jpg' },
+      { id: '5', title: 'Peace Lily Plant', price: 399, category: 'Live Plants', specs: 'NASA Air Purifier • Low Light • Spathiphyllum', img: 'https://res.cloudinary.com/dtljonz0f/image/upload/v1740807808/peace-lily_g912za.jpg' },
+      { id: '6', title: 'Anthurium Red Plant', price: 699, category: 'Live Plants', specs: 'Vibrant Red Spathe • Potted Plant', img: 'https://res.cloudinary.com/dtljonz0f/image/upload/v1740807810/anthurium-red_r824qa.jpg' },
+      { id: '7', title: 'Jade Mini Plant', price: 299, category: 'Live Plants', specs: 'Good Luck Succulent • Low Maintenance', img: 'https://res.cloudinary.com/dtljonz0f/image/upload/v1740807812/jade-mini_v823xa.jpg' },
+      { id: '8', title: 'Money Plant Golden', price: 249, category: 'Live Plants', specs: 'Golden Pothos • Air Purifier • Self-Watering Pot', img: 'https://res.cloudinary.com/dtljonz0f/image/upload/v1740807814/money-plant-golden_l831za.jpg' }
+    ];
+
+    function renderCatalog(items) {
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = items.map(item => `
+        <div class="product-card">
+          <img src="${item.img || '/favicon.png'}" alt="${item.title}" class="product-thumb" onerror="this.src='/favicon.png'">
+          <div class="product-body">
+            <span class="product-category">${item.category}</span>
+            <h3 class="product-title">${item.title}</h3>
+            <p class="product-specs">${item.specs}</p>
+            <div class="product-footer">
+              <span class="product-price">₹${item.price}</span>
+              <button class="btn-add" onclick="alert('Added ${item.title.replace(/'/g, "\\'")} to cart!')">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('catalogCount').innerText = `${items.length} botanical varieties available`;
+    }
+
+    // Initial render
+    renderCatalog(SEED_CATALOG);
+
+    // Live backend connectivity check
+    async function checkBackend() {
+      try {
+        const res = await fetch(`${BACKEND_URL}/health`, { signal: AbortSignal.timeout(3000) });
+        if (res.ok) {
+          document.getElementById('backendStatus').innerText = 'Backend Online (20.244.48.139)';
+          // Fetch live products
+          const prodRes = await fetch(`${BACKEND_URL}/store/products?limit=25`, {
+            headers: { 'x-publishable-api-key': PUBLISHABLE_KEY },
+            signal: AbortSignal.timeout(4000)
+          });
+          if (prodRes.ok) {
+            const data = await prodRes.json();
+            if (data.products && data.products.length > 0) {
+              const liveItems = data.products.map(p => {
+                const variant = p.variants && p.variants[0];
+                const price = variant && variant.prices && variant.prices[0] ? variant.prices[0].amount : 99;
+                return {
+                  id: p.id,
+                  title: p.title,
+                  price: price,
+                  category: p.categories && p.categories[0] ? p.categories[0].name : 'Botanical Variety',
+                  specs: (p.description || 'Authentic Indian Nursery Variety').substring(0, 60),
+                  img: p.thumbnail || (p.images && p.images[0] ? p.images[0].url : '/favicon.png')
+                };
+              });
+              renderCatalog(liveItems);
+            }
+          }
+        }
+      } catch (err) {
+        console.log('Using pre-rendered botanical catalog');
+      }
+    }
+
+    checkBackend();
+
+    // Client Search Filter
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        renderCatalog(SEED_CATALOG);
+        return;
+      }
+      const filtered = SEED_CATALOG.filter(item => 
+        item.title.toLowerCase().includes(q) || 
+        item.category.toLowerCase().includes(q) ||
+        item.specs.toLowerCase().includes(q)
+      );
+      renderCatalog(filtered);
+    });
+  </script>
+</body>
+</html>

@@ -1,7 +1,25 @@
 import type { Metadata, Viewport } from 'next'
+import { Fraunces, Plus_Jakarta_Sans } from 'next/font/google'
 import { Header } from '@/components/common/Header'
 import { Footer } from '@/components/common/Footer'
+import { MobileDock } from '@/components/common/MobileDock'
+import { CartProvider } from '@/context/CartContext'
+import { WishlistProvider } from '@/context/WishlistContext'
+import { CartDrawer } from '@/components/cart/CartDrawer'
 import './globals.css'
+import styles from './RootLayout.module.css'
+
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-fraunces',
+})
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-plus-jakarta',
+})
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://glorov.in'
 
@@ -74,30 +92,30 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
-import { CartProvider } from '@/context/CartContext'
-import { CartDrawer } from '@/components/cart/CartDrawer'
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className="min-h-screen flex flex-col font-sans bg-background text-foreground antialiased selection:bg-botanical-200 selection:text-botanical-950">
+    <html lang="en">
+      <body className={`${plusJakartaSans.variable} ${fraunces.variable} ${styles.body}`}>
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-botanical-800 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-botanical-500 font-semibold text-xs transition-all"
+          className={styles.skipLink}
         >
           Skip to main content
         </a>
         <CartProvider>
-          <Header />
-          <CartDrawer />
-          <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
-            {children}
-          </main>
-          <Footer />
+          <WishlistProvider>
+            <Header />
+            <CartDrawer />
+            <main id="main-content" tabIndex={-1} className={styles.main}>
+              {children}
+            </main>
+            <Footer />
+            <MobileDock />
+          </WishlistProvider>
         </CartProvider>
       </body>
     </html>

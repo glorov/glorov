@@ -10,6 +10,7 @@ import {
   PackageCheck,
   AlertTriangle,
 } from 'lucide-react'
+import styles from './ProductTrustAndPolicies.module.css'
 
 interface ProductTrustAndPoliciesProps {
   isPerishable?: boolean
@@ -27,67 +28,65 @@ export function ProductTrustAndPolicies({
   }
 
   return (
-    <section aria-labelledby="store-policies-heading" className="space-y-4">
-      <div>
+    <section aria-labelledby="store-policies-heading" className={styles.container}>
+      <div className={styles.header}>
         <h2
           id="store-policies-heading"
-          className="text-xl sm:text-2xl font-black text-botanical-950 tracking-tight"
+          className={styles.title}
         >
           Delivery, Guarantees &amp; Customer Support
         </h2>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+        <p className={styles.subtitle}>
           Transparent fulfilment logistics and care policies dispatched directly from our Pune nursery hub.
         </p>
       </div>
 
-      <div className="divide-y divide-border rounded-2xl border border-border bg-card overflow-hidden text-xs sm:text-sm">
+      <div className={styles.accordionList}>
         {/* Section 1: Shipping & Delivery Expectations */}
-        <div>
+        <div className={styles.accordionItem}>
           <button
             type="button"
             onClick={() => toggleSection('shipping')}
             aria-expanded={openSection === 'shipping'}
-            className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-earth-50/70 transition-colors"
+            className={styles.accordionButton}
           >
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-botanical-100 text-botanical-800 flex items-center justify-center shrink-0">
-                <Truck className="h-4 w-4" aria-hidden="true" />
+            <div className={styles.buttonContent}>
+              <div className={styles.iconWrap}>
+                <Truck size={20} aria-hidden="true" />
               </div>
               <div>
-                <h3 className="font-bold text-foreground">
+                <h3 className={styles.buttonHeading}>
                   Shipping Logistics &amp; Transit Expectations
                 </h3>
-                <p className="text-xs text-muted-foreground">
+                <p className={styles.buttonSubtext}>
                   Dispatched from Pune Hub (PIN 411001) across all serviceable Indian PIN codes
                 </p>
               </div>
             </div>
             <ChevronDown
-              className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ${
-                openSection === 'shipping' ? 'rotate-180' : ''
-              }`}
+              className={`${styles.chevronIcon} ${openSection === 'shipping' ? styles.chevronOpen : ''}`}
             />
           </button>
 
           {openSection === 'shipping' && (
-            <div className="px-5 pb-5 pt-1 space-y-3 text-muted-foreground text-xs leading-relaxed border-t border-border/40 bg-earth-50/30">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <div className="p-3 rounded-xl border border-border/80 bg-background space-y-1">
-                  <span className="font-bold text-foreground flex items-center gap-1.5 text-xs">
-                    <Clock className="h-3.5 w-3.5 text-botanical-700" />
+            <div className={styles.accordionBody}>
+              <div className={styles.infoGrid}>
+                <div className={styles.infoCard}>
+                  <span className={styles.infoCardTitle}>
+                    <Clock size={14} style={{ color: 'var(--ugaoo-maroon)' }} />
                     Dispatch Timeline
                   </span>
-                  <p className="text-[11px]">
+                  <p className={styles.infoCardText}>
                     Orders are viability-inspected, packed, and handed to national couriers within 24–48 hours (Mon–Sat).
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl border border-border/80 bg-background space-y-1">
-                  <span className="font-bold text-foreground flex items-center gap-1.5 text-xs">
-                    <PackageCheck className="h-3.5 w-3.5 text-botanical-700" />
+                <div className={styles.infoCard}>
+                  <span className={styles.infoCardTitle}>
+                    <PackageCheck size={14} style={{ color: 'var(--ugaoo-maroon)' }} />
                     Protective Packaging
                   </span>
-                  <p className="text-[11px]">
+                  <p className={styles.infoCardText}>
                     {isPerishable
                       ? 'Custom ventilated corrugated shippers with root coco-peat moisture wrap to survive express transit.'
                       : 'Hermetically heat-sealed aluminum barrier pouches with food-grade desiccant to prevent moisture ingress.'}
@@ -95,74 +94,62 @@ export function ProductTrustAndPolicies({
                 </div>
               </div>
 
-              <div className="pt-1 space-y-1.5 text-[11px]">
-                <p>
-                  • <strong>Express Air (Live Plants &amp; Priority Seeds):</strong> Estimated 2–4 business days delivery to metro and tier-1 destinations.
-                </p>
-                <p>
-                  • <strong>Standard Surface (Dry Seeds &amp; Planters):</strong> Estimated 4–7 business days delivery across tier-2 and tier-3 locations.
-                </p>
-                <p>
-                  • Real-time AWB tracking numbers from courier partners (e.g., Shiprocket) are provided upon dispatch via email and account orders tab.
-                </p>
+              <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <p>• <strong>Express Air (Live Plants &amp; Priority Seeds):</strong> Estimated 2–4 business days delivery to metro and tier-1 destinations.</p>
+                <p>• <strong>Standard Surface:</strong> Estimated 4–7 business days pan-India coverage via India Post, Bluedart, or Delhivery.</p>
+                <p>• <strong>Free Shipping:</strong> Automatically applied to all seed and plant orders exceeding ₹499.</p>
+                <p>• Real-time AWB tracking numbers from courier partners (e.g., Shiprocket) are provided upon dispatch via email and account orders tab.</p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Section 2: Returns & Transit Replacement Policy */}
-        <div>
+        {/* Section 2: Returns & Transit Damage Replacement */}
+        <div className={styles.accordionItem}>
           <button
             type="button"
             onClick={() => toggleSection('returns')}
             aria-expanded={openSection === 'returns'}
-            className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-earth-50/70 transition-colors"
+            className={styles.accordionButton}
           >
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-earth-200 text-earth-800 flex items-center justify-center shrink-0">
-                <ShieldAlert className="h-4 w-4" aria-hidden="true" />
+            <div className={styles.buttonContent}>
+              <div className={styles.iconWrap}>
+                <ShieldAlert size={20} aria-hidden="true" />
               </div>
               <div>
-                <h3 className="font-bold text-foreground">
+                <h3 className={styles.buttonHeading}>
                   Transit Damage Replacement &amp; Perishables Policy
                 </h3>
-                <p className="text-xs text-muted-foreground">
-                  48-hour unboxing coverage for transit defects and botanical transit safety
+                <p className={styles.buttonSubtext}>
+                  48-hour transit damage replacement guarantee on living botanicals &amp; sealed seed packets
                 </p>
               </div>
             </div>
             <ChevronDown
-              className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ${
-                openSection === 'returns' ? 'rotate-180' : ''
-              }`}
+              className={`${styles.chevronIcon} ${openSection === 'returns' ? styles.chevronOpen : ''}`}
             />
           </button>
 
           {openSection === 'returns' && (
-            <div className="px-5 pb-5 pt-1 space-y-3 text-muted-foreground text-xs leading-relaxed border-t border-border/40 bg-earth-50/30">
-              <div className="p-3 rounded-xl border border-amber-300/60 bg-amber-50/50 space-y-1.5 text-amber-950">
-                <div className="flex items-center gap-1.5 font-bold text-xs">
-                  <AlertTriangle className="h-3.5 w-3.5 text-amber-700 shrink-0" />
-                  <span>Perishable Botanical Asset Notice</span>
-                </div>
-                <p className="text-[11px] leading-relaxed">
-                  Due to the biological and perishable nature of {categoryName.toLowerCase()}, routine remorse returns are not accepted once packages are unsealed.
-                </p>
+            <div className={styles.accordionBody}>
+              <div style={{ padding: '0.75rem', borderRadius: '8px', border: '1px solid #fcd34d', backgroundColor: '#fffbeb', color: '#78350f', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '0.75rem' }}>
+                <AlertTriangle size={16} style={{ color: '#b45309', flexShrink: 0 }} />
+                <span>Due to the biological and perishable nature of {categoryName.toLowerCase()}, routine remorse returns are not accepted once packages are unsealed.</span>
               </div>
 
-              <div className="space-y-2 pt-1 text-[11px]">
-                <p className="font-bold text-foreground">What is covered for free replacement:</p>
-                <ul className="list-disc pl-4 space-y-1">
+              <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <p style={{ fontWeight: 700, margin: 0 }}>What is covered for free replacement:</p>
+                <ul style={{ paddingLeft: '1.25rem', margin: 0 }}>
                   <li>Damaged, crushed, or waterlogged parcels upon initial delivery.</li>
                   <li>Live plants showing terminal stem or root rot incurred strictly during transit delays.</li>
                   <li>Mismatched botanical variety or incorrect variant packet size delivered.</li>
                 </ul>
 
-                <p className="pt-1">
-                  <strong>Reporting Process:</strong> Please email <a href="mailto:support@glorov.in" className="text-botanical-700 font-semibold underline">support@glorov.in</a> within <strong>48 hours of delivery</strong> with unboxing photographs or video showing the shipping label and condition.
+                <p style={{ marginTop: '4px' }}>
+                  <strong>Reporting Process:</strong> Please email <a href="mailto:support@glorov.in" style={{ color: 'var(--ugaoo-maroon)', fontWeight: 600 }}>support@glorov.in</a> within <strong>48 hours of delivery</strong> with unboxing photographs or video showing the shipping label and condition.
                 </p>
 
-                <p className="text-[10px] text-muted-foreground italic pt-1">
+                <p style={{ fontSize: '10px', color: 'var(--ugaoo-text-muted)', fontStyle: 'italic', margin: '4px 0 0 0' }}>
                   [Store Owner Notice: Final refund and warranty claims are governed by GLOROV Terms of Service. Germination guarantees cannot be made unconditionally due to customer soil and climate variations.]
                 </p>
               </div>
@@ -170,55 +157,53 @@ export function ProductTrustAndPolicies({
           )}
         </div>
 
-        {/* Section 3: Customer Support & Care Guidance */}
-        <div>
+        {/* Section 3: Gardening Helpdesk & Order Support */}
+        <div className={styles.accordionItem}>
           <button
             type="button"
             onClick={() => toggleSection('support')}
             aria-expanded={openSection === 'support'}
-            className="w-full p-4 sm:p-5 flex items-center justify-between text-left hover:bg-earth-50/70 transition-colors"
+            className={styles.accordionButton}
           >
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-botanical-100 text-botanical-800 flex items-center justify-center shrink-0">
-                <Headphones className="h-4 w-4" aria-hidden="true" />
+            <div className={styles.buttonContent}>
+              <div className={styles.iconWrap}>
+                <Headphones size={20} aria-hidden="true" />
               </div>
               <div>
-                <h3 className="font-bold text-foreground">
+                <h3 className={styles.buttonHeading}>
                   Gardening Helpdesk &amp; Order Support
                 </h3>
-                <p className="text-xs text-muted-foreground">
-                  Direct support from our Pune nursery team for germination queries and order updates
+                <p className={styles.buttonSubtext}>
+                  Direct advice from our nursery agronomists via email and WhatsApp (Mon–Sat, 9 AM – 6 PM IST)
                 </p>
               </div>
             </div>
             <ChevronDown
-              className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ${
-                openSection === 'support' ? 'rotate-180' : ''
-              }`}
+              className={`${styles.chevronIcon} ${openSection === 'support' ? styles.chevronOpen : ''}`}
             />
           </button>
 
           {openSection === 'support' && (
-            <div className="px-5 pb-5 pt-1 space-y-3 text-muted-foreground text-xs leading-relaxed border-t border-border/40 bg-earth-50/30">
+            <div className={styles.accordionBody}>
               <p>
                 Need guidance on soil preparation, sowing depth, or transplanting this specimen? Our Pune horticultural team is happy to assist.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div className="p-3 rounded-xl border border-border/80 bg-background text-[11px] space-y-1">
-                  <span className="font-bold text-foreground block">Email Support</span>
+              <div className={styles.infoGrid} style={{ marginTop: '0.75rem' }}>
+                <div className={styles.infoCard}>
+                  <span className={styles.infoCardTitle}>Email Support</span>
                   <a
                     href="mailto:support@glorov.in"
-                    className="text-botanical-700 font-semibold hover:underline"
+                    style={{ color: 'var(--ugaoo-maroon)', fontWeight: 600, fontSize: '12px' }}
                   >
                     support@glorov.in
                   </a>
-                  <p className="text-muted-foreground text-[10px]">Responses within 12–24 business hours</p>
+                  <p className={styles.infoCardText}>Responses within 12–24 business hours</p>
                 </div>
 
-                <div className="p-3 rounded-xl border border-border/80 bg-background text-[11px] space-y-1">
-                  <span className="font-bold text-foreground block">Operating Hours</span>
-                  <p className="text-foreground font-medium">Monday to Saturday: 9:00 AM – 6:00 PM IST</p>
-                  <p className="text-muted-foreground text-[10px]">Closed on national Indian holidays</p>
+                <div className={styles.infoCard}>
+                  <span className={styles.infoCardTitle}>Operating Hours</span>
+                  <p style={{ fontSize: '12px', fontWeight: 600, margin: '2px 0' }}>Monday to Saturday: 9:00 AM – 6:00 PM IST</p>
+                  <p className={styles.infoCardText}>Closed on national Indian holidays</p>
                 </div>
               </div>
             </div>

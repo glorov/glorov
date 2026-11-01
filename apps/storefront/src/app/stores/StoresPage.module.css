@@ -1,0 +1,542 @@
+/* ==========================================================================
+   GLOROV Botanical Studios & Store Locator Page Styles
+   100% Component-Separated Pure CSS Module backed by variables.css
+   Authentic Ugaoo evergreen baseline (#0a4c36 green, #fff6f4 ivory, #ffd51f gold)
+   ========================================================================== */
+
+.pageContainer {
+  min-height: 100vh;
+  background-color: var(--ugaoo-bg-soft, #fff6f4);
+  color: var(--ugaoo-text-dark, #042018);
+  padding-bottom: 5rem;
+}
+
+/* Breadcrumbs */
+.breadcrumbNav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 0.5rem;
+}
+
+.breadcrumbList {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+}
+
+.breadcrumbLink {
+  color: var(--ugaoo-green, #0a4c36);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 150ms ease;
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+  color: var(--ugaoo-maroon, #93113a);
+}
+
+.breadcrumbSeparator {
+  opacity: 0.5;
+}
+
+.breadcrumbCurrent {
+  color: var(--ugaoo-text-dark, #042018);
+  font-weight: 600;
+}
+
+/* Hero Section */
+.heroSection {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3rem;
+  text-align: center;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  background-color: var(--ugaoo-green-pill-bg, rgba(0, 168, 89, 0.08));
+  border: 1px solid var(--ugaoo-green-pill-border, rgba(0, 168, 89, 0.32));
+  color: var(--ugaoo-green, #0a4c36);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  line-height: 1.65;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.75));
+  max-width: 760px;
+  margin: 0 auto 2.5rem;
+}
+
+/* Amenities Reassurance Bar */
+.amenitiesBar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.amenityCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(4, 32, 24, 0.03);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.amenityCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(4, 32, 24, 0.06);
+}
+
+.amenityIconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+  color: var(--ugaoo-green, #0a4c36);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.amenityTitle {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0;
+}
+
+.amenityDesc {
+  font-size: 0.8125rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* Section Wrapper */
+.sectionWrapper {
+  max-width: 1200px;
+  margin: 3.5rem auto 0;
+  padding: 0 1.5rem;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 2.25rem;
+}
+
+.sectionBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background-color: var(--ugaoo-butter, #fff3d9);
+  color: var(--ugaoo-text-dark, #042018);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.75rem;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0 0 0.75rem;
+}
+
+.sectionSubtitle {
+  font-size: 1rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.75));
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.55;
+}
+
+/* City Filter Tabs */
+.filterTabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  min-height: 44px;
+  padding: 0.6rem 1.5rem;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 9999px;
+  background-color: #ffffff;
+  color: var(--ugaoo-text-dark, #042018);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 180ms ease;
+}
+
+.filterBtn:hover {
+  border-color: var(--ugaoo-green, #0a4c36);
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+}
+
+.filterBtnActive {
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+  border-color: var(--ugaoo-green, #0a4c36);
+}
+
+/* Studio Cards Grid */
+.studioGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.75rem;
+}
+
+.studioCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 14px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: 0 4px 16px rgba(4, 32, 24, 0.04);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  position: relative;
+}
+
+.studioCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(4, 32, 24, 0.08);
+}
+
+.flagshipBadge {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background-color: var(--ugaoo-yellow-badge, #ffd029);
+  color: var(--ugaoo-green-dark, #042018);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+}
+
+.studioHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.studioCity {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ugaoo-maroon, #93113a);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.studioName {
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0;
+}
+
+.studioInfoList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--ugaoo-border, #e6ded2);
+  border-bottom: 1px solid var(--ugaoo-border, #e6ded2);
+}
+
+.studioInfoItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ugaoo-text-dark, #042018);
+}
+
+.infoIcon {
+  color: var(--ugaoo-green, #0a4c36);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.amenityTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.amenityTag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+  color: var(--ugaoo-green, #0a4c36);
+}
+
+.studioActions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: auto;
+}
+
+.directionBtn {
+  min-height: 44px;
+  flex: 1;
+  padding: 0.65rem 1.25rem;
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 150ms ease;
+}
+
+.directionBtn:hover {
+  background-color: var(--ugaoo-green-dark, #042018);
+}
+
+.callBtn {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+  background-color: transparent;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 8px;
+  color: var(--ugaoo-text-dark, #042018);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 150ms ease;
+}
+
+.callBtn:hover {
+  border-color: var(--ugaoo-green, #0a4c36);
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+  color: var(--ugaoo-green, #0a4c36);
+}
+
+/* Workshop Schedule Grid */
+.workshopsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.workshopCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 12px;
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  position: relative;
+}
+
+.workshopDateBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ugaoo-maroon, #93113a);
+  background-color: var(--ugaoo-butter, #fff3d9);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  align-self: flex-start;
+}
+
+.workshopTitle {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0;
+}
+
+.workshopDesc {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.75));
+  margin: 0;
+}
+
+.workshopMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ugaoo-text-dark, #042018);
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ugaoo-border, #e6ded2);
+}
+
+/* Studio Visit Reassurance Banner */
+.visitBanner {
+  background: linear-gradient(135deg, var(--ugaoo-green, #0a4c36) 0%, var(--ugaoo-green-dark, #042018) 100%);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: 4rem;
+}
+
+.visitText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.visitTitle {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  color: var(--ugaoo-yellow-badge, #ffd029);
+  margin: 0;
+}
+
+.visitSubtitle {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  max-width: 580px;
+}
+
+.visitActionBtn {
+  min-height: 48px;
+  padding: 0.75rem 1.75rem;
+  background-color: var(--ugaoo-yellow-badge, #ffd029);
+  color: var(--ugaoo-green-dark, #042018);
+  font-weight: 700;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  transition: opacity 150ms ease;
+}
+
+.visitActionBtn:hover {
+  opacity: 0.95;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 992px) {
+  .heroTitle {
+    font-size: 2.25rem;
+  }
+
+  .amenitiesBar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .studioGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .workshopsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .visitBanner {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .visitActionBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroSection {
+    padding: 1.75rem 1rem 2rem;
+  }
+
+  .heroTitle {
+    font-size: 1.875rem;
+  }
+
+  .amenitiesBar {
+    grid-template-columns: 1fr;
+  }
+
+  .studioCard {
+    padding: 1.5rem 1rem;
+  }
+
+  .studioActions {
+    flex-direction: column;
+  }
+
+  .directionBtn,
+  .callBtn {
+    width: 100%;
+  }
+}

@@ -14,10 +14,9 @@ import {
 } from 'lucide-react'
 import { getOrder } from '@/lib/cart'
 import { getCustomerToken } from '@/lib/auth-session'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { formatINR } from '@/lib/utils'
 import { ShipmentTracker } from '@/components/shipping/ShipmentTracker'
+import styles from './OrderConfirmedPage.module.css'
 
 interface OrderItem {
   id: string
@@ -56,17 +55,17 @@ export default async function OrderConfirmedPage({ params }: OrderConfirmedPageP
 
   if (!success || !order) {
     return (
-      <div className="container mx-auto px-4 py-20 min-h-[60vh] flex flex-col items-center justify-center text-center">
-        <div className="h-16 w-16 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-4">
-          <Package className="h-8 w-8" />
+      <div className={styles.notFoundContainer}>
+        <div className={styles.notFoundIcon}>
+          <Package aria-hidden="true" />
         </div>
-        <h1 className="text-2xl font-bold text-botanical-950">Order Not Found</h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-md">
+        <h1 className={styles.notFoundTitle}>Order Not Found</h1>
+        <p className={styles.notFoundDesc}>
           {error || `We could not locate order ${id}. Please verify your confirmation email or order reference.`}
         </p>
-        <Button asChild variant="botanical" className="mt-6 rounded-full">
-          <Link href="/">Back to Home</Link>
-        </Button>
+        <Link href="/" className={styles.btnPrimary}>
+          Back to Home
+        </Link>
       </div>
     )
   }
@@ -90,132 +89,128 @@ export default async function OrderConfirmedPage({ params }: OrderConfirmedPageP
   })
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-20 max-w-4xl">
+    <div className={styles.container}>
       {/* Success Hero */}
-      <div className="text-center pb-10 border-b border-border">
-        <div className="h-20 w-20 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-5 shadow-sm">
-          <CheckCircle2 className="h-10 w-10" />
+      <section className={styles.heroSection} aria-labelledby="order-confirmation-heading">
+        <div className={styles.successIconBadge} aria-hidden="true">
+          <CheckCircle2 />
         </div>
-        <Badge variant="botanical" className="mb-2">
-          Order Successfully Placed
-        </Badge>
-        <h1 className="text-3xl sm:text-4xl font-black text-botanical-950 tracking-tight">
+        <div>
+          <span className={styles.badgeSuccess}>Order Successfully Placed</span>
+        </div>
+        <h1 id="order-confirmation-heading" className={styles.heroTitle}>
           Thank you for your order!
         </h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
-          Order reference <span className="font-bold text-botanical-900">{displayId}</span> has been confirmed. Confirmation details have been logged to{' '}
-          <span className="font-semibold text-botanical-900">{order.email}</span>.
+        <p className={styles.heroSubtitle}>
+          Order reference <span className={styles.highlightRef}>{displayId}</span> has been confirmed. Confirmation details have been logged to{' '}
+          <span className={styles.highlightEmail}>{order.email}</span>.
         </p>
-      </div>
+      </section>
 
       {/* Order Status Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-8">
-        <div className="p-4 rounded-xl border border-border bg-card">
-          <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <Calendar className="h-3.5 w-3.5 text-botanical-700" />
+      <section className={styles.statusGrid} aria-label="Order summary metrics">
+        <div className={styles.statusCard}>
+          <span className={styles.statusLabel}>
+            <Calendar size={14} aria-hidden="true" />
             Placed At
           </span>
-          <p className="text-sm font-bold text-botanical-950 mt-1">{orderDate}</p>
+          <p className={styles.statusValue}>{orderDate}</p>
         </div>
 
-        <div className="p-4 rounded-xl border border-border bg-card">
-          <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <CreditCard className="h-3.5 w-3.5 text-botanical-700" />
+        <div className={styles.statusCard}>
+          <span className={styles.statusLabel}>
+            <CreditCard size={14} aria-hidden="true" />
             Payment Status
           </span>
-          <p className="text-sm font-bold text-emerald-700 mt-1 uppercase flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-emerald-600 inline-block" />
+          <p className={styles.statusPaymentBadge}>
+            <span className={styles.statusDotGreen} aria-hidden="true" />
             {order.payment_status || 'Authorized'}
           </p>
         </div>
 
-        <div className="p-4 rounded-xl border border-border bg-card">
-          <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <Truck className="h-3.5 w-3.5 text-botanical-700" />
+        <div className={styles.statusCard}>
+          <span className={styles.statusLabel}>
+            <Truck size={14} aria-hidden="true" />
             Fulfillment Status
           </span>
-          <p className="text-sm font-bold text-amber-700 mt-1 uppercase flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />
+          <p className={styles.statusFulfillmentBadge}>
+            <span className={styles.statusDotAmber} aria-hidden="true" />
             {order.fulfillment_status || 'Queued for Nursery Dispatch'}
           </p>
         </div>
-      </div>
+      </section>
 
       {/* Live Shipment Tracking Card */}
-      <div className="mb-8">
+      <section className={styles.shipmentSection} aria-label="Shipment tracking">
         <ShipmentTracker orderId={order.id} />
-      </div>
+      </section>
 
       {/* Main Order Details Card */}
-      <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xs mb-8">
-        <div className="px-6 py-4 bg-earth-50/70 border-b border-border flex justify-between items-center">
-          <h2 className="font-bold text-botanical-950 flex items-center gap-2">
-            <Package className="h-4 w-4 text-botanical-700" />
-            Ordered Items ({items.length})
+      <section className={styles.orderCard} aria-labelledby="ordered-items-heading">
+        <div className={styles.orderCardHeader}>
+          <h2 id="ordered-items-heading" className={styles.orderCardTitle}>
+            <Package size={16} aria-hidden="true" />
+            Ordered Botanical Items ({items.length})
           </h2>
-          <span className="text-xs font-mono text-muted-foreground">ID: {order.id}</span>
+          <span className={styles.orderCardId}>Medusa ID: {order.id}</span>
         </div>
 
         {/* Items List */}
-        <ul className="divide-y divide-border px-6">
+        <ul className={styles.itemsList} aria-label="List of ordered items">
           {(items as unknown as OrderItem[]).map((item) => (
-            <li key={item.id} className="py-4 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="h-14 w-14 rounded-lg border border-border bg-earth-50 overflow-hidden flex-shrink-0 relative">
+            <li key={item.id} className={styles.itemRow}>
+              <div className={styles.itemInfoWrapper}>
+                <div className={styles.itemThumbnail}>
                   {item.thumbnail ? (
                     <Image
                       src={item.thumbnail}
-                      alt={item.title || 'Product'}
-                      width={56}
-                      height={56}
+                      alt={item.title || 'Botanical product'}
+                      width={58}
+                      height={58}
                       unoptimized
-                      className="h-full w-full object-cover"
+                      className={styles.itemThumbnailImage}
                     />
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center text-botanical-400">
-                      <Sprout className="h-6 w-6" />
-                    </div>
+                    <Sprout size={24} aria-hidden="true" color="#0a4c36" />
                   )}
                 </div>
-                <div>
-                  <h3 className="font-bold text-sm text-botanical-950">{item.title}</h3>
-                  <div className="flex items-center gap-2 mt-0.5">
+                <div className={styles.itemDetails}>
+                  <h3 className={styles.itemTitle}>{item.title}</h3>
+                  <div className={styles.itemMeta}>
                     {item.subtitle && (
-                      <Badge variant="outline" className="text-[10px] py-0 px-1.5 bg-earth-50">
+                      <span className={styles.subtitleBadge}>
                         {item.subtitle}
-                      </Badge>
+                      </span>
                     )}
                     {item.variant_sku && (
-                      <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                      <span className={styles.skuText}>
                         SKU: {item.variant_sku}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className={styles.itemQtyPrice}>
                     Qty: {item.quantity} × {formatINR(item.unit_price)}
                   </p>
                 </div>
               </div>
 
-              <div className="text-right">
-                <span className="font-bold text-sm text-botanical-950">
-                  {formatINR(item.subtotal || item.unit_price * item.quantity)}
-                </span>
+              <div className={styles.itemSubtotal}>
+                {formatINR(item.subtotal || item.unit_price * item.quantity)}
               </div>
             </li>
           ))}
         </ul>
 
         {/* Address and Shipping Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-earth-50/40 border-t border-border text-xs">
+        <div className={styles.shippingAndOriginGrid}>
           <div>
-            <h3 className="font-bold text-botanical-950 mb-2 flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5 text-botanical-700" />
+            <h3 className={styles.blockTitle}>
+              <MapPin size={14} aria-hidden="true" />
               Delivery Address
             </h3>
             {shippingAddress ? (
-              <div className="text-muted-foreground space-y-0.5 leading-relaxed">
-                <p className="font-semibold text-botanical-900">
+              <div className={styles.addressDetails}>
+                <p className={styles.recipientName}>
                   {shippingAddress.first_name} {shippingAddress.last_name}
                 </p>
                 <p>{shippingAddress.address_1}</p>
@@ -224,77 +219,75 @@ export default async function OrderConfirmedPage({ params }: OrderConfirmedPageP
                   {shippingAddress.city}, {shippingAddress.province} — {shippingAddress.postal_code}
                 </p>
                 <p>India (IN)</p>
-                <p className="pt-1 text-[11px] font-mono">Mobile: +91 {shippingAddress.phone}</p>
+                <p className={styles.recipientPhone}>Mobile: +91 {shippingAddress.phone}</p>
               </div>
             ) : (
-              <p className="text-muted-foreground">Standard Nursery Delivery</p>
+              <p className={styles.addressDetails}>Standard Nursery Delivery Address</p>
             )}
           </div>
 
           <div>
-            <h3 className="font-bold text-botanical-950 mb-2 flex items-center gap-1.5">
-              <Truck className="h-3.5 w-3.5 text-botanical-700" />
+            <h3 className={styles.blockTitle}>
+              <Truck size={14} aria-hidden="true" />
               Shipping &amp; Origin
             </h3>
-            <div className="text-muted-foreground space-y-1">
-              <p className="font-semibold text-botanical-900">
+            <div className={styles.shippingDetails}>
+              <p className={styles.shippingMethodName}>
                 {selectedShipping?.name || 'Standard Delivery (India)'}
               </p>
               <p>Dispatch Origin: Pune Central Nursery Hub (PIN: 411001)</p>
-              <p className="text-[11px] text-emerald-800 bg-emerald-50 p-2 rounded border border-emerald-100 mt-2">
+              <div className={styles.viabilityBadgeBox}>
                 <strong>Seed Viability Shield:</strong> Packets are sealed in airtight aluminium foil pouches with food-grade desiccant to guarantee viability in Indian transit conditions.
-              </p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Financial Summary */}
-        <div className="p-6 border-t border-border space-y-2 text-sm bg-background">
-          <div className="flex justify-between text-muted-foreground">
+        <div className={styles.financialSummary}>
+          <div className={styles.summaryRow}>
             <span>Items Subtotal</span>
-            <span className="font-semibold text-botanical-950">{formatINR(subtotal)}</span>
+            <span className={styles.summaryRowValue}>{formatINR(subtotal)}</span>
           </div>
 
           {(order.discount_total || 0) > 0 && (
-            <div className="flex justify-between text-emerald-700">
+            <div className={styles.discountRow}>
               <span>Botanical Discount</span>
-              <span className="font-semibold">-{formatINR(order.discount_total || 0)}</span>
+              <span className={styles.summaryRowValue}>-{formatINR(order.discount_total || 0)}</span>
             </div>
           )}
 
-          <div className="flex justify-between text-muted-foreground">
+          <div className={styles.summaryRow}>
             <span>Shipping ({selectedShipping?.name || 'Delivery'})</span>
-            <span className="font-semibold text-botanical-950">{formatINR(shippingTotal)}</span>
+            <span className={styles.summaryRowValue}>{formatINR(shippingTotal)}</span>
           </div>
 
-          <div className="flex justify-between text-muted-foreground text-xs">
+          <div className={styles.taxRow}>
             <span>Agricultural GST (HSN 1209)</span>
             {(order.tax_total || 0) > 0 ? (
-              <span className="font-semibold text-botanical-950">{formatINR(order.tax_total || 0)}</span>
+              <span className={styles.summaryRowValue}>{formatINR(order.tax_total || 0)}</span>
             ) : (
-              <span className="font-semibold text-emerald-700">₹0 (0% Exempt)</span>
+              <span className={styles.exemptText}>₹0 (0% Exempt)</span>
             )}
           </div>
 
-          <div className="border-t border-border pt-3 flex justify-between items-baseline">
-            <span className="font-bold text-base text-botanical-950">Grand Total (INR)</span>
-            <span className="text-2xl font-black text-botanical-950">{formatINR(total)}</span>
+          <div className={styles.grandTotalRow}>
+            <span className={styles.grandTotalLabel}>Grand Total (INR)</span>
+            <span className={styles.grandTotalValue}>{formatINR(total)}</span>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Action Footer */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <Button asChild variant="outline" className="w-full sm:w-auto">
-          <Link href="/">Back to Homepage</Link>
-        </Button>
-        <Button asChild variant="botanical" className="w-full sm:w-auto gap-2 font-bold shadow-md">
-          <Link href="/#catalog">
-            <span>Explore More Seeds &amp; Plants</span>
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
+      <nav className={styles.actionFooter} aria-label="Post-order navigation">
+        <Link href="/" className={styles.btnSecondary}>
+          Back to Homepage
+        </Link>
+        <Link href="/#catalog" className={styles.btnPrimary}>
+          <span>Explore More Seeds &amp; Plants</span>
+          <ArrowRight size={16} aria-hidden="true" />
+        </Link>
+      </nav>
     </div>
   )
 }

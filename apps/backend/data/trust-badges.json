@@ -1,0 +1,46 @@
+[
+  {
+    "id": "badge_organic_nongmo",
+    "title": "100% Organic & Non-GMO",
+    "subtitle": "Open-pollinated, chemical-free heirloom seeds tested for 98%+ germination vigor.",
+    "icon_key": "organic-shield",
+    "cta_route": "/categories/seeds",
+    "display_order": 1,
+    "is_active": true,
+    "created_at": "2026-10-30T00:00:00.000Z",
+    "updated_at": "2026-10-30T00:00:00.000Z"
+  },
+  {
+    "id": "badge_safe_transit",
+    "title": "Safe Transit Guarantee",
+    "subtitle": "Custom ventilated botanical packaging ensures live houseplants arrive lush and shock-free.",
+    "icon_key": "transit-truck",
+    "cta_route": "/policies/shipping-policy",
+    "display_order": 2,
+    "is_active": true,
+    "created_at": "2026-10-30T00:00:00.000Z",
+    "updated_at": "2026-10-30T00:00:00.000Z"
+  },
+  {
+    "id": "badge_lifetime_support",
+    "title": "Lifetime Plant Support",
+    "subtitle": "Our in-house botanists guide your potting, watering, and harvesting every step of the way.",
+    "icon_key": "support-hand",
+    "cta_route": "/plant-doctor",
+    "display_order": 3,
+    "is_active": true,
+    "created_at": "2026-10-30T00:00:00.000Z",
+    "updated_at": "2026-10-30T00:00:00.000Z"
+  },
+  {
+    "id": "badge_eco_friendly",
+    "title": "Eco-Friendly Philosophy",
+    "subtitle": "Biodegradable seed sleeves, plastic-free shipping containers, and sustainable coco-coir.",
+    "icon_key": "eco-leaf",
+    "cta_route": "/about",
+    "display_order": 4,
+    "is_active": true,
+    "created_at": "2026-10-30T00:00:00.000Z",
+    "updated_at": "2026-10-30T00:00:00.000Z"
+  }
+]

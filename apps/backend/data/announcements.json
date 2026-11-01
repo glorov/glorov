@@ -1,0 +1,68 @@
+{
+  "config": {
+    "is_enabled": true,
+    "speed_seconds": 30,
+    "bg_color": "#1B4332",
+    "text_color": "#FFFFFF",
+    "highlight_color": "#FFD51F",
+    "pause_on_hover": true,
+    "updated_at": "2026-10-31T00:00:00.000Z"
+  },
+  "items": [
+    {
+      "id": "ann_free_shipping_499",
+      "text": "Free express botanical delivery on all orders over ₹499",
+      "highlight_text": "₹499 FREE DELIVERY",
+      "icon": "local_shipping",
+      "link_url": "/store",
+      "display_order": 1,
+      "is_active": true,
+      "created_at": "2026-10-31T00:00:00.000Z",
+      "updated_at": "2026-10-31T00:00:00.000Z"
+    },
+    {
+      "id": "ann_grow_more_live_greener",
+      "text": "Grow More. Live Greener. Hand-conditioned indoor plants & heirloom seeds",
+      "highlight_text": "GLOROV BOTANICALS",
+      "icon": "spa",
+      "link_url": "/store",
+      "display_order": 2,
+      "is_active": true,
+      "created_at": "2026-10-31T00:00:00.000Z",
+      "updated_at": "2026-10-31T00:00:00.000Z"
+    },
+    {
+      "id": "ann_code_glorov10",
+      "text": "Use code GLOROV10 at checkout for an extra 10% off your botanical order",
+      "highlight_text": "USE CODE GLOROV10",
+      "icon": "percent",
+      "link_url": "/store",
+      "display_order": 3,
+      "is_active": true,
+      "created_at": "2026-10-31T00:00:00.000Z",
+      "updated_at": "2026-10-31T00:00:00.000Z"
+    },
+    {
+      "id": "ann_organic_seeds",
+      "text": "100% Organic & Non-GMO certified heirloom seeds with 0% GST exemption",
+      "highlight_text": "100% ORGANIC SEEDS",
+      "icon": "verified",
+      "link_url": "/store?category=seeds",
+      "display_order": 4,
+      "is_active": true,
+      "created_at": "2026-10-31T00:00:00.000Z",
+      "updated_at": "2026-10-31T00:00:00.000Z"
+    },
+    {
+      "id": "ann_pune_nursery_dispatch",
+      "text": "Direct dispatch from Pune Central Nursery Hub • Mon–Thu transit guaranteed",
+      "highlight_text": "PUNE DISPATCH",
+      "icon": "bolt",
+      "link_url": "/policies/shipping",
+      "display_order": 5,
+      "is_active": true,
+      "created_at": "2026-10-31T00:00:00.000Z",
+      "updated_at": "2026-10-31T00:00:00.000Z"
+    }
+  ]
+}

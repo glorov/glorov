@@ -5,22 +5,27 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   ArrowRight,
+  ArrowLeft,
   Trash2,
   Plus,
   Minus,
   ShieldCheck,
-  Truck,
   Sprout,
-  AlertCircle,
   Loader2,
+  Tag,
   Sparkles,
+  Truck,
+  CheckCircle2,
 } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { formatINR } from '@/lib/utils'
-import { FREE_SHIPPING_THRESHOLD_INR } from '@/lib/constants'
 import { PincodeChecker } from '@/components/shipping/PincodeChecker'
+import { CartMilestoneMeter } from '@/components/cart/CartMilestoneMeter'
+import { CartRecommendations } from '@/components/cart/CartRecommendations'
+import { CartCouponCard } from '@/components/cart/CartCouponCard'
+import { AvailableOffersDrawer } from '@/components/cart/AvailableOffersDrawer'
+import { CartSummaryFooter } from '@/components/cart/CartSummaryFooter'
+import styles from './CartPage.module.css'
 
 export default function CartPage() {
   const {
@@ -32,20 +37,33 @@ export default function CartPage() {
     updateQuantity,
     removeItem,
     clearError,
+    appliedCoupon,
+    couponDiscountINR,
+    openOffersDrawer,
   } = useCart()
 
   const items = cart?.items || []
-  const subtotal = cart?.item_subtotal || cart?.subtotal || 0
-  const discountTotal = cart?.discount_total || 0
-  const shippingTotal = cart?.shipping_total || 0
-  const taxTotal = cart?.tax_total || 0
-  const cartTotal = cart?.total || Math.max(0, subtotal - discountTotal + shippingTotal + taxTotal)
-  const subtotalINR = subtotal / 100
-  const freeShippingRemaining = Math.max(0, FREE_SHIPPING_THRESHOLD_INR - subtotalINR)
-  const freeShippingPercent = Math.min(
-    100,
-    Math.max(0, Math.round((subtotalINR / FREE_SHIPPING_THRESHOLD_INR) * 100))
+  const subtotalPaise = cart?.item_subtotal || cart?.subtotal || 0
+  const subtotalINR = Math.round(subtotalPaise / 100)
+
+  // Calculate compare-at original price estimate (approx 40-50% higher)
+  const estimatedOriginalINR = Math.max(
+    subtotalINR,
+    Math.round(
+      items.reduce((acc, it) => {
+        const unitPriceINR = Math.round((it.unit_price || 0) / 100)
+        const compareUnitINR = Math.round(unitPriceINR * 1.5)
+        return acc + compareUnitINR * (it.quantity || 1)
+      }, 0)
+    )
   )
+
+  const finalTotalINR = Math.max(0, subtotalINR - couponDiscountINR)
+  const totalSavingsINR = Math.max(0, estimatedOriginalINR - finalTotalINR)
+  const discountPercent =
+    estimatedOriginalINR > 0 && totalSavingsINR > 0
+      ? Math.round((totalSavingsINR / estimatedOriginalINR) * 100)
+      : 0
 
   const hasPerishable = items.some(
     (item) =>
@@ -59,238 +77,233 @@ export default function CartPage() {
 
   if (isLoading && items.length === 0) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 py-20 flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-botanical-600" />
-        <h2 className="text-xl font-bold text-botanical-950">Loading your botanical cart...</h2>
-        <p className="text-sm text-muted-foreground">Checking live stock and pricing with Medusa engine</p>
+      <div className={styles.container}>
+        <div className={styles.mobileCartBar}>
+          <Link href="/" className={styles.mobileBackBtn} aria-label="Back to store">
+            <ArrowLeft size={18} aria-hidden="true" />
+            <span>Back to Store</span>
+          </Link>
+          <span className={styles.mobileBarTitle}>Shopping Cart</span>
+        </div>
+
+        <div className={styles.emptyCard}>
+          <Loader2 size={36} className={styles.spinner} style={{ color: 'var(--ugaoo-green)' }} />
+          <h2 className={styles.emptyHeading}>Loading your botanical cart...</h2>
+          <p className={styles.emptyText}>Checking live stock and pricing with Medusa engine</p>
+        </div>
       </div>
     )
   }
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 py-20 min-h-[60vh] flex flex-col items-center justify-center text-center">
-        <div className="h-20 w-20 rounded-full bg-botanical-50 flex items-center justify-center text-botanical-700 mb-6 shadow-inner">
-          <Sprout className="h-10 w-10" />
+      <div className={styles.container}>
+        <div className={styles.mobileCartBar}>
+          <Link href="/" className={styles.mobileBackBtn} aria-label="Back to store">
+            <ArrowLeft size={18} aria-hidden="true" />
+            <span>Back to Store</span>
+          </Link>
+          <span className={styles.mobileBarTitle}>Shopping Cart</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-botanical-950 tracking-tight">
-          Your Shopping Cart is Empty
-        </h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-md">
-          Explore our certified Desi seeds, low-light indoor plants, and natural potting mixes ready for pan-India dispatch.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-4 justify-center">
-          <Button asChild variant="botanical" size="lg" className="rounded-full shadow-md gap-2">
-            <Link href="/store">
+
+        <div className={styles.emptyCard}>
+          <div className={styles.emptyIcon}>
+            <Sprout size={40} />
+          </div>
+          <h1 className={styles.emptyHeading}>Your Shopping Cart is Empty</h1>
+          <p className={styles.emptyText}>
+            Your garden pouch is waiting. Explore our certified Desi heirloom seeds, low-light indoor plants, and organic potting mixes ready for pan-India dispatch.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '1rem' }}>
+            <Link href="/store" className={styles.browseBtn}>
               <span>Browse Botanical Store</span>
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight size={16} />
             </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="rounded-full">
-            <Link href="/">Back to Home</Link>
-          </Button>
+            <Link
+              href="/"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '0.75rem 1.75rem',
+                borderRadius: '9999px',
+                border: '1px solid var(--ugaoo-border)',
+                backgroundColor: 'var(--ugaoo-white)',
+                color: 'var(--ugaoo-text-dark)',
+                fontSize: '14px',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
+            >
+              Back to Home
+            </Link>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-10 sm:py-16">
-      {/* Page Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-border gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-botanical-950 flex items-center gap-3">
-            <span>Shopping Cart</span>
-            <Badge variant="botanical" className="text-xs font-semibold">
-              {totalItems} {totalItems === 1 ? 'item' : 'items'}
-            </Badge>
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Prices validated by Medusa backend engine. Direct dispatch from our Pune nursery hub.
-          </p>
-        </div>
-
-        <Button asChild variant="ghost" size="sm" className="self-start sm:self-auto text-xs text-botanical-700 hover:text-botanical-800">
-          <Link href="/store">← Continue Shopping</Link>
-        </Button>
+    <div className={styles.container}>
+      {/* Mobile Top App Bar */}
+      <div className={styles.mobileCartBar}>
+        <Link href="/" className={styles.mobileBackBtn} aria-label="Back to store">
+          <ArrowLeft size={18} aria-hidden="true" />
+          <span>Back to Store</span>
+        </Link>
+        <span className={styles.mobileBarTitle}>Cart ({totalItems})</span>
       </div>
 
-      {/* Free Shipping Meter */}
-      <div className="my-6 p-4 sm:p-5 rounded-2xl border border-botanical-200 bg-botanical-50/70 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-botanical-600 text-white flex items-center justify-center flex-shrink-0">
-              <Truck className="h-5 w-5" />
-            </div>
-            <div>
-              {freeShippingRemaining === 0 ? (
-                <p className="text-sm font-bold text-botanical-950 flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-amber-500 fill-amber-500" />
-                  <span>You qualify for FREE Standard Delivery across India!</span>
-                </p>
-              ) : (
-                <p className="text-sm font-semibold text-botanical-950">
-                  Add <span className="font-bold text-botanical-800">{formatINR(freeShippingRemaining * 100)}</span> more of gardening supplies for <span className="font-bold text-botanical-800">FREE delivery</span>!
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground">Standard dispatch threshold is ₹{FREE_SHIPPING_THRESHOLD_INR}.</p>
-            </div>
-          </div>
-          <span className="text-xs font-bold text-botanical-800 bg-botanical-100/80 px-2.5 py-1 rounded-full self-start sm:self-auto border border-botanical-200/50">
-            {freeShippingPercent}% Unlocked
-          </span>
-        </div>
-
-        {/* Visual Progress Bar */}
-        <div
-          role="progressbar"
-          aria-valuenow={freeShippingPercent}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label={`Free delivery progress: ${freeShippingPercent}%`}
-          className="mt-3.5 w-full bg-botanical-200/60 rounded-full h-2.5 overflow-hidden"
-        >
-          <div
-            className="bg-botanical-600 h-2.5 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${freeShippingPercent}%` }}
-          />
-        </div>
+      {/* Desktop Clean Top Header */}
+      <div className={styles.desktopCartHeader}>
+        <Link href="/" className={styles.desktopLogoLink} aria-label="GLOROV Homepage">
+          <Image src="/glorov-logo.svg" alt="GLOROV" width={130} height={36} priority />
+        </Link>
+        <Link href="/store" className={styles.continueShoppingLink}>
+          <span>← Continue Shopping</span>
+        </Link>
       </div>
 
-      {/* Error Alert */}
       {error && (
-        <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start justify-between gap-3 text-red-800 text-sm">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-          <button
-            type="button"
-            onClick={clearError}
-            className="text-xs font-bold text-red-900 hover:underline"
-          >
+        <div className={styles.errorAlert}>
+          <span>{error}</span>
+          <button type="button" onClick={clearError} className={styles.dismissErrorBtn}>
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Grid Layout: Items Table vs Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-6">
-        {/* Left: Items List */}
-        <div className="lg:col-span-8">
-          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-            <div className="hidden sm:grid grid-cols-12 px-6 py-3 bg-earth-50/80 border-b border-border text-xs font-bold text-muted-foreground uppercase tracking-wider">
-              <div className="col-span-6">Botanical Item</div>
-              <div className="col-span-2 text-center">Unit Price</div>
-              <div className="col-span-2 text-center">Quantity</div>
-              <div className="col-span-2 text-right">Subtotal</div>
-            </div>
+      {/* Desktop Page Title */}
+      <div className={styles.desktopHeadingArea}>
+        <h1 className={styles.pageTitle}>Your Botanical Shopping Cart</h1>
+        <span className={styles.itemCountBadge}>
+          {totalItems} {totalItems === 1 ? 'item' : 'items'} ready for Pune nursery dispatch
+        </span>
+      </div>
 
-            <ul className="divide-y divide-border">
+      {/* Main Grid Layout */}
+      <div className={styles.cartLayout}>
+        {/* Left Column: Progress Meter, Items & Recommendations */}
+        <div className={styles.itemsSection}>
+          {/* Milestone Target Meter Card */}
+          <div className={styles.meterContainerCard}>
+            <CartMilestoneMeter subtotalINR={subtotalINR} />
+            <div className={styles.roadmapFooterRow}>
+              <button
+                type="button"
+                onClick={openOffersDrawer}
+                className={styles.roadmapTriggerBtn}
+              >
+                <Sparkles size={12} className={styles.sparkleIcon} />
+                <span>Available Offers Roadmap: Free Delivery, 10%, 15%, 20%</span>
+                <ArrowRight size={12} />
+              </button>
+            </div>
+          </div>
+
+          {/* Cart Items List */}
+          <div className={styles.itemsCard}>
+            <ul className={styles.itemsList}>
               {items.map((item) => {
-                const unitPrice = item.unit_price || 0
-                const lineTotal = item.subtotal || unitPrice * (item.quantity || 1)
+                const unitPricePaise = item.unit_price || 0
+                const unitPriceINR = Math.round(unitPricePaise / 100)
+                const comparePriceINR = Math.round(unitPriceINR * 1.5)
+                const lineTotalINR = unitPriceINR * (item.quantity || 1)
+                const productHref = item.product_handle ? `/products/${item.product_handle}` : '/store'
+
+                const hasDiscount = Boolean(appliedCoupon && appliedCoupon.discount_value > 0)
+                const discountedUnitINR = hasDiscount
+                  ? Math.round(unitPriceINR * (1 - appliedCoupon!.discount_value / 100))
+                  : unitPriceINR
 
                 return (
-                  <li key={item.id} className="p-4 sm:p-6 hover:bg-earth-50/30 transition-colors">
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                      {/* Product Info */}
-                      <div className="sm:col-span-6 flex gap-4">
-                        <div className="h-20 w-20 flex-shrink-0 rounded-lg border border-border bg-earth-100 overflow-hidden relative">
-                          {item.thumbnail ? (
-                            <Image
-                              src={item.thumbnail}
-                              alt={item.title || 'Product'}
-                              width={80}
-                              height={80}
-                              unoptimized
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center text-botanical-400">
-                              <Sprout className="h-6 w-6" />
-                            </div>
-                          )}
+                  <li key={item.id} className={styles.itemRow}>
+                    {/* Square Thumbnail */}
+                    <Link href={productHref} className={styles.thumbWrap}>
+                      {item.thumbnail ? (
+                        <Image
+                          src={item.thumbnail}
+                          alt={item.title || 'Botanical product'}
+                          fill
+                          sizes="76px"
+                          unoptimized
+                          className={styles.thumbImg}
+                        />
+                      ) : (
+                        <div className={styles.fallbackThumb}>
+                          <Sprout size={24} />
                         </div>
+                      )}
+                    </Link>
 
-                        <div className="flex flex-col justify-center">
-                          <h3 className="font-bold text-sm text-botanical-950 hover:text-botanical-700">
-                            {item.title}
-                          </h3>
-                          {item.variant_title && (
-                            <div className="mt-1">
-                              <Badge variant="outline" className="text-[11px] py-0 px-2 font-medium bg-earth-50">
-                                {item.variant_title}
-                              </Badge>
-                            </div>
-                          )}
-                          {item.variant_sku && (
-                            <span className="text-[10px] font-mono text-muted-foreground mt-1 uppercase">
-                              SKU: {item.variant_sku}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Unit Price (Desktop) */}
-                      <div className="sm:col-span-2 text-center text-sm font-semibold text-botanical-900 hidden sm:block">
-                        {formatINR(unitPrice)}
-                      </div>
-
-                      {/* Quantity Modifier */}
-                      <div className="sm:col-span-2 flex items-center justify-between sm:justify-center gap-2">
-                        <span className="sm:hidden text-xs text-muted-foreground">Quantity:</span>
-                        <div className="flex items-center border border-border rounded-lg bg-background shadow-xs overflow-hidden">
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)}
-                            disabled={isMutating}
-                            className="h-9 w-9 flex items-center justify-center hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 disabled:opacity-50"
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus className="h-3.5 w-3.5" />
-                          </button>
-                          <span className="px-2 text-xs font-bold text-botanical-950 min-w-[2.25rem] text-center select-none">
-                            {item.quantity}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
-                            disabled={isMutating}
-                            className="h-9 w-9 flex items-center justify-center hover:bg-earth-100 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 disabled:opacity-50"
-                            aria-label="Increase quantity"
-                          >
-                            <Plus className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-
-                        {/* Mobile Delete Button */}
+                    {/* Item Details */}
+                    <div className={styles.itemInfo}>
+                      {/* Top Row: Title & Trash Button */}
+                      <div className={styles.itemTitleRow}>
+                        <Link href={productHref} className={styles.itemTitleLink}>
+                          {item.title}
+                        </Link>
                         <button
                           type="button"
                           onClick={() => removeItem(item.id)}
                           disabled={isMutating}
-                          className="sm:hidden text-red-600 h-9 w-9 flex items-center justify-center hover:bg-red-50 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors"
-                          aria-label="Remove item"
+                          className={styles.trashBtn}
+                          aria-label={`Remove ${item.title}`}
+                          title="Remove item"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 size={16} />
                         </button>
                       </div>
 
-                      {/* Subtotal & Desktop Delete */}
-                      <div className="sm:col-span-2 flex items-center justify-between sm:justify-end gap-3 text-right">
-                        <span className="sm:hidden text-xs text-muted-foreground">Line Total:</span>
-                        <div>
-                          <div className="text-sm font-bold text-botanical-950">
-                            {formatINR(lineTotal)}
-                          </div>
+                      {/* Subtitle / Pack Size */}
+                      <div className={styles.itemMetaRow}>
+                        <span className={styles.variantTag}>
+                          {item.variant_title || '1 gm'}
+                        </span>
+
+                        {appliedCoupon && (
+                          <span className={styles.appliedCodeBadge}>
+                            <Tag size={10} />
+                            <span>{appliedCoupon.code}</span>
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Bottom Row: Price & Pill Stepper */}
+                      <div className={styles.actionsRow}>
+                        <div className={styles.priceGroup}>
+                          <span className={styles.currentPrice}>
+                            ₹{discountedUnitINR}
+                          </span>
+                          <span className={styles.comparePrice}>
+                            ₹{hasDiscount ? unitPriceINR : comparePriceINR}
+                          </span>
+                          {item.quantity && item.quantity > 1 && (
+                            <span className={styles.lineTotalText}>
+                              ({formatINR(lineTotalINR * 100)} total)
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Pill Stepper */}
+                        <div className={styles.pillStepper}>
                           <button
                             type="button"
-                            onClick={() => removeItem(item.id)}
+                            onClick={() => updateQuantity(item.id, (item.quantity || 1) - 1)}
                             disabled={isMutating}
-                            className="hidden sm:inline-flex items-center gap-1 text-[11px] text-red-600 hover:text-red-700 mt-1 hover:underline disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded px-1"
+                            className={styles.stepperBtn}
+                            aria-label="Decrease quantity"
                           >
-                            <Trash2 className="h-3 w-3" />
-                            <span>Remove</span>
+                            <Minus size={11} />
+                          </button>
+                          <span className={styles.stepperQty}>{item.quantity}</span>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, (item.quantity || 1) + 1)}
+                            disabled={isMutating}
+                            className={styles.stepperBtn}
+                            aria-label="Increase quantity"
+                          >
+                            <Plus size={11} />
                           </button>
                         </div>
                       </div>
@@ -300,89 +313,111 @@ export default function CartPage() {
               })}
             </ul>
           </div>
-        </div>
 
-        {/* Right: Order Summary Sidebar */}
-        <div className="lg:col-span-4">
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm sticky top-24 space-y-6">
-            <h2 className="text-lg font-bold text-botanical-950 border-b border-border pb-3">
-              Order Summary
-            </h2>
-
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Item Subtotal</span>
-                <span className="font-semibold text-botanical-950">{formatINR(subtotal)}</span>
-              </div>
-
-              {discountTotal > 0 && (
-                <div className="flex justify-between text-emerald-700">
-                  <span>Botanical Discount</span>
-                  <span className="font-semibold">-{formatINR(discountTotal)}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Shipping</span>
-                <span className="font-semibold text-botanical-950">
-                  {shippingTotal > 0 ? formatINR(shippingTotal) : 'Calculated at checkout'}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center text-xs text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-100">
-                <span className="font-semibold">Agricultural GST (HSN 1209)</span>
-                {taxTotal > 0 ? (
-                  <span className="font-bold text-botanical-950">{formatINR(taxTotal)}</span>
-                ) : (
-                  <span className="font-bold">0% (Exempt)</span>
-                )}
-              </div>
-
-              <div className="border-t border-border pt-3 flex justify-between items-baseline">
-                <div>
-                  <span className="text-base font-bold text-botanical-950">Estimated Total</span>
-                  <p className="text-[11px] text-muted-foreground">INR Currency (₹)</p>
-                </div>
-                <span className="text-2xl font-black text-botanical-950 tracking-tight">
-                  {formatINR(cartTotal)}
-                </span>
-              </div>
-            </div>
-
-            {/* Pincode Serviceability & Speed Check */}
+          {/* Delivery Pincode Checker */}
+          <div className={styles.pincodeWrap}>
             <PincodeChecker
-              compact={true}
               isPerishable={hasPerishable}
               weightKg={cartWeightKg}
               declaredValueInr={subtotalINR}
+              compact={true}
             />
+          </div>
 
-            <Button
-              asChild
-              variant="botanical"
-              size="lg"
-              className="w-full rounded-xl py-6 font-bold text-sm shadow-md gap-2"
-            >
-              <Link href="/checkout">
-                <span>Proceed to Checkout</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+          {/* Recommended Products Carousel */}
+          <div className={styles.recommendationsCard}>
+            <CartRecommendations />
+          </div>
 
-            {/* Assurance Trust Points */}
-            <div className="pt-2 border-t border-earth-100 space-y-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-botanical-700 flex-shrink-0" />
-                <span>Heirloom Desi cultivars &amp; climate-hardened live plants</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Truck className="h-4 w-4 text-botanical-700 flex-shrink-0" />
-                <span>Express dispatch from Pune Central Nursery Hub</span>
-              </div>
+          {/* Mobile In-Flow Coupon Card (Matches Screenshot #3) */}
+          <div className={styles.mobileCouponWrap}>
+            <CartCouponCard />
+          </div>
+
+          {/* Botanical Trust & Assurance Strip */}
+          <div className={styles.trustStrip}>
+            <div className={styles.trustItem}>
+              <CheckCircle2 size={14} className={styles.trustIcon} />
+              <span>100% Certified Heirloom Seeds</span>
+            </div>
+            <div className={styles.trustItem}>
+              <Truck size={14} className={styles.trustIcon} />
+              <span>Express Pune Nursery Dispatch</span>
+            </div>
+            <div className={styles.trustItem}>
+              <ShieldCheck size={14} className={styles.trustIcon} />
+              <span>0% GST on Seeds (HSN 1209)</span>
             </div>
           </div>
         </div>
+
+        {/* Right Column (Desktop Only Sticky Sidebar) */}
+        <div className={styles.desktopSummaryCard}>
+          <h2 className={styles.summaryTitle}>Order Summary</h2>
+
+          {/* Coupon Voucher Component */}
+          <div style={{ margin: '0 0 1rem 0' }}>
+            <CartCouponCard />
+          </div>
+
+          <div className={styles.summaryStack}>
+            <div className={styles.summaryLine}>
+              <span className={styles.summaryLabel}>Botanical Subtotal</span>
+              <span className={styles.summaryValue}>{formatINR(subtotalPaise)}</span>
+            </div>
+
+            {couponDiscountINR > 0 && (
+              <div className={`${styles.summaryLine} ${styles.discountLine}`}>
+                <span>Coupon Discount ({appliedCoupon?.code})</span>
+                <span>-{formatINR(couponDiscountINR * 100)}</span>
+              </div>
+            )}
+
+            <div className={styles.summaryLine}>
+              <span className={styles.summaryLabel}>Shipping (India)</span>
+              <span className={styles.shippingValue}>
+                {subtotalINR >= 499 ? 'FREE' : '₹99 (Free on ₹499+)'}
+              </span>
+            </div>
+
+            <div className={styles.totalDivider} />
+
+            <div className={styles.totalLine}>
+              <div className={styles.totalLabelGroup}>
+                <span className={styles.grandTotalLabel}>Grand Total</span>
+                <span className={styles.inclusiveTaxNote}>Inclusive of all taxes</span>
+              </div>
+              <div className={styles.totalPriceGroup}>
+                <span className={styles.finalGrandTotal}>₹{finalTotalINR.toLocaleString('en-IN')}</span>
+                {estimatedOriginalINR > finalTotalINR && (
+                  <span className={styles.originalCompareTotal}>₹{estimatedOriginalINR.toLocaleString('en-IN')}</span>
+                )}
+                {discountPercent > 0 && (
+                  <span className={styles.pillDiscountTag}>{discountPercent}% off</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.gstBadge}>
+            <ShieldCheck size={16} className={styles.gstIcon} />
+            <span>0% GST on seeds (HSN 1209). Transit safe packaging guaranteed.</span>
+          </div>
+
+          <Link href="/checkout" className={styles.desktopCheckoutButton}>
+            <span>Proceed to Checkout</span>
+            <ArrowRight size={16} />
+          </Link>
+        </div>
       </div>
+
+      {/* Mobile Sticky Bottom Checkout Bar (Matches Screenshot #1, #2, #3) */}
+      <div className={styles.mobileStickyBarWrap}>
+        <CartSummaryFooter />
+      </div>
+
+      {/* Available Offers Drawer Modal (Matches Screenshot #4) */}
+      <AvailableOffersDrawer />
     </div>
   )
 }

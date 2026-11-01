@@ -13,8 +13,7 @@ import {
   Check,
   Loader2,
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import styles from './ShipmentTracker.module.css'
 
 export interface TrackingScan {
   date: string
@@ -124,11 +123,11 @@ export function ShipmentTracker({
   if (isLoading) {
     return (
       <div
-        className={`rounded-2xl border border-border bg-card p-6 shadow-sm flex items-center justify-center gap-3 min-h-[140px] ${className}`}
+        className={`${styles.loadingContainer} ${className}`}
         data-testid="shipment-tracker-loading"
       >
-        <Loader2 className="h-5 w-5 animate-spin text-botanical-600" />
-        <span className="text-sm font-medium text-muted-foreground">
+        <Loader2 size={20} className={styles.spinner} />
+        <span className={styles.loadingText}>
           Connecting to courier tracking gateway...
         </span>
       </div>
@@ -138,14 +137,14 @@ export function ShipmentTracker({
   if (error || !tracking) {
     return (
       <div
-        className={`rounded-2xl border border-border bg-card p-5 shadow-sm space-y-2 ${className}`}
+        className={`${styles.errorContainer} ${className}`}
         data-testid="shipment-tracker-error"
       >
-        <div className="flex items-center gap-2 text-sm font-bold text-foreground">
-          <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+        <div className={styles.errorHeader}>
+          <AlertCircle size={16} color="#d97706" />
           <span>Tracking Status Temporarily Unavailable</span>
         </div>
-        <p className="text-xs text-muted-foreground leading-relaxed">
+        <p className={styles.errorDesc}>
           {error ||
             'Tracking data will update once your parcel is scanned by the courier partner at Pune Nursery Hub.'}
         </p>
@@ -167,66 +166,64 @@ export function ShipmentTracker({
 
   return (
     <div
-      className={`rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-sm space-y-6 ${className}`}
+      className={`${styles.card} ${className}`}
       data-testid="shipment-tracker"
     >
       {/* Header with Status and Courier */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border">
+      <div className={styles.header}>
         <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-foreground">Live Shipment Tracking</h3>
+          <div className={styles.titleRow}>
+            <h3 className={styles.title}>Live Shipment Tracking</h3>
             {currentStatus === 'delivered' ? (
-              <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-800 text-xs font-semibold">
+              <span className={styles.badgeDelivered}>
                 Delivered
-              </Badge>
+              </span>
             ) : isRto ? (
-              <Badge variant="outline" className="border-rose-300 bg-rose-50 text-rose-800 text-xs font-semibold">
+              <span className={styles.badgeRto}>
                 Return to Origin
-              </Badge>
+              </span>
             ) : isException ? (
-              <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-800 text-xs font-semibold">
+              <span className={styles.badgeException}>
                 Delivery Rescheduled
-              </Badge>
+              </span>
             ) : (
-              <Badge variant="botanical" className="text-xs font-semibold">
+              <span className={styles.badgeProgress}>
                 {currentStageIndex === 0 ? 'Packing in Progress' : 'In Transit'}
-              </Badge>
+              </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className={styles.originText}>
             Dispatched from <strong>{tracking.origin || 'Pune Central Nursery Hub'}</strong>
           </p>
         </div>
 
         {/* AWB & Courier Badge */}
         {tracking.awb && (
-          <div className="flex items-center gap-2 self-start sm:self-auto bg-muted/60 px-3 py-1.5 rounded-xl border border-border">
-            <div className="text-right">
-              <p className="text-[10px] text-muted-foreground uppercase font-semibold">
+          <div className={styles.awbBox}>
+            <div className={styles.awbTextCol}>
+              <p className={styles.courierLabel}>
                 {tracking.courier_name || 'Carrier Partner'}
               </p>
-              <p className="text-xs font-mono font-bold text-foreground">{tracking.awb}</p>
+              <p className={styles.awbValue}>{tracking.awb}</p>
             </div>
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
               onClick={() => handleCopyAwb(tracking.awb!)}
-              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              className={styles.copyBtn}
               title="Copy AWB Number"
               aria-label="Copy AWB number"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-            </Button>
+              {copied ? <Check size={14} color="#059669" /> : <Copy size={14} />}
+            </button>
             {tracking.tracking_url && (
               <a
                 href={tracking.tracking_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-botanical-700 hover:text-botanical-900 inline-flex items-center pl-1"
+                className={styles.trackingLink}
                 title="Open carrier tracking page"
               >
-                <ExternalLink className="h-3.5 w-3.5" />
+                <ExternalLink size={14} />
               </a>
             )}
           </div>
@@ -234,67 +231,55 @@ export function ShipmentTracker({
       </div>
 
       {/* Visual Timeline Stepper */}
-      <div className="pt-2">
-        <div className="relative">
-          {/* Progress Bar Line */}
-          <div className="absolute top-4 left-6 right-6 h-1 bg-muted rounded-full -z-0 hidden sm:block">
-            <div
-              className="h-full bg-botanical-600 rounded-full transition-all duration-500"
-              style={{
-                width: `${(currentStageIndex / (STAGES.length - 1)) * 100}%`,
-              }}
-            />
-          </div>
+      <div className={styles.stepperContainer}>
+        <div className={styles.stepperLineTrack}>
+          <div
+            className={styles.stepperLineFill}
+            style={{
+              width: `${(currentStageIndex / (STAGES.length - 1)) * 100}%`,
+            }}
+          />
+        </div>
 
-          {/* Stepper Nodes */}
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 sm:gap-2">
-            {STAGES.map((stage, idx) => {
-              const isPassed = idx <= currentStageIndex
-              const isCurrent = idx === currentStageIndex
-              const Icon = stage.icon
+        {/* Stepper Nodes */}
+        <div className={styles.stepperGrid}>
+          {STAGES.map((stage, idx) => {
+            const isPassed = idx <= currentStageIndex
+            const isCurrent = idx === currentStageIndex
+            const Icon = stage.icon
 
-              return (
-                <div
-                  key={stage.key}
-                  className="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-1.5"
-                >
-                  <div
-                    className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 z-10 transition-colors shadow-sm ${
-                      isCurrent
-                        ? 'bg-botanical-700 text-white ring-4 ring-botanical-100 dark:ring-botanical-900/40'
-                        : isPassed
-                          ? 'bg-botanical-600 text-white'
-                          : 'bg-muted text-muted-foreground'
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p
-                      className={`text-xs font-semibold ${
-                        isCurrent
-                          ? 'text-botanical-950 dark:text-botanical-200'
-                          : isPassed
-                            ? 'text-foreground'
-                            : 'text-muted-foreground'
-                      }`}
-                    >
-                      {stage.label}
-                    </p>
-                  </div>
+            const circleClass = isCurrent
+              ? `${styles.nodeCircle} ${styles.nodeCircleCurrent}`
+              : isPassed
+                ? `${styles.nodeCircle} ${styles.nodeCirclePassed}`
+                : `${styles.nodeCircle} ${styles.nodeCirclePending}`
+
+            const labelClass = isCurrent
+              ? `${styles.nodeLabel} ${styles.nodeLabelCurrent}`
+              : isPassed
+                ? `${styles.nodeLabel} ${styles.nodeLabelPassed}`
+                : `${styles.nodeLabel} ${styles.nodeLabelPending}`
+
+            return (
+              <div key={stage.key} className={styles.stepperNode}>
+                <div className={circleClass}>
+                  <Icon size={16} />
                 </div>
-              )
-            })}
-          </div>
+                <div>
+                  <p className={labelClass}>{stage.label}</p>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
 
       {/* Botanical Packaging Shield Notice */}
       {tracking.moisture_shield_status && (
-        <div className="rounded-xl bg-botanical-50/70 dark:bg-botanical-950/20 border border-botanical-200 dark:border-botanical-800/60 p-3 text-xs flex items-center gap-2.5">
-          <ShieldCheck className="h-4 w-4 text-botanical-700 shrink-0" />
-          <p className="text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">Botanical Moisture Shield: </strong>
+        <div className={styles.shieldNotice}>
+          <ShieldCheck size={16} className={styles.shieldIcon} />
+          <p className={styles.shieldText}>
+            <strong>Botanical Moisture Shield: </strong>
             {tracking.moisture_shield_status}
           </p>
         </div>
@@ -302,27 +287,25 @@ export function ShipmentTracker({
 
       {/* Chronological Scan History */}
       {tracking.scans && tracking.scans.length > 0 && (
-        <div className="space-y-2 pt-2 border-t border-border">
-          <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
+        <div className={styles.scansSection}>
+          <h4 className={styles.scansTitle}>
             Transit Events &amp; Hub Scans
           </h4>
-          <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+          <div className={styles.scansList}>
             {tracking.scans.map((scan, idx) => (
-              <div key={idx} className="text-xs flex items-start justify-between gap-3 text-muted-foreground border-l-2 border-botanical-300 dark:border-botanical-700 pl-3 py-0.5">
+              <div key={idx} className={styles.scanItem}>
                 <div>
-                  <p className="font-semibold text-foreground">{scan.activity}</p>
-                  <p className="text-[11px] text-muted-foreground">{scan.location}</p>
+                  <p className={styles.scanActivity}>{scan.activity}</p>
+                  <p className={styles.scanLocation}>{scan.location}</p>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="text-[11px] font-mono">
-                    {new Date(scan.date).toLocaleDateString('en-IN', {
-                      day: 'numeric',
-                      month: 'short',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
-                </div>
+                <p className={styles.scanDate}>
+                  {new Date(scan.date).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </p>
               </div>
             ))}
           </div>

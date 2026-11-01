@@ -1,0 +1,469 @@
+/* ==========================================================================
+   GLOROV Botanical Standard vs The Rest Styles
+   100% Component-Separated Pure CSS Module backed by variables.css
+   Authentic Ugaoo evergreen baseline (#0a4c36 green, #fff6f4 ivory, #ffd51f gold)
+   ========================================================================== */
+
+.pageContainer {
+  min-height: 100vh;
+  background-color: var(--ugaoo-bg-soft, #fff6f4);
+  color: var(--ugaoo-text-dark, #042018);
+  padding-bottom: 5rem;
+}
+
+/* Breadcrumbs */
+.breadcrumbNav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 0.5rem;
+}
+
+.breadcrumbList {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+}
+
+.breadcrumbLink {
+  color: var(--ugaoo-green, #0a4c36);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 150ms ease;
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+  color: var(--ugaoo-maroon, #93113a);
+}
+
+.breadcrumbSeparator {
+  opacity: 0.5;
+}
+
+.breadcrumbCurrent {
+  color: var(--ugaoo-text-dark, #042018);
+  font-weight: 600;
+}
+
+/* Hero Section */
+.heroSection {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3.5rem;
+  text-align: center;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.2rem;
+  border-radius: 9999px;
+  background-color: var(--ugaoo-butter, #fff3d9);
+  border: 1px solid var(--ugaoo-yellow-badge, #ffd029);
+  color: var(--ugaoo-maroon, #93113a);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: 3.25rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  line-height: 1.65;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.75));
+  max-width: 760px;
+  margin: 0 auto 2rem;
+}
+
+/* Trust Stats Bar */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.statCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  box-shadow: 0 2px 8px rgba(4, 32, 24, 0.03);
+}
+
+.statValue {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0;
+}
+
+.statLabel {
+  font-size: 0.8125rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.65));
+  line-height: 1.35;
+  margin: 0;
+}
+
+/* Section Wrapper */
+.sectionWrapper {
+  max-width: 1200px;
+  margin: 4.5rem auto 0;
+  padding: 0 1.5rem;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 2.75rem;
+}
+
+.sectionPreheading {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ugaoo-maroon, #93113a);
+  margin-bottom: 0.5rem;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0 0 0.75rem;
+}
+
+.sectionSubtitle {
+  font-size: 1rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.7));
+  max-width: 680px;
+  margin: 0 auto;
+  line-height: 1.55;
+}
+
+/* Comparison Matrix Container */
+.matrixCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(4, 32, 24, 0.06);
+}
+
+/* Mobile Competitor Switcher */
+.mobileToggleRow {
+  display: none;
+  padding: 1.25rem;
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+  border-bottom: 1px solid var(--ugaoo-border, #e6ded2);
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.toggleBtn {
+  min-height: 44px;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid var(--ugaoo-green, #0a4c36);
+  background-color: #ffffff;
+  color: var(--ugaoo-green, #0a4c36);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.toggleBtnActive {
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+}
+
+/* Comparison Table */
+.comparisonTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.comparisonTable th,
+.comparisonTable td {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--ugaoo-border, #e6ded2);
+}
+
+.thFeature {
+  width: 28%;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.6));
+  background-color: #ffffff;
+}
+
+.thGlorov {
+  width: 38%;
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+  border-left: 2px solid var(--ugaoo-green, #0a4c36);
+  border-right: 2px solid var(--ugaoo-green, #0a4c36);
+  text-align: center;
+}
+
+.thCompetitor {
+  width: 34%;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.7));
+  text-align: center;
+  background-color: #ffffff;
+}
+
+.glorovHeaderPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+  padding: 0.35rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.featureName {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ugaoo-text-dark, #042018);
+  margin: 0 0 0.25rem;
+}
+
+.featureSub {
+  font-size: 0.75rem;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.6));
+  margin: 0;
+}
+
+.tdGlorov {
+  background-color: #f7fbf9;
+  border-left: 2px solid var(--ugaoo-green, #0a4c36);
+  border-right: 2px solid var(--ugaoo-green, #0a4c36);
+  vertical-align: top;
+}
+
+.benefitPoint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--ugaoo-text-dark, #042018);
+  font-weight: 600;
+}
+
+.benefitPointCheck {
+  color: var(--ugaoo-green, #0a4c36);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tdCompetitor {
+  vertical-align: top;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.7));
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.competitorPoint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.competitorX {
+  color: #d93025;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Excellence Pillars Grid */
+.pillarsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.pillarCard {
+  background-color: #ffffff;
+  border: 1px solid var(--ugaoo-border, #e6ded2);
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 16px rgba(4, 32, 24, 0.03);
+}
+
+.pillarIconWrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--ugaoo-green-subtle, #f0f7f4);
+  color: var(--ugaoo-green, #0a4c36);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.pillarTitle {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ugaoo-green, #0a4c36);
+  margin: 0 0 0.5rem;
+}
+
+.pillarDesc {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ugaoo-text-muted, rgba(4, 32, 24, 0.7));
+  margin: 0;
+}
+
+/* Call to Action Banner */
+.ctaBanner {
+  background: linear-gradient(135deg, var(--ugaoo-green, #0a4c36) 0%, var(--ugaoo-green-dark, #042018) 100%);
+  color: #ffffff;
+  border-radius: 20px;
+  padding: 3rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: 4.5rem;
+}
+
+.ctaTitle {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  color: var(--ugaoo-yellow-badge, #ffd029);
+  margin: 0 0 0.5rem;
+}
+
+.ctaSubtitle {
+  font-size: 1rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  max-width: 600px;
+}
+
+.ctaBtn {
+  min-height: 48px;
+  padding: 0.75rem 1.75rem;
+  background-color: var(--ugaoo-yellow-badge, #ffd029);
+  color: var(--ugaoo-green-dark, #042018);
+  font-weight: 700;
+  border-radius: 9999px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.ctaBtn:hover {
+  opacity: 0.95;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 992px) {
+  .heroTitle {
+    font-size: 2.35rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pillarsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ctaBanner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .ctaBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobileToggleRow {
+    display: flex;
+  }
+
+  .comparisonTable th,
+  .comparisonTable td {
+    padding: 1rem;
+  }
+
+  .thCompetitor {
+    display: none;
+  }
+
+  .tdCompetitor {
+    display: none;
+  }
+
+  .thCompetitorActive,
+  .tdCompetitorActive {
+    display: table-cell !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroSection {
+    padding: 1.75rem 1rem 2.25rem;
+  }
+
+  .heroTitle {
+    font-size: 1.875rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pillarsGrid {
+    grid-template-columns: 1fr;
+  }
+}

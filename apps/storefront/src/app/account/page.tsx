@@ -1,22 +1,24 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   Package,
   MapPin,
   User,
   ArrowRight,
+  ArrowLeft,
   Sprout,
   Calendar,
   PlusCircle,
+  Heart,
+  Headphones,
+  Sparkles,
 } from 'lucide-react'
 import { getCurrentCustomerAction, getCustomerOrdersAction } from '@/lib/customer-actions'
 import { AccountNav } from '@/components/account/AccountNav'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { formatINR } from '@/lib/utils'
+import styles from './AccountDashboard.module.css'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,171 +37,270 @@ export default async function AccountDashboardPage() {
     customer.addresses.find((a) => a.is_default_shipping) || customer.addresses[0]
 
   return (
-    <div className="container mx-auto px-4 py-8 sm:px-6 max-w-6xl">
-      {/* Header Greeting */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-xs font-semibold text-botanical-700 uppercase tracking-wider mb-1">
-          <Sprout className="h-4 w-4" />
-          <span>Verified Customer Account</span>
-        </div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-          Welcome back, {customer.first_name || 'Gardener'}!
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage your botanical orders, delivery destinations, and profile settings.
-        </p>
+    <div className={styles.container}>
+      {/* Mobile Clean Top Bar */}
+      <div className={styles.mobileAccountBar}>
+        <Link href="/" className={styles.mobileBackBtn} aria-label="Back to store">
+          <ArrowLeft size={18} aria-hidden="true" />
+          <span>Back to Store</span>
+        </Link>
+        <span className={styles.mobileBarTitle}>My Account</span>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+      {/* Desktop Clean Top Header */}
+      <div className={styles.desktopAccountHeader}>
+        <Link href="/" className={styles.desktopLogoLink} aria-label="GLOROV Homepage">
+          <Image src="/glorov-logo.svg" alt="GLOROV" width={130} height={36} priority />
+        </Link>
+        <Link href="/" className={styles.backToStoreLink}>
+          <span>← Back to Store</span>
+        </Link>
+      </div>
+
+      {/* Header Greeting */}
+      <header className={styles.headerArea}>
+        <div className={styles.accountBadge}>
+          <Sprout size={14} aria-hidden="true" />
+          <span>Verified Customer Account</span>
+        </div>
+        <h1 className={styles.greetingTitle}>
+          Welcome back, {customer.first_name || 'Gardener'}!
+        </h1>
+        <p className={styles.greetingSub}>
+          Manage your botanical orders, delivery destinations, and account settings.
+        </p>
+      </header>
+
+      <div className={styles.dashboardLayout}>
         {/* Navigation Sidebar */}
         <AccountNav />
 
         {/* Main Content Area */}
-        <div className="flex-1 w-full space-y-6">
+        <main className={styles.mainContent} aria-label="Customer dashboard content">
           {/* Top Metrics Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="bg-card">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">Total Orders</span>
-                  <Package className="h-4 w-4 text-botanical-700" />
-                </div>
-                <CardTitle className="text-2xl font-bold">{orders.length}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">
-                <Link
-                  href="/account/orders"
-                  className="inline-flex items-center gap-1 text-botanical-700 hover:underline font-medium"
-                >
-                  View order history <ArrowRight className="h-3 w-3" />
+          <section className={styles.metricsGrid} aria-label="Account overview statistics">
+            <div className={styles.metricCard}>
+              <div className={styles.metricHeader}>
+                <span className={styles.metricLabel}>Total Orders</span>
+                <Package className={styles.metricIcon} aria-hidden="true" />
+              </div>
+              <p className={styles.metricValue}>{orders.length}</p>
+              <p className={styles.metricFooter}>
+                <Link href="/account/orders" className={styles.metricLink}>
+                  <span>View order history</span>
+                  <ArrowRight size={12} aria-hidden="true" />
                 </Link>
-              </CardContent>
-            </Card>
+              </p>
+            </div>
 
-            <Card className="bg-card">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">Saved Addresses</span>
-                  <MapPin className="h-4 w-4 text-botanical-700" />
-                </div>
-                <CardTitle className="text-2xl font-bold">{customer.addresses.length}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">
-                <Link
-                  href="/account/addresses"
-                  className="inline-flex items-center gap-1 text-botanical-700 hover:underline font-medium"
-                >
-                  Manage addresses <ArrowRight className="h-3 w-3" />
+            <div className={styles.metricCard}>
+              <div className={styles.metricHeader}>
+                <span className={styles.metricLabel}>Saved Addresses</span>
+                <MapPin className={styles.metricIcon} aria-hidden="true" />
+              </div>
+              <p className={styles.metricValue}>{customer.addresses.length}</p>
+              <p className={styles.metricFooter}>
+                <Link href="/account/addresses" className={styles.metricLink}>
+                  <span>Manage addresses</span>
+                  <ArrowRight size={12} aria-hidden="true" />
                 </Link>
-              </CardContent>
-            </Card>
+              </p>
+            </div>
 
-            <Card className="bg-card">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-muted-foreground">Contact Profile</span>
-                  <User className="h-4 w-4 text-botanical-700" />
-                </div>
-                <div className="truncate text-sm font-semibold mt-1">{customer.email}</div>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">
+            <div className={styles.metricCard}>
+              <div className={styles.metricHeader}>
+                <span className={styles.metricLabel}>Contact Profile</span>
+                <User className={styles.metricIcon} aria-hidden="true" />
+              </div>
+              <p className={styles.metricEmailValue} title={customer.email}>
+                {customer.email}
+              </p>
+              <p className={styles.metricFooter}>
                 {customer.phone || 'No phone set'} •{' '}
-                <Link
-                  href="/account/profile"
-                  className="text-botanical-700 hover:underline font-medium"
-                >
+                <Link href="/account/profile" className={styles.metricLink}>
                   Edit profile
                 </Link>
-              </CardContent>
-            </Card>
-          </div>
+              </p>
+            </div>
+          </section>
+
+          {/* Available Only Services Section */}
+          <section className={styles.servicesSection} aria-labelledby="available-services-heading">
+            <div className={styles.servicesSectionHeader}>
+              <h2 id="available-services-heading" className={styles.servicesSectionTitle}>
+                <Sparkles size={18} aria-hidden="true" style={{ color: '#0a4c36' }} />
+                <span>My Available Services</span>
+              </h2>
+            </div>
+
+            <div className={styles.servicesGrid}>
+              <Link href="/account/orders" className={styles.serviceCard}>
+                <div>
+                  <div className={styles.serviceIconWrapper}>
+                    <Package size={20} aria-hidden="true" />
+                  </div>
+                  <h3 className={styles.serviceCardName}>My Orders &amp; Tracking</h3>
+                  <p className={styles.serviceCardDesc}>
+                    Track live parcels, view invoices and manage delivery status.
+                  </p>
+                </div>
+                <div className={styles.serviceCardAction}>
+                  <span>View Orders</span>
+                  <ArrowRight size={12} aria-hidden="true" />
+                </div>
+              </Link>
+
+              <Link href="/account/addresses" className={styles.serviceCard}>
+                <div>
+                  <div className={styles.serviceIconWrapper}>
+                    <MapPin size={20} aria-hidden="true" />
+                  </div>
+                  <h3 className={styles.serviceCardName}>Delivery Addresses</h3>
+                  <p className={styles.serviceCardDesc}>
+                    Manage delivery destinations and set default shipping address.
+                  </p>
+                </div>
+                <div className={styles.serviceCardAction}>
+                  <span>Manage Addresses</span>
+                  <ArrowRight size={12} aria-hidden="true" />
+                </div>
+              </Link>
+
+              <Link href="/account/profile" className={styles.serviceCard}>
+                <div>
+                  <div className={styles.serviceIconWrapper}>
+                    <User size={20} aria-hidden="true" />
+                  </div>
+                  <h3 className={styles.serviceCardName}>Profile Settings</h3>
+                  <p className={styles.serviceCardDesc}>
+                    Update contact details, phone number and login credentials.
+                  </p>
+                </div>
+                <div className={styles.serviceCardAction}>
+                  <span>Edit Profile</span>
+                  <ArrowRight size={12} aria-hidden="true" />
+                </div>
+              </Link>
+
+              <Link href="/wishlist" className={styles.serviceCard}>
+                <div>
+                  <div className={styles.serviceIconWrapper}>
+                    <Heart size={20} aria-hidden="true" />
+                  </div>
+                  <h3 className={styles.serviceCardName}>Botanical Wishlist</h3>
+                  <p className={styles.serviceCardDesc}>
+                    Access saved garden seeds, live indoor plants and planters.
+                  </p>
+                </div>
+                <div className={styles.serviceCardAction}>
+                  <span>View Wishlist</span>
+                  <ArrowRight size={12} aria-hidden="true" />
+                </div>
+              </Link>
+
+              <a
+                href="https://wa.me/918087087224?text=Hi!+I+need+help+with+my+GLOROV+account+or+plant+care"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.serviceCard}
+              >
+                <div>
+                  <div className={styles.serviceIconWrapper} style={{ backgroundColor: '#fef3c7', color: '#b45309' }}>
+                    <Headphones size={20} aria-hidden="true" />
+                  </div>
+                  <h3 className={styles.serviceCardName}>Customer Care &amp; Support</h3>
+                  <p className={styles.serviceCardDesc}>
+                    Horticultural help, order queries &amp; WhatsApp expert support desk.
+                  </p>
+                </div>
+                <div className={styles.serviceCardAction}>
+                  <span>Chat With Us</span>
+                  <ArrowRight size={12} aria-hidden="true" />
+                </div>
+              </a>
+            </div>
+          </section>
 
           {/* Default Shipping Address Banner */}
-          <Card className="border-earth-200 bg-earth-50/50">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold flex items-center gap-2 text-botanical-900">
-                  <MapPin className="h-4 w-4 text-botanical-700" />
-                  Primary Delivery Address
-                </CardTitle>
-                <Link
-                  href="/account/addresses"
-                  className="text-xs text-botanical-700 hover:underline font-medium"
-                >
-                  {defaultShippingAddress ? 'Change default' : 'Add address'}
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent className="text-sm">
+          <section className={styles.addressCard} aria-labelledby="primary-delivery-address-heading">
+            <div className={styles.addressHeader}>
+              <h2 id="primary-delivery-address-heading" className={styles.addressTitle}>
+                <MapPin size={16} aria-hidden="true" />
+                <span>Primary Delivery Address</span>
+              </h2>
+              <Link href="/account/addresses" className={styles.addressActionLink}>
+                {defaultShippingAddress ? 'Change default' : 'Add address'}
+              </Link>
+            </div>
+            <div className={styles.addressBody}>
               {defaultShippingAddress ? (
-                <div className="space-y-1">
-                  <p className="font-semibold text-foreground">
+                <div>
+                  <p className={styles.recipientName}>
                     {defaultShippingAddress.first_name} {defaultShippingAddress.last_name}
                     {defaultShippingAddress.phone && (
-                      <span className="font-normal text-muted-foreground ml-2">
+                      <span style={{ fontWeight: 400, color: '#64748b', marginLeft: 8 }}>
                         ({defaultShippingAddress.phone})
                       </span>
                     )}
                   </p>
-                  <p className="text-muted-foreground">
+                  <p style={{ margin: '2px 0' }}>
                     {defaultShippingAddress.address_1}
                     {defaultShippingAddress.address_2 && `, ${defaultShippingAddress.address_2}`}
                   </p>
-                  <p className="text-muted-foreground">
-                    {defaultShippingAddress.city}, {defaultShippingAddress.province} -{' '}
-                    <span className="font-medium text-foreground">
-                      {defaultShippingAddress.postal_code}
-                    </span>
-                    , India
+                  <p style={{ margin: '2px 0' }}>
+                    {defaultShippingAddress.city}, {defaultShippingAddress.province} —{' '}
+                    <strong>{defaultShippingAddress.postal_code}</strong>, India
                   </p>
                 </div>
               ) : (
-                <div className="py-2 text-muted-foreground flex items-center justify-between">
+                <div className={styles.emptyAddressNotice}>
                   <span>No delivery addresses saved yet.</span>
-                  <Button asChild size="sm" variant="outline">
-                    <Link href="/account/addresses">
-                      <PlusCircle className="mr-1 h-3.5 w-3.5" />
-                      Add Address
-                    </Link>
-                  </Button>
+                  <Link
+                    href="/account/addresses"
+                    className={styles.detailsBtn}
+                    style={{ minHeight: 36, padding: '6px 12px' }}
+                  >
+                    <PlusCircle size={14} aria-hidden="true" />
+                    <span>Add Address</span>
+                  </Link>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </section>
 
           {/* Recent Orders Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
-                <Package className="h-5 w-5 text-botanical-700" />
-                Recent Orders
+          <section className={styles.recentOrdersSection} aria-labelledby="recent-orders-heading">
+            <div className={styles.sectionHeader}>
+              <h2 id="recent-orders-heading" className={styles.sectionTitle}>
+                <Package size={18} aria-hidden="true" />
+                <span>Recent Orders</span>
               </h2>
               {orders.length > 0 && (
-                <Link
-                  href="/account/orders"
-                  className="text-xs font-semibold text-botanical-700 hover:underline flex items-center gap-1"
-                >
-                  View all ({orders.length}) <ArrowRight className="h-3.5 w-3.5" />
+                <Link href="/account/orders" className={styles.viewAllLink}>
+                  <span>View all ({orders.length})</span>
+                  <ArrowRight size={14} aria-hidden="true" />
                 </Link>
               )}
             </div>
 
             {recentOrders.length === 0 ? (
-              <Card className="text-center py-12 px-4">
-                <Package className="mx-auto h-12 w-12 text-muted-foreground/50 mb-3" />
-                <h3 className="text-base font-semibold text-foreground mb-1">
-                  No orders placed yet
-                </h3>
-                <p className="text-xs text-muted-foreground max-w-sm mx-auto mb-4">
+              <div className={styles.emptyStateCard}>
+                <Package className={styles.emptyStateIcon} aria-hidden="true" />
+                <h3 className={styles.emptyStateTitle}>No orders placed yet</h3>
+                <p className={styles.emptyStateDesc}>
                   Explore our collection of high-germination Desi seeds, potted indoor air-purifying
                   plants, and organic gardening supplies.
                 </p>
-                <Button asChild className="bg-botanical-700 hover:bg-botanical-800 text-white">
-                  <Link href="/categories/seeds">Start Shopping</Link>
-                </Button>
-              </Card>
+                <Link
+                  href="/store"
+                  className={styles.detailsBtn}
+                  style={{ backgroundColor: '#0a4c36', color: '#ffffff', borderColor: '#0a4c36', display: 'inline-flex' }}
+                >
+                  Start Shopping
+                </Link>
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className={styles.ordersList}>
                 {recentOrders.map((order) => {
                   const formattedDate = order.created_at
                     ? new Date(order.created_at).toLocaleDateString('en-IN', {
@@ -209,61 +310,51 @@ export default async function AccountDashboardPage() {
                       })
                     : 'Recent'
 
+                  const isComplete = order.status === 'completed'
+
                   return (
-                    <Card
-                      key={order.id}
-                      className="hover:border-botanical-300 transition-colors shadow-sm"
-                    >
-                      <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2.5 flex-wrap">
-                            <span className="font-bold text-sm text-foreground">
+                    <article key={order.id} className={styles.orderCard}>
+                      <div className={styles.orderCardContent}>
+                        <div className={styles.orderInfo}>
+                          <div className={styles.orderMetaRow}>
+                            <span className={styles.orderIdText}>
                               Order #{order.display_id || order.id.slice(-6)}
                             </span>
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
+                            <span className={styles.orderDateText}>
+                              <Calendar size={12} aria-hidden="true" />
                               {formattedDate}
                             </span>
-                            <Badge
-                              variant="outline"
-                              className={
-                                order.status === 'completed'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                  : 'bg-amber-50 text-amber-700 border-amber-200'
-                              }
-                            >
+                            <span className={isComplete ? styles.statusBadgeGreen : styles.statusBadgeAmber}>
                               {order.status || 'Processing'}
-                            </Badge>
+                            </span>
                           </div>
-                          <p className="text-xs text-muted-foreground">
+                          <p className={styles.orderItemsSummary}>
                             {order.items?.length || 0} item
                             {(order.items?.length || 0) !== 1 ? 's' : ''}:{' '}
                             {order.items?.map((i) => i.title).join(', ')}
                           </p>
                         </div>
 
-                        <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0">
-                          <div className="text-right">
-                            <span className="text-xs text-muted-foreground block">Total</span>
-                            <span className="text-sm font-bold text-foreground">
+                        <div className={styles.orderActionsRow}>
+                          <div className={styles.orderTotalBlock}>
+                            <span className={styles.orderTotalLabel}>Total</span>
+                            <span className={styles.orderTotalAmount}>
                               {formatINR(order.total || 0)}
                             </span>
                           </div>
-                          <Button asChild size="sm" variant="outline">
-                            <Link href={`/account/orders/${order.id}`}>
-                              Details
-                              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                            </Link>
-                          </Button>
+                          <Link href={`/account/orders/${order.id}`} className={styles.detailsBtn}>
+                            <span>Details</span>
+                            <ArrowRight size={14} aria-hidden="true" />
+                          </Link>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </article>
                   )
                 })}
               </div>
             )}
-          </div>
-        </div>
+          </section>
+        </main>
       </div>
     </div>
   )

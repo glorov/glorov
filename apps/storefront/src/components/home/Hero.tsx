@@ -1,8 +1,16 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
-import { ArrowRight, Sprout, Sparkles, ShieldCheck } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import Image from 'next/image'
+import {
+  Star,
+  ArrowRight,
+  ShieldCheck,
+  RotateCcw,
+  Sparkles,
+} from 'lucide-react'
+import styles from './Hero.module.css'
 
 interface HeroProps {
   backendOnline?: boolean
@@ -10,94 +18,161 @@ interface HeroProps {
 
 export function Hero({ backendOnline }: HeroProps = {}) {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-earth-100/60 via-background to-background py-16 md:py-24 border-b border-border/40">
-      <div className="container mx-auto px-4 sm:px-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Left Hero Content */}
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2">
-              <Badge variant="botanical" className="gap-1.5 py-1 px-3 text-xs">
-                <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-                <span>Monsoon &amp; Winter Sowing Season Open</span>
-              </Badge>
+    <section className={styles.heroSection}>
+      {backendOnline === false && <span className={styles.srOnly}>Nursery offline</span>}
+      <div className={styles.heroContainer}>
+        {/* 1. Top Head with Green Rating Bar & Authentic Headline */}
+        <div className={styles.topHead}>
+          <div className={styles.heroRatingBar}>
+            <div className={styles.heroRatingStars}>
+              <Star size={13} fill="#f59e0b" color="#f59e0b" />
+              <Star size={13} fill="#f59e0b" color="#f59e0b" />
+              <Star size={13} fill="#f59e0b" color="#f59e0b" />
+              <Star size={13} fill="#f59e0b" color="#f59e0b" />
+              <Star size={13} fill="#f59e0b" color="#f59e0b" />
             </div>
+            <span className={styles.heroRatingText}>
+              Rated 4.9 by 1,00,000+ Plant Parents Across India
+            </span>
+          </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-botanical-950 leading-[1.15]">
-              Cultivate Vitality.{' '}
-              <span className="text-botanical-700 block mt-1">
-                Living Botanicals &amp; Pure Seeds.
+          <h1 className={styles.heroHeading}>
+            India&apos;s One-Stop Gardening <em>Shop.</em>
+          </h1>
+          <p style={{ fontSize: '15px', color: 'var(--ugaoo-text-muted)', margin: '0.35rem 0 0 0', fontWeight: 500 }}>
+            Living Botanicals &amp; Pure Seeds • Nursery Direct
+          </p>
+        </div>
+
+        {/* 2. Asymmetric Content Row (0.91fr 0.3fr Split) */}
+        <div className={styles.heroContentRow}>
+          {/* Left Main Visual Hero Banner */}
+          <div className={styles.heroVisualBanner}>
+            <picture className={styles.picture}>
+              <source
+                media="(max-width: 768px)"
+                srcSet="/ugaoo-assets/hero-mobile.jpg"
+              />
+              <img
+                src="/ugaoo-assets/hero-desktop.jpg"
+                alt="GLOROV Indian Botanical Living Plants & Seeds"
+                className={styles.heroImage}
+              />
+            </picture>
+
+            <div className={styles.gradientOverlay} />
+
+            <div className={styles.bannerOverlayContent}>
+              <span className={styles.bannerTag}>
+                <Sparkles size={13} />
+                Monsoon &amp; Winter Sowing Season Open
               </span>
-            </h1>
-
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              Premium high-viability garden seeds and climate-hardened indoor live plants, shipped in breathable, shock-absorbing transit crates directly to your doorstep across India.
-            </p>
-
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
-              <Button asChild size="lg" variant="botanical" className="w-full sm:w-auto shadow-md">
-                <Link href="/categories/seeds" className="gap-2">
+              <h2 className={styles.bannerTitle}>
+                Living Greenery Delivered To Your Doorstep
+              </h2>
+              <p className={styles.bannerDesc}>
+                Heirloom Varieties cultivated at Pune Hub with climate-proof packaging and Pan-India Dispatch to 19,000+ PIN codes.
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <Link href="/categories/seeds" className={styles.bannerCta}>
                   <span>Explore Seeds Collection</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight size={16} />
                 </Link>
-              </Button>
-              <Button asChild size="lg" variant="earth" className="w-full sm:w-auto">
-                <Link href="/categories/live-plants" className="gap-2">
-                  <Sprout className="h-4 w-4 text-botanical-700" />
-                  <span>Shop Indoor Plants</span>
+                <Link
+                  href="/store"
+                  className={styles.bannerCta}
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', border: '1px solid rgba(255, 255, 255, 0.4)', boxShadow: 'none' }}
+                >
+                  <span>All Botanicals</span>
                 </Link>
-              </Button>
-            </div>
-
-            {/* Key Assurance Indicators */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border/60 max-w-lg mx-auto lg:mx-0 text-left">
-              <div>
-                <p className="text-2xl font-bold text-botanical-900">Desi</p>
-                <p className="text-xs text-muted-foreground font-medium">Heirloom Varieties</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-botanical-900">Pune Hub</p>
-                <p className="text-xs text-muted-foreground font-medium">Pan-India Dispatch</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-botanical-900">Express</p>
-                <p className="text-xs text-muted-foreground font-medium">Air Route Available</p>
               </div>
             </div>
           </div>
 
-          {/* Right Hero Visual / Highlight Card */}
-          <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-md p-6 rounded-2xl bg-gradient-to-br from-botanical-50 to-earth-100 border border-botanical-200/80 shadow-lg">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Badge variant="warning" className="text-xs">
-                    Root-Safe Packing
-                  </Badge>
-                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full flex items-center gap-1.5">
-                    <span className={`h-1.5 w-1.5 rounded-full ${backendOnline !== false ? 'bg-emerald-600 animate-pulse' : 'bg-amber-500'}`} />
-                    Pune Propagation Hub
-                  </span>
+          {/* Right Stacked Editorial Promo Cards */}
+          <div className={styles.heroCardsCol}>
+            {/* Card 1: Green Card (Beginner Friendly / Indoor Plants) */}
+            <Link
+              href="/categories/live-plants"
+              className={`${styles.heroCard} ${styles.heroCardGreen}`}
+            >
+              <div>
+                <div className={styles.heroCardBadge}>
+                  <span className={styles.badgeDot} />
+                  <span>New To Plants?</span>
                 </div>
-
-                <div className="h-56 rounded-xl bg-botanical-900/5 border border-dashed border-botanical-300 flex flex-col items-center justify-center p-6 text-center text-botanical-900 space-y-3">
-                  <div className="h-14 w-14 rounded-full bg-botanical-100 flex items-center justify-center text-botanical-700 shadow-inner">
-                    <Sprout className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <h2 className="font-bold text-base text-botanical-900">Botanical Transit Packaging</h2>
-                    <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                      Moisture-retaining root coco-peat wraps and ventilated crates protect foliage vitality during transit.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-background/80 border text-xs text-muted-foreground">
-                  <ShieldCheck className="h-4 w-4 text-botanical-600 shrink-0" />
-                  <span>Protective transit packaging designed for interstate travel across India.</span>
-                </div>
+                <h3 className={styles.heroCardTitle}>
+                  Shop Beginner Friendly Plants
+                </h3>
               </div>
+              <div className={styles.heroCardFooter}>
+                <span>Shop Indoor Plants • Under ₹549</span>
+                <ArrowRight size={14} />
+              </div>
+            </Link>
+
+            {/* Card 2: Butter Yellow Card (New Arrivals / Seeds) */}
+            <Link
+              href="/categories/seeds"
+              className={`${styles.heroCard} ${styles.heroCardButter}`}
+            >
+              <div>
+                <div className={styles.heroCardBadge} style={{ color: '#8c4b18' }}>
+                  <span className={styles.badgeDot} />
+                  <span>Already A Plant Parent?</span>
+                </div>
+                <h3 className={styles.heroCardTitle}>
+                  Explore Desi Seeds &amp; New Arrivals
+                </h3>
+              </div>
+              <div className={styles.heroCardFooter}>
+                <span>Shop Seeds Now</span>
+                <ArrowRight size={14} />
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* 3. Bottom Reassurance Trust Bar */}
+        <div className={styles.trustBar}>
+          <div className={styles.trustBarItem}>
+            <div className={styles.trustIconBox}>
+              <Image
+                src="/ugaoo-assets/trust-soil.png"
+                alt=""
+                width={20}
+                height={20}
+                style={{ objectFit: 'contain' }}
+              />
             </div>
+            <span>90-Day Pre Fertilised Soil</span>
+          </div>
+
+          <div className={styles.trustBarItem}>
+            <div className={styles.trustIconBox}>
+              <Image
+                src="/ugaoo-assets/trust-healthy.png"
+                alt=""
+                width={20}
+                height={20}
+                style={{ objectFit: 'contain' }}
+              />
+            </div>
+            <span>Arrives Healthy &amp; Bushy</span>
+          </div>
+
+          <div className={styles.trustBarItem}>
+            <div className={styles.trustIconBox}>
+              <RotateCcw size={18} />
+            </div>
+            <span>48-Hour Free Replacement</span>
+          </div>
+
+          <div className={styles.trustBarItem}>
+            <div className={styles.trustIconBox}>
+              <ShieldCheck size={18} />
+            </div>
+            <span>Expert Plant Care Support</span>
           </div>
         </div>
       </div>

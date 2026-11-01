@@ -1,0 +1,217 @@
+.returnTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-pill, 9999px);
+  border: 1px solid rgba(10, 76, 54, 0.3);
+  background-color: #ffffff;
+  color: var(--ugaoo-green, #0a4c36);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.returnTrigger:hover {
+  background-color: rgba(10, 76, 54, 0.06);
+  border-color: var(--ugaoo-green, #0a4c36);
+}
+
+.returnTrigger:focus-visible {
+  outline: 2px solid var(--ugaoo-yellow, #ffd51f);
+  outline-offset: 2px;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.dialogCard {
+  width: 100%;
+  max-width: 32rem;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: scaleUp 0.2s ease-out;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: #0f172a;
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.notice {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.alertError {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  font-size: 0.75rem;
+  color: #b91c1c;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.alertSuccess {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  font-size: 0.75rem;
+  color: #065f46;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.select,
+.input,
+.textarea {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  min-height: 44px;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.select:focus,
+.input:focus,
+.textarea:focus {
+  border-color: var(--ugaoo-green, #0a4c36);
+  box-shadow: 0 0 0 3px rgba(10, 76, 54, 0.12);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.cancelButton {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-pill, 9999px);
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #475569;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-pill, 9999px);
+  border: none;
+  background-color: var(--ugaoo-green, #0a4c36);
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #07532a;
+}
+
+.submitButton:disabled,
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}

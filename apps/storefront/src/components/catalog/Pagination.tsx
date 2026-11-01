@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import styles from './Pagination.module.css'
 
 interface PaginationProps {
   currentPage: number
@@ -48,33 +48,26 @@ export function Pagination({
   return (
     <nav
       aria-label="Pagination Navigation"
-      className="flex items-center justify-center gap-2 py-8"
+      className={styles.paginationNav}
     >
       {/* Prev */}
-      <Button
-        asChild
-        variant="outline"
-        size="sm"
-        disabled={currentPage <= 1}
-        className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
+      <Link
+        href={buildPageUrl(currentPage - 1)}
+        aria-label="Previous Page"
+        aria-disabled={currentPage <= 1 ? 'true' : undefined}
+        tabIndex={currentPage <= 1 ? -1 : undefined}
+        className={`${styles.navButton} ${currentPage <= 1 ? styles.disabled : ''}`}
       >
-        <Link
-          href={buildPageUrl(currentPage - 1)}
-          aria-label="Previous Page"
-          aria-disabled={currentPage <= 1 ? 'true' : undefined}
-          tabIndex={currentPage <= 1 ? -1 : undefined}
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          <span>Previous</span>
-        </Link>
-      </Button>
+        <ChevronLeft size={16} />
+        <span>Previous</span>
+      </Link>
 
       {/* Page Numbers */}
-      <div className="flex items-center gap-1">
+      <div className={styles.pageList}>
         {pages.map((p, idx) => {
           if (p === '...') {
             return (
-              <span key={`ellipsis-${idx}`} className="px-2 text-xs text-muted-foreground">
+              <span key={`ellipsis-${idx}`} className={styles.ellipsis}>
                 ...
               </span>
             )
@@ -84,44 +77,30 @@ export function Pagination({
           const isCurrent = pageNum === currentPage
 
           return (
-            <Button
+            <Link
               key={pageNum}
-              asChild
-              variant={isCurrent ? 'botanical' : 'ghost'}
-              size="sm"
-              className={`h-9 w-9 p-0 text-xs font-semibold ${
-                isCurrent ? 'pointer-events-none' : ''
-              }`}
+              href={buildPageUrl(pageNum)}
+              aria-label={`Page ${pageNum}`}
+              aria-current={isCurrent ? 'page' : undefined}
+              className={`${styles.pageNumber} ${isCurrent ? styles.currentPage : ''}`}
             >
-              <Link
-                href={buildPageUrl(pageNum)}
-                aria-current={isCurrent ? 'page' : undefined}
-              >
-                {pageNum}
-              </Link>
-            </Button>
+              {pageNum}
+            </Link>
           )
         })}
       </div>
 
       {/* Next */}
-      <Button
-        asChild
-        variant="outline"
-        size="sm"
-        disabled={currentPage >= totalPages}
-        className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
+      <Link
+        href={buildPageUrl(currentPage + 1)}
+        aria-label="Next Page"
+        aria-disabled={currentPage >= totalPages ? 'true' : undefined}
+        tabIndex={currentPage >= totalPages ? -1 : undefined}
+        className={`${styles.navButton} ${currentPage >= totalPages ? styles.disabled : ''}`}
       >
-        <Link
-          href={buildPageUrl(currentPage + 1)}
-          aria-label="Next Page"
-          aria-disabled={currentPage >= totalPages ? 'true' : undefined}
-          tabIndex={currentPage >= totalPages ? -1 : undefined}
-        >
-          <span>Next</span>
-          <ChevronRight className="h-4 w-4 ml-1" />
-        </Link>
-      </Button>
+        <span>Next</span>
+        <ChevronRight size={16} />
+      </Link>
     </nav>
   )
 }

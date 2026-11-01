@@ -1,0 +1,129 @@
+/**
+ * GLOROV Centralized Theme System & Design Tokens
+ * 
+ * Single Canonical Source of Truth for Storefront Visual Identity
+ * Inspired by Indian botanical direct-to-consumer standards (Ugaoo benchmark)
+ */
+
+:root {
+  /* =========================================================================
+     1. Brand & Palette Colors (Canonical Hex)
+     ========================================================================= */
+  --color-brand-primary: #0a4c36;       /* Primary rich botanical green */
+  --color-brand-dark: #07532a;          /* Deep forest green anchor */
+  --color-brand-light: #255e3a;         /* Vibrant leaf hover state */
+  --color-brand-surface: #f2f8f4;       /* Soft botanical tinted background */
+  --color-brand-accent: #ffd51f;        /* Golden harvest yellow */
+  --color-brand-maroon: #93113a;        /* Ugaoo signature berry/maroon */
+  --color-brand-coral: #ff8962;         /* Ugaoo trust badge coral */
+  --color-brand-butter: #fff3d9;        /* Ugaoo warm category butter yellow */
+  --color-brand-peach: #fbd9cd;         /* Ugaoo warm footer peach */
+  --color-tag-dark-blue: #0c2340;       /* Top site tag & announcement bar dark blue */
+  --color-tag-white: #ffffff;           /* Contrast white text for tags */
+
+  /* =========================================================================
+     2. Commercial & Status Colors
+     ========================================================================= */
+  --color-price-regular: #0a4c36;       /* Active selling price (10.0:1 contrast) */
+  --color-price-sale: #0f7641;          /* Discounted price highlight (5.69:1 contrast - WCAG AA) */
+  --color-price-original: #78716c;      /* Strikethrough compare price */
+
+  --color-badge-bestseller-bg: #ffd51f; /* Golden bestseller pill */
+  --color-badge-bestseller-text: #042018;
+  --color-badge-sale-bg: #d93025;       /* Urgent discount cut badge */
+  --color-badge-sale-text: #ffffff;
+  --color-badge-low-stock-bg: #fef3c7;  /* Amber stock urgency */
+  --color-badge-low-stock-text: #b45309;
+  --color-badge-sold-out-bg: #efece7;   /* Muted out-of-stock surface */
+  --color-badge-sold-out-text: #57534e;
+
+  /* =========================================================================
+     3. Surfaces, Canvas & Warm Earth Neutrals
+     ========================================================================= */
+  --color-earth-sand: #fdfbf7;          /* Off-white warm page canvas */
+  --color-earth-cream: #fee7d1;         /* Warm peach highlight for promo bars */
+  --color-earth-muted: #f4ede4;         /* Soft neutral dividers & containers */
+  --color-surface-card: #ffffff;        /* Crisp card surface */
+  --color-surface-image: #f7f7f7;       /* 1:1 image placeholder wrap */
+
+  /* =========================================================================
+     4. Standard shadcn/ui HSL Tokens (Derived from Canonical Theme)
+     ========================================================================= */
+  --background: 40 20% 99%;             /* Matches #fdfbf7 canvas */
+  --foreground: 155 30% 12%;            /* Deep botanical black-green */
+
+  --card: 0 0% 100%;                    /* Pure white card surface */
+  --card-foreground: 155 30% 12%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 155 30% 12%;
+
+  --primary: 155 77% 17%;               /* #07532a deep forest green */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 42 30% 94%;              /* Soft earth cream */
+  --secondary-foreground: 155 45% 20%;
+
+  --muted: 42 20% 94%;
+  --muted-foreground: 150 14% 33%;
+
+  --accent: 38 70% 92%;
+  --accent-foreground: 28 80% 25%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 42 20% 88%;                 /* Soft earth border */
+  --input: 42 20% 88%;
+  --ring: 155 77% 17%;                  /* Primary brand focus ring */
+
+  /* =========================================================================
+     5. Typography System
+     ========================================================================= */
+  --font-family-heading: var(--font-fraunces), 'Fraunces', Georgia, serif;
+  --font-family-body: var(--font-plus-jakarta), 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-serif: var(--font-fraunces), 'Fraunces', Georgia, Cambria, 'Times New Roman', serif;
+
+  /* =========================================================================
+     6. Radii & Geometry Hierarchy
+     ========================================================================= */
+  --radius: 0.5rem;                     /* Base UI radius (8px) */
+  --radius-card: 18px;                  /* Desktop card corner radius */
+  --radius-pill: 50px;                  /* Action buttons, search bar, tags */
+  --radius-badge: 50px;                 /* Pill badges */
+  --radius-input: 8px;                  /* Form field inputs */
+  --radius-drawer: 20px 20px 0 0;       /* Mobile bottom sheet drawer */
+
+  /* =========================================================================
+     7. Elevation & Shadows
+     ========================================================================= */
+  --shadow-botanical: 0 4px 20px -2px rgba(7, 83, 42, 0.08);
+  --shadow-botanical-lg: 0 10px 30px -4px rgba(7, 83, 42, 0.12);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+  --shadow-drawer: 0 -4px 24px -2px rgba(0, 0, 0, 0.12);
+
+  /* =========================================================================
+     8. Layout & Component Dimensions
+     ========================================================================= */
+  --container-max-width: 1360px;
+  --header-height: 64px;
+  --announcement-height: 36px;
+  --height-button-desktop: 45px;
+  --height-button-mobile: 38px;
+  --height-input: 44px;
+
+  /* =========================================================================
+     9. Transitions & Animations
+     ========================================================================= */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive Overrides */
+@media (max-width: 768px) {
+  :root {
+    --radius-card: 12px;                /* Compact card radius for mobile */
+    --header-height: 56px;
+  }
+}

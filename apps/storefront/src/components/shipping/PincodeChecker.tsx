@@ -12,8 +12,6 @@ import {
   ShieldCheck,
   RotateCcw,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   cleanPincode,
   isValidIndianPincode,
@@ -22,6 +20,7 @@ import {
   checkPincodeServiceability,
   type PincodeServiceabilityResponse,
 } from '@/lib/shipping'
+import styles from './PincodeChecker.module.css'
 
 export interface PincodeCheckerProps {
   isPerishable?: boolean
@@ -128,19 +127,19 @@ export function PincodeChecker({
 
   return (
     <div
-      className={`rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-sm transition-all ${className}`}
+      className={`${styles.card} ${className}`}
       data-testid="pincode-checker"
     >
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-botanical-50 text-botanical-700 dark:bg-botanical-900/40 dark:text-botanical-300">
-            <Truck className="h-4 w-4" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+        <div className={styles.header} style={{ marginBottom: 0 }}>
+          <div className={styles.iconWrap}>
+            <Truck size={16} />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-foreground">Delivery Availability & Timeline</h3>
+            <h3 className={styles.title}>Delivery Availability &amp; Timeline</h3>
             {!compact && (
-              <p className="text-xs text-muted-foreground">
+              <p style={{ fontSize: '11px', color: 'var(--ugaoo-text-muted)', margin: '2px 0 0 0' }}>
                 Dispatches from Pune Nursery Hub (PIN 411001)
               </p>
             )}
@@ -148,24 +147,22 @@ export function PincodeChecker({
         </div>
 
         {result && (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="sm"
             onClick={handleReset}
-            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--ugaoo-text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
             title="Check another PIN code"
           >
-            <RotateCcw className="h-3 w-3 mr-1" />
+            <RotateCcw size={12} />
             <span>Change</span>
-          </Button>
+          </button>
         )}
       </div>
 
       {/* PIN Input Form */}
-      <form onSubmit={handleCheck} className="flex flex-col sm:flex-row gap-2">
-        <div className="relative flex-1">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <form onSubmit={handleCheck} className={styles.inputGroup}>
+        <div style={{ position: 'relative', flex: 1 }}>
+          <MapPin style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: 'var(--ugaoo-text-muted)' }} />
           <input
             id="delivery-pincode-input"
             type="text"
@@ -179,26 +176,25 @@ export function PincodeChecker({
             aria-invalid={Boolean(clientError)}
             aria-describedby={clientError ? 'pincode-error' : undefined}
             disabled={isLoading}
-            className="w-full rounded-xl border border-input bg-background pl-9 pr-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-botanical-600 disabled:opacity-50"
+            className={styles.pinInput}
+            style={{ paddingLeft: '36px' }}
           />
         </div>
 
-        <Button
+        <button
           type="submit"
-          variant="botanical"
-          size="sm"
           disabled={isLoading || pincode.length < 6}
-          className="rounded-xl px-5 h-9 font-semibold shrink-0"
+          className={styles.checkBtn}
         >
           {isLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Loader2 size={14} className={styles.spinner} />
               <span>Checking...</span>
-            </>
+            </span>
           ) : (
             <span>Check Delivery</span>
           )}
-        </Button>
+        </button>
       </form>
 
       {/* Client-side Validation Error */}
@@ -206,22 +202,22 @@ export function PincodeChecker({
         <p
           id="pincode-error"
           role="alert"
-          className="mt-2 text-xs font-medium text-rose-600 flex items-center gap-1.5"
+          className={styles.errorNotice}
         >
-          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+          <AlertCircle size={14} style={{ flexShrink: 0 }} />
           <span>{clientError}</span>
         </p>
       )}
 
       {/* Result Status Display */}
       {result && (
-        <div className="mt-3.5 pt-3.5 border-t border-border/80" role="status" aria-live="polite">
+        <div style={{ marginTop: '0.875rem', paddingTop: '0.75rem', borderTop: '1px solid var(--ugaoo-border)' }} role="status" aria-live="polite">
           {/* 1. Confirmed Serviceable */}
           {result.serviceable && result.status === 'confirmed' && (
-            <div className="rounded-xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 p-3 text-xs space-y-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 font-bold">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div style={{ padding: '0.75rem 1rem', borderRadius: '10px', backgroundColor: 'var(--ugaoo-cream-light)', border: '1px solid var(--ugaoo-border)', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--ugaoo-green)', fontWeight: 700 }}>
+                  <CheckCircle2 size={16} style={{ color: 'var(--ugaoo-green)' }} />
                   <span>
                     Delivery Confirmed{' '}
                     {result.city ? `to ${result.city}${result.state ? `, ${result.state}` : ''}` : `to PIN ${result.pincode}`}
@@ -229,16 +225,16 @@ export function PincodeChecker({
                 </div>
 
                 {result.rate_inr !== undefined && (
-                  <Badge variant="outline" className="bg-background/80 text-[11px] font-semibold">
+                  <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '9999px', backgroundColor: 'var(--ugaoo-white)', border: '1px solid var(--ugaoo-border)' }}>
                     ₹{result.rate_inr} Shipping
-                  </Badge>
+                  </span>
                 )}
               </div>
 
               {/* Delivery Speed Estimate */}
               {result.estimated_days && (
-                <div className="flex items-center gap-1.5 text-muted-foreground font-medium pl-5">
-                  <Clock className="h-3.5 w-3.5 text-botanical-600 shrink-0" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--ugaoo-text-dark)', paddingLeft: '22px' }}>
+                  <Clock size={14} style={{ color: 'var(--ugaoo-maroon)' }} />
                   <span>
                     Estimated Delivery: <strong>{result.estimated_days} Business Days</strong>
                     {result.courier_name ? ` via ${result.courier_name}` : ''}
@@ -246,33 +242,26 @@ export function PincodeChecker({
                 </div>
               )}
 
-              {/* COD & Payment Eligibility Badges */}
-              <div className="flex flex-wrap items-center gap-2 pt-1 pl-5">
+              {/* Badges */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', paddingTop: '4px', paddingLeft: '22px' }}>
                 {result.cod_eligible ? (
-                  <Badge
-                    variant="outline"
-                    className="border-emerald-300 dark:border-emerald-700 bg-emerald-100/60 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 text-[11px] font-medium"
-                  >
+                  <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '9999px', backgroundColor: 'var(--ugaoo-cream)', color: 'var(--ugaoo-green)', border: '1px solid var(--ugaoo-border)' }}>
                     ✓ Cash on Delivery Available
-                  </Badge>
+                  </span>
                 ) : (
-                  <Badge
-                    variant="outline"
-                    className="border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 text-[11px] font-medium"
-                  >
+                  <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '9999px', backgroundColor: '#fffbeb', color: '#92400e', border: '1px solid #fde68a' }}>
                     Prepaid Orders Only
-                  </Badge>
+                  </span>
                 )}
-
-                <Badge variant="secondary" className="text-[11px] font-normal text-muted-foreground">
-                  <ShieldCheck className="h-3 w-3 mr-1 text-botanical-600" />
+                <span style={{ fontSize: '11px', fontWeight: 500, padding: '2px 8px', borderRadius: '9999px', backgroundColor: 'var(--ugaoo-white)', color: 'var(--ugaoo-text-muted)', border: '1px solid var(--ugaoo-border)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <ShieldCheck size={12} style={{ color: 'var(--ugaoo-green)' }} />
                   <span>Moisture-Shield Packaging</span>
-                </Badge>
+                </span>
               </div>
 
               {/* Explanation if COD is restricted */}
               {!result.cod_eligible && (
-                <p className="text-[11px] text-amber-800 dark:text-amber-300 pl-5 leading-relaxed">
+                <p style={{ fontSize: '11px', color: '#92400e', paddingLeft: '22px', margin: '4px 0 0 0', lineHeight: 1.5 }}>
                   {result.cod_restriction_reason === 'perishable_transit_guardrail'
                     ? 'Note: Live plants require prepaid express air transit to guarantee botanical viability upon arrival.'
                     : result.cod_restriction_reason === 'remote_corridor'
@@ -285,28 +274,26 @@ export function PincodeChecker({
 
           {/* 2. Confirmed Rejected (Out of Service Area) */}
           {!result.serviceable && result.status === 'rejected' && (
-            <div className="rounded-xl bg-rose-50/70 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/60 p-3 text-xs space-y-1.5">
-              <div className="flex items-center gap-1.5 text-rose-900 dark:text-rose-200 font-bold">
-                <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0" />
+            <div style={{ padding: '0.75rem 1rem', borderRadius: '10px', backgroundColor: '#fff5f5', border: '1px solid #ffd0d0', color: 'var(--ugaoo-sale-red)', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}>
+                <AlertCircle size={16} style={{ flexShrink: 0 }} />
                 <span>Delivery Unavailable to PIN {result.pincode}</span>
               </div>
-              <p className="text-muted-foreground pl-5 leading-relaxed">
-                Our logistics partners do not currently service this postal PIN code. We are
-                expanding our express botanical transit corridors across India regularly.
+              <p style={{ margin: 0, paddingLeft: '22px', color: 'var(--ugaoo-text-muted)', fontSize: '11px', lineHeight: 1.5 }}>
+                Our logistics partners do not currently service this postal PIN code. We are expanding our express botanical transit corridors across India regularly.
               </p>
             </div>
           )}
 
           {/* 3. Undetermined / Provider API Outage */}
           {result.status === 'undetermined' && (
-            <div className="rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 p-3 text-xs space-y-1.5">
-              <div className="flex items-center gap-1.5 text-amber-900 dark:text-amber-200 font-bold">
-                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <div style={{ padding: '0.75rem 1rem', borderRadius: '10px', backgroundColor: '#fffbeb', border: '1px solid #fde68a', color: '#92400e', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}>
+                <AlertTriangle size={16} style={{ color: '#b45309', flexShrink: 0 }} />
                 <span>Logistics Verification Temporarily Unavailable</span>
               </div>
-              <p className="text-muted-foreground pl-5 leading-relaxed">
-                Could not connect to the courier serviceability gateway at this moment. You can
-                proceed to checkout where delivery options will be verified directly.
+              <p style={{ margin: 0, paddingLeft: '22px', color: '#78350f', fontSize: '11px', lineHeight: 1.5 }}>
+                Could not connect to the courier serviceability gateway at this moment. You can proceed to checkout where delivery options will be verified directly.
               </p>
             </div>
           )}

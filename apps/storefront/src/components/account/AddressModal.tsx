@@ -6,17 +6,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   addCustomerAddressAction,
   updateCustomerAddressAction,
 } from '@/lib/customer-actions'
 import type { StoreCustomerAddress, StoreCustomer } from '@/lib/customer'
 import { Loader2 } from 'lucide-react'
+import styles from './AddressModal.module.css'
 
 const INDIAN_STATES = [
   'Andhra Pradesh',
@@ -179,109 +177,131 @@ export function AddressModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className={styles.modalContent}>
+        <DialogHeader className={styles.modalHeader}>
+          <DialogTitle className={styles.modalTitle}>
             {isEditing ? 'Edit Delivery Address' : 'Add New Delivery Address'}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className={styles.modalDescription}>
             Addresses are saved to your customer account for faster checkout across India.
           </DialogDescription>
         </DialogHeader>
 
         {errorMessage && (
-          <div className="p-3 text-xs rounded-lg bg-destructive/10 text-destructive border border-destructive/20">
-            {errorMessage}
+          <div role="alert" aria-live="polite" className={styles.alertError}>
+            <span>{errorMessage}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1">
+        <form onSubmit={handleSubmit} className={styles.form} aria-label="Customer address form">
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="modal-address-name">
               Address Label (Optional)
             </label>
-            <Input
+            <input
+              id="modal-address-name"
               type="text"
-              placeholder="e.g. Home, Office, Nursery"
+              placeholder="e.g. Home, Office, Farmhouse"
               value={addressName}
               onChange={(e) => setAddressName(e.target.value)}
+              className={styles.input}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1">
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="modal-first-name">
                 First Name *
               </label>
-              <Input
+              <input
+                id="modal-first-name"
                 required
+                aria-required="true"
+                autoComplete="given-name"
                 type="text"
                 placeholder="Aarav"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
+                className={styles.input}
               />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1">
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="modal-last-name">
                 Last Name *
               </label>
-              <Input
+              <input
+                id="modal-last-name"
                 required
+                aria-required="true"
+                autoComplete="family-name"
                 type="text"
                 placeholder="Sharma"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
+                className={styles.input}
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1">
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="modal-address1">
               Flat, House No., Building, Street *
             </label>
-            <Input
+            <input
+              id="modal-address1"
               required
+              aria-required="true"
+              autoComplete="street-address"
               type="text"
               placeholder="Flat 402, Green Meadows, MG Road"
               value={address1}
               onChange={(e) => setAddress1(e.target.value)}
+              className={styles.input}
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-foreground mb-1">
+          <div className={styles.formGroup}>
+            <label className={styles.label} htmlFor="modal-address2">
               Area, Landmark, Sector (Optional)
             </label>
-            <Input
+            <input
+              id="modal-address2"
               type="text"
-              placeholder="Near Botanical Garden"
+              placeholder="Near Botanical Garden / Metro Pillar 42"
               value={address2}
               onChange={(e) => setAddress2(e.target.value)}
+              className={styles.input}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1">
-                City *
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="modal-city">
+                City / District *
               </label>
-              <Input
+              <input
+                id="modal-city"
                 required
+                aria-required="true"
+                autoComplete="address-level2"
                 type="text"
                 placeholder="Bengaluru"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
+                className={styles.input}
               />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1">
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="modal-province">
                 State / UT *
               </label>
               <select
+                id="modal-province"
                 required
+                aria-required="true"
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className={styles.select}
               >
                 {INDIAN_STATES.map((st) => (
                   <option key={st} value={st}>
@@ -292,69 +312,74 @@ export function AddressModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1">
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="modal-postal-code">
                 PIN Code * (6 digits)
               </label>
-              <Input
+              <input
+                id="modal-postal-code"
                 required
+                aria-required="true"
+                autoComplete="postal-code"
                 type="text"
                 maxLength={6}
                 placeholder="560001"
                 value={postalCode}
                 onChange={(e) => setPostalCode(e.target.value.replace(/\D/g, ''))}
+                className={styles.input}
               />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-foreground mb-1">
+            <div className={styles.formGroup}>
+              <label className={styles.label} htmlFor="modal-phone">
                 Mobile Number * (10 digits)
               </label>
-              <Input
+              <input
+                id="modal-phone"
                 required
+                aria-required="true"
+                autoComplete="tel"
                 type="tel"
                 maxLength={10}
                 placeholder="9876543210"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                className={styles.input}
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-2">
+          <div className={styles.checkboxRow}>
             <input
               type="checkbox"
               id="isDefaultShipping"
               checked={isDefaultShipping}
               onChange={(e) => setIsDefaultShipping(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-botanical-700 focus:ring-botanical-600"
+              className={styles.checkboxInput}
             />
-            <label
-              htmlFor="isDefaultShipping"
-              className="text-xs text-foreground cursor-pointer select-none"
-            >
+            <label htmlFor="isDefaultShipping" className={styles.checkboxLabel}>
               Set as default shipping address
             </label>
           </div>
 
-          <DialogFooter className="pt-4">
-            <Button
+          <div className={styles.modalFooter}>
+            <button
               type="button"
-              variant="outline"
               disabled={isSubmitting}
               onClick={onClose}
+              className={styles.cancelBtn}
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
               disabled={isSubmitting}
-              className="bg-botanical-700 hover:bg-botanical-800 text-white"
+              className={styles.saveBtn}
             >
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isEditing ? 'Save Changes' : 'Add Address'}
-            </Button>
-          </DialogFooter>
+              {isSubmitting && <Loader2 size={16} className={styles.spinner} aria-hidden="true" />}
+              <span>{isEditing ? 'Save Changes' : 'Add Address'}</span>
+            </button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

@@ -3,9 +3,9 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { RotateCcw, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { submitReturnRequestAction } from '@/lib/customer-actions'
 import type { ReturnReason } from '@glorov/types'
+import styles from './OrderReturnRequestModal.module.css'
 
 interface OrderLineItem {
   id: string
@@ -58,20 +58,20 @@ export function OrderReturnRequestModal({
     }
   }, [isOpen])
 
-  // Eligibility:
-  // Can only request return for delivered/shipped/completed orders, and NOT canceled.
-  const isCanceled = status === 'canceled'
+  // Eligibility check:
+  // Can only return if fulfilled / delivered / shipped and not cancelled
   const isEligible =
-    !isCanceled &&
+    status !== 'canceled' &&
     (fulfillmentStatus === 'delivered' ||
       fulfillmentStatus === 'shipped' ||
+      fulfillmentStatus === 'partially_shipped' ||
       status === 'completed')
 
   if (!isEligible || items.length === 0) {
     return null
   }
 
-  const selectedItem = items.find((it) => it.id === selectedItemId) || items[0]
+  const selectedItem = items.find((i) => i.id === selectedItemId) || items[0]
   const maxQty = selectedItem?.quantity || 1
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,15 +120,14 @@ export function OrderReturnRequestModal({
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
+      <button
+        type="button"
         onClick={() => setIsOpen(true)}
-        className="text-botanical-800 hover:text-botanical-900 hover:bg-earth-100 border-botanical-300"
+        className={styles.returnTrigger}
       >
-        <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-        Request Return / Claim
-      </Button>
+        <RotateCcw size={15} aria-hidden="true" />
+        <span>Request Return / Claim</span>
+      </button>
 
       {isOpen && (
         <div
@@ -138,40 +137,40 @@ export function OrderReturnRequestModal({
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsOpen(false)
           }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          className={styles.backdrop}
         >
-          <div className="bg-card w-full max-w-lg rounded-2xl p-6 shadow-xl border border-border space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center gap-2.5 text-foreground">
-              <RotateCcw className="h-5 w-5 text-botanical-700 shrink-0" />
-              <h3 id="return-dialog-title" className="text-lg font-bold">
+          <div className={styles.dialogCard}>
+            <div className={styles.header}>
+              <RotateCcw size={20} style={{ color: 'var(--ugaoo-green)' }} aria-hidden="true" />
+              <h3 id="return-dialog-title" className={styles.title}>
                 Request Return / Claim (Order #{displayId || orderId})
               </h3>
             </div>
 
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className={styles.notice}>
               Submit a return request for eligible seeds or merchandise. For perishable live plants,
               please describe any transit damage or root shock for nursery review.
             </p>
 
             {error && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-xs text-destructive flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <div role="alert" className={styles.alertError}>
+                <AlertCircle size={16} aria-hidden="true" />
                 <span>{error}</span>
               </div>
             )}
 
             {successMessage && (
-              <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+              <div role="status" className={styles.alertSuccess}>
+                <CheckCircle2 size={16} aria-hidden="true" />
                 <span>{successMessage}</span>
               </div>
             )}
 
             {!successMessage && (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className={styles.form}>
                 {/* Select Line Item */}
-                <div className="space-y-1.5">
-                  <label htmlFor="return-item" className="text-xs font-semibold text-foreground">
+                <div className={styles.formGroup}>
+                  <label htmlFor="return-item" className={styles.label}>
                     Select Item to Return
                   </label>
                   <select
@@ -181,7 +180,7 @@ export function OrderReturnRequestModal({
                       setSelectedItemId(e.target.value)
                       setQuantity(1)
                     }}
-                    className="w-full text-xs rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-botanical-500"
+                    className={styles.select}
                   >
                     {items.map((it) => (
                       <option key={it.id} value={it.id}>
@@ -192,8 +191,8 @@ export function OrderReturnRequestModal({
                 </div>
 
                 {/* Return Quantity */}
-                <div className="space-y-1.5">
-                  <label htmlFor="return-qty" className="text-xs font-semibold text-foreground">
+                <div className={styles.formGroup}>
+                  <label htmlFor="return-qty" className={styles.label}>
                     Return Quantity (Max: {maxQty})
                   </label>
                   <input
@@ -203,20 +202,20 @@ export function OrderReturnRequestModal({
                     max={maxQty}
                     value={quantity}
                     onChange={(e) => setQuantity(Math.max(1, Math.min(maxQty, parseInt(e.target.value, 10) || 1)))}
-                    className="w-full text-xs rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-botanical-500"
+                    className={styles.input}
                   />
                 </div>
 
                 {/* Return Reason */}
-                <div className="space-y-1.5">
-                  <label htmlFor="return-reason" className="text-xs font-semibold text-foreground">
+                <div className={styles.formGroup}>
+                  <label htmlFor="return-reason" className={styles.label}>
                     Reason for Return / Claim
                   </label>
                   <select
                     id="return-reason"
                     value={reason}
                     onChange={(e) => setReason(e.target.value as ReturnReason)}
-                    className="w-full text-xs rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-botanical-500"
+                    className={styles.select}
                   >
                     <option value="damaged_in_transit">Damaged in transit / Crushed packet</option>
                     <option value="defective_quality">Defective quality / Low seed viability</option>
@@ -228,8 +227,8 @@ export function OrderReturnRequestModal({
                 </div>
 
                 {/* Customer Remarks */}
-                <div className="space-y-1.5">
-                  <label htmlFor="return-remarks" className="text-xs font-semibold text-foreground">
+                <div className={styles.formGroup}>
+                  <label htmlFor="return-remarks" className={styles.label}>
                     Botanical Condition / Observations
                   </label>
                   <textarea
@@ -238,35 +237,33 @@ export function OrderReturnRequestModal({
                     onChange={(e) => setCustomerNotes(e.target.value)}
                     placeholder="Describe packaging condition, unopened seal, or transit defects..."
                     rows={3}
-                    className="w-full text-xs rounded-lg border border-input bg-background p-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-botanical-500"
+                    className={styles.textarea}
                   />
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <Button
+                <div className={styles.actions}>
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
                     disabled={isLoading}
                     onClick={() => setIsOpen(false)}
+                    className={styles.cancelButton}
                   >
                     Cancel
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="submit"
-                    size="sm"
                     disabled={isLoading}
-                    className="bg-botanical-700 hover:bg-botanical-800 text-white"
+                    className={styles.submitButton}
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        Submitting...
+                        <Loader2 size={15} className={styles.spinner} aria-hidden="true" />
+                        <span>Submitting...</span>
                       </>
                     ) : (
                       'Submit Return Request'
                     )}
-                  </Button>
+                  </button>
                 </div>
               </form>
             )}

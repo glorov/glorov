@@ -328,7 +328,7 @@ describe('GLOROV Storefront Customer Journey & Component Regression Tests', () =
       expect(screen.getByText('All Botanical Store')).toBeInTheDocument()
       expect(screen.getByText('Seeds (Desi & Hybrid)')).toBeInTheDocument()
       expect(screen.getByText('Live Indoor Plants')).toBeInTheDocument()
-      expect(screen.getByText('Pots & Planters')).toBeInTheDocument()
+      expect(screen.getByText('Plant Doctor Clinic')).toBeInTheDocument()
       expect(screen.getByText('My Account & Orders')).toBeInTheDocument()
       expect(screen.getByText('Shopping Cart')).toBeInTheDocument()
 

@@ -2,17 +2,16 @@
 
 import React, { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Leaf, Lock, Mail, ArrowRight, AlertCircle, CheckCircle2, Loader2, KeyRound } from 'lucide-react'
+import { Lock, Mail, ArrowRight, AlertCircle, CheckCircle2, Loader2, KeyRound } from 'lucide-react'
 import {
   loginCustomerAction,
   requestPasswordResetAction,
   getCurrentCustomerAction,
 } from '@/lib/customer-actions'
 import { getSafeRedirectUrl } from '@/lib/security'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
+import styles from '../AuthPage.module.css'
 
 function LoginForm() {
   const router = useRouter()
@@ -108,74 +107,74 @@ function LoginForm() {
 
   if (isCheckingAuth) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-botanical-700" />
+      <div className={styles.spinnerCenter} aria-label="Checking authentication status">
+        <Loader2 className={styles.spinAnimation} size={28} color="#0a4c36" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
-            <div className="h-10 w-10 rounded-xl bg-botanical-700 flex items-center justify-center text-white shadow-sm group-hover:bg-botanical-800 transition-colors">
-              <Leaf className="h-5 w-5 text-emerald-200" />
-            </div>
-            <span className="font-extrabold tracking-tight text-2xl text-botanical-900">
-              GLOROV
-            </span>
+    <main className={styles.authWrapper}>
+      <div className={styles.authContainer}>
+        {/* Header Branding */}
+        <div className={styles.authHeader}>
+          <Link href="/" className={styles.logoLink} aria-label="GLOROV Botanicals Homepage">
+            <Image
+              src="/glorov-logo.svg"
+              alt="GLOROV"
+              width={160}
+              height={44}
+              priority
+              className={styles.authLogoImg}
+            />
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Customer Sign In
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className={styles.authTitle}>Customer Sign In</h1>
+          <p className={styles.authSubtitle}>
             Access your orders, saved botanical addresses, and plant care history
           </p>
         </div>
 
-        <Card className="shadow-md border-border/80">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-lg">Welcome back</CardTitle>
-            <CardDescription className="text-xs">
+        {/* Auth Card */}
+        <div className={styles.authCard}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Welcome back</h2>
+            <p className={styles.cardDescription}>
               Enter your registered GLOROV account credentials
-            </CardDescription>
-          </CardHeader>
+            </p>
+          </div>
 
-          <CardContent>
+          <div className={styles.cardBody}>
             {errorMessage && (
-              <div
-                role="alert"
-                className="mb-4 flex items-start gap-2.5 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive"
-              >
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <div role="alert" aria-live="polite" className={styles.alertError}>
+                <AlertCircle size={16} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
                 <span>{errorMessage}</span>
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground" htmlFor="email">
+            <form onSubmit={handleLogin} className={styles.form} aria-label="Customer sign in form">
+              <div className={styles.formGroup}>
+                <label className={styles.label} htmlFor="email">
                   Email Address
                 </label>
-                <div className="relative">
-                  <Input
+                <div className={styles.inputWrapper}>
+                  <Mail className={styles.inputIcon} aria-hidden="true" />
+                  <input
                     id="email"
                     type="email"
                     required
+                    aria-required="true"
                     autoComplete="email"
                     placeholder="aarav.sharma@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-9"
+                    className={styles.input}
                   />
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-foreground" htmlFor="password">
+              <div className={styles.formGroup}>
+                <div className={styles.formGroupHeader}>
+                  <label className={styles.label} htmlFor="password">
                     Password
                   </label>
                   <button
@@ -184,124 +183,131 @@ function LoginForm() {
                       setShowForgotModal(true)
                       setForgotEmail(email)
                     }}
-                    className="text-xs text-botanical-700 hover:text-botanical-800 hover:underline"
+                    className={styles.textLink}
                   >
                     Forgot password?
                   </button>
                 </div>
-                <div className="relative">
-                  <Input
+                <div className={styles.inputWrapper}>
+                  <Lock className={styles.inputIcon} aria-hidden="true" />
+                  <input
                     id="password"
                     type="password"
                     required
+                    aria-required="true"
                     autoComplete="current-password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-9"
+                    className={styles.input}
                   />
-                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
                 </div>
               </div>
 
-              <Button
+              <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-botanical-700 hover:bg-botanical-800 text-white font-medium"
+                className={styles.submitBtn}
+                aria-label={isLoading ? 'Signing in' : 'Sign in to account'}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
+                    <Loader2 className={styles.spinAnimation} size={16} aria-hidden="true" />
+                    <span>Signing in...</span>
                   </>
                 ) : (
                   <>
-                    Sign In
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <span>Sign In</span>
+                    <ArrowRight size={16} aria-hidden="true" />
                   </>
                 )}
-              </Button>
+              </button>
             </form>
-          </CardContent>
+          </div>
 
-          <CardFooter className="flex flex-col gap-3 pt-0 border-t border-border/50 text-center">
-            <div className="text-xs text-muted-foreground mt-4">
+          <div className={styles.cardFooter}>
+            <p className={styles.footerText}>
               Don&apos;t have an account yet?{' '}
               <Link
                 href={`/account/register${callbackUrl !== '/account' ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ''}`}
-                className="font-semibold text-botanical-700 hover:text-botanical-800 hover:underline"
+                className={styles.footerLink}
               >
                 Create Account
               </Link>
-            </div>
+            </p>
             {callbackUrl.includes('checkout') && (
-              <div className="text-xs text-muted-foreground">
+              <p className={styles.footerText}>
                 or{' '}
-                <Link
-                  href="/checkout"
-                  className="font-medium text-botanical-700 hover:underline"
-                >
+                <Link href="/checkout" className={styles.footerLink}>
                   Continue as Guest
                 </Link>
-              </div>
+              </p>
             )}
-          </CardFooter>
-        </Card>
+          </div>
+        </div>
 
-        {/* Forgot Password Section / Dialog */}
+        {/* Forgot Password Section */}
         {showForgotModal && (
-          <div className="mt-4 p-4 rounded-xl border bg-card shadow-sm text-left">
-            <h3 className="text-sm font-semibold text-foreground mb-1">
-              Reset Your Password
-            </h3>
-            <p className="text-xs text-muted-foreground mb-3">
+          <div className={styles.forgotBox} role="region" aria-label="Password recovery section">
+            <h3 className={styles.forgotTitle}>Reset Your Password</h3>
+            <p className={styles.forgotDesc}>
               Enter your email to receive recovery instructions.
             </p>
 
             {forgotSuccess ? (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs">
-                <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600" />
+              <div className={styles.alertSuccess} role="status">
+                <CheckCircle2 size={16} aria-hidden="true" style={{ flexShrink: 0, marginTop: 2 }} />
                 <span>{forgotSuccess}</span>
               </div>
             ) : (
-              <form onSubmit={handleForgotPassword} className="space-y-3">
+              <form onSubmit={handleForgotPassword} className={styles.form} aria-label="Password reset request">
                 {forgotError && (
-                  <div className="p-2 text-xs rounded bg-destructive/10 text-destructive">
-                    {forgotError}
+                  <div className={styles.alertError} role="alert">
+                    <span>{forgotError}</span>
                   </div>
                 )}
-                <Input
-                  type="email"
-                  required
-                  placeholder="Enter your email"
-                  value={forgotEmail}
-                  onChange={(e) => setForgotEmail(e.target.value)}
-                />
-                <div className="flex items-center gap-2 justify-end">
-                  <Button
+                <div className={styles.formGroup}>
+                  <label className={styles.label} htmlFor="forgot-email">
+                    Account Email
+                  </label>
+                  <div className={styles.inputWrapper}>
+                    <Mail className={styles.inputIcon} aria-hidden="true" />
+                    <input
+                      id="forgot-email"
+                      type="email"
+                      required
+                      aria-required="true"
+                      placeholder="Enter your email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      className={styles.input}
+                    />
+                  </div>
+                </div>
+                <div className={styles.forgotActions}>
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
                     onClick={() => setShowForgotModal(false)}
+                    className={styles.cancelBtn}
                   >
                     Cancel
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="submit"
-                    size="sm"
                     disabled={isForgotLoading}
-                    className="bg-botanical-700 hover:bg-botanical-800 text-white"
+                    className={styles.sendBtn}
                   >
                     {isForgotLoading ? 'Sending...' : 'Send Reset Link'}
-                  </Button>
+                  </button>
                 </div>
 
-                <div className="pt-2 text-center border-t border-border/50">
+                <div style={{ paddingTop: 10, textAlign: 'center', borderTop: '1px solid #e2e8f0' }}>
                   <Link
                     href="/account/reset-password"
-                    className="text-[11px] text-botanical-700 hover:underline inline-flex items-center gap-1 font-medium"
+                    className={styles.textLink}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
                   >
-                    <KeyRound className="h-3 w-3" />
+                    <KeyRound size={12} aria-hidden="true" />
                     Already have a reset token? Set new password
                   </Link>
                 </div>
@@ -310,13 +316,19 @@ function LoginForm() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   )
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-[50vh] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-botanical-700" /></div>}>
+    <Suspense
+      fallback={
+        <div className={styles.spinnerCenter} aria-label="Loading authentication page">
+          <Loader2 className={styles.spinAnimation} size={28} color="#0a4c36" />
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   )

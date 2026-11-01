@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { ShoppingBag, Loader2, Check } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
-import { Button } from '@/components/ui/button'
+import styles from './AddToCartButton.module.css'
 
 interface AddToCartButtonProps {
   variantId: string
@@ -20,7 +20,7 @@ export function AddToCartButton({
   disabled = false,
   size = 'sm',
 }: AddToCartButtonProps) {
-  const { addToCart } = useCart()
+  const { addToCart, openDrawer } = useCart()
   const [loading, setLoading] = useState(false)
   const [added, setAdded] = useState(false)
 
@@ -35,35 +35,38 @@ export function AddToCartButton({
 
     if (success) {
       setAdded(true)
+      openDrawer()
       setTimeout(() => setAdded(false), 2000)
     }
   }
 
+  const sizeClass =
+    size === 'sm'
+      ? styles.buttonSm
+      : size === 'lg'
+      ? styles.buttonLg
+      : size === 'icon'
+      ? styles.buttonIcon
+      : ''
+
   return (
-    <Button
+    <button
       type="button"
       onClick={handleAdd}
       disabled={disabled || loading}
-      variant="botanical"
-      size={size}
-      className={`relative gap-1.5 transition-all ${className}`}
+      className={`${styles.button} ${sizeClass} ${added ? styles.addedState : ''} ${className}`}
+      aria-label={label}
     >
       {loading ? (
-        <>
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          <span>Adding...</span>
-        </>
+        <Loader2 size={16} className={styles.spinner} aria-hidden="true" />
       ) : added ? (
-        <>
-          <Check className="h-3.5 w-3.5 text-emerald-300" />
-          <span>Added!</span>
-        </>
+        <Check size={16} aria-hidden="true" />
       ) : (
-        <>
-          <ShoppingBag className="h-3.5 w-3.5" />
-          <span>{label}</span>
-        </>
+        <ShoppingBag size={16} aria-hidden="true" />
       )}
-    </Button>
+      {size !== 'icon' && (
+        <span>{added ? 'Added to Cart' : label}</span>
+      )}
+    </button>
   )
 }

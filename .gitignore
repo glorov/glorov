@@ -52,3 +52,6 @@ backups/
 *.njsproj
 *.sln
 *.sw?
+
+# Firebase
+.firebase/

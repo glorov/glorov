@@ -3,8 +3,8 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertCircle, CheckCircle2, Loader2, XCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { cancelCustomerOrderAction } from '@/lib/customer-actions'
+import styles from './OrderCancellationButton.module.css'
 
 interface OrderCancellationButtonProps {
   orderId: string
@@ -54,9 +54,8 @@ export function OrderCancellationButton({
     fulfillmentStatus === 'delivered' ||
     fulfillmentStatus === 'partially_shipped'
 
-  const isEligible = !isCanceled && !isCompleted && !isShipped
-
-  if (!isEligible) {
+  // If already canceled, completed or dispatched, order cannot be cancelled
+  if (isCanceled || isCompleted || isShipped) {
     return null
   }
 
@@ -93,15 +92,14 @@ export function OrderCancellationButton({
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
+      <button
+        type="button"
         onClick={() => setIsOpen(true)}
-        className="text-red-700 hover:text-red-800 hover:bg-red-50 border-red-200"
+        className={styles.cancelTrigger}
       >
-        <XCircle className="mr-1.5 h-3.5 w-3.5" />
-        Cancel Order
-      </Button>
+        <XCircle size={15} aria-hidden="true" />
+        <span>Cancel Order</span>
+      </button>
 
       {isOpen && (
         <div
@@ -111,46 +109,46 @@ export function OrderCancellationButton({
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsOpen(false)
           }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          className={styles.backdrop}
         >
-          <div className="bg-card w-full max-w-md rounded-2xl p-6 shadow-xl border border-border space-y-4">
-            <div className="flex items-center gap-2.5 text-foreground">
-              <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
-              <h3 id="cancel-dialog-title" className="text-lg font-bold">
+          <div className={styles.dialogCard}>
+            <div className={styles.header}>
+              <AlertCircle size={20} color="#dc2626" aria-hidden="true" />
+              <h3 id="cancel-dialog-title" className={styles.title}>
                 Cancel Order #{displayId || orderId}
               </h3>
             </div>
 
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className={styles.notice}>
               You can cancel this order because it has not yet been dispatched from the Pune Central
               Nursery Hub. Any reserved items will be released back to inventory.
             </p>
 
             {error && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-xs text-destructive flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <div role="alert" className={styles.alertError}>
+                <AlertCircle size={16} aria-hidden="true" />
                 <span>{error}</span>
               </div>
             )}
 
             {successMessage && (
-              <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-start gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+              <div role="status" className={styles.alertSuccess}>
+                <CheckCircle2 size={16} aria-hidden="true" />
                 <span>{successMessage}</span>
               </div>
             )}
 
             {!successMessage && (
-              <form onSubmit={handleCancel} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="cancel-reason" className="text-xs font-semibold text-foreground">
+              <form onSubmit={handleCancel} className={styles.form}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="cancel-reason" className={styles.label}>
                     Reason for cancellation
                   </label>
                   <select
                     id="cancel-reason"
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    className="w-full text-xs rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-botanical-500"
+                    className={styles.select}
                   >
                     <option value="Changed mind">Changed my mind</option>
                     <option value="Ordered by mistake">Ordered by mistake</option>
@@ -160,8 +158,8 @@ export function OrderCancellationButton({
                   </select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label htmlFor="cancel-note" className="text-xs font-semibold text-foreground">
+                <div className={styles.formGroup}>
+                  <label htmlFor="cancel-note" className={styles.label}>
                     Additional notes (optional)
                   </label>
                   <textarea
@@ -170,35 +168,33 @@ export function OrderCancellationButton({
                     onChange={(e) => setCustomerNote(e.target.value)}
                     placeholder="Provide any details for nursery customer service..."
                     rows={2}
-                    className="w-full text-xs rounded-lg border border-input bg-background p-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-botanical-500"
+                    className={styles.textarea}
                   />
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <Button
+                <div className={styles.actions}>
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
                     disabled={isLoading}
                     onClick={() => setIsOpen(false)}
+                    className={styles.keepButton}
                   >
                     Keep Order
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="submit"
-                    variant="destructive"
-                    size="sm"
                     disabled={isLoading}
+                    className={styles.confirmButton}
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        Cancelling...
+                        <Loader2 size={15} className={styles.spinner} aria-hidden="true" />
+                        <span>Cancelling...</span>
                       </>
                     ) : (
                       'Confirm Cancellation'
                     )}
-                  </Button>
+                  </button>
                 </div>
               </form>
             )}

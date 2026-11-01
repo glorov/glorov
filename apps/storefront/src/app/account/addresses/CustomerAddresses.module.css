@@ -1,0 +1,343 @@
+/* CustomerAddresses.module.css - Pure CSS Module for Saved Delivery Addresses */
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 32px 16px 80px;
+  color: var(--color-foreground, #1a202c);
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 40px 24px 100px;
+  }
+}
+
+/* Header Area */
+.headerArea {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.mobileTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 16px 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+@media (min-width: 768px) {
+  .mobileTopBar {
+    display: none;
+  }
+}
+
+.mobileBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary, #0a4c36);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .headerArea {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--color-foreground, #1e293b);
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+@media (min-width: 640px) {
+  .title {
+    font-size: 2.125rem;
+  }
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  min-height: 44px;
+  border-radius: 9999px;
+  border: none;
+  background-color: var(--color-primary, #0a4c36);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(10, 76, 54, 0.2);
+  transition: all 0.15s ease;
+  align-self: flex-start;
+}
+
+@media (min-width: 640px) {
+  .addBtn {
+    align-self: auto;
+  }
+}
+
+.addBtn:hover {
+  background-color: #073828;
+}
+
+.addBtn:focus-visible {
+  outline: 2px solid var(--color-primary, #0a4c36);
+  outline-offset: 2px;
+}
+
+/* 2-Column Responsive Layout */
+.addressesLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .addressesLayout {
+    flex-direction: row;
+    gap: 32px;
+    align-items: flex-start;
+  }
+}
+
+.mainContent {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Status Alert Message */
+.statusAlertSuccess {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  font-size: 0.8125rem;
+}
+
+.statusAlertError {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 0.8125rem;
+}
+
+/* Empty State Card */
+.emptyStateCard {
+  text-align: center;
+  padding: 60px 24px;
+  background-color: #ffffff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 16px;
+}
+
+.emptyIcon {
+  width: 48px;
+  height: 48px;
+  color: #94a3b8;
+  margin: 0 auto 16px;
+}
+
+.emptyTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-foreground, #1e293b);
+  margin: 0 0 8px;
+}
+
+.emptyDesc {
+  font-size: 0.8125rem;
+  color: #64748b;
+  max-width: 440px;
+  margin: 0 auto 24px;
+  line-height: 1.6;
+}
+
+/* Address Cards Grid */
+.addressesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .addressesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.addressCard {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.addressCardDefault {
+  border-color: #0a4c36;
+  background-color: #fcfcfb;
+}
+
+.addressCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.cardTop {
+  margin-bottom: 16px;
+}
+
+.badgesGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.badgeDefault {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background-color: #0a4c36;
+  color: #ffffff;
+}
+
+.recipientName {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-foreground, #1e293b);
+  margin: 0 0 6px;
+}
+
+.addressLines {
+  font-size: 0.8125rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 6px;
+}
+
+.phoneLine {
+  font-size: 0.75rem;
+  font-family: monospace;
+  color: #475569;
+  margin: 0;
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 14px;
+  margin-top: auto;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  min-height: 44px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border, #cbd5e1);
+  background-color: #ffffff;
+  color: #334155;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.actionBtn:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.actionBtn:focus-visible {
+  outline: 2px solid var(--color-primary, #0a4c36);
+  outline-offset: 2px;
+}
+
+.deleteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  min-height: 44px;
+  border-radius: 6px;
+  border: 1px solid #fee2e2;
+  background-color: #ffffff;
+  color: #dc2626;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background-color: #fef2f2;
+}
+
+.deleteBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinnerContainer {
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

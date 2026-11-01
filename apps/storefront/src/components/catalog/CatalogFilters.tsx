@@ -14,7 +14,6 @@ import {
 } from 'lucide-react'
 import type { StoreCatalogCategory } from '@glorov/types'
 import type { CatalogFacets } from '@/lib/catalog'
-import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -23,6 +22,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog'
+import styles from './CatalogFilters.module.css'
 
 export interface CatalogFiltersProps {
   categories: StoreCatalogCategory[]
@@ -123,7 +123,6 @@ function CatalogFiltersInner({
         params.set(key, value)
       }
     })
-    // Reset to page 1 on any filter change
     params.delete('page')
     return params.toString()
   }
@@ -189,82 +188,82 @@ function CatalogFiltersInner({
   }, [categories])
 
   return (
-    <div className="space-y-4">
+    <div className={styles.container}>
       {/* 1. Active Filter Pills Row */}
       {activeFilterCount > 0 && (
         <div
           role="region"
           aria-label="Active filters"
-          className="flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-botanical-50/70 border border-botanical-200/80 text-xs"
+          className={styles.activeFiltersRegion}
         >
-          <span className="font-semibold text-botanical-950 flex items-center gap-1.5 mr-1 text-[11px] uppercase tracking-wider">
-            <Filter className="h-3.5 w-3.5 text-botanical-700" />
+          <span className={styles.activeFiltersLabel}>
+            <Filter size={14} style={{ color: 'var(--ugaoo-green)' }} />
             Active Filters ({activeFilterCount}):
           </span>
 
           {/* Search Term Pill */}
           {q && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-botanical-300 text-botanical-900 shadow-xs font-medium">
+            <span className={styles.filterPill}>
               <span>Search: &ldquo;{q}&rdquo;</span>
               <button
                 type="button"
                 onClick={() => handleUpdateFilter('q', null)}
-                className="hover:text-red-600 rounded-full p-0.5"
+                className={styles.removeFilterBtn}
                 aria-label="Remove search term filter"
               >
-                <X className="h-3 w-3" />
+                <X size={12} />
               </button>
             </span>
           )}
 
-          {/* Category Pill (if selected via query parameter) */}
+          {/* Category Pill */}
           {category && category !== selectedCategoryHandle && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-botanical-300 text-botanical-900 shadow-xs font-medium">
+            <span className={styles.filterPill}>
               <span>Category: {category}</span>
               <button
                 type="button"
                 onClick={() => handleUpdateFilter('category', null)}
-                className="hover:text-red-600 rounded-full p-0.5"
+                className={styles.removeFilterBtn}
                 aria-label="Remove category filter"
               >
-                <X className="h-3 w-3" />
+                <X size={12} />
               </button>
             </span>
           )}
 
           {/* Seed / Plant Type Pill */}
           {seedType && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-botanical-300 text-botanical-900 shadow-xs font-medium capitalize">
+            <span className={styles.filterPill} style={{ textTransform: 'capitalize' }}>
               <span>Type: {seedType.replace('_', ' ')}</span>
               <button
                 type="button"
                 onClick={() => handleUpdateFilter('seed_type', null)}
-                className="hover:text-red-600 rounded-full p-0.5"
+                className={styles.removeFilterBtn}
                 aria-label="Remove seed type filter"
               >
-                <X className="h-3 w-3" />
+                <X size={12} />
               </button>
             </span>
           )}
 
           {/* Season Pill */}
           {season && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-botanical-300 text-botanical-900 shadow-xs font-medium capitalize">
+            <span className={styles.filterPill} style={{ textTransform: 'capitalize' }}>
               <span>Season: {season.replace('_', ' ')}</span>
               <button
                 type="button"
                 onClick={() => handleUpdateFilter('season', null)}
-                className="hover:text-red-600 rounded-full p-0.5"
+                className={styles.removeFilterBtn}
                 aria-label="Remove season filter"
               >
-                <X className="h-3 w-3" />
+                <X size={12} />
               </button>
             </span>
           )}
 
           {/* Price Range Pill */}
           {(minPrice !== undefined || maxPrice !== undefined) && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-botanical-300 text-botanical-900 shadow-xs font-medium">
+            <span className={styles.filterPill}>
               <span>
                 Price:{' '}
                 {minPrice !== undefined && maxPrice !== undefined
@@ -281,40 +280,40 @@ function CatalogFiltersInner({
                   const newQuery = createQueryString({ min_price: null, max_price: null })
                   router.push(newQuery ? `${pathname}?${newQuery}` : pathname)
                 }}
-                className="hover:text-red-600 rounded-full p-0.5"
+                className={styles.removeFilterBtn}
                 aria-label="Remove price range filter"
               >
-                <X className="h-3 w-3" />
+                <X size={12} />
               </button>
             </span>
           )}
 
           {/* In Stock Only Pill */}
           {inStockOnly && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-botanical-300 text-botanical-900 shadow-xs font-medium">
+            <span className={styles.filterPill}>
               <span>In Stock Only</span>
               <button
                 type="button"
                 onClick={handleStockToggle}
-                className="hover:text-red-600 rounded-full p-0.5"
+                className={styles.removeFilterBtn}
                 aria-label="Remove in-stock filter"
               >
-                <X className="h-3 w-3" />
+                <X size={12} />
               </button>
             </span>
           )}
 
           {/* Packet Size Pill */}
           {packetSize && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-botanical-300 text-botanical-900 shadow-xs font-medium">
+            <span className={styles.filterPill}>
               <span>Pack: {packetSize}</span>
               <button
                 type="button"
                 onClick={() => handleUpdateFilter('packet_size', null)}
-                className="hover:text-red-600 rounded-full p-0.5"
+                className={styles.removeFilterBtn}
                 aria-label="Remove packet size filter"
               >
-                <X className="h-3 w-3" />
+                <X size={12} />
               </button>
             </span>
           )}
@@ -323,20 +322,20 @@ function CatalogFiltersInner({
           <button
             type="button"
             onClick={handleClearAllFilters}
-            className="ml-auto inline-flex items-center gap-1 text-[11px] font-bold text-botanical-800 hover:text-red-700 transition-colors underline decoration-dotted underline-offset-2"
+            className={styles.clearAllBtn}
           >
-            <RotateCcw className="h-3 w-3" />
+            <RotateCcw size={12} />
             <span>Clear all filters</span>
           </button>
         </div>
       )}
 
       {/* 2. Top Filter & Sort Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2 border-b border-border">
+      <div className={styles.filterSortBar}>
         {/* Left: Specimen count, Mobile Filter Button, and In-Stock chip */}
-        <div className="flex items-center gap-2.5 flex-wrap text-xs">
-          <div className="flex items-center gap-1.5 font-bold text-botanical-950">
-            <SlidersHorizontal className="h-4 w-4 text-botanical-700" />
+        <div className={styles.leftControls}>
+          <div className={styles.specimenCount}>
+            <SlidersHorizontal size={16} style={{ color: 'var(--ugaoo-maroon)' }} />
             <span>
               {totalCount !== undefined
                 ? `${totalCount} ${totalCount === 1 ? 'Specimen' : 'Specimens'}`
@@ -347,57 +346,56 @@ function CatalogFiltersInner({
           {/* Mobile Filter Modal Trigger */}
           <Dialog open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
             <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="sm:hidden gap-1.5 text-xs h-8 rounded-full border-border hover:border-botanical-400"
+              <button
+                type="button"
+                className={styles.mobileFilterBtn}
               >
-                <Filter className="h-3.5 w-3.5 text-botanical-700" />
+                <Filter size={14} style={{ color: 'var(--ugaoo-maroon)' }} />
                 <span>Filters</span>
                 {activeFilterCount > 0 && (
-                  <span className="h-4 w-4 rounded-full bg-botanical-700 text-white text-[10px] font-bold flex items-center justify-center">
+                  <span className={styles.filterBadgeCount}>
                     {activeFilterCount}
                   </span>
                 )}
-              </Button>
+              </button>
             </DialogTrigger>
 
-            {/* Accessible Mobile Filter Dialog Content */}
-            <DialogContent className="max-w-md w-[92vw] sm:max-w-lg max-h-[85vh] overflow-y-auto">
+            {/* Mobile Filter Dialog Content */}
+            <DialogContent className={styles.mobileDialogContent}>
               <DialogHeader>
-                <DialogTitle className="flex items-center justify-between pr-6">
+                <DialogTitle className={styles.mobileDialogTitle}>
                   <span>Filter Botanical Catalog</span>
                   {activeFilterCount > 0 && (
-                    <span className="text-xs font-normal text-muted-foreground">
+                    <span className={styles.mobileActiveCount}>
                       {activeFilterCount} active
                     </span>
                   )}
                 </DialogTitle>
               </DialogHeader>
 
-              <div className="space-y-6 py-2 text-xs">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '0.75rem 0', fontSize: '13px' }}>
                 {/* Mobile: Availability */}
-                <div className="space-y-2">
-                  <h4 className="font-bold text-botanical-950 uppercase tracking-wider text-[11px]">
+                <div>
+                  <h4 style={{ fontWeight: 700, color: 'var(--ugaoo-green)', textTransform: 'uppercase', fontSize: '11px', marginBottom: '0.5rem' }}>
                     Availability
                   </h4>
-                  <label className="flex items-center gap-2 cursor-pointer p-2 rounded-lg bg-earth-50 hover:bg-earth-100 transition-colors">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', padding: '0.625rem', borderRadius: '8px', background: 'var(--ugaoo-cream-light)' }}>
                     <input
                       type="checkbox"
                       checked={inStockOnly}
                       onChange={handleStockToggle}
-                      className="h-4 w-4 rounded border-border text-botanical-700 focus:ring-botanical-600 cursor-pointer"
+                      style={{ height: '16px', width: '16px', accentColor: 'var(--ugaoo-green)', cursor: 'pointer' }}
                     />
-                    <span className="font-medium text-foreground">In Stock Only</span>
+                    <span style={{ fontWeight: 600, color: 'var(--ugaoo-text-dark)' }}>In Stock Only</span>
                   </label>
                 </div>
 
                 {/* Mobile: Seed & Plant Types */}
-                <div className="space-y-2">
-                  <h4 className="font-bold text-botanical-950 uppercase tracking-wider text-[11px]">
+                <div>
+                  <h4 style={{ fontWeight: 700, color: 'var(--ugaoo-green)', textTransform: 'uppercase', fontSize: '11px', marginBottom: '0.5rem' }}>
                     Botanical Seed / Plant Type
                   </h4>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
                     {SEED_TYPE_OPTIONS.map((opt) => {
                       const isSelected = seedType === opt.value
                       return (
@@ -405,11 +403,16 @@ function CatalogFiltersInner({
                           key={opt.value}
                           type="button"
                           onClick={() => handleUpdateFilter('seed_type', isSelected ? null : opt.value)}
-                          className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
-                            isSelected
-                              ? 'bg-botanical-800 text-white border-botanical-800'
-                              : 'bg-background border-border text-foreground/80 hover:border-botanical-400'
-                          }`}
+                          style={{
+                            padding: '0.375rem 0.75rem',
+                            borderRadius: '9999px',
+                            border: `1px solid ${isSelected ? 'var(--ugaoo-green)' : 'var(--ugaoo-border)'}`,
+                            backgroundColor: isSelected ? 'var(--ugaoo-green)' : 'var(--ugaoo-white)',
+                            color: isSelected ? 'var(--ugaoo-white)' : 'var(--ugaoo-text-dark)',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
                         >
                           {opt.label}
                         </button>
@@ -419,11 +422,11 @@ function CatalogFiltersInner({
                 </div>
 
                 {/* Mobile: Sowing Season */}
-                <div className="space-y-2">
-                  <h4 className="font-bold text-botanical-950 uppercase tracking-wider text-[11px]">
+                <div>
+                  <h4 style={{ fontWeight: 700, color: 'var(--ugaoo-green)', textTransform: 'uppercase', fontSize: '11px', marginBottom: '0.5rem' }}>
                     Sowing Season
                   </h4>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
                     {SEASON_OPTIONS.map((opt) => {
                       const isSelected = season === opt.value
                       return (
@@ -431,11 +434,16 @@ function CatalogFiltersInner({
                           key={opt.value}
                           type="button"
                           onClick={() => handleUpdateFilter('season', isSelected ? null : opt.value)}
-                          className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
-                            isSelected
-                              ? 'bg-botanical-800 text-white border-botanical-800'
-                              : 'bg-background border-border text-foreground/80 hover:border-botanical-400'
-                          }`}
+                          style={{
+                            padding: '0.375rem 0.75rem',
+                            borderRadius: '9999px',
+                            border: `1px solid ${isSelected ? 'var(--ugaoo-green)' : 'var(--ugaoo-border)'}`,
+                            backgroundColor: isSelected ? 'var(--ugaoo-green)' : 'var(--ugaoo-white)',
+                            color: isSelected ? 'var(--ugaoo-white)' : 'var(--ugaoo-text-dark)',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
                         >
                           {opt.label}
                         </button>
@@ -444,12 +452,12 @@ function CatalogFiltersInner({
                   </div>
                 </div>
 
-                {/* Mobile: Price Presets & Custom */}
-                <div className="space-y-2">
-                  <h4 className="font-bold text-botanical-950 uppercase tracking-wider text-[11px]">
+                {/* Mobile: Price Presets */}
+                <div>
+                  <h4 style={{ fontWeight: 700, color: 'var(--ugaoo-green)', textTransform: 'uppercase', fontSize: '11px', marginBottom: '0.5rem' }}>
                     Price Range (₹ INR)
                   </h4>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
                     {PRESET_PRICE_RANGES.map((preset, idx) => {
                       const isSelected = minPrice === preset.min && maxPrice === preset.max
                       return (
@@ -457,11 +465,16 @@ function CatalogFiltersInner({
                           key={idx}
                           type="button"
                           onClick={() => handlePresetPrice(preset.min, preset.max)}
-                          className={`px-3 py-1 rounded-full border text-xs font-medium transition-colors ${
-                            isSelected
-                              ? 'bg-botanical-800 text-white border-botanical-800'
-                              : 'bg-background border-border text-foreground/80 hover:border-botanical-400'
-                          }`}
+                          style={{
+                            padding: '0.375rem 0.75rem',
+                            borderRadius: '9999px',
+                            border: `1px solid ${isSelected ? 'var(--ugaoo-green)' : 'var(--ugaoo-border)'}`,
+                            backgroundColor: isSelected ? 'var(--ugaoo-green)' : 'var(--ugaoo-white)',
+                            color: isSelected ? 'var(--ugaoo-white)' : 'var(--ugaoo-text-dark)',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
                         >
                           {preset.label}
                         </button>
@@ -469,53 +482,23 @@ function CatalogFiltersInner({
                     })}
                   </div>
                 </div>
-
-                {/* Mobile: Packet Size */}
-                <div className="space-y-2">
-                  <h4 className="font-bold text-botanical-950 uppercase tracking-wider text-[11px]">
-                    Packet / Pot Size
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {PACKET_SIZE_OPTIONS.map((opt) => {
-                      const isSelected = packetSize === opt.value
-                      return (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => handleUpdateFilter('packet_size', isSelected ? null : opt.value)}
-                          className={`px-3 py-1 rounded-full border text-xs font-medium transition-colors ${
-                            isSelected
-                              ? 'bg-botanical-800 text-white border-botanical-800'
-                              : 'bg-background border-border text-foreground/80 hover:border-botanical-400'
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
               </div>
 
-              <DialogFooter className="flex-row items-center justify-between gap-2 border-t pt-3">
-                <Button
+              <DialogFooter className={styles.mobileDialogFooter}>
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
                   onClick={handleClearAllFilters}
-                  className="text-xs text-muted-foreground hover:text-red-700"
+                  className={styles.clearAllBtn}
                 >
                   Clear All
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  variant="botanical"
-                  size="sm"
                   onClick={() => setMobileDrawerOpen(false)}
-                  className="text-xs"
+                  className={styles.applyFiltersBtn}
                 >
                   Apply &amp; View Results
-                </Button>
+                </button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -524,40 +507,32 @@ function CatalogFiltersInner({
           <button
             type="button"
             onClick={() => setFilterPanelOpen(!filterPanelOpen)}
-            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium transition-all ${
-              filterPanelOpen || activeFilterCount > 0
-                ? 'bg-earth-100 text-botanical-950 border-botanical-300'
-                : 'bg-background text-muted-foreground border-border hover:border-botanical-300'
-            }`}
+            className={`${styles.desktopToggleBtn} ${filterPanelOpen || activeFilterCount > 0 ? styles.desktopToggleBtnActive : ''}`}
           >
-            <Filter className="h-3 w-3 text-botanical-700" />
+            <Filter size={14} style={{ color: 'var(--ugaoo-green)' }} />
             <span>More Filters</span>
             {activeFilterCount > 0 && (
-              <span className="h-4 w-4 rounded-full bg-botanical-700 text-white text-[10px] font-bold flex items-center justify-center">
+              <span className={styles.filterBadgeCount}>
                 {activeFilterCount}
               </span>
             )}
-            <ChevronDown className={`h-3 w-3 transition-transform ${filterPanelOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown size={14} style={{ transform: filterPanelOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
           </button>
 
           {/* Quick In-Stock chip */}
           <button
             type="button"
             onClick={handleStockToggle}
-            className={`px-3 py-1 rounded-full border text-xs font-medium transition-all ${
-              inStockOnly
-                ? 'bg-botanical-800 text-white border-botanical-800 shadow-xs'
-                : 'bg-background text-muted-foreground border-border hover:border-botanical-300'
-            }`}
+            className={`${styles.inStockToggleBtn} ${inStockOnly ? styles.inStockToggleBtnActive : ''}`}
           >
             {inStockOnly ? '✓ In Stock Only' : 'In Stock Only'}
           </button>
         </div>
 
         {/* Right: Sort Dropdown */}
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          <label htmlFor="catalog-sort" className="text-xs text-muted-foreground whitespace-nowrap">
+        <div className={styles.rightControls}>
+          <ArrowUpDown size={14} style={{ color: 'var(--ugaoo-text-muted)' }} />
+          <label htmlFor="catalog-sort" className={styles.sortLabel}>
             Sort by:
           </label>
           <select
@@ -565,7 +540,7 @@ function CatalogFiltersInner({
             value={currentSort}
             onChange={handleSortChange}
             aria-label="Sort products catalog"
-            className="h-8 pl-2 pr-6 rounded-lg border border-border bg-background text-xs font-medium focus:outline-none focus:ring-1 focus:ring-botanical-600 cursor-pointer"
+            className={styles.sortSelect}
           >
             <option value="featured">Featured &amp; Relevance</option>
             <option value="price_asc">Price: Low to High</option>
@@ -578,14 +553,10 @@ function CatalogFiltersInner({
 
       {/* 3. Category Quick Pills Row */}
       {distinctCategories.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+        <div className={styles.categoryPillsRow}>
           <Link
             href={basePath}
-            className={`px-3.5 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors ${
-              !selectedCategoryHandle && !category
-                ? 'bg-botanical-800 text-white shadow-xs'
-                : 'bg-earth-100/70 text-foreground/80 hover:bg-earth-200 hover:text-foreground'
-            }`}
+            className={`${styles.categoryPill} ${!selectedCategoryHandle && !category ? styles.categoryPillActive : ''}`}
           >
             All Products
           </Link>
@@ -596,11 +567,7 @@ function CatalogFiltersInner({
               <Link
                 key={cat.id}
                 href={`/categories/${cat.handle}`}
-                className={`px-3.5 py-1.5 rounded-full font-medium whitespace-nowrap transition-colors ${
-                  isSelected
-                    ? 'bg-botanical-800 text-white shadow-xs'
-                    : 'bg-earth-100/70 text-foreground/80 hover:bg-earth-200 hover:text-foreground'
-                }`}
+                className={`${styles.categoryPill} ${isSelected ? styles.categoryPillActive : ''}`}
               >
                 {cat.name}
               </Link>
@@ -611,13 +578,13 @@ function CatalogFiltersInner({
 
       {/* 4. Desktop Expandable Filter Drawer Panel */}
       {filterPanelOpen && (
-        <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-6 p-5 rounded-2xl bg-earth-50/70 border border-border animate-in slide-in-from-top-2 duration-150 text-xs">
+        <div className={styles.desktopFilterPanel}>
           {/* Column 1: Botanical Seed Type */}
-          <div className="space-y-2.5">
-            <h4 className="font-bold text-botanical-950 uppercase tracking-wider text-[11px]">
+          <div className={styles.filterColumn}>
+            <h4 className={styles.filterColumnTitle}>
               Seed / Plant Type
             </h4>
-            <div className="flex flex-col space-y-1">
+            <div className={styles.filterOptionList}>
               {SEED_TYPE_OPTIONS.map((opt) => {
                 const isSelected = seedType === opt.value
                 return (
@@ -625,14 +592,10 @@ function CatalogFiltersInner({
                     key={opt.value}
                     type="button"
                     onClick={() => handleUpdateFilter('seed_type', isSelected ? null : opt.value)}
-                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors ${
-                      isSelected
-                        ? 'bg-botanical-100 font-bold text-botanical-900'
-                        : 'hover:bg-earth-100 text-foreground/80'
-                    }`}
+                    className={`${styles.filterOptionItem} ${isSelected ? styles.filterOptionItemActive : ''}`}
                   >
                     <span>{opt.label}</span>
-                    {isSelected && <Check className="h-3.5 w-3.5 text-botanical-700" />}
+                    {isSelected && <Check size={14} style={{ color: 'var(--ugaoo-maroon)' }} />}
                   </button>
                 )
               })}
@@ -640,11 +603,11 @@ function CatalogFiltersInner({
           </div>
 
           {/* Column 2: Sowing Season */}
-          <div className="space-y-2.5">
-            <h4 className="font-bold text-botanical-950 uppercase tracking-wider text-[11px]">
+          <div className={styles.filterColumn}>
+            <h4 className={styles.filterColumnTitle}>
               Sowing Season
             </h4>
-            <div className="flex flex-col space-y-1">
+            <div className={styles.filterOptionList}>
               {SEASON_OPTIONS.map((opt) => {
                 const isSelected = season === opt.value
                 return (
@@ -652,14 +615,10 @@ function CatalogFiltersInner({
                     key={opt.value}
                     type="button"
                     onClick={() => handleUpdateFilter('season', isSelected ? null : opt.value)}
-                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors ${
-                      isSelected
-                        ? 'bg-botanical-100 font-bold text-botanical-900'
-                        : 'hover:bg-earth-100 text-foreground/80'
-                    }`}
+                    className={`${styles.filterOptionItem} ${isSelected ? styles.filterOptionItemActive : ''}`}
                   >
                     <span>{opt.label}</span>
-                    {isSelected && <Check className="h-3.5 w-3.5 text-botanical-700" />}
+                    {isSelected && <Check size={14} style={{ color: 'var(--ugaoo-maroon)' }} />}
                   </button>
                 )
               })}
@@ -667,11 +626,11 @@ function CatalogFiltersInner({
           </div>
 
           {/* Column 3: Packet / Pot Size */}
-          <div className="space-y-2.5">
-            <h4 className="font-bold text-botanical-950 uppercase tracking-wider text-[11px]">
+          <div className={styles.filterColumn}>
+            <h4 className={styles.filterColumnTitle}>
               Packet / Pot Size
             </h4>
-            <div className="flex flex-col space-y-1">
+            <div className={styles.filterOptionList}>
               {PACKET_SIZE_OPTIONS.map((opt) => {
                 const isSelected = packetSize === opt.value
                 return (
@@ -679,14 +638,10 @@ function CatalogFiltersInner({
                     key={opt.value}
                     type="button"
                     onClick={() => handleUpdateFilter('packet_size', isSelected ? null : opt.value)}
-                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors ${
-                      isSelected
-                        ? 'bg-botanical-100 font-bold text-botanical-900'
-                        : 'hover:bg-earth-100 text-foreground/80'
-                    }`}
+                    className={`${styles.filterOptionItem} ${isSelected ? styles.filterOptionItemActive : ''}`}
                   >
                     <span>{opt.label}</span>
-                    {isSelected && <Check className="h-3.5 w-3.5 text-botanical-700" />}
+                    {isSelected && <Check size={14} style={{ color: 'var(--ugaoo-maroon)' }} />}
                   </button>
                 )
               })}
@@ -694,11 +649,11 @@ function CatalogFiltersInner({
           </div>
 
           {/* Column 4: Price Filter */}
-          <div className="space-y-2.5">
-            <h4 className="font-bold text-botanical-950 uppercase tracking-wider text-[11px]">
+          <div className={styles.filterColumn}>
+            <h4 className={styles.filterColumnTitle}>
               Price Range (₹ INR)
             </h4>
-            <div className="space-y-1.5">
+            <div className={styles.filterOptionList}>
               {PRESET_PRICE_RANGES.map((preset, idx) => {
                 const isSelected = minPrice === preset.min && maxPrice === preset.max
                 return (
@@ -706,11 +661,7 @@ function CatalogFiltersInner({
                     key={idx}
                     type="button"
                     onClick={() => handlePresetPrice(preset.min, preset.max)}
-                    className={`block w-full text-left px-2.5 py-1 rounded-md transition-colors ${
-                      isSelected
-                        ? 'bg-botanical-100 font-bold text-botanical-900'
-                        : 'hover:bg-earth-100 text-foreground/80'
-                    }`}
+                    className={`${styles.filterOptionItem} ${isSelected ? styles.filterOptionItemActive : ''}`}
                   >
                     {preset.label}
                   </button>
@@ -719,25 +670,25 @@ function CatalogFiltersInner({
             </div>
 
             {/* Custom Min/Max Input Form */}
-            <form onSubmit={handleApplyCustomPrice} className="pt-2 border-t border-border flex items-center gap-1.5">
+            <form onSubmit={handleApplyCustomPrice} className={styles.customPriceForm}>
               <input
                 type="number"
                 placeholder="Min ₹"
                 value={customMin}
                 onChange={(e) => setCustomMin(e.target.value)}
-                className="w-16 h-7 px-1.5 rounded border border-border bg-background text-[11px] focus:outline-none focus:ring-1 focus:ring-botanical-600"
+                className={styles.priceInput}
               />
-              <span className="text-muted-foreground">–</span>
+              <span style={{ color: 'var(--ugaoo-text-muted)' }}>–</span>
               <input
                 type="number"
                 placeholder="Max ₹"
                 value={customMax}
                 onChange={(e) => setCustomMax(e.target.value)}
-                className="w-16 h-7 px-1.5 rounded border border-border bg-background text-[11px] focus:outline-none focus:ring-1 focus:ring-botanical-600"
+                className={styles.priceInput}
               />
-              <Button type="submit" size="sm" variant="botanical" className="h-7 px-2 text-[10px]">
+              <button type="submit" className={styles.priceSubmitBtn}>
                 Go
-              </Button>
+              </button>
             </form>
           </div>
         </div>
@@ -748,9 +699,8 @@ function CatalogFiltersInner({
 
 export function CatalogFilters(props: CatalogFiltersProps) {
   return (
-    <React.Suspense fallback={<div className="h-10 animate-pulse bg-earth-50 rounded-xl" />}>
+    <React.Suspense fallback={<div style={{ height: '40px', backgroundColor: 'var(--ugaoo-cream-light)', borderRadius: '12px' }} />}>
       <CatalogFiltersInner {...props} />
     </React.Suspense>
   )
 }
-

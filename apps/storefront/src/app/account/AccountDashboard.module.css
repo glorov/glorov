@@ -1,0 +1,608 @@
+/* AccountDashboard.module.css - Pure CSS Module for Customer Dashboard */
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 32px 16px 80px;
+  color: var(--color-foreground, #1a202c);
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 40px 24px 100px;
+  }
+}
+
+/* Header Greeting */
+.headerArea {
+  margin-bottom: 32px;
+}
+
+.accountBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-primary, #0a4c36);
+  margin-bottom: 6px;
+}
+
+.greetingTitle {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--color-foreground, #1e293b);
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+@media (min-width: 640px) {
+  .greetingTitle {
+    font-size: 2.125rem;
+  }
+}
+
+.greetingSub {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 2-Column Responsive Layout */
+.dashboardLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .dashboardLayout {
+    flex-direction: row;
+    gap: 32px;
+    align-items: flex-start;
+  }
+}
+
+.mainContent {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* Top Metrics Cards */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .metricsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+.metricCard {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.metricHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.metricIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-primary, #0a4c36);
+}
+
+.metricValue {
+  font-size: 1.625rem;
+  font-weight: 800;
+  color: var(--color-foreground, #1e293b);
+  margin: 0 0 4px;
+  line-height: 1.1;
+}
+
+.metricEmailValue {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-foreground, #1e293b);
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metricFooter {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.metricLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--color-primary, #0a4c36);
+  text-decoration: none;
+}
+
+.metricLink:hover {
+  text-decoration: underline;
+}
+
+/* Primary Delivery Address Banner */
+.addressCard {
+  background-color: #fbfbf9;
+  border: 1px solid #e7dfd3;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.addressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.addressTitle {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-primary, #0a4c36);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.addressActionLink {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary, #0a4c36);
+  text-decoration: none;
+}
+
+.addressActionLink:hover {
+  text-decoration: underline;
+}
+
+.addressBody {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.recipientName {
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 2px;
+}
+
+.emptyAddressNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+/* Recent Orders Section */
+.recentOrdersSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-foreground, #1e293b);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.viewAllLink {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-primary, #0a4c36);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.viewAllLink:hover {
+  text-decoration: underline;
+}
+
+/* Empty Orders State */
+.emptyStateCard {
+  text-align: center;
+  padding: 48px 24px;
+  background-color: #ffffff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 14px;
+}
+
+.emptyStateIcon {
+  width: 48px;
+  height: 48px;
+  color: #94a3b8;
+  margin: 0 auto 12px;
+}
+
+.emptyStateTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-foreground, #1e293b);
+  margin: 0 0 6px;
+}
+
+.emptyStateDesc {
+  font-size: 0.8125rem;
+  color: #64748b;
+  max-width: 420px;
+  margin: 0 auto 18px;
+  line-height: 1.5;
+}
+
+/* Order Cards List */
+.ordersList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.orderCard {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.orderCard:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.orderCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  .orderCardContent {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.orderInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.orderMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.orderIdText {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-foreground, #1e293b);
+}
+
+.orderDateText {
+  font-size: 0.75rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.statusBadgeGreen {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  text-transform: capitalize;
+}
+
+.statusBadgeAmber {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  text-transform: capitalize;
+}
+
+.orderItemsSummary {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.orderActionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--color-border, #f1f5f9);
+  padding-top: 12px;
+}
+
+@media (min-width: 640px) {
+  .orderActionsRow {
+    border-top: none;
+    padding-top: 0;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+}
+
+.orderTotalBlock {
+  text-align: right;
+}
+
+.orderTotalLabel {
+  font-size: 0.6875rem;
+  color: #64748b;
+  display: block;
+}
+
+.orderTotalAmount {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--color-primary, #0a4c36);
+}
+
+.detailsBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #cbd5e1);
+  background-color: #ffffff;
+  color: #334155;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.detailsBtn:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.detailsBtn:focus-visible {
+  outline: 2px solid var(--color-primary, #0a4c36);
+  outline-offset: 2px;
+}
+
+/* Mobile Clean Top Bar */
+.mobileAccountBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+@media (min-width: 768px) {
+  .mobileAccountBar {
+    display: none;
+  }
+}
+
+.mobileBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--color-primary, #0a4c36);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.mobileBarTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-foreground, #1e293b);
+}
+
+/* Desktop Clean Header */
+.desktopAccountHeader {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0 1.5rem 0;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+@media (min-width: 768px) {
+  .desktopAccountHeader {
+    display: flex;
+  }
+}
+
+.desktopLogoLink {
+  display: inline-flex;
+  align-items: center;
+}
+
+.backToStoreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--color-primary, #0a4c36);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(10, 76, 54, 0.2);
+  transition: all 150ms ease;
+}
+
+.backToStoreLink:hover {
+  background-color: #f0fdf4;
+}
+
+/* Available Only Services Section */
+.servicesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.servicesSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.servicesSectionTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-foreground, #1e293b);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .servicesGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .servicesGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.serviceCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #ffffff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 12px;
+  padding: 16px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.serviceCard:hover {
+  border-color: var(--color-primary, #0a4c36);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(10, 76, 54, 0.08);
+}
+
+.serviceIconWrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: #ecfdf5;
+  color: var(--color-primary, #0a4c36);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.serviceCardName {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-foreground, #1e293b);
+  margin: 0 0 4px;
+}
+
+.serviceCardDesc {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin: 0 0 12px;
+  line-height: 1.4;
+  flex-grow: 1;
+}
+
+.serviceCardAction {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-primary, #0a4c36);
+}

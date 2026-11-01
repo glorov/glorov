@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -23,12 +23,10 @@ import {
   completeOrderAction,
 } from '@/lib/cart-actions'
 import type { StoreShippingOption } from '@/lib/cart'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { formatINR } from '@/lib/utils'
 import { getCurrentCustomerAction } from '@/lib/customer-actions'
 import type { StoreCustomer, StoreCustomerAddress } from '@/lib/customer'
-
+import styles from './CheckoutPage.module.css'
 
 const INDIAN_STATES = [
   'Andhra Pradesh',
@@ -85,7 +83,7 @@ export default function CheckoutPage() {
   // Validation & UI state
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [isEditingAddress, setIsEditingAddress] = useState<boolean>(false)
-  const isPlacingOrderRef = React.useRef<boolean>(false)
+  const isPlacingOrderRef = useRef<boolean>(false)
 
   // Shipping & flow states
   const [shippingOptions, setShippingOptions] = useState<StoreShippingOption[]>([])
@@ -149,7 +147,6 @@ export default function CheckoutPage() {
     loadCustomerProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
 
   // Populate from existing cart data if available
   useEffect(() => {
@@ -257,7 +254,6 @@ export default function CheckoutPage() {
       if (res.success) {
         setAddressSaved(true)
         setIsEditingAddress(false)
-        // Refresh available shipping options now that address is recorded
         const optionsRes = await getCartShippingOptionsAction()
         if (optionsRes.success && optionsRes.options.length > 0) {
           setShippingOptions(optionsRes.options)
@@ -303,7 +299,6 @@ export default function CheckoutPage() {
 
     setFormError(null)
 
-    // Ensure address is validated and saved if not yet saved or currently being edited
     if (!addressSaved || isEditingAddress || !cart?.shipping_address?.address_1) {
       const savedOk = await validateAndSaveAddress()
       if (!savedOk) {
@@ -311,7 +306,6 @@ export default function CheckoutPage() {
       }
     }
 
-    // Ensure shipping method is applied
     if (!cart?.shipping_methods || cart.shipping_methods.length === 0) {
       if (selectedOptionId) {
         await selectShippingMethodAction(selectedOptionId)
@@ -321,7 +315,6 @@ export default function CheckoutPage() {
       }
     }
 
-    // Validate COD eligibility
     if (paymentProvider === 'pp_cod_cod' && grandTotal > 500000) {
       setFormError('Cash on Delivery is limited to orders up to ₹5,000. Please select Razorpay online payment.')
       return
@@ -349,457 +342,382 @@ export default function CheckoutPage() {
 
   if (isCartLoading && items.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-20 min-h-[60vh] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-botanical-600" />
-        <h2 className="text-xl font-bold text-botanical-950">Preparing secure checkout...</h2>
-      </div>
+      <main className={styles.page}>
+        <div className={styles.emptyBox}>
+          <Loader2 size={36} className={styles.spinner} style={{ color: 'var(--ugaoo-green)', margin: '0 auto' }} />
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '1rem 0 0' }}>
+            Preparing secure checkout...
+          </h2>
+        </div>
+      </main>
     )
   }
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-20 min-h-[60vh] flex flex-col items-center justify-center text-center">
-        <div className="h-16 w-16 rounded-full bg-botanical-50 flex items-center justify-center text-botanical-700 mb-4">
-          <Sprout className="h-8 w-8" />
+      <main className={styles.page}>
+        <div className={styles.emptyBox}>
+          <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#f0f9f4', color: '#0a4c36', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+            <Sprout size={28} aria-hidden="true" />
+          </div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>Your cart is empty</h1>
+          <p style={{ fontSize: '0.875rem', color: 'rgba(4, 32, 24, 0.65)', margin: '0.5rem 0 1.5rem' }}>
+            Add heirloom seed packets or live plants to your cart before proceeding to checkout.
+          </p>
+          <Link href="/store" className={styles.primaryBtn} style={{ maxWidth: '240px', margin: '0 auto' }}>
+            Browse Seed Varieties
+          </Link>
         </div>
-        <h1 className="text-2xl font-bold text-botanical-950">Your cart is empty</h1>
-        <p className="text-sm text-muted-foreground mt-2">
-          Add seed packets or live plants to your cart before proceeding to checkout.
-        </p>
-        <Button asChild variant="botanical" className="mt-6 rounded-full">
-          <Link href="/#catalog">Browse Seed Varieties</Link>
-        </Button>
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-10 sm:py-16">
-      {/* Title */}
-      <div className="pb-6 border-b border-border">
-        <h1 className="text-2xl sm:text-3xl font-black text-botanical-950 tracking-tight">
-          Express Botanical Checkout
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Indian domestic fulfillment. Native Medusa checkout workflow.
-        </p>
-      </div>
-
-      {/* Global Form Error Banner */}
-      {formError && (
-        <div className="my-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <span className="font-semibold">Checkout Notice: </span>
-            <span>{formError}</span>
-            {formError.includes('Cash on Delivery is limited') && (
-              <div className="mt-2.5">
-                <Button
-                  type="button"
-                  variant="botanical"
-                  size="sm"
-                  onClick={() => {
-                    setPaymentProvider('pp_razorpay_razorpay')
-                    setFormError(null)
-                  }}
-                  className="rounded-lg text-xs"
-                >
-                  Switch to Razorpay Online Payment &amp; Proceed
-                </Button>
-              </div>
-            )}
+    <main className={styles.page}>
+      <div className={styles.container}>
+        {/* Header Title & Security Status */}
+        <div className={styles.checkoutHeader}>
+          <div className={styles.titleArea}>
+            <h1 className={styles.pageTitle}>Express Botanical Checkout</h1>
+            <p className={styles.pageSubtitle}>
+              Pan-India nursery direct dispatch. Living plants and tested heirloom seeds.
+            </p>
+          </div>
+          <div className={styles.securityBadge}>
+            <ShieldCheck size={16} aria-hidden="true" />
+            <span>256-Bit SSL Encrypted Nursery Checkout</span>
           </div>
         </div>
-      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-8">
-        {/* Left: Checkout Steps (8 cols) */}
-        <div className="lg:col-span-7 space-y-8">
-          {/* STEP 1: Customer Details & Indian Delivery Address */}
-          <section className="rounded-xl border border-border bg-card p-6 shadow-xs">
-            <div className="flex items-center justify-between pb-4 border-b border-border mb-6">
-              <div className="flex items-center gap-2.5">
-                <div className="h-7 w-7 rounded-full bg-botanical-800 text-white flex items-center justify-center text-xs font-bold">
-                  1
+        {/* Global Error Banner */}
+        {formError && (
+          <div
+            role="alert"
+            aria-live="polite"
+            style={{
+              padding: '1rem 1.25rem',
+              backgroundColor: '#fff5f5',
+              border: '1px solid #feb2b2',
+              borderRadius: '12px',
+              color: '#c53030',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.75rem',
+              fontSize: '0.875rem',
+            }}
+          >
+            <AlertCircle size={20} style={{ color: '#dc2626', flexShrink: 0, marginTop: '2px' }} aria-hidden="true" />
+            <div>
+              <span style={{ fontWeight: 700 }}>Checkout Notice: </span>
+              <span>{formError}</span>
+              {formError.includes('Cash on Delivery is limited') && (
+                <div style={{ marginTop: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentProvider('pp_razorpay_razorpay')
+                      setFormError(null)
+                    }}
+                    className={styles.outlineBtn}
+                  >
+                    Switch to Razorpay Online Payment &amp; Proceed
+                  </button>
                 </div>
-                <h2 className="text-lg font-bold text-botanical-950">
-                  Customer &amp; Indian Delivery Address
-                </h2>
-              </div>
-              {addressSaved && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Address Saved
-                </span>
               )}
             </div>
+          </div>
+        )}
 
-            {/* Collapsed view when address is saved and not actively being edited */}
-            {addressSaved && !isEditingAddress ? (
-              <div className="p-4 rounded-xl border border-emerald-200/80 bg-emerald-50/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-sm text-botanical-950">
-                      {firstName} {lastName}
-                    </span>
-                    <span className="text-xs text-muted-foreground font-mono">
-                      (+91 {phone})
-                    </span>
-                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full">
-                      Verified for Courier Delivery
-                    </span>
-                  </div>
-                  <p className="text-xs text-botanical-900">
-                    {address1}
-                    {address2 ? `, ${address2}` : ''}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {city}, {province} — <span className="font-mono font-bold text-botanical-950">{postalCode}</span>
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    Order confirmation &amp; live tracking: <span className="font-medium text-foreground">{email}</span>
-                  </p>
-                </div>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditingAddress(true)}
-                  className="rounded-lg text-xs font-semibold shrink-0 gap-1.5 border-emerald-300 text-emerald-900 hover:bg-emerald-100/60"
-                >
-                  <Edit3 className="h-3.5 w-3.5" />
-                  <span>Edit Address</span>
-                </Button>
+        {/* Main 2-Column Grid */}
+        <div className={styles.layout}>
+          {/* Left Column: Checkout Forms */}
+          <div className={styles.formCol}>
+            {/* STEP 1: Delivery Address */}
+            <section className={styles.card} aria-label="Customer & Delivery Address">
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>
+                  <span className={styles.stepNumber}>1</span>
+                  Customer &amp; Indian Delivery Address
+                </h2>
+                {addressSaved && (
+                  <span className={`${styles.pillBadge} ${styles.pillBadgeGreen}`}>
+                    <CheckCircle2 size={12} style={{ display: 'inline', marginRight: '4px' }} aria-hidden="true" />
+                    Address Recorded
+                  </span>
+                )}
               </div>
-            ) : (
-              <>
-                {customer ? (
-                  <div className="mb-5 p-3 rounded-lg bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
-                    <div className="text-xs">
-                      <span className="text-muted-foreground">Logged in as: </span>
-                      <span className="font-bold text-foreground">
-                        {customer.first_name} {customer.last_name}
+
+              {/* Saved Address Summary Card */}
+              {addressSaved && !isEditingAddress ? (
+                <div className={styles.savedAddressCard}>
+                  <div className={styles.savedAddressInfo}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--ugaoo-text-dark)' }}>
+                        {firstName} {lastName}
                       </span>
-                      <span className="text-muted-foreground ml-1">({customer.email})</span>
+                      <span style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'rgba(4, 32, 24, 0.6)' }}>
+                        (+91 {phone})
+                      </span>
+                      <span className={`${styles.pillBadge} ${styles.pillBadgeGreen}`}>
+                        Courier Verified
+                      </span>
                     </div>
-                    <Link
-                      href="/account"
-                      className="text-xs font-semibold text-botanical-700 hover:underline"
-                    >
-                      My Account
-                    </Link>
+                    <p style={{ margin: 0, color: 'var(--ugaoo-text-dark)' }}>
+                      {address1}
+                      {address2 ? `, ${address2}` : ''}
+                    </p>
+                    <p style={{ margin: 0, color: 'rgba(4, 32, 24, 0.7)' }}>
+                      {city}, {province} — <strong>{postalCode}</strong>
+                    </p>
+                    <p style={{ margin: 0, fontSize: '0.775rem', color: 'rgba(4, 32, 24, 0.6)' }}>
+                      Tracking notifications sent to: <strong>{email}</strong>
+                    </p>
                   </div>
-                ) : (
-                  <div className="mb-5 p-3 rounded-lg bg-muted/40 border border-border flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      Already have an account? Log in to use your saved addresses.
-                    </span>
-                    <Link
-                      href="/account/login?callbackUrl=/checkout"
-                      className="font-bold text-botanical-700 hover:underline shrink-0 ml-2"
-                    >
-                      Sign In
-                    </Link>
-                  </div>
-                )}
 
-                {customer && customer.addresses.length > 0 && (
-                  <div className="mb-5 space-y-2">
-                    <label className="block text-xs font-bold text-botanical-900">
-                      Select from Saved Delivery Addresses
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {customer.addresses.map((saved) => {
-                        const isSelected =
-                          address1 === saved.address_1 && postalCode === saved.postal_code
-
-                        return (
-                          <button
-                            key={saved.id}
-                            type="button"
-                            onClick={() => applySavedAddress(saved)}
-                            className={`p-3 rounded-lg border text-left text-xs transition-all ${
-                              isSelected
-                                ? 'border-botanical-600 bg-botanical-50/50 ring-1 ring-botanical-600'
-                                : 'border-border bg-background hover:bg-muted/30'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between font-semibold text-foreground mb-1">
-                              <span>{saved.address_name || `${saved.first_name}'s Address`}</span>
-                              {saved.is_default_shipping && (
-                                <span className="text-[10px] text-botanical-700 bg-botanical-100 px-1.5 py-0.5 rounded font-medium">
-                                  Default
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-muted-foreground truncate">{saved.address_1}</p>
-                            <p className="text-muted-foreground">
-                              {saved.city}, {saved.postal_code}
-                            </p>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <form onSubmit={handleSaveAddress} className="space-y-6">
-                  {/* Group 1: Contact Details */}
-                  <div className="space-y-4">
-                    <div className="pb-1 border-b border-border/60">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Contact Details
-                      </h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingAddress(true)}
+                    className={styles.outlineBtn}
+                    aria-label="Edit saved delivery address"
+                  >
+                    <Edit3 size={14} aria-hidden="true" />
+                    <span>Edit</span>
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Account Status / Logged In Notice */}
+                  {customer ? (
+                    <div style={{ padding: '0.75rem 1rem', borderRadius: '10px', backgroundColor: '#f0f9f4', border: '1px solid rgba(10, 76, 54, 0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
                       <div>
-                        <label htmlFor="checkout-email" className="block text-xs font-bold text-botanical-900 mb-1">
-                          Email Address (for order tracking &amp; GST invoice) *
+                        <span style={{ color: 'rgba(4, 32, 24, 0.65)' }}>Logged in as: </span>
+                        <strong>{customer.first_name} {customer.last_name}</strong> ({customer.email})
+                      </div>
+                      <Link href="/account" style={{ color: 'var(--ugaoo-green)', fontWeight: 700 }}>
+                        My Account
+                      </Link>
+                    </div>
+                  ) : (
+                    <div style={{ padding: '0.75rem 1rem', borderRadius: '10px', backgroundColor: '#faf9f7', border: '1px solid rgba(4, 32, 24, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+                      <span style={{ color: 'rgba(4, 32, 24, 0.65)' }}>
+                        Already have an account? Sign in to use saved addresses.
+                      </span>
+                      <Link href="/account/login?callbackUrl=/checkout" style={{ color: 'var(--ugaoo-maroon)', fontWeight: 700 }}>
+                        Sign In
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Saved Addresses Selector */}
+                  {customer && customer.addresses.length > 0 && (
+                    <div style={{ marginBottom: '1.25rem' }}>
+                      <h3 id="saved-address-heading" style={{ fontSize: '0.85rem', fontWeight: 700, margin: '0 0 0.5rem 0' }}>
+                        Select from Saved Delivery Addresses
+                      </h3>
+                      <div role="group" aria-labelledby="saved-address-heading" className={styles.savedAddressesGrid}>
+                        {customer.addresses.map((saved) => {
+                          const isSelected =
+                            address1 === saved.address_1 && postalCode === saved.postal_code
+
+                          return (
+                            <button
+                              key={saved.id}
+                              type="button"
+                              onClick={() => applySavedAddress(saved)}
+                              className={`${styles.savedAddressBtn} ${isSelected ? styles.savedAddressBtnActive : ''}`}
+                            >
+                              <span style={{ fontWeight: 700 }}>
+                                {saved.first_name} {saved.last_name}
+                              </span>
+                              <span>{saved.address_1}</span>
+                              <span style={{ color: 'rgba(4, 32, 24, 0.6)' }}>
+                                {saved.city}, {saved.province} — {saved.postal_code}
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Address Form */}
+                  <form onSubmit={handleSaveAddress} noValidate>
+                    <div className={styles.formGrid}>
+                      {/* Email */}
+                      <div className={`${styles.fieldGroup} ${styles.colSpan2}`}>
+                        <label htmlFor="checkout-email" className={styles.label}>
+                          Email Address for Live Tracking Updates
+                          <span className={styles.requiredAsterisk} aria-hidden="true">*</span>
                         </label>
                         <input
                           id="checkout-email"
                           type="email"
                           autoComplete="email"
                           required
-                          value={email}
+                          aria-required="true"
                           aria-invalid={!!fieldErrors.email}
                           aria-describedby={fieldErrors.email ? 'checkout-email-error' : undefined}
+                          value={email}
                           onChange={(e) => {
                             setEmail(e.target.value)
                             clearFieldError('email')
                           }}
-                          placeholder="e.g. priya.sharma@example.com"
-                          className={`w-full h-10 px-3.5 rounded-lg border ${
-                            fieldErrors.email
-                              ? 'border-red-500 focus:ring-red-500'
-                              : 'border-border focus:ring-botanical-600'
-                          } bg-background text-sm focus:outline-none focus:ring-2 transition`}
+                          placeholder="e.g. rahul.sharma@example.com"
+                          className={`${styles.input} ${fieldErrors.email ? styles.inputError : ''}`}
                         />
                         {fieldErrors.email && (
-                          <p id="checkout-email-error" className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
+                          <p id="checkout-email-error" role="alert" aria-live="polite" className={styles.errorText}>
+                            {fieldErrors.email}
+                          </p>
                         )}
                       </div>
 
-                      <div>
-                        <label htmlFor="checkout-phone" className="block text-xs font-bold text-botanical-900 mb-1">
-                          10-Digit Mobile Phone (for delivery coordination) *
-                        </label>
-                        <div className="flex">
-                          <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-border bg-earth-100 text-xs font-bold text-botanical-900">
-                            +91
-                          </span>
-                          <input
-                            id="checkout-phone"
-                            type="tel"
-                            autoComplete="tel-national"
-                            inputMode="numeric"
-                            required
-                            maxLength={15}
-                            value={phone}
-                            aria-invalid={!!fieldErrors.phone}
-                            aria-describedby={fieldErrors.phone ? 'checkout-phone-error' : undefined}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/\D/g, '')
-                              const sanitized = raw.length > 10 && raw.startsWith('91') ? raw.slice(-10) : raw.slice(0, 10)
-                              setPhone(sanitized)
-                              clearFieldError('phone')
-                            }}
-                            placeholder="9876543210"
-                            className={`flex-1 h-10 px-3.5 rounded-r-lg border ${
-                              fieldErrors.phone
-                                ? 'border-red-500 focus:ring-red-500'
-                                : 'border-border focus:ring-botanical-600'
-                            } bg-background text-sm font-mono focus:outline-none focus:ring-2 transition`}
-                          />
-                        </div>
-                        {fieldErrors.phone && (
-                          <p id="checkout-phone-error" className="text-xs text-red-600 mt-1">{fieldErrors.phone}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Group 2: Delivery Address */}
-                  <div className="space-y-4">
-                    <div className="pb-1 border-b border-border/60">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Delivery Address
-                      </h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="checkout-first-name" className="block text-xs font-bold text-botanical-900 mb-1">
-                          First Name *
+                      {/* First Name */}
+                      <div className={styles.fieldGroup}>
+                        <label htmlFor="checkout-first-name" className={styles.label}>
+                          First Name
+                          <span className={styles.requiredAsterisk} aria-hidden="true">*</span>
                         </label>
                         <input
                           id="checkout-first-name"
                           type="text"
                           autoComplete="given-name"
                           required
-                          value={firstName}
+                          aria-required="true"
                           aria-invalid={!!fieldErrors.firstName}
                           aria-describedby={fieldErrors.firstName ? 'checkout-first-name-error' : undefined}
+                          value={firstName}
                           onChange={(e) => {
                             setFirstName(e.target.value)
                             clearFieldError('firstName')
                           }}
-                          placeholder="First name"
-                          className={`w-full h-10 px-3.5 rounded-lg border ${
-                            fieldErrors.firstName
-                              ? 'border-red-500 focus:ring-red-500'
-                              : 'border-border focus:ring-botanical-600'
-                          } bg-background text-sm focus:outline-none focus:ring-2 transition`}
+                          placeholder="First Name"
+                          className={`${styles.input} ${fieldErrors.firstName ? styles.inputError : ''}`}
                         />
                         {fieldErrors.firstName && (
-                          <p id="checkout-first-name-error" className="text-xs text-red-600 mt-1">{fieldErrors.firstName}</p>
+                          <p id="checkout-first-name-error" role="alert" aria-live="polite" className={styles.errorText}>
+                            {fieldErrors.firstName}
+                          </p>
                         )}
                       </div>
 
-                      <div>
-                        <label htmlFor="checkout-last-name" className="block text-xs font-bold text-botanical-900 mb-1">
-                          Last Name *
+                      {/* Last Name */}
+                      <div className={styles.fieldGroup}>
+                        <label htmlFor="checkout-last-name" className={styles.label}>
+                          Last Name
+                          <span className={styles.requiredAsterisk} aria-hidden="true">*</span>
                         </label>
                         <input
                           id="checkout-last-name"
                           type="text"
                           autoComplete="family-name"
                           required
-                          value={lastName}
+                          aria-required="true"
                           aria-invalid={!!fieldErrors.lastName}
                           aria-describedby={fieldErrors.lastName ? 'checkout-last-name-error' : undefined}
+                          value={lastName}
                           onChange={(e) => {
                             setLastName(e.target.value)
                             clearFieldError('lastName')
                           }}
-                          placeholder="Last name"
-                          className={`w-full h-10 px-3.5 rounded-lg border ${
-                            fieldErrors.lastName
-                              ? 'border-red-500 focus:ring-red-500'
-                              : 'border-border focus:ring-botanical-600'
-                          } bg-background text-sm focus:outline-none focus:ring-2 transition`}
+                          placeholder="Last Name"
+                          className={`${styles.input} ${fieldErrors.lastName ? styles.inputError : ''}`}
                         />
                         {fieldErrors.lastName && (
-                          <p id="checkout-last-name-error" className="text-xs text-red-600 mt-1">{fieldErrors.lastName}</p>
+                          <p id="checkout-last-name-error" role="alert" aria-live="polite" className={styles.errorText}>
+                            {fieldErrors.lastName}
+                          </p>
                         )}
                       </div>
-                    </div>
 
-                    <div>
-                      <label htmlFor="checkout-address-1" className="block text-xs font-bold text-botanical-900 mb-1">
-                        Flat / House No., Apartment &amp; Building Name *
-                      </label>
-                      <input
-                        id="checkout-address-1"
-                        type="text"
-                        autoComplete="address-line1"
-                        required
-                        value={address1}
-                        aria-invalid={!!fieldErrors.address1}
-                        aria-describedby={fieldErrors.address1 ? 'checkout-address-1-error' : undefined}
-                        onChange={(e) => {
-                          setAddress1(e.target.value)
-                          clearFieldError('address1')
-                        }}
-                        placeholder="e.g. Flat 302, Palm Groves"
-                        className={`w-full h-10 px-3.5 rounded-lg border ${
-                          fieldErrors.address1
-                            ? 'border-red-500 focus:ring-red-500'
-                            : 'border-border focus:ring-botanical-600'
-                        } bg-background text-sm focus:outline-none focus:ring-2 transition`}
-                      />
-                      {fieldErrors.address1 && (
-                        <p id="checkout-address-1-error" className="text-xs text-red-600 mt-1">{fieldErrors.address1}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label htmlFor="checkout-address-2" className="block text-xs font-bold text-botanical-900 mb-1">
-                        Street, Area, Landmark (Optional)
-                      </label>
-                      <input
-                        id="checkout-address-2"
-                        type="text"
-                        autoComplete="address-line2"
-                        value={address2}
-                        onChange={(e) => setAddress2(e.target.value)}
-                        placeholder="e.g. Near Rose Garden, MG Road"
-                        className="w-full h-10 px-3.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div>
-                        <label htmlFor="checkout-postal-code" className="block text-xs font-bold text-botanical-900 mb-1">
-                          PIN Code (6 Digits) *
+                      {/* Address Line 1 */}
+                      <div className={`${styles.fieldGroup} ${styles.colSpan2}`}>
+                        <label htmlFor="checkout-address-1" className={styles.label}>
+                          Flat / House No. &amp; Building / Street
+                          <span className={styles.requiredAsterisk} aria-hidden="true">*</span>
                         </label>
                         <input
-                          id="checkout-postal-code"
+                          id="checkout-address-1"
                           type="text"
-                          autoComplete="postal-code"
-                          inputMode="numeric"
+                          autoComplete="address-line1"
                           required
-                          maxLength={8}
-                          value={postalCode}
-                          aria-invalid={!!fieldErrors.postalCode}
-                          aria-describedby={fieldErrors.postalCode ? 'checkout-postal-code-error' : undefined}
+                          aria-required="true"
+                          aria-invalid={!!fieldErrors.address1}
+                          aria-describedby={fieldErrors.address1 ? 'checkout-address-1-error' : undefined}
+                          value={address1}
                           onChange={(e) => {
-                            const clean = e.target.value.replace(/\D/g, '').slice(0, 6)
-                            setPostalCode(clean)
-                            clearFieldError('postalCode')
+                            setAddress1(e.target.value)
+                            clearFieldError('address1')
                           }}
-                          placeholder="e.g. 411001"
-                          className={`w-full h-10 px-3.5 rounded-lg border ${
-                            fieldErrors.postalCode
-                              ? 'border-red-500 focus:ring-red-500'
-                              : 'border-border focus:ring-botanical-600'
-                          } bg-background text-sm font-mono focus:outline-none focus:ring-2 transition`}
+                          placeholder="e.g. Flat 302, Palm Grove Apts, 5th Cross Road"
+                          className={`${styles.input} ${fieldErrors.address1 ? styles.inputError : ''}`}
                         />
-                        {fieldErrors.postalCode && (
-                          <p id="checkout-postal-code-error" className="text-xs text-red-600 mt-1">{fieldErrors.postalCode}</p>
+                        {fieldErrors.address1 && (
+                          <p id="checkout-address-1-error" role="alert" aria-live="polite" className={styles.errorText}>
+                            {fieldErrors.address1}
+                          </p>
                         )}
                       </div>
 
-                      <div>
-                        <label htmlFor="checkout-city" className="block text-xs font-bold text-botanical-900 mb-1">
-                          City / District *
+                      {/* Address Line 2 */}
+                      <div className={`${styles.fieldGroup} ${styles.colSpan2}`}>
+                        <label htmlFor="checkout-address-2" className={styles.label}>
+                          Landmark / Area (Optional)
+                        </label>
+                        <input
+                          id="checkout-address-2"
+                          type="text"
+                          autoComplete="address-line2"
+                          value={address2}
+                          onChange={(e) => setAddress2(e.target.value)}
+                          placeholder="e.g. Near Botanical Garden / Metro Pillar 42"
+                          className={styles.input}
+                        />
+                      </div>
+
+                      {/* City */}
+                      <div className={styles.fieldGroup}>
+                        <label htmlFor="checkout-city" className={styles.label}>
+                          City / District
+                          <span className={styles.requiredAsterisk} aria-hidden="true">*</span>
                         </label>
                         <input
                           id="checkout-city"
                           type="text"
                           autoComplete="address-level2"
                           required
-                          value={city}
+                          aria-required="true"
                           aria-invalid={!!fieldErrors.city}
                           aria-describedby={fieldErrors.city ? 'checkout-city-error' : undefined}
+                          value={city}
                           onChange={(e) => {
                             setCity(e.target.value)
                             clearFieldError('city')
                           }}
-                          placeholder="e.g. Pune"
-                          className={`w-full h-10 px-3.5 rounded-lg border ${
-                            fieldErrors.city
-                              ? 'border-red-500 focus:ring-red-500'
-                              : 'border-border focus:ring-botanical-600'
-                          } bg-background text-sm focus:outline-none focus:ring-2 transition`}
+                          placeholder="City"
+                          className={`${styles.input} ${fieldErrors.city ? styles.inputError : ''}`}
                         />
                         {fieldErrors.city && (
-                          <p id="checkout-city-error" className="text-xs text-red-600 mt-1">{fieldErrors.city}</p>
+                          <p id="checkout-city-error" role="alert" aria-live="polite" className={styles.errorText}>
+                            {fieldErrors.city}
+                          </p>
                         )}
                       </div>
 
-                      <div>
-                        <label htmlFor="checkout-province" className="block text-xs font-bold text-botanical-900 mb-1">
-                          State / UT *
+                      {/* State / Province */}
+                      <div className={styles.fieldGroup}>
+                        <label htmlFor="checkout-province" className={styles.label}>
+                          State / Union Territory
+                          <span className={styles.requiredAsterisk} aria-hidden="true">*</span>
                         </label>
                         <select
                           id="checkout-province"
-                          autoComplete="address-level1"
                           value={province}
+                          required
+                          aria-required="true"
                           onChange={(e) => setProvince(e.target.value)}
-                          className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-botanical-600 transition"
+                          className={styles.input}
                         >
                           {INDIAN_STATES.map((st) => (
                             <option key={st} value={st}>
@@ -808,436 +726,398 @@ export default function CheckoutPage() {
                           ))}
                         </select>
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="pt-2 flex items-center justify-end gap-3">
-                    {isEditingAddress && addressSaved && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setIsEditingAddress(false)
-                          setFieldErrors({})
-                        }}
-                        className="rounded-lg text-xs"
-                      >
-                        Cancel
-                      </Button>
-                    )}
-                    <Button
-                      type="submit"
-                      disabled={isSavingAddress}
-                      variant="botanical"
-                      size="sm"
-                      className="rounded-lg gap-2"
-                    >
-                      {isSavingAddress ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Validating Address...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Save &amp; Continue</span>
-                          <ArrowRight className="h-4 w-4" />
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </>
-            )}
-          </section>
-
-          {/* STEP 2: Shipping Method Selection */}
-          <section className="rounded-xl border border-border bg-card p-6 shadow-xs">
-            <div className="flex items-center gap-2.5 pb-4 border-b border-border mb-6">
-              <div className="h-7 w-7 rounded-full bg-botanical-800 text-white flex items-center justify-center text-xs font-bold">
-                2
-              </div>
-              <h2 className="text-lg font-bold text-botanical-950">
-                Indian Shipping Method
-              </h2>
-            </div>
-
-            {isOptionsLoading ? (
-              <div className="py-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-5 w-5 animate-spin text-botanical-600" />
-                <span>Loading available shipping options for your PIN code...</span>
-              </div>
-            ) : shippingOptions.length === 0 ? (
-              <div className="p-4 rounded-lg bg-earth-50 border border-border text-sm text-muted-foreground">
-                Please save your delivery address above to load available Indian shipping routes.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {shippingOptions.map((opt) => {
-                  const isSelected = selectedOptionId === opt.id
-                  const optPrice = opt.amount || 0
-
-                  return (
-                    <label
-                      key={opt.id}
-                      onClick={() => handleShippingChange(opt.id)}
-                      className={`flex items-start justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                        isSelected
-                          ? 'border-botanical-600 bg-botanical-50/50 shadow-xs'
-                          : 'border-border hover:border-earth-300 bg-background'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
+                      {/* PIN Code */}
+                      <div className={styles.fieldGroup}>
+                        <label htmlFor="checkout-postal-code" className={styles.label}>
+                          Indian Postal PIN Code
+                          <span className={styles.requiredAsterisk} aria-hidden="true">*</span>
+                        </label>
                         <input
-                          type="radio"
-                          name="shipping_method"
-                          value={opt.id}
-                          checked={isSelected}
-                          onChange={() => handleShippingChange(opt.id)}
-                          className="mt-1 h-4 w-4 text-botanical-700 focus:ring-botanical-600 border-border"
-                        />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-botanical-950">
-                              {opt.name}
-                            </span>
-                            {opt.name.includes('Express') && (
-                              <Badge variant="botanical" className="text-[10px] py-0 px-1.5">
-                                Air Express
-                              </Badge>
-                            )}
-                          </div>
-                          {opt.type?.description && (
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {opt.type.description}
-                            </p>
-                          )}
-                          <p className="text-[11px] text-botanical-700 mt-1">
-                            Dispatched from: Pune Central Nursery Hub (PIN: 411001)
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <span className="font-bold text-sm text-botanical-950">
-                          {formatINR(optPrice)}
-                        </span>
-                      </div>
-                    </label>
-                  )
-                })}
-              </div>
-            )}
-          </section>
-
-          {/* STEP 3: Payment Method Selection */}
-          <section className="rounded-xl border border-border bg-card p-6 shadow-xs">
-            <div className="flex items-center gap-2.5 pb-4 border-b border-border mb-6">
-              <div className="h-7 w-7 rounded-full bg-botanical-800 text-white flex items-center justify-center text-xs font-bold">
-                3
-              </div>
-              <h2 className="text-lg font-bold text-botanical-950">
-                Indian Payment Method
-              </h2>
-            </div>
-
-            <div className="space-y-3">
-              {/* Option 1: Razorpay Indian Online Payments (Recommended) */}
-              <label
-                onClick={() => setPaymentProvider('pp_razorpay_razorpay')}
-                className={`flex items-start justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                  paymentProvider === 'pp_razorpay_razorpay'
-                    ? 'border-botanical-600 bg-botanical-50/50 shadow-xs'
-                    : 'border-border hover:border-earth-300 bg-background'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="radio"
-                    name="payment_provider"
-                    value="pp_razorpay_razorpay"
-                    checked={paymentProvider === 'pp_razorpay_razorpay'}
-                    onChange={() => setPaymentProvider('pp_razorpay_razorpay')}
-                    className="mt-1 h-4 w-4 text-botanical-700 focus:ring-botanical-600 border-border"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-botanical-950">
-                        Razorpay Secure Online Payment
-                      </span>
-                      <Badge variant="botanical" className="text-[10px] py-0 px-1.5">
-                        Recommended
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      UPI (Google Pay, PhonePe, Paytm, BHIM), Credit/Debit Cards, &amp; Net Banking
-                    </p>
-                    <p className="text-[11px] text-emerald-800 font-medium mt-1">
-                      ⚡ Instant payment confirmation &amp; priority nursery dispatch
-                    </p>
-                  </div>
-                </div>
-                <CreditCard className="h-5 w-5 text-botanical-700 flex-shrink-0 mt-0.5" />
-              </label>
-
-              {/* Option 2: Cash on Delivery (COD) */}
-              <label
-                onClick={() => setPaymentProvider('pp_cod_cod')}
-                className={`flex items-start justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                  paymentProvider === 'pp_cod_cod'
-                    ? 'border-botanical-600 bg-botanical-50/50 shadow-xs'
-                    : 'border-border hover:border-earth-300 bg-background'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="radio"
-                    name="payment_provider"
-                    value="pp_cod_cod"
-                    checked={paymentProvider === 'pp_cod_cod'}
-                    onChange={() => setPaymentProvider('pp_cod_cod')}
-                    className="mt-1 h-4 w-4 text-botanical-700 focus:ring-botanical-600 border-border"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-botanical-950">
-                        Cash on Delivery (COD)
-                      </span>
-                      <Badge variant="outline" className="text-[10px] py-0 px-1.5 text-earth-800 border-earth-300">
-                        Doorstep Cash
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Pay cash to courier executive upon delivery. Please keep exact change ready.
-                    </p>
-                    {grandTotal > 500000 && (
-                      <div className="mt-2.5 p-2.5 rounded-lg bg-amber-50 border border-amber-200">
-                        <p className="text-[11px] text-amber-800 font-medium">
-                          ⚠️ COD is restricted to orders up to ₹5,000. For higher values, please select Razorpay.
-                        </p>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setPaymentProvider('pp_razorpay_razorpay')
-                            setFormError(null)
+                          id="checkout-postal-code"
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={6}
+                          autoComplete="postal-code"
+                          required
+                          aria-required="true"
+                          aria-invalid={!!fieldErrors.postalCode}
+                          aria-describedby={fieldErrors.postalCode ? 'checkout-postal-code-error' : undefined}
+                          value={postalCode}
+                          onChange={(e) => {
+                            setPostalCode(e.target.value.replace(/\D/g, '').slice(0, 6))
+                            clearFieldError('postalCode')
                           }}
-                          className="mt-1.5 h-7 text-xs font-semibold text-botanical-800 border-botanical-300 hover:bg-botanical-50"
-                        >
-                          Switch to Razorpay Online Payment
-                        </Button>
+                          placeholder="6-digit PIN (e.g. 411001)"
+                          className={`${styles.input} ${fieldErrors.postalCode ? styles.inputError : ''}`}
+                        />
+                        {fieldErrors.postalCode && (
+                          <p id="checkout-postal-code-error" role="alert" aria-live="polite" className={styles.errorText}>
+                            {fieldErrors.postalCode}
+                          </p>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
-                <Truck className="h-5 w-5 text-earth-700 flex-shrink-0 mt-0.5" />
-              </label>
 
-              {/* Option 3: Pre-production Sandbox Authorization (Testing) */}
-              <label
-                onClick={() => setPaymentProvider('pp_system_default')}
-                className={`flex items-start justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                  paymentProvider === 'pp_system_default'
-                    ? 'border-botanical-600 bg-botanical-50/50 shadow-xs'
-                    : 'border-border hover:border-earth-300 bg-background'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="radio"
-                    name="payment_provider"
-                    value="pp_system_default"
-                    checked={paymentProvider === 'pp_system_default'}
-                    onChange={() => setPaymentProvider('pp_system_default')}
-                    className="mt-1 h-4 w-4 text-botanical-700 focus:ring-botanical-600 border-border"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-botanical-950">
-                        Sandbox Test Authorization
-                      </span>
-                      <Badge className="bg-earth-200 text-earth-900 text-[10px] py-0 px-1.5 border-0">
-                        Developer Mode
-                      </Badge>
+                      {/* Mobile Phone */}
+                      <div className={styles.fieldGroup}>
+                        <label htmlFor="checkout-phone" className={styles.label}>
+                          10-Digit Mobile Number
+                          <span className={styles.requiredAsterisk} aria-hidden="true">*</span>
+                        </label>
+                        <input
+                          id="checkout-phone"
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          required
+                          aria-required="true"
+                          aria-invalid={!!fieldErrors.phone}
+                          aria-describedby={fieldErrors.phone ? 'checkout-phone-error' : undefined}
+                          value={phone}
+                          onChange={(e) => {
+                            setPhone(e.target.value)
+                            clearFieldError('phone')
+                          }}
+                          placeholder="e.g. 9876543210"
+                          className={`${styles.input} ${fieldErrors.phone ? styles.inputError : ''}`}
+                        />
+                        {fieldErrors.phone && (
+                          <p id="checkout-phone-error" role="alert" aria-live="polite" className={styles.errorText}>
+                            {fieldErrors.phone}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Simulates order placement and inventory reservation without connecting to third-party payment gateways.
-                    </p>
-                  </div>
+
+                    <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                      <button
+                        type="submit"
+                        disabled={isSavingAddress}
+                        className={styles.primaryBtn}
+                        style={{ maxWidth: '280px' }}
+                      >
+                        {isSavingAddress ? (
+                          <>
+                            <Loader2 size={16} className={styles.spinner} aria-hidden="true" />
+                            <span>Verifying Delivery PIN...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Save &amp; Select Delivery</span>
+                            <ArrowRight size={16} aria-hidden="true" />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
+            </section>
+
+            {/* STEP 2: Shipping Method Selection */}
+            <section className={styles.card} aria-label="Nursery Shipping Method">
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>
+                  <span className={styles.stepNumber}>2</span>
+                  Nursery Courier &amp; Transit Method
+                </h2>
+              </div>
+
+              {isOptionsLoading ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: 'rgba(4, 32, 24, 0.6)' }}>
+                  <Loader2 size={24} className={styles.spinner} style={{ margin: '0 auto 8px', color: 'var(--ugaoo-green)' }} aria-hidden="true" />
+                  <p style={{ fontSize: '0.85rem', margin: 0 }}>
+                    Calculating transit options from Pune Hub...
+                  </p>
                 </div>
-                <ShieldCheck className="h-5 w-5 text-botanical-600 flex-shrink-0 mt-0.5" />
-              </label>
-            </div>
-          </section>
-        </div>
+              ) : shippingOptions.length === 0 ? (
+                <p style={{ fontSize: '0.85rem', color: 'rgba(4, 32, 24, 0.65)', margin: 0 }}>
+                  Please enter your delivery PIN code in Step 1 to calculate regional express routes.
+                </p>
+              ) : (
+                <div role="radiogroup" aria-label="Indian Shipping Method" className={styles.radioList}>
+                  {shippingOptions.map((opt) => {
+                    const isSelected = selectedOptionId === opt.id
+                    const optPrice = opt.amount || 0
+                    const optId = `shipping-option-${opt.id}`
 
-        {/* Right: Order Summary Breakdown (5 cols) */}
-        <div className="lg:col-span-5">
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm sticky top-24 space-y-6">
-            <h2 className="text-lg font-bold text-botanical-950 border-b border-border pb-3">
-              Order Review
-            </h2>
+                    return (
+                      <div
+                        key={opt.id}
+                        className={`${styles.radioCard} ${isSelected ? styles.radioCardSelected : ''}`}
+                      >
+                        <label htmlFor={optId} className={styles.radioLabel}>
+                          <div className={styles.radioContent}>
+                            <input
+                              id={optId}
+                              type="radio"
+                              name="shipping_method"
+                              value={opt.id}
+                              checked={isSelected}
+                              onChange={() => handleShippingChange(opt.id)}
+                              className={styles.radioInput}
+                            />
+                            <div className={styles.radioDetails}>
+                              <div className={styles.radioTitleRow}>
+                                <span className={styles.radioTitle}>{opt.name}</span>
+                                {opt.name.includes('Express') && (
+                                  <span className={`${styles.pillBadge} ${styles.pillBadgeGreen}`}>
+                                    Air Express
+                                  </span>
+                                )}
+                              </div>
+                              {opt.type?.description && (
+                                <p className={styles.radioDesc}>{opt.type.description}</p>
+                              )}
+                              <p className={styles.radioDesc} style={{ color: 'var(--ugaoo-green)', fontWeight: 600 }}>
+                                Dispatched directly from Pune Central Nursery Hub (PIN: 411001)
+                              </p>
+                            </div>
+                          </div>
 
-            {/* Items Mini List */}
-            <ul className="divide-y divide-border max-h-64 overflow-y-auto pr-1">
-              {items.map((item) => (
-                <li key={item.id} className="py-3 flex items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-10 w-10 rounded border border-border overflow-hidden bg-earth-50 flex-shrink-0 relative">
+                          <span className={styles.radioPrice}>{formatINR(optPrice)}</span>
+                        </label>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </section>
+
+            {/* STEP 3: Payment Method Selection */}
+            <section className={styles.card} aria-label="Payment Method Selection">
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>
+                  <span className={styles.stepNumber}>3</span>
+                  Indian Payment Method
+                </h2>
+              </div>
+
+              <div role="radiogroup" aria-label="Indian Payment Method" className={styles.radioList}>
+                {/* Option 1: Razorpay Online Payment */}
+                <div
+                  className={`${styles.radioCard} ${paymentProvider === 'pp_razorpay_razorpay' ? styles.radioCardSelected : ''}`}
+                >
+                  <label htmlFor="payment-provider-razorpay" className={styles.radioLabel}>
+                    <div className={styles.radioContent}>
+                      <input
+                        id="payment-provider-razorpay"
+                        type="radio"
+                        name="payment_provider"
+                        value="pp_razorpay_razorpay"
+                        checked={paymentProvider === 'pp_razorpay_razorpay'}
+                        onChange={() => setPaymentProvider('pp_razorpay_razorpay')}
+                        className={styles.radioInput}
+                      />
+                      <div className={styles.radioDetails}>
+                        <div className={styles.radioTitleRow}>
+                          <span className={styles.radioTitle}>Razorpay Secure Online Payment</span>
+                          <span className={`${styles.pillBadge} ${styles.pillBadgeGreen}`}>Recommended</span>
+                        </div>
+                        <p className={styles.radioDesc}>
+                          UPI (Google Pay, PhonePe, Paytm, BHIM), Credit/Debit Cards, &amp; Net Banking
+                        </p>
+                        <p className={styles.radioDesc} style={{ color: 'var(--ugaoo-green)', fontWeight: 600 }}>
+                          ⚡ Instant payment confirmation &amp; priority nursery dispatch
+                        </p>
+                      </div>
+                    </div>
+                    <CreditCard size={20} style={{ color: 'var(--ugaoo-green)', flexShrink: 0, marginTop: '2px' }} aria-hidden="true" />
+                  </label>
+                </div>
+
+                {/* Option 2: Cash on Delivery (COD) */}
+                <div
+                  className={`${styles.radioCard} ${paymentProvider === 'pp_cod_cod' ? styles.radioCardSelected : ''}`}
+                >
+                  <label htmlFor="payment-provider-cod" className={styles.radioLabel}>
+                    <div className={styles.radioContent}>
+                      <input
+                        id="payment-provider-cod"
+                        type="radio"
+                        name="payment_provider"
+                        value="pp_cod_cod"
+                        checked={paymentProvider === 'pp_cod_cod'}
+                        onChange={() => setPaymentProvider('pp_cod_cod')}
+                        className={styles.radioInput}
+                      />
+                      <div className={styles.radioDetails}>
+                        <div className={styles.radioTitleRow}>
+                          <span className={styles.radioTitle}>Cash on Delivery (COD)</span>
+                          <span className={`${styles.pillBadge} ${styles.pillBadgeButter}`}>Doorstep Cash</span>
+                        </div>
+                        <p className={styles.radioDesc}>
+                          Pay cash to courier executive upon delivery. Please keep exact change ready.
+                        </p>
+                      </div>
+                    </div>
+                    <Truck size={20} style={{ color: '#854d0e', flexShrink: 0, marginTop: '2px' }} aria-hidden="true" />
+                  </label>
+
+                  {/* COD Threshold Alert placed outside label to avoid nesting violation */}
+                  {grandTotal > 500000 && (
+                    <div className={styles.codAlert}>
+                      <p className={styles.codAlertText}>
+                        ⚠️ COD is restricted to orders up to ₹5,000. For higher values, please select Razorpay.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPaymentProvider('pp_razorpay_razorpay')
+                          setFormError(null)
+                        }}
+                        className={styles.outlineBtn}
+                        style={{ alignSelf: 'flex-start' }}
+                      >
+                        Switch to Razorpay Online Payment
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Option 3: Sandbox Developer Testing */}
+                <div
+                  className={`${styles.radioCard} ${paymentProvider === 'pp_system_default' ? styles.radioCardSelected : ''}`}
+                >
+                  <label htmlFor="payment-provider-default" className={styles.radioLabel}>
+                    <div className={styles.radioContent}>
+                      <input
+                        id="payment-provider-default"
+                        type="radio"
+                        name="payment_provider"
+                        value="pp_system_default"
+                        checked={paymentProvider === 'pp_system_default'}
+                        onChange={() => setPaymentProvider('pp_system_default')}
+                        className={styles.radioInput}
+                      />
+                      <div className={styles.radioDetails}>
+                        <div className={styles.radioTitleRow}>
+                          <span className={styles.radioTitle}>Sandbox Test Authorization</span>
+                          <span className={`${styles.pillBadge} ${styles.pillBadgeButter}`}>Developer Mode</span>
+                        </div>
+                        <p className={styles.radioDesc}>
+                          Simulates order placement and inventory reservation without charging payment gateways.
+                        </p>
+                      </div>
+                    </div>
+                    <ShieldCheck size={20} style={{ color: 'var(--ugaoo-green)', flexShrink: 0, marginTop: '2px' }} aria-hidden="true" />
+                  </label>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {/* Right Column: Sticky Order Summary */}
+          <div className={styles.summaryCol}>
+            <div className={styles.summaryCard}>
+              <h2 className={styles.summaryTitle}>Order Review</h2>
+
+              {/* Items List */}
+              <div
+                tabIndex={0}
+                aria-label="Purchased items summary"
+                className={styles.itemsList}
+              >
+                {items.map((item) => (
+                  <div key={item.id} className={styles.itemRow}>
+                    <div className={styles.itemThumb}>
                       {item.thumbnail ? (
                         <Image
                           src={item.thumbnail}
-                          alt={item.title || 'Product'}
-                          width={40}
-                          height={40}
+                          alt={item.title}
+                          width={52}
+                          height={52}
                           unoptimized
-                          className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="h-full w-full flex items-center justify-center text-botanical-400">
-                          <Sprout className="h-4 w-4" />
-                        </div>
+                        <Sprout size={20} style={{ color: 'var(--ugaoo-green)' }} aria-hidden="true" />
                       )}
                     </div>
-                    <div>
-                      <p className="font-semibold text-botanical-950 line-clamp-1">{item.title}</p>
-                      <p className="text-muted-foreground text-[11px]">
+                    <div className={styles.itemMeta}>
+                      <p className={styles.itemTitle}>{item.title}</p>
+                      <p className={styles.itemVariant}>
                         Qty: {item.quantity} {item.variant_title ? `• ${item.variant_title}` : ''}
                       </p>
                     </div>
+                    <span className={styles.itemPrice}>
+                      {formatINR(item.subtotal || (item.unit_price || 0) * item.quantity)}
+                    </span>
                   </div>
-                  <span className="font-bold text-botanical-900 whitespace-nowrap">
-                    {formatINR(item.subtotal || 0)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                ))}
+              </div>
 
-            {/* Route & Payment Overview */}
-            <div className="space-y-2 text-xs border-t border-border pt-4">
-              <div className="flex justify-between items-center text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <Truck className="h-3.5 w-3.5 text-botanical-700" />
-                  <span>Shipping Route:</span>
-                </span>
-                <span className="font-semibold text-botanical-950 truncate max-w-[170px]">
-                  {shippingOptions.find((o) => o.id === selectedOptionId)?.name || 'Standard Fulfillment'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <CreditCard className="h-3.5 w-3.5 text-botanical-700" />
-                  <span>Payment Mode:</span>
-                </span>
-                <span className="font-semibold text-botanical-950">
-                  {paymentProvider === 'pp_razorpay_razorpay'
-                    ? 'Razorpay (Online)'
-                    : paymentProvider === 'pp_cod_cod'
-                    ? 'Cash on Delivery'
-                    : 'Sandbox Mode'}
-                </span>
-              </div>
-              {addressSaved && city && postalCode && (
-                <div className="flex justify-between items-center text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                    <span>Delivering to:</span>
-                  </span>
-                  <span className="font-semibold text-botanical-950">
-                    {city}, {postalCode}
-                  </span>
+              {/* Calculation Rows */}
+              <div className={styles.calcRows}>
+                <div className={styles.calcRow}>
+                  <span>Subtotal ({items.length} {items.length === 1 ? 'item' : 'items'})</span>
+                  <span className={styles.calcValue}>{formatINR(subtotal)}</span>
                 </div>
-              )}
-            </div>
-
-            {/* Calculations Breakdown */}
-            <div className="space-y-2.5 text-sm border-t border-border pt-4">
-              <div className="flex justify-between text-muted-foreground">
-                <span>Items Subtotal</span>
-                <span className="font-semibold text-botanical-950">{formatINR(subtotal)}</span>
-              </div>
-
-              {discountTotal > 0 && (
-                <div className="flex justify-between text-emerald-700">
-                  <span>Botanical Discount</span>
-                  <span className="font-semibold">-{formatINR(discountTotal)}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between text-muted-foreground">
-                <span>Shipping Fee</span>
-                <span className="font-semibold text-botanical-950">
-                  {shippingTotal > 0 ? formatINR(shippingTotal) : 'Included / Pending'}
-                </span>
-              </div>
-
-              <div className="flex justify-between text-muted-foreground">
-                <span>Agricultural GST (HSN 1209)</span>
-                {taxTotal > 0 ? (
-                  <span className="font-semibold text-botanical-950">{formatINR(taxTotal)}</span>
-                ) : (
-                  <span className="font-semibold text-emerald-700">₹0 (0% Exempt)</span>
+                {discountTotal > 0 && (
+                  <div className={styles.calcRow} style={{ color: '#0a4c36' }}>
+                    <span>Promotion Discount</span>
+                    <span className={styles.calcValue}>-{formatINR(discountTotal)}</span>
+                  </div>
                 )}
-              </div>
-
-              <div className="border-t border-border pt-3 flex justify-between items-baseline">
-                <div>
-                  <span className="text-base font-bold text-botanical-950">Total Payable</span>
-                  <p className="text-[10px] text-muted-foreground">Currency: INR (₹)</p>
+                <div className={styles.calcRow}>
+                  <span>Nursery Shipping</span>
+                  <span className={styles.calcValue}>
+                    {shippingTotal === 0 ? (
+                      <span style={{ color: '#0a4c36', fontWeight: 700 }}>FREE</span>
+                    ) : (
+                      formatINR(shippingTotal)
+                    )}
+                  </span>
                 </div>
-                <span className="text-2xl font-black text-botanical-950">
-                  {formatINR(grandTotal)}
-                </span>
+                <div className={styles.calcRow}>
+                  <span>Agricultural GST (HSN 1209)</span>
+                  <span className={styles.calcValue}>
+                    {taxTotal === 0 ? '₹0 (0% Exempt)' : formatINR(taxTotal)}
+                  </span>
+                </div>
               </div>
-            </div>
 
-            {/* Place Order Action */}
-            <Button
-              onClick={handlePlaceOrder}
-              disabled={isSubmitting || isSavingAddress || (paymentProvider === 'pp_cod_cod' && grandTotal > 500000)}
-              variant="botanical"
-              size="lg"
-              className="w-full rounded-xl py-6 font-bold text-base shadow-lg gap-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>Processing Payment...</span>
-                </>
-              ) : paymentProvider === 'pp_razorpay_razorpay' ? (
-                <>
-                  <span>Pay {formatINR(grandTotal)} with Razorpay</span>
-                  <ArrowRight className="h-5 w-5" />
-                </>
-              ) : paymentProvider === 'pp_cod_cod' ? (
-                <>
-                  <span>Place COD Order ({formatINR(grandTotal)})</span>
-                  <ArrowRight className="h-5 w-5" />
-                </>
-              ) : (
-                <>
-                  <span>Authorize Order ({formatINR(grandTotal)})</span>
-                  <ArrowRight className="h-5 w-5" />
-                </>
-              )}
-            </Button>
-
-            {/* Trust and Compliance Badges */}
-            <div className="pt-2 border-t border-earth-100 space-y-2 text-[11px] text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-botanical-700 flex-shrink-0" />
-                <span>Strict backend inventory reservation prevents overselling</span>
+              {/* Total Row */}
+              <div className={styles.totalRow}>
+                <span>Total Amount</span>
+                <span className={styles.totalPrice}>{formatINR(grandTotal)}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Truck className="h-4 w-4 text-botanical-700 flex-shrink-0" />
-                <span>Transit damage guarantee on live botanical shipments</span>
+
+              {/* Order Submit CTA */}
+              <button
+                type="button"
+                onClick={handlePlaceOrder}
+                disabled={isSubmitting}
+                className={styles.primaryBtn}
+                aria-label="Authorize and place botanical order"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={18} className={styles.spinner} aria-hidden="true" />
+                    <span>Placing Your Order...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Place Order • {formatINR(grandTotal)}</span>
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </>
+                )}
+              </button>
+
+              {/* Trust Reassurance Box */}
+              <div className={styles.trustBadgesBox}>
+                <div className={styles.trustPillar}>
+                  <ShieldCheck size={16} style={{ flexShrink: 0 }} aria-hidden="true" />
+                  <span>48-Hour Live Plant &amp; Seed Replacement Guarantee</span>
+                </div>
+                <div className={styles.trustPillar}>
+                  <Truck size={16} style={{ flexShrink: 0 }} aria-hidden="true" />
+                  <span>Climate-Proof Ventilated Packaging from Pune Hub</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

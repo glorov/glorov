@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Image from 'next/image'
 import { Sprout, ImageIcon } from 'lucide-react'
+import styles from './ProductGallery.module.css'
 
 interface ProductGalleryProps {
   title: string
@@ -31,10 +32,10 @@ export function ProductGallery({ title, thumbnail, images = [] }: ProductGallery
   const activeImage = allImages[activeIndex]
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Main Image Viewport with Fixed Aspect Ratio to Prevent Cumulative Layout Shifts (CLS) */}
+    <div className={styles.galleryContainer}>
+      {/* Main Image Viewport with Fixed Aspect Ratio */}
       <div
-        className="relative aspect-square w-full rounded-2xl border border-border/80 bg-earth-50 overflow-hidden flex items-center justify-center shadow-xs group"
+        className={styles.mainViewport}
         aria-label={`${title} image gallery viewport`}
       >
         {activeImage && !loadError ? (
@@ -46,25 +47,30 @@ export function ProductGallery({ title, thumbnail, images = [] }: ProductGallery
               priority
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 40vw"
               onError={() => setLoadError(true)}
-              className="object-cover object-center transition-all duration-300 group-hover:scale-102"
+              className={styles.mainImage}
             />
+            {/* Verified Badge */}
+            <div className={styles.verifiedBadge}>
+              <span className={styles.greenDot} aria-hidden="true" />
+              <span>Verified Botanical Specimen</span>
+            </div>
             {allImages.length > 1 && (
-              <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-xs text-white text-[11px] font-medium px-2.5 py-1 rounded-full pointer-events-none">
+              <div className={styles.counterBadge}>
                 {activeIndex + 1} / {allImages.length}
               </div>
             )}
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center p-8 text-center text-botanical-700 space-y-3">
-            <div className="h-16 w-16 rounded-full bg-botanical-100 flex items-center justify-center text-botanical-700 shadow-inner">
-              <Sprout className="h-9 w-9" aria-hidden="true" />
+          <div className={styles.placeholderWrap}>
+            <div className={styles.placeholderIcon}>
+              <Sprout size={32} aria-hidden="true" />
             </div>
             <div>
-              <p className="font-bold text-sm text-botanical-950">GLOROV Botanical Specimen</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Authentic Indian nursery seed packet</p>
+              <p style={{ fontWeight: 700, fontSize: '14px', color: 'var(--ugaoo-text-dark)', margin: 0 }}>GLOROV Botanical Specimen</p>
+              <p style={{ fontSize: '12px', color: 'var(--ugaoo-text-muted)', margin: '4px 0 0 0' }}>Authentic Indian nursery seed packet</p>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/75 pt-1">
-              <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--ugaoo-text-muted)', marginTop: '4px' }}>
+              <ImageIcon size={14} aria-hidden="true" />
               <span>Photograph verification pending</span>
             </div>
           </div>
@@ -76,7 +82,7 @@ export function ProductGallery({ title, thumbnail, images = [] }: ProductGallery
         <div
           role="tablist"
           aria-label="Product Image Thumbnails"
-          className="flex gap-2.5 sm:gap-3 overflow-x-auto pb-2 scrollbar-none"
+          className={styles.thumbnailStrip}
         >
           {allImages.map((img, idx) => {
             const isSelected = idx === activeIndex
@@ -93,34 +99,24 @@ export function ProductGallery({ title, thumbnail, images = [] }: ProductGallery
                   setLoadError(false)
                 }}
                 onKeyDown={(e) => {
-                  let nextIdx = idx
-                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                    e.preventDefault()
-                    nextIdx = (idx + 1) % allImages.length
-                  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                    e.preventDefault()
-                    nextIdx = (idx - 1 + allImages.length) % allImages.length
-                  }
-                  if (nextIdx !== idx) {
-                    setActiveIndex(nextIdx)
+                  if (e.key === 'ArrowRight') {
+                    const next = (idx + 1) % allImages.length
+                    setActiveIndex(next)
                     setLoadError(false)
-                    const parent = e.currentTarget.parentElement
-                    const tabs = parent?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
-                    tabs?.[nextIdx]?.focus()
+                  } else if (e.key === 'ArrowLeft') {
+                    const prev = (idx - 1 + allImages.length) % allImages.length
+                    setActiveIndex(prev)
+                    setLoadError(false)
                   }
                 }}
-                className={`relative h-16 w-16 sm:h-20 sm:w-20 rounded-xl overflow-hidden border-2 shrink-0 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-botanical-600 cursor-pointer ${
-                  isSelected
-                    ? 'border-botanical-700 ring-2 ring-botanical-600/30 shadow-xs scale-102'
-                    : 'border-border/60 hover:border-botanical-400 opacity-70 hover:opacity-100'
-                }`}
+                className={`${styles.thumbnailBtn} ${isSelected ? styles.thumbnailActive : ''}`}
               >
                 <Image
                   src={img}
                   alt=""
                   fill
-                  sizes="80px"
-                  className="object-cover object-center"
+                  sizes="68px"
+                  className={styles.thumbImage}
                 />
               </button>
             )

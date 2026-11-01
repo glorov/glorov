@@ -2414,7 +2414,26 @@ export default async function seedUgaooCatalog({ container }: ExecArgs) {
   ];
 
   // 7. Seed each product
-  for (const prodInput of productsToSeed) {
+  const { data: allExistingVariants } = await query.graph({
+    entity: "product_variant",
+    fields: ["sku"],
+  });
+  const usedSkus = new Set<string>(
+    allExistingVariants
+      .map((pv: { sku?: string }) => pv.sku)
+      .filter((sku): sku is string => Boolean(sku))
+  );
+
+  const seenHandles = new Set<string>();
+  const uniqueProductsToSeed: SeedProductInput[] = [];
+  for (const p of productsToSeed) {
+    if (!seenHandles.has(p.handle)) {
+      seenHandles.add(p.handle);
+      uniqueProductsToSeed.push(p);
+    }
+  }
+
+  for (const prodInput of uniqueProductsToSeed) {
     const { data: existingProds } = await query.graph({
       entity: "product",
       fields: ["id", "handle"],
@@ -2451,22 +2470,36 @@ export default async function seedUgaooCatalog({ container }: ExecArgs) {
                 values: prodInput.optionValues,
               },
             ],
-            variants: prodInput.variants.map((v) => ({
-              title: v.title,
-              sku: v.sku,
-              manage_inventory: true,
-              allow_backorder: false,
-              options: {
-                [prodInput.optionTitle]: v.optionValue,
-              },
-              prices: [
-                {
-                  currency_code: "inr",
-                  amount: v.priceINR,
+            variants: prodInput.variants.map((v, vIdx) => {
+              let candidateSku = v.sku;
+              if (!candidateSku || usedSkus.has(candidateSku)) {
+                const base = `GLR-${prodInput.handle.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 12)}`;
+                let counter = vIdx + 1;
+                candidateSku = `${base}-${String(counter).padStart(2, "0")}`;
+                while (usedSkus.has(candidateSku)) {
+                  counter++;
+                  candidateSku = `${base}-${String(counter).padStart(2, "0")}`;
+                }
+              }
+              usedSkus.add(candidateSku);
+
+              return {
+                title: v.title,
+                sku: candidateSku,
+                manage_inventory: true,
+                allow_backorder: false,
+                options: {
+                  [prodInput.optionTitle]: v.optionValue,
                 },
-              ],
-              metadata: v.metadata || {},
-            })),
+                prices: [
+                  {
+                    currency_code: "inr",
+                    amount: v.priceINR,
+                  },
+                ],
+                metadata: v.metadata || {},
+              };
+            }),
           },
         ],
       },

@@ -27,6 +27,10 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.light,
       onGenerateRoute: router.generateRoute,
       initialRoute: homeScreenRoute,
+      navigatorObservers: [
+        router.glorovRouteObserver,
+        router.GlorovNavigatorObserver(),
+      ],
     );
   }
 }

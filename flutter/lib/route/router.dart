@@ -16,8 +16,45 @@ import '../screens/account/glorov_account_screen.dart';
 import '../screens/dev/interaction_showcase_screen.dart';
 import '../screens/discover/glorov_categories_screen.dart';
 import '../services/glorov_cart_state.dart';
+import '../services/glorov_header_scroll_notifier.dart';
+import 'route_constants.dart';
 
 import 'screen_export.dart';
+
+/// Global RouteObserver for screen lifecycle listening
+final RouteObserver<ModalRoute<void>> glorovRouteObserver =
+    RouteObserver<ModalRoute<void>>();
+
+/// NavigatorObserver that synchronizes top category bar state with route transitions
+class GlorovNavigatorObserver extends NavigatorObserver {
+  void _syncCategory(String? routeName) {
+    if (routeName == null ||
+        routeName == homeScreenRoute ||
+        routeName == '/' ||
+        routeName == '' ||
+        routeName == '/home') {
+      GlorovHeaderScrollNotifier.instance.clearCategory();
+    }
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    _syncCategory(previousRoute?.settings.name);
+  }
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+    _syncCategory(route.settings.name);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    _syncCategory(newRoute?.settings.name);
+  }
+}
 
 // Yuo will get 50+ screens and more once you have the full template
 // 🔗 Full template: https://theflutterway.gumroad.com/l/fluttershop

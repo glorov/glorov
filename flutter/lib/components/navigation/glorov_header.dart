@@ -42,12 +42,14 @@ class GlorovHeader extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onMenuPressed;
   final ValueChanged<String>? onSearchSubmitted;
   final ScrollController? pageScrollController;
+  final String? currentRoute;
 
   const GlorovHeader({
     super.key,
     this.onMenuPressed,
     this.onSearchSubmitted,
     this.pageScrollController,
+    this.currentRoute,
   });
 
   @override
@@ -129,6 +131,7 @@ class _GlorovHeaderState extends State<GlorovHeader> {
   }
 
   void _navigateToHome() {
+    GlorovHeaderScrollNotifier.instance.clearCategory();
     final currentRoute = ModalRoute.of(context)?.settings.name;
     if (currentRoute == homeScreenRoute ||
         currentRoute == '/' ||
@@ -186,8 +189,17 @@ class _GlorovHeaderState extends State<GlorovHeader> {
       listenable: GlorovHeaderScrollNotifier.instance,
       builder: (context, _) {
         final showIcons = GlorovHeaderScrollNotifier.instance.showIcons;
-        final selectedCategory =
-            GlorovHeaderScrollNotifier.instance.selectedCategory;
+        final currentRouteName =
+            widget.currentRoute ?? ModalRoute.of(context)?.settings.name;
+        final isHomeRoute = currentRouteName == homeScreenRoute ||
+            currentRouteName == '/' ||
+            currentRouteName == '' ||
+            currentRouteName == '/home';
+        final selectedCategory = isHomeRoute
+            ? ''
+            : GlorovHeaderScrollNotifier.instance.selectedCategory;
+        debugPrint(
+            'DEBUG GlorovHeader build: currentRouteName=$currentRouteName, isHomeRoute=$isHomeRoute, notifierCat=${GlorovHeaderScrollNotifier.instance.selectedCategory}, selectedCategory=$selectedCategory');
 
         // Heights
         final double fullHeight = isDesktop ? 132.0 : 124.0;

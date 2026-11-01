@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 /// Centralized Scroll Coordinator for the GLOROV Storefront Navigation
 /// Controls smart sticky & dynamic navigation behavior based on modern e-commerce standards (Amazon, Flipkart, Shopify, Medium):
@@ -30,7 +31,7 @@ class GlorovHeaderScrollNotifier extends ChangeNotifier {
   bool _isBottomNavVisible = false;
   bool _showIcons = true;
   bool _showAnnouncement = true;
-  String _selectedCategory = 'Seeds';
+  String? _selectedCategory;
   double _lastPixels = 0.0;
   double _accumulatedDelta = 0.0;
 
@@ -54,13 +55,36 @@ class GlorovHeaderScrollNotifier extends ChangeNotifier {
   bool get showIcons => _showIcons;
   bool get showAnnouncement => _showAnnouncement;
   bool get isAtTop => _showAnnouncement;
-  String get selectedCategory => _selectedCategory;
+  String get selectedCategory => _selectedCategory ?? '';
+  bool get hasSelectedCategory =>
+      _selectedCategory != null && _selectedCategory!.isNotEmpty;
   double get lastPixels => _lastPixels;
 
-  void selectCategory(String category) {
-    if (_selectedCategory != category) {
-      _selectedCategory = category;
+  void _safeNotifyListeners() {
+    if (WidgetsBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    } else {
       notifyListeners();
+    }
+  }
+
+  void selectCategory(String? category) {
+    final newCat =
+        (category == null || category.trim().isEmpty) ? null : category.trim();
+    if (_selectedCategory != newCat) {
+      _selectedCategory = newCat;
+      _safeNotifyListeners();
+    }
+  }
+
+  /// Clears any active category selection (e.g. when on Home/root page)
+  void clearCategory() {
+    if (_selectedCategory != null) {
+      _selectedCategory = null;
+      _safeNotifyListeners();
     }
   }
 
@@ -121,13 +145,15 @@ class GlorovHeaderScrollNotifier extends ChangeNotifier {
     _lastPixels = pixels;
   }
 
-  /// Resets header to default top state without forcing category back to Seeds
-  void reset({bool resetCategory = false}) {
+  /// Resets header to default top state.
+  /// If [clearCategory] or [resetCategory] is true, clears any selected category so nothing is highlighted.
+  void reset({bool resetCategory = false, bool clearCategory = false}) {
+    final bool shouldClear = clearCategory || resetCategory;
     final bool changed = !_isTopNavVisible ||
         _isBottomNavVisible ||
         !_showIcons ||
         !_showAnnouncement ||
-        (resetCategory && _selectedCategory != 'Seeds') ||
+        (shouldClear && _selectedCategory != null) ||
         _lastPixels != 0.0 ||
         _accumulatedDelta != 0.0;
 
@@ -135,8 +161,8 @@ class GlorovHeaderScrollNotifier extends ChangeNotifier {
     _isBottomNavVisible = false;
     _showIcons = true;
     _showAnnouncement = true;
-    if (resetCategory) {
-      _selectedCategory = 'Seeds';
+    if (shouldClear) {
+      _selectedCategory = null;
     }
     _lastPixels = 0.0;
     _accumulatedDelta = 0.0;

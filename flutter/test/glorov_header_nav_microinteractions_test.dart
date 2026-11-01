@@ -104,8 +104,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Default selected category is Seeds
-      expect(GlorovHeaderScrollNotifier.instance.selectedCategory, 'Seeds');
+      // Initial root state: no category selected
+      expect(GlorovHeaderScrollNotifier.instance.selectedCategory, '');
 
       // Tap "Live Plants" to switch category
       final livePlantsFinder = find.text('Live Plants');

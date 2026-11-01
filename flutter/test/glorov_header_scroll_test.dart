@@ -19,7 +19,7 @@ void main() {
       expect(notifier.isBottomNavVisible, isFalse);
       expect(notifier.showIcons, isTrue);
       expect(notifier.showAnnouncement, isTrue);
-      expect(notifier.selectedCategory, 'Seeds');
+      expect(notifier.selectedCategory, '');
     });
 
     test(

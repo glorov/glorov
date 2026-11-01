@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../route/route_constants.dart';
+import '../../route/router.dart' show glorovRouteObserver;
 import '../../services/glorov_header_scroll_notifier.dart';
 import 'glorov_announcement_bar.dart';
 import 'glorov_drawer.dart';
@@ -61,11 +62,33 @@ class GlorovStorefrontScaffold extends StatefulWidget {
   State<GlorovStorefrontScaffold> createState() => _GlorovStorefrontScaffoldState();
 }
 
-class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold> {
+class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold>
+    with RouteAware {
   ScrollController? _internalScrollController;
 
   ScrollController get _effectiveScrollController =>
       widget.scrollController ?? (_internalScrollController ??= ScrollController());
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final modalRoute = ModalRoute.of(context);
+    if (modalRoute != null) {
+      glorovRouteObserver.subscribe(this, modalRoute);
+    }
+  }
+
+  @override
+  void didPopNext() {
+    super.didPopNext();
+    final isHome = widget.currentRoute == homeScreenRoute ||
+        widget.currentRoute == '/' ||
+        widget.currentRoute == '' ||
+        widget.currentRoute == '/home';
+    if (isHome) {
+      GlorovHeaderScrollNotifier.instance.clearCategory();
+    }
+  }
 
   @override
   void initState() {
@@ -73,7 +96,13 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold> {
     if (widget.showTopNav) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          GlorovHeaderScrollNotifier.instance.reset();
+          final isHome = widget.currentRoute == homeScreenRoute ||
+              widget.currentRoute == '/' ||
+              widget.currentRoute == '' ||
+              widget.currentRoute == '/home';
+          GlorovHeaderScrollNotifier.instance.reset(
+            clearCategory: isHome,
+          );
         }
       });
     }
@@ -85,10 +114,18 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold> {
     if (widget.currentRoute != oldWidget.currentRoute ||
         (widget.showTopNav && !oldWidget.showTopNav)) {
       if (widget.showTopNav) {
-        GlorovHeaderScrollNotifier.instance.reset();
+        final isHome = widget.currentRoute == homeScreenRoute ||
+            widget.currentRoute == '/' ||
+            widget.currentRoute == '' ||
+            widget.currentRoute == '/home';
+        GlorovHeaderScrollNotifier.instance.reset(
+          clearCategory: isHome,
+        );
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            GlorovHeaderScrollNotifier.instance.reset();
+            GlorovHeaderScrollNotifier.instance.reset(
+              clearCategory: isHome,
+            );
           }
         });
       }
@@ -97,6 +134,7 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold> {
 
   @override
   void dispose() {
+    glorovRouteObserver.unsubscribe(this);
     _internalScrollController?.dispose();
     super.dispose();
   }
@@ -215,6 +253,7 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold> {
                                 if (widget.showAnnouncement)
                                   const GlorovAnnouncementBar(),
                                 GlorovHeader(
+                                  currentRoute: widget.currentRoute,
                                   onSearchSubmitted: widget.onSearchSubmitted,
                                   pageScrollController:
                                       _effectiveScrollController,

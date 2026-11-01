@@ -92,7 +92,10 @@ export default defineConfig({
         idleTimeoutMillis: 30000,
       },
       ...(process.env.NODE_ENV === "production" || process.env.DATABASE_URL?.includes("supabase")
-        ? { connection: { ssl: { rejectUnauthorized: false } } }
+        ? {
+            ssl: { rejectUnauthorized: false },
+            connection: { ssl: { rejectUnauthorized: false } },
+          }
         : {}),
     },
   },

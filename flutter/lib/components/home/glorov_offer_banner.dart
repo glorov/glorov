@@ -27,7 +27,8 @@ class GlorovOfferBanner extends StatefulWidget {
   State<GlorovOfferBanner> createState() => _GlorovOfferBannerState();
 }
 
-class _GlorovOfferBannerState extends State<GlorovOfferBanner> {
+class _GlorovOfferBannerState extends State<GlorovOfferBanner>
+    with WidgetsBindingObserver {
   GlorovOffer? _offer;
   bool _isLoading = true;
   bool _isCopied = false;
@@ -36,6 +37,7 @@ class _GlorovOfferBannerState extends State<GlorovOfferBanner> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _copiedTimer?.cancel();
     super.dispose();
   }
@@ -43,10 +45,18 @@ class _GlorovOfferBannerState extends State<GlorovOfferBanner> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     if (widget.initialOffer != null) {
       _offer = widget.initialOffer;
       _isLoading = false;
     } else {
+      _loadOffer();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted && widget.initialOffer == null) {
       _loadOffer();
     }
   }

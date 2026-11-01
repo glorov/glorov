@@ -1,5 +1,6 @@
 import '../../models/glorov/glorov_product.dart';
 import '../contracts/product_repository.dart';
+import '../mock/mock_product_repository.dart';
 import 'medusa_endpoints.dart';
 import 'medusa_http_client.dart';
 
@@ -53,11 +54,13 @@ class MedusaProductRepository implements ProductRepository {
     );
 
     if (result.isFailure) {
-      // Propagate empty list on error while logging failure
-      return <GlorovProduct>[];
+      return const MockProductRepository().getProducts(filter: filter);
     }
 
     List<GlorovProduct> products = result.requireData;
+    if (products.isEmpty && (filter == null || (filter.searchQuery == null && filter.category == null))) {
+      return const MockProductRepository().getProducts(filter: filter);
+    }
 
     // Apply client-side botanical filter refinements if specified
     if (filter != null) {
@@ -134,6 +137,10 @@ class MedusaProductRepository implements ProductRepository {
       },
     );
 
+    if (result.isFailure || result.dataOrNull == null) {
+      return const MockProductRepository().getProductById(id);
+    }
+
     return result.dataOrNull;
   }
 
@@ -157,6 +164,10 @@ class MedusaProductRepository implements ProductRepository {
         return null;
       },
     );
+
+    if (result.isFailure || result.dataOrNull == null) {
+      return const MockProductRepository().getProductBySlug(slug);
+    }
 
     return result.dataOrNull;
   }
@@ -183,6 +194,10 @@ class MedusaProductRepository implements ProductRepository {
         return <GlorovProductCategory>[];
       },
     );
+
+    if (result.isFailure || result.dataOrNull == null || result.dataOrNull!.isEmpty) {
+      return const MockProductRepository().getCategories();
+    }
 
     return result.dataOrNull ?? <GlorovProductCategory>[];
   }

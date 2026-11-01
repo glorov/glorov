@@ -26,9 +26,13 @@ export interface AdminApiResponse<T = any> {
   error?: string;
 }
 
+export interface AdminRequestInit extends Omit<RequestInit, "body"> {
+  body?: any;
+}
+
 export async function adminFetch<T = any>(
   path: string,
-  options: RequestInit = {}
+  options: AdminRequestInit = {}
 ): Promise<AdminApiResponse<T>> {
   const normPath = path.startsWith("/") ? path : `/${path}`;
 
@@ -81,8 +85,14 @@ export async function adminFetch<T = any>(
   }
 
   try {
+    const finalBody =
+      options.body && typeof options.body === "object" && !(options.body instanceof FormData)
+        ? JSON.stringify(options.body)
+        : options.body;
+
     const res = await fetch(fullUrl, {
       ...options,
+      body: finalBody,
       headers,
       credentials: "include",
     });

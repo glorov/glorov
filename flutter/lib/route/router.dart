@@ -82,9 +82,18 @@ Route<dynamic> _buildRoute(
   Widget child,
   RouteSettings settings, {
   MicroTransitionType type = MicroTransitionType.fade,
+  String? overrideRouteName,
 }) {
+  final rawName = overrideRouteName ?? settings.name ?? '';
+  final normalizedName = rawName.isEmpty
+      ? '/'
+      : (rawName.startsWith('/') ? rawName : '/$rawName');
+  final effectiveSettings = RouteSettings(
+    name: normalizedName,
+    arguments: settings.arguments,
+  );
   return MicroPageRoute(
-    settings: settings,
+    settings: effectiveSettings,
     type: type,
     duration: const Duration(milliseconds: 200),
     reverseDuration: const Duration(milliseconds: 200),
@@ -96,8 +105,11 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   final rawName = settings.name ?? '';
   final uri = Uri.tryParse(rawName.startsWith('/') ? rawName : '/$rawName');
   String name = (uri != null && uri.path.isNotEmpty) ? uri.path : rawName;
-  if (name.startsWith('/')) {
+  while (name.startsWith('/')) {
     name = name.substring(1);
+  }
+  while (name.endsWith('/')) {
+    name = name.substring(0, name.length - 1);
   }
 
   // Support direct product deep linking and query params (e.g. /product_details, /product_details?id=glr-seed-05, /product/glr-seed-01)
@@ -121,88 +133,29 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       product = GlorovMockData.getProductById(lookupId) ??
           GlorovMockData.getProductBySlug(lookupId);
     }
+    final resolvedProduct = product ?? GlorovMockData.products.first;
     return _buildRoute(
       GlorovProductDetailsScreen(
-        product: product ?? GlorovMockData.products.first,
+        product: resolvedProduct,
       ),
       settings,
+      overrideRouteName: '/product_details?id=${resolvedProduct.id}',
     );
   }
 
   switch (name) {
     case '':
-    case homeScreenRoute:
-      return _buildRoute(const HomeScreen(), settings);
-    case onbordingScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const OnBordingScreen(),
-      );
-    // case preferredLanuageScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const PreferredLanguageScreen(),
-    //   );
-    case logInScreenRoute:
-      return _buildRoute(const LoginScreen(), settings);
-    case signUpScreenRoute:
-      return _buildRoute(const SignUpScreen(), settings);
-    case passwordRecoveryScreenRoute:
-      return _buildRoute(const PasswordRecoveryScreen(), settings);
-    // case verificationMethodScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const VerificationMethodScreen(),
-    //   );
-    // case otpScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const OtpScreen(),
-    //   );
-    // case newPasswordScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const SetNewPasswordScreen(),
-    //   );
-    // case doneResetPasswordScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const DoneResetPasswordScreen(),
-    //   );
-    // case termsOfServicesScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const TermsOfServicesScreen(),
-    //   );
-    // case noInternetScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const NoInternetScreen(),
-    //   );
-    // case serverErrorScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const ServerErrorScreen(),
-    //   );
-    // case signUpVerificationScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const SignUpVerificationScreen(),
-    //   );
-    // case setupFingerprintScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const SetupFingerprintScreen(),
-    //   );
-    // case setupFaceIdScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const SetupFaceIdScreen(),
-    //   );
-    case productDetailsScreenRoute:
-      GlorovProduct? product;
-      if (settings.arguments is GlorovProduct) {
-        product = settings.arguments as GlorovProduct;
-      } else if (settings.arguments is String) {
-        final argStr = settings.arguments as String;
-        product = GlorovMockData.getProductById(argStr) ??
-            GlorovMockData.getProductBySlug(argStr);
-      }
-      return _buildRoute(
-        GlorovProductDetailsScreen(
-          product: product ?? GlorovMockData.products.first,
-        ),
-        settings,
-      );
-    case productReviewsScreenRoute:
+    case 'home':
+      return _buildRoute(const HomeScreen(), settings, overrideRouteName: '/');
+    case 'onbording':
+      return _buildRoute(const OnBordingScreen(), settings, overrideRouteName: '/onbording');
+    case 'login':
+      return _buildRoute(const LoginScreen(), settings, overrideRouteName: '/login');
+    case 'signup':
+      return _buildRoute(const SignUpScreen(), settings, overrideRouteName: '/signup');
+    case 'password_recovery':
+      return _buildRoute(const PasswordRecoveryScreen(), settings, overrideRouteName: '/password_recovery');
+    case 'product_reviews':
       GlorovProduct? reviewProduct;
       if (settings.arguments is GlorovProduct) {
         reviewProduct = settings.arguments as GlorovProduct;
@@ -212,25 +165,95 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             GlorovMockData.getProductBySlug(argStr);
       }
       return _buildRoute(
-          ProductReviewsScreen(product: reviewProduct), settings);
-    // case addReviewsScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const AddReviewScreen(),
-    //   );
-    // case brandScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const BrandScreen(),
-    //   );
-    // case discoverWithImageScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const DiscoverWithImageScreen(),
-    //   );
-    // case subDiscoverScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const SubDiscoverScreen(),
-    //   );
-    case categoriesScreenRoute:
-    case discoverScreenRoute:
+        ProductReviewsScreen(product: reviewProduct),
+        settings,
+        overrideRouteName: '/product_reviews',
+      );
+    case 'seeds':
+      return _buildRoute(
+        GlorovCatalogScreen(
+          initialCategory: settings.arguments is String
+              ? settings.arguments as String
+              : 'Seeds',
+        ),
+        settings,
+        overrideRouteName: '/seeds',
+      );
+    case 'live-plants':
+    case 'live_plants':
+      return _buildRoute(
+        GlorovCatalogScreen(
+          initialCategory: settings.arguments is String
+              ? settings.arguments as String
+              : 'Live Plants',
+        ),
+        settings,
+        overrideRouteName: '/live_plants',
+      );
+    case 'planters':
+      return _buildRoute(
+        GlorovCatalogScreen(
+          initialCategory: settings.arguments is String
+              ? settings.arguments as String
+              : 'Planters & Pots',
+        ),
+        settings,
+        overrideRouteName: '/planters',
+      );
+    case 'plant-care':
+    case 'plant_care':
+      return _buildRoute(
+        GlorovCatalogScreen(
+          initialCategory: settings.arguments is String
+              ? settings.arguments as String
+              : 'Plant Care & Soil',
+        ),
+        settings,
+        overrideRouteName: '/plant_care',
+      );
+    case 'flowering':
+      return _buildRoute(
+        GlorovCatalogScreen(
+          initialCategory: settings.arguments is String
+              ? settings.arguments as String
+              : 'Flowering Plants',
+        ),
+        settings,
+        overrideRouteName: '/flowering',
+      );
+    case 'herbs':
+      return _buildRoute(
+        GlorovCatalogScreen(
+          initialCategory: settings.arguments is String
+              ? settings.arguments as String
+              : 'Fruit & Herb Seeds',
+        ),
+        settings,
+        overrideRouteName: '/herbs',
+      );
+    case 'vegetables':
+      return _buildRoute(
+        GlorovCatalogScreen(
+          initialCategory: settings.arguments is String
+              ? settings.arguments as String
+              : 'Vegetable Seeds',
+        ),
+        settings,
+        overrideRouteName: '/vegetables',
+      );
+    case 'offers':
+      return _buildRoute(
+        GlorovCatalogScreen(
+          initialCategory: settings.arguments is String
+              ? settings.arguments as String
+              : 'Offers',
+          initialOffersOnly: true,
+        ),
+        settings,
+        overrideRouteName: '/offers',
+      );
+    case 'categories':
+    case 'discover':
       String? initialCatHandle;
       if (uri != null) {
         if (uri.queryParameters.containsKey('category')) {
@@ -243,99 +266,136 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         return _buildRoute(
           GlorovCategoriesScreen(initialCategoryHandle: initialCatHandle),
           settings,
+          overrideRouteName: '/categories?category=$initialCatHandle',
         );
       }
       if (settings.arguments is String &&
           (settings.arguments as String).trim().isNotEmpty) {
         final category = (settings.arguments as String).trim();
         return _buildRoute(
-            GlorovCatalogScreen(initialCategory: category), settings);
+          GlorovCatalogScreen(initialCategory: category),
+          settings,
+          overrideRouteName: '/discover',
+        );
       }
-      return _buildRoute(const GlorovCategoriesScreen(), settings);
-    case onSaleScreenRoute:
-      return _buildRoute(const GlorovCatalogScreen(), settings);
-    case kidsScreenRoute:
-      return _buildRoute(const GlorovCatalogScreen(), settings);
-    case searchScreenRoute:
+      return _buildRoute(
+        const GlorovCategoriesScreen(),
+        settings,
+        overrideRouteName: '/categories',
+      );
+    case 'on_sale':
+      return _buildRoute(
+        const GlorovCatalogScreen(
+          initialCategory: 'Offers',
+          initialOffersOnly: true,
+        ),
+        settings,
+        overrideRouteName: '/on_sale',
+      );
+    case 'kids':
+      return _buildRoute(
+        const GlorovCatalogScreen(),
+        settings,
+        overrideRouteName: '/kids',
+      );
+    case 'search':
       String? query;
       if (settings.arguments is String) {
         query = settings.arguments as String;
       }
+      final searchSettings = RouteSettings(
+        name: query != null && query.isNotEmpty ? '/search?q=$query' : '/search',
+        arguments: settings.arguments,
+      );
       return GlorovSearchPageRoute(
-        settings: settings,
+        settings: searchSettings,
         builder: (context) => GlorovSearchScreen(initialQuery: query),
       );
-    // case searchHistoryScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const SearchHistoryScreen(),
-    //   );
-    case bookmarkScreenRoute:
-      return _buildRoute(const GlorovWishlistScreen(), settings);
-    case entryPointScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const EntryPoint(),
+    case 'bookmark':
+      return _buildRoute(
+        const GlorovWishlistScreen(),
+        settings,
+        overrideRouteName: '/bookmark',
       );
-    case profileScreenRoute:
+    case 'entry_point':
+      return _buildRoute(
+        const EntryPoint(),
+        settings,
+        overrideRouteName: '/entry_point',
+      );
+    case 'profile':
       return _buildRoute(
         const GlorovAccountScreen(
           initialSection: GlorovAccountSection.overview,
         ),
         settings,
+        overrideRouteName: '/profile',
       );
-    case getHelpScreenRoute:
-    case faqScreenRoute:
+    case 'get_help':
+    case 'faq':
       return _buildRoute(
         const GlorovAccountScreen(
           initialSection: GlorovAccountSection.helpCenter,
         ),
         settings,
+        overrideRouteName: '/faq',
       );
-    case chatScreenRoute:
-    case contactSupportScreenRoute:
+    case 'chat':
+    case 'contact_support':
       return _buildRoute(
         const GlorovAccountScreen(
           initialSection: GlorovAccountSection.contactSupport,
         ),
         settings,
+        overrideRouteName: '/contact_support',
       );
-    case userInfoScreenRoute:
-    case editUserInfoScreenRoute:
+    case 'user_info':
+    case 'edit_user_info':
       return _buildRoute(
         const GlorovAccountScreen(
           initialSection: GlorovAccountSection.profile,
         ),
         settings,
+        overrideRouteName: '/user_info',
       );
-    case notificationsScreenRoute:
-    case noNotificationScreenRoute:
-    case enableNotificationScreenRoute:
-    case notificationOptionsScreenRoute:
+    case 'notifications':
+    case 'no_notification':
+    case 'no_notifications':
+    case 'enable_notifications':
+    case 'notification_options':
       return _buildRoute(
         const GlorovAccountScreen(
           initialSection: GlorovAccountSection.notifications,
         ),
         settings,
+        overrideRouteName: '/notifications',
       );
-    case addressesScreenRoute:
-    case addNewAddressesScreenRoute:
-    case noAddressScreenRoute:
+    case 'addresses':
+    case 'add_new_addresses':
+    case 'no_address':
       return _buildRoute(
         const GlorovAccountScreen(
           initialSection: GlorovAccountSection.addresses,
         ),
         settings,
+        overrideRouteName: '/addresses',
       );
-    case preferencesScreenRoute:
-    case selectLanguageScreenRoute:
+    case 'preferences':
+    case 'select_language':
       return _buildRoute(
         const GlorovAccountScreen(
           initialSection: GlorovAccountSection.settings,
         ),
         settings,
+        overrideRouteName: '/preferences',
       );
-    case ordersScreenRoute:
-      return _buildRoute(const GlorovOrdersScreen(), settings);
-    case orderDetailsScreenRoute:
+    case 'orders':
+      return _buildRoute(
+        const GlorovOrdersScreen(),
+        settings,
+        overrideRouteName: '/orders',
+      );
+    case 'order_details':
       GlorovOrder? orderDetails;
       if (settings.arguments is GlorovOrder) {
         orderDetails = settings.arguments as GlorovOrder;
@@ -344,52 +404,43 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             GlorovCartState.instance.getOrderById(settings.arguments as String);
       }
       return _buildRoute(
-          GlorovOrderConfirmationScreen(order: orderDetails), settings);
-    // case cancleOrderScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const CancleOrderScreen(),
-    //   );
-    // case deliveredOrdersScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const DelivereOrdersdScreen(),
-    //   );
-    // case cancledOrdersScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const CancledOrdersScreen(),
-    //   );
-    // case emptyPaymentScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const EmptyPaymentScreen(),
-    //   );
-    case emptyWalletScreenRoute:
-      return _buildRoute(const EmptyWalletScreen(), settings);
-    case walletScreenRoute:
-      return _buildRoute(const WalletScreen(), settings);
-    case cartScreenRoute:
+        GlorovOrderConfirmationScreen(order: orderDetails),
+        settings,
+        overrideRouteName: '/order_details',
+      );
+    case 'empty_wallet':
+      return _buildRoute(const EmptyWalletScreen(), settings, overrideRouteName: '/empty_wallet');
+    case 'wallet':
+      return _buildRoute(const WalletScreen(), settings, overrideRouteName: '/wallet');
+    case 'cart':
       final showOffers = uri?.queryParameters['offers'] == 'true' ||
           settings.arguments == 'offers';
       return _buildRoute(
         GlorovCartScreen(initialShowOffers: showOffers),
         settings,
+        overrideRouteName: '/cart',
       );
-    case checkoutScreenRoute:
-      return _buildRoute(const GlorovCheckoutScreen(), settings);
+    case 'checkout':
+      return _buildRoute(const GlorovCheckoutScreen(), settings, overrideRouteName: '/checkout');
     case 'thanks_for_order':
     case 'order_confirmation':
-    case thanksForOrderScreenRoute:
+    case 'thanks_order':
       GlorovOrder? thanksOrder;
       if (settings.arguments is GlorovOrder) {
         thanksOrder = settings.arguments as GlorovOrder;
       }
       return _buildRoute(
-          GlorovOrderConfirmationScreen(order: thanksOrder), settings);
-    case termsOfServicesScreenRoute:
-      return _buildRoute(const TermsOfServiceScreen(), settings);
-    case privacyPolicyScreenRoute:
-      return _buildRoute(const PrivacyPolicyScreen(), settings);
-    case shippingAndTrustPolicyScreenRoute:
-      return _buildRoute(const ShippingAndTrustPolicyScreen(), settings);
-    case policiesScreenRoute:
+        GlorovOrderConfirmationScreen(order: thanksOrder),
+        settings,
+        overrideRouteName: '/order_confirmation',
+      );
+    case 'terms_of_services':
+      return _buildRoute(const TermsOfServiceScreen(), settings, overrideRouteName: '/terms_of_services');
+    case 'privacy_policy':
+      return _buildRoute(const PrivacyPolicyScreen(), settings, overrideRouteName: '/privacy_policy');
+    case 'shipping_and_trust_policy':
+      return _buildRoute(const ShippingAndTrustPolicyScreen(), settings, overrideRouteName: '/shipping_and_trust_policy');
+    case 'policies':
       GlorovPolicyTab initialTab = GlorovPolicyTab.privacy;
       if (settings.arguments is GlorovPolicyTab) {
         initialTab = settings.arguments as GlorovPolicyTab;
@@ -404,18 +455,21 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         }
       }
       return _buildRoute(
-          GlorovPolicyHubScreen(initialTab: initialTab), settings);
-    case devInteractionShowcaseRoute:
+        GlorovPolicyHubScreen(initialTab: initialTab),
+        settings,
+        overrideRouteName: '/policies',
+      );
+    case 'dev_showcase':
     case 'showcase':
-      return _buildRoute(const InteractionShowcaseScreen(), settings);
+      return _buildRoute(const InteractionShowcaseScreen(), settings, overrideRouteName: '/dev_showcase');
     case 'slider_skeleton':
     case 'skeleton':
-      return _buildRoute(const HomeScreen(isLoadingSlider: true), settings);
+      return _buildRoute(const HomeScreen(isLoadingSlider: true), settings, overrideRouteName: '/slider_skeleton');
     default:
       final rawName = settings.name ?? '';
       final isSkeleton = rawName.contains('skeleton') ||
           rawName.contains('loading=true') ||
           settings.arguments == 'skeleton';
-      return _buildRoute(HomeScreen(isLoadingSlider: isSkeleton), settings);
+      return _buildRoute(HomeScreen(isLoadingSlider: isSkeleton), settings, overrideRouteName: '/');
   }
 }

@@ -344,7 +344,13 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
               size: 24,
             ),
             tooltip: 'Close search',
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                Navigator.pushReplacementNamed(context, homeScreenRoute);
+              }
+            },
           ),
 
           // Search Input Pill
@@ -354,12 +360,6 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFFF4F4F5), // Soft subtle grey
                 borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: _focusNode.hasFocus
-                      ? AppColors.forestDeep.withOpacity(0.5)
-                      : const Color(0xFFE4E4E7),
-                  width: 1.2,
-                ),
               ),
               child: TextField(
                 key: const Key('glorov_search_text_field'),
@@ -417,6 +417,12 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
                     ],
                   ),
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  filled: false,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 11,

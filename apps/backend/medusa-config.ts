@@ -91,7 +91,7 @@ export default defineConfig({
         max: Number(process.env.DB_POOL_MAX) || 10,
         idleTimeoutMillis: 30000,
       },
-      ...(process.env.NODE_ENV === "production"
+      ...(process.env.NODE_ENV === "production" || process.env.DATABASE_URL?.includes("supabase")
         ? { connection: { ssl: { rejectUnauthorized: false } } }
         : {}),
     },

@@ -884,7 +884,13 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               InkWell(
-                onTap: () => Navigator.pushNamed(context, homeScreenRoute),
+                onTap: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  } else {
+                    Navigator.pushReplacementNamed(context, homeScreenRoute);
+                  }
+                },
                 child: const Padding(
                   padding: EdgeInsets.only(bottom: 12),
                   child: Row(
@@ -893,7 +899,7 @@ class _GlorovCategoriesScreenState extends State<GlorovCategoriesScreen> {
                       Icon(Icons.arrow_back_ios, size: 12, color: Colors.white70),
                       SizedBox(width: 4),
                       Text(
-                        'Back to Store',
+                        'Back',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 13,

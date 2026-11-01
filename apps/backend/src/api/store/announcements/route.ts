@@ -8,6 +8,7 @@ import { sendSanitizedError } from "../../../utils/error-handler";
  */
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     const data = await AnnouncementService.getStoreAnnouncements();
     res.status(200).json({
       config: data.config,

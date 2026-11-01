@@ -342,7 +342,49 @@ class _GlorovProductDetailsScreenState
           child: Row(
             children: [
               InkWell(
-                onTap: () => Navigator.pushNamed(context, homeScreenRoute),
+                key: const Key('pdp_back_button'),
+                onTap: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  } else {
+                    Navigator.pushReplacementNamed(context, homeScreenRoute);
+                  }
+                },
+                borderRadius: BorderRadius.circular(4),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.arrow_back_ios,
+                          size: 11, color: AppColors.forestDark),
+                      SizedBox(width: 4),
+                      Text(
+                        'Back',
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.forestDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Text('|',
+                    style: TextStyle(color: Color(0xFFD1D5DB), fontSize: 12)),
+              ),
+              InkWell(
+                onTap: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                  } else {
+                    Navigator.pushReplacementNamed(context, homeScreenRoute);
+                  }
+                },
                 child: const Text(
                   'Home',
                   style: TextStyle(
@@ -358,11 +400,17 @@ class _GlorovProductDetailsScreenState
                     style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11)),
               ),
               InkWell(
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  discoverScreenRoute,
-                  arguments: widget.product.category,
-                ),
+                onTap: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  } else {
+                    Navigator.pushNamed(
+                      context,
+                      discoverScreenRoute,
+                      arguments: widget.product.category,
+                    );
+                  }
+                },
                 child: Text(
                   widget.product.category,
                   style: const TextStyle(
@@ -2068,7 +2116,7 @@ class _GlorovProductDetailsScreenState
                       child: GlorovProductCard(
                         product: prod,
                         onTap: () {
-                          Navigator.pushReplacementNamed(
+                          Navigator.pushNamed(
                             context,
                             productDetailsScreenRoute,
                             arguments: prod,

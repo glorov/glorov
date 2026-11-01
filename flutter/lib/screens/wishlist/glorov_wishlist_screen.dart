@@ -80,7 +80,53 @@ class GlorovWishlistScreen extends StatelessWidget {
         child: Row(
           children: [
             InkWell(
-              onTap: () => Navigator.pushNamed(context, homeScreenRoute),
+              onTap: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                } else {
+                  Navigator.pushReplacementNamed(context, homeScreenRoute);
+                }
+              },
+              borderRadius: BorderRadius.circular(4),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.arrow_back_ios,
+                        size: 11, color: AppColors.forestDark),
+                    SizedBox(width: 4),
+                    Text(
+                      'Back',
+                      style: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.forestDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                '|',
+                style: TextStyle(
+                  color: AppColors.borderSubtle,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.popUntil(context, (route) => route.isFirst);
+                } else {
+                  Navigator.pushReplacementNamed(context, homeScreenRoute);
+                }
+              },
               child: const Text(
                 'Home',
                 style: TextStyle(

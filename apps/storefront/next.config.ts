@@ -31,6 +31,18 @@ const nextConfig: NextConfig = {
         hostname: 'cdn.shopify.com',
       },
       {
+        protocol: 'https',
+        hostname: 'rukmini1.flixcart.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'rukminim2.flixcart.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
       },

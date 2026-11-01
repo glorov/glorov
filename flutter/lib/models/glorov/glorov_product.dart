@@ -1,3 +1,5 @@
+import '../../repositories/remote/medusa_api_config.dart';
+
 /// GLOROV Botanical Product Types
 enum GlorovProductType {
   seeds,
@@ -240,15 +242,30 @@ class GlorovProduct {
         : <String, dynamic>{};
 
     // Images parsing
+    String resolveImageUrl(String rawUrl) {
+      final trimmed = rawUrl.trim();
+      if (trimmed.isEmpty) return '';
+      if (trimmed.startsWith('http://') ||
+          trimmed.startsWith('https://') ||
+          trimmed.startsWith('assets/')) {
+        return trimmed;
+      }
+      final cleanPath = trimmed.startsWith('/') ? trimmed : '/$trimmed';
+      return '${MedusaApiConfig.defaultBaseUrl}$cleanPath';
+    }
+
     final List<String> images = [];
     if (json['thumbnail'] != null && (json['thumbnail'] as String).isNotEmpty) {
-      images.add(json['thumbnail'] as String);
+      final resolved = resolveImageUrl(json['thumbnail'] as String);
+      if (resolved.isNotEmpty) {
+        images.add(resolved);
+      }
     }
     if (json['images'] is List) {
       for (final img in json['images'] as List) {
         if (img is Map && img['url'] != null) {
-          final url = img['url'] as String;
-          if (!images.contains(url)) {
+          final url = resolveImageUrl(img['url'] as String);
+          if (url.isNotEmpty && !images.contains(url)) {
             images.add(url);
           }
         }

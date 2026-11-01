@@ -26,13 +26,40 @@ class MedusaBannerRepository implements BannerRepository {
               final desktopUrl = (map['desktop_image_url'] as String?) ?? '';
               final mobileUrl = (map['mobile_image_url'] as String?) ?? desktopUrl;
 
-              // Convert relative /banners/... path to full endpoint if needed
-              final resolvedDesktopUrl = desktopUrl.startsWith('http') || desktopUrl.startsWith('assets/')
-                  ? desktopUrl
-                  : 'assets/images/${desktopUrl.split('/').last}';
-              final resolvedMobileUrl = mobileUrl.startsWith('http') || mobileUrl.startsWith('assets/')
-                  ? mobileUrl
-                  : 'assets/images/${mobileUrl.split('/').last}';
+              String resolveUrl(String url) {
+                final trimmed = url.trim();
+                if (trimmed.isEmpty) return '';
+                if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+                  return trimmed;
+                }
+                if (trimmed.startsWith('assets/')) {
+                  return trimmed;
+                }
+                final filename = trimmed.split('/').last;
+                const localAssets = {
+                  'banner_grow_fresh_desktop.png',
+                  'banner_grow_fresh_mobile.jpg',
+                  'banner_garden_bloom_desktop.png',
+                  'banner_garden_bloom_mobile.jpg',
+                  'banner_plant_seed_desktop.png',
+                  'banner_plant_seed_mobile.jpg',
+                  'banner_garden_begins_desktop.png',
+                  'banner_garden_begins_mobile.jpg',
+                  'banner_botanical_desktop.jpg',
+                  'banner_botanical_mobile.jpg',
+                  'banner_festive_desktop.png',
+                  'banner_festive_mobile.jpg',
+                  'monstera_deliciosa_hero.jpg',
+                };
+                if (localAssets.contains(filename)) {
+                  return 'assets/images/$filename';
+                }
+                final cleanPath = trimmed.startsWith('/') ? trimmed : '/$trimmed';
+                return '${client.config.baseUrl}$cleanPath';
+              }
+
+              final resolvedDesktopUrl = resolveUrl(desktopUrl);
+              final resolvedMobileUrl = resolveUrl(mobileUrl);
 
               Color parseColor(String? hex) {
                 if (hex == null || hex.isEmpty) return const Color(0xFF1E3D2F);

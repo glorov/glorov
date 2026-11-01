@@ -8,6 +8,7 @@ import { sendSanitizedError } from "../../../utils/error-handler";
  */
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     const hero = await HeroService.getHeroConfig();
     res.status(200).json({ hero });
   } catch (error: unknown) {

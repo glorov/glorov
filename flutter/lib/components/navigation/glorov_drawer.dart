@@ -6,6 +6,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../route/route_constants.dart';
 import '../../services/glorov_cart_state.dart';
+import '../../services/glorov_header_scroll_notifier.dart';
 
 /// GLOROV Mobile Navigation Drawer
 /// Displays botanical categories and customer shortcuts when opened from
@@ -17,49 +18,57 @@ class GlorovDrawer extends StatelessWidget {
     {
       'label': 'Seeds',
       'icon': Icons.eco_outlined,
-      'filter': 'Vegetable Seeds',
+      'filter': 'Seeds',
+      'route': seedsScreenRoute,
       'subtitle': 'Heirloom & organic non-GMO seeds',
     },
     {
       'label': 'Live Plants',
       'icon': Icons.yard_outlined,
-      'filter': 'Live Houseplants',
+      'filter': 'Live Plants',
+      'route': livePlantsScreenRoute,
       'subtitle': 'Acclimatized indoor & outdoor plants',
     },
     {
       'label': 'Planters',
       'icon': Icons.inventory_2_outlined,
-      'filter': 'Gardening Essentials',
+      'filter': 'Planters & Pots',
+      'route': plantersScreenRoute,
       'subtitle': 'Ceramic, terracotta & self-watering',
     },
     {
       'label': 'Plant Care',
       'icon': Icons.water_drop_outlined,
-      'filter': 'Gardening Essentials',
+      'filter': 'Plant Care & Soil',
+      'route': plantCareScreenRoute,
       'subtitle': 'Organic fertilizers & potting mixes',
     },
     {
       'label': 'Flowering',
       'icon': Icons.local_florist_outlined,
       'filter': 'Flowering Plants',
+      'route': floweringScreenRoute,
       'subtitle': 'Seasonal blooms & perennials',
     },
     {
       'label': 'Herbs',
       'icon': Icons.grass_outlined,
       'filter': 'Fruit & Herb Seeds',
+      'route': herbsScreenRoute,
       'subtitle': 'Aromatic kitchen culinary herbs',
     },
     {
       'label': 'Vegetables',
       'icon': Icons.agriculture_outlined,
       'filter': 'Vegetable Seeds',
+      'route': vegetablesScreenRoute,
       'subtitle': 'Farm-fresh kitchen garden staples',
     },
     {
       'label': 'Offers',
       'icon': Icons.percent_outlined,
-      'filter': 'All Botanical',
+      'filter': 'Offers',
+      'route': offersScreenRoute,
       'subtitle': 'Exclusive botanical bundles & deals',
     },
   ];
@@ -180,9 +189,10 @@ class GlorovDrawer extends StatelessWidget {
                       ),
                       onTap: () {
                         Navigator.pop(context);
+                        GlorovHeaderScrollNotifier.instance.selectCategory(cat['label'] as String);
                         Navigator.pushNamed(
                           context,
-                          discoverScreenRoute,
+                          cat['route'] as String,
                           arguments: cat['filter'] as String,
                         );
                       },

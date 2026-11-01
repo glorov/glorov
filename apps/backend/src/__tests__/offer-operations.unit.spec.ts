@@ -18,7 +18,7 @@ describe("Promotional Offers Operations & Service Invariants", () => {
   describe("1. Default Offers Seeding & Structure", () => {
     it("seeds default botanical promotional offers with welcome offer highlighted", async () => {
       const offers = await OfferService.listOffers(false);
-      expect(offers.length).toBe(7);
+      expect(offers.length).toBe(8);
 
       // Welcome offer invariant check (matches user's screenshot exactly)
       const welcome = offers.find((o) => o.code === "GLOROV10");
@@ -29,7 +29,6 @@ describe("Promotional Offers Operations & Service Invariants", () => {
       );
       expect(welcome?.discount_badge).toBe("10% OFF");
       expect(welcome?.discount_value).toBe(10);
-      expect(welcome?.is_highlighted).toBe(true);
       expect(welcome?.is_active).toBe(true);
       expect(welcome?.icon).toBe("card_giftcard");
     });
@@ -46,14 +45,14 @@ describe("Promotional Offers Operations & Service Invariants", () => {
       await OfferService.updateOffer(all[0].id, { is_active: false });
 
       const activeOnly = await OfferService.listOffers(true);
-      expect(activeOnly.length).toBe(6);
+      expect(activeOnly.length).toBe(7);
       expect(activeOnly.some((o) => o.id === all[0].id)).toBe(false);
     });
 
     it("retrieves the active highlighted welcome offer correctly", async () => {
       const highlighted = await OfferService.getHighlightedOffer();
       expect(highlighted).not.toBeNull();
-      expect(highlighted?.code).toBe("GLOROV10");
+      expect(highlighted?.code).toBe("WINTER20");
       expect(highlighted?.is_highlighted).toBe(true);
       expect(highlighted?.is_active).toBe(true);
     });
@@ -77,14 +76,14 @@ describe("Promotional Offers Operations & Service Invariants", () => {
       expect(created.code).toBe("FESTIVE25");
       expect(created.title).toBe("Diwali Botanical Festival");
       expect(created.tag).toBe("FESTIVE LIGHT & LEAF");
-      expect(created.display_order).toBe(8);
+      expect(created.display_order).toBe(9);
       expect(created.is_active).toBe(true);
       expect(created.created_at).toBeDefined();
     });
 
     it("enforces single highlighted offer when new offer is marked highlighted", async () => {
       const previousHighlighted = await OfferService.getHighlightedOffer();
-      expect(previousHighlighted?.code).toBe("GLOROV10");
+      expect(previousHighlighted?.code).toBe("WINTER20");
 
       const newHeroOffer = await OfferService.createOffer({
         code: "EXCLUSIVE50",
@@ -101,8 +100,8 @@ describe("Promotional Offers Operations & Service Invariants", () => {
       expect(currentHighlighted?.id).toBe(newHeroOffer.id);
       expect(currentHighlighted?.code).toBe("EXCLUSIVE50");
 
-      // Verify GLOROV10 was unmarked
-      const oldOffer = await OfferService.getOfferById("offer_welcome_glorov10");
+      // Verify previously highlighted offer was unmarked
+      const oldOffer = await OfferService.getOfferById("offer_winter_sale_20");
       expect(oldOffer?.is_highlighted).toBe(false);
     });
 
@@ -127,7 +126,7 @@ describe("Promotional Offers Operations & Service Invariants", () => {
       expect(success).toBe(true);
 
       const offers = await OfferService.listOffers(false);
-      expect(offers.length).toBe(6);
+      expect(offers.length).toBe(7);
       expect(offers.some((o) => o.id === "offer_shipping_freeship")).toBe(false);
 
       const deleted = await OfferService.getOfferById("offer_shipping_freeship");

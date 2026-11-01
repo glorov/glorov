@@ -12,6 +12,7 @@ import '../../core/theme/glorov_horizontal_scroll_behavior.dart';
 import '../common/glorov_y_scroll_pass_through.dart';
 import 'glorov_hero_banner_slider_skeleton.dart';
 import '../../repositories/glorov_repositories.dart';
+import '../../repositories/remote/medusa_api_config.dart';
 import '../../route/route_constants.dart';
 
 export 'glorov_hero_banner_slider_skeleton.dart';
@@ -109,12 +110,40 @@ class GlorovBannerSlide {
     final desktop = json['desktop_image_url'] as String? ?? '';
     final mobile = json['mobile_image_url'] as String? ?? desktop;
 
-    final resolvedDesktop = desktop.startsWith('http') || desktop.startsWith('assets/')
-        ? desktop
-        : 'assets/images/${desktop.split('/').last}';
-    final resolvedMobile = mobile.startsWith('http') || mobile.startsWith('assets/')
-        ? mobile
-        : 'assets/images/${mobile.split('/').last}';
+    String resolveUrl(String url) {
+      final trimmed = url.trim();
+      if (trimmed.isEmpty) return '';
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return trimmed;
+      }
+      if (trimmed.startsWith('assets/')) {
+        return trimmed;
+      }
+      final filename = trimmed.split('/').last;
+      const localAssets = {
+        'banner_grow_fresh_desktop.png',
+        'banner_grow_fresh_mobile.jpg',
+        'banner_garden_bloom_desktop.png',
+        'banner_garden_bloom_mobile.jpg',
+        'banner_plant_seed_desktop.png',
+        'banner_plant_seed_mobile.jpg',
+        'banner_garden_begins_desktop.png',
+        'banner_garden_begins_mobile.jpg',
+        'banner_botanical_desktop.jpg',
+        'banner_botanical_mobile.jpg',
+        'banner_festive_desktop.png',
+        'banner_festive_mobile.jpg',
+        'monstera_deliciosa_hero.jpg',
+      };
+      if (localAssets.contains(filename)) {
+        return 'assets/images/$filename';
+      }
+      final cleanPath = trimmed.startsWith('/') ? trimmed : '/$trimmed';
+      return '${MedusaApiConfig.defaultBaseUrl}$cleanPath';
+    }
+
+    final resolvedDesktop = resolveUrl(desktop);
+    final resolvedMobile = resolveUrl(mobile);
 
     return GlorovBannerSlide(
       id: json['id'] as String? ?? 'slide_${DateTime.now().millisecondsSinceEpoch}',
@@ -254,7 +283,7 @@ class GlorovHeroBannerSlider extends StatefulWidget {
 }
 
 class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   static const int _kLoopFactor = 10000;
 
   late final PageController _pageController;
@@ -274,6 +303,7 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final initial = _activeSlides.length > 1
         ? (_kLoopFactor ~/ 2) * _activeSlides.length
         : 0;
@@ -299,6 +329,13 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
     }
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      _loadRemoteBanners();
+    }
+  }
+
   Future<void> _loadRemoteBanners() async {
     if (widget.slides != null) return;
     try {
@@ -319,6 +356,7 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _progressController.dispose();
     _pageController.dispose();
     super.dispose();
@@ -682,7 +720,10 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
         fit: BoxFit.cover,
         alignment: alignment,
         filterQuality: FilterQuality.high,
-        errorBuilder: (_, __, ___) => _buildFallback(),
+        errorBuilder: (context, error, stackTrace) {
+        debugPrint('[GlorovHeroBannerSlider] Image failed to load: $pathOrUrl ($error)');
+        return _buildFallback();
+      },
       );
     }
 
@@ -706,7 +747,10 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
         if (loadingProgress == null) return child;
         return _buildShimmerLoading();
       },
-      errorBuilder: (_, __, ___) => _buildFallback(),
+      errorBuilder: (context, error, stackTrace) {
+        debugPrint('[GlorovHeroBannerSlider] Image failed to load: $pathOrUrl ($error)');
+        return _buildFallback();
+      },
     );
   }
 

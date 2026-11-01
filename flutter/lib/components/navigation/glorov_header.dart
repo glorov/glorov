@@ -20,12 +20,14 @@ class _CategoryNavItem {
   final String? svgXml;
   final IconData icon;
   final String categoryFilter;
+  final String route;
 
   const _CategoryNavItem({
     required this.label,
     this.svgXml,
     required this.icon,
     required this.categoryFilter,
+    required this.route,
   });
 }
 
@@ -65,49 +67,57 @@ class _GlorovHeaderState extends State<GlorovHeader> {
       label: 'Seeds',
       svgXml: GlorovCategorySvgIcons.seeds,
       icon: Icons.eco_outlined,
-      categoryFilter: 'Vegetable Seeds',
+      categoryFilter: 'Seeds',
+      route: seedsScreenRoute,
     ),
     _CategoryNavItem(
       label: 'Live Plants',
       svgXml: GlorovCategorySvgIcons.livePlants,
       icon: Icons.yard_outlined,
-      categoryFilter: 'Live Houseplants',
+      categoryFilter: 'Live Plants',
+      route: livePlantsScreenRoute,
     ),
     _CategoryNavItem(
       label: 'Planters',
       svgXml: GlorovCategorySvgIcons.planters,
       icon: Icons.inventory_2_outlined,
-      categoryFilter: 'Gardening Essentials',
+      categoryFilter: 'Planters & Pots',
+      route: plantersScreenRoute,
     ),
     _CategoryNavItem(
       label: 'Plant Care',
       svgXml: GlorovCategorySvgIcons.plantCare,
       icon: Icons.water_drop_outlined,
-      categoryFilter: 'Gardening Essentials',
+      categoryFilter: 'Plant Care & Soil',
+      route: plantCareScreenRoute,
     ),
     _CategoryNavItem(
       label: 'Flowering',
       svgXml: GlorovCategorySvgIcons.flowering,
       icon: Icons.local_florist_outlined,
       categoryFilter: 'Flowering Plants',
+      route: floweringScreenRoute,
     ),
     _CategoryNavItem(
       label: 'Herbs',
       svgXml: GlorovCategorySvgIcons.herbs,
       icon: Icons.grass_outlined,
       categoryFilter: 'Fruit & Herb Seeds',
+      route: herbsScreenRoute,
     ),
     _CategoryNavItem(
       label: 'Vegetables',
       svgXml: GlorovCategorySvgIcons.vegetables,
       icon: Icons.agriculture_outlined,
       categoryFilter: 'Vegetable Seeds',
+      route: vegetablesScreenRoute,
     ),
     _CategoryNavItem(
       label: 'Offers',
       svgXml: GlorovCategorySvgIcons.offers,
       icon: Icons.percent_outlined,
-      categoryFilter: 'All Botanical',
+      categoryFilter: 'Offers',
+      route: offersScreenRoute,
     ),
   ];
 
@@ -116,6 +126,21 @@ class _GlorovHeaderState extends State<GlorovHeader> {
     _searchController.dispose();
     _categoryScrollController.dispose();
     super.dispose();
+  }
+
+  void _navigateToHome() {
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+    if (currentRoute == homeScreenRoute ||
+        currentRoute == '/' ||
+        currentRoute == '' ||
+        currentRoute == '/home') {
+      return;
+    }
+    if (Navigator.canPop(context)) {
+      Navigator.popUntil(context, (route) => route.isFirst);
+    } else {
+      Navigator.pushReplacementNamed(context, homeScreenRoute);
+    }
   }
 
   void _openSearchScreen([String? query]) {
@@ -142,21 +167,15 @@ class _GlorovHeaderState extends State<GlorovHeader> {
     // Select category in coordinator
     GlorovHeaderScrollNotifier.instance.selectCategory(item.label);
 
-    // Direct click navigation with route replacement if already on catalog
     final currentRoute = ModalRoute.of(context)?.settings.name;
-    if (currentRoute == discoverScreenRoute) {
-      Navigator.pushReplacementNamed(
-        context,
-        discoverScreenRoute,
-        arguments: item.categoryFilter,
-      );
-    } else {
-      Navigator.pushNamed(
-        context,
-        discoverScreenRoute,
-        arguments: item.categoryFilter,
-      );
-    }
+    if (currentRoute == item.route) return;
+
+    // Direct click navigation to dedicated category route
+    Navigator.pushNamed(
+      context,
+      item.route,
+      arguments: item.categoryFilter,
+    );
   }
 
   @override
@@ -248,7 +267,7 @@ class _GlorovHeaderState extends State<GlorovHeader> {
             children: [
               // GLOROV Brand SVG Logo (from root directory assets)
               InkWell(
-                onTap: () => Navigator.pushNamed(context, homeScreenRoute),
+                onTap: _navigateToHome,
                 borderRadius: BorderRadius.circular(8),
                 child: Padding(
                   padding:
@@ -278,10 +297,6 @@ class _GlorovHeaderState extends State<GlorovHeader> {
                       color: const Color(
                           0xFFF4F4F5), // Soft grey background matching Image 1
                       borderRadius: BorderRadius.circular(22), // Sleek pill
-                      border: Border.all(
-                        color: const Color(0xFFE4E4E7),
-                        width: 1.0,
-                      ),
                     ),
                     child: TextField(
                       controller: _searchController,
@@ -322,6 +337,12 @@ class _GlorovHeaderState extends State<GlorovHeader> {
                               )
                             : null,
                         border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        focusedErrorBorder: InputBorder.none,
+                        filled: false,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14,
                           vertical: 10,
@@ -449,7 +470,7 @@ class _GlorovHeaderState extends State<GlorovHeader> {
         children: [
           // 1. Left-Side Glorov Brand SVG Logo
           InkWell(
-            onTap: () => Navigator.pushNamed(context, homeScreenRoute),
+            onTap: _navigateToHome,
             borderRadius: BorderRadius.circular(6),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 2.0),
@@ -471,10 +492,6 @@ class _GlorovHeaderState extends State<GlorovHeader> {
               decoration: BoxDecoration(
                 color: const Color(0xFFF4F4F5), // Soft gray pill
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color(0xFFE4E4E7),
-                  width: 1.0,
-                ),
               ),
               child: TextField(
                 controller: _searchController,
@@ -503,7 +520,13 @@ class _GlorovHeaderState extends State<GlorovHeader> {
                     ),
                   ),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  filled: false,
+                  contentPadding: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 8,
                   ),

@@ -191,14 +191,20 @@ class _GlorovAccountScreenState extends State<GlorovAccountScreen> {
     return Row(
       children: [
         InkWell(
-          onTap: () => Navigator.pushNamed(context, homeScreenRoute),
+          onTap: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.pushReplacementNamed(context, homeScreenRoute);
+            }
+          },
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.arrow_back_ios, size: 12, color: AppColors.forestDark),
               SizedBox(width: 4),
               Text(
-                'Back to Store',
+                'Back',
                 style: TextStyle(
                   fontFamily: AppTypography.primaryFont,
                   fontSize: 13,

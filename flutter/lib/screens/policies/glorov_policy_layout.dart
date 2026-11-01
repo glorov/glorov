@@ -187,6 +187,7 @@ class GlorovPolicyScaffold extends StatelessWidget {
               Flexible(
                 child: Text(
                   title,
+                  maxLines: 1,
                   style: const TextStyle(
                     fontFamily: AppTypography.primaryFont,
                     fontSize: 11.5,

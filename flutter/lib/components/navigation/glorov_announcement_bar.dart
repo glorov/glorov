@@ -34,7 +34,7 @@ class GlorovAnnouncementBar extends StatefulWidget {
 }
 
 class _GlorovAnnouncementBarState extends State<GlorovAnnouncementBar>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _controller;
   final GlobalKey _singleSetKey = GlobalKey();
 
@@ -53,6 +53,7 @@ class _GlorovAnnouncementBarState extends State<GlorovAnnouncementBar>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     if (widget.customItems != null && widget.customItems!.isNotEmpty) {
       _items = widget.customItems!;
     }
@@ -72,6 +73,13 @@ class _GlorovAnnouncementBarState extends State<GlorovAnnouncementBar>
 
     _loadData();
     GlorovHeaderScrollNotifier.instance.addListener(_handleScrollChange);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted && widget.customItems == null) {
+      _loadData();
+    }
   }
 
   void _handleScrollChange() {
@@ -142,6 +150,7 @@ class _GlorovAnnouncementBarState extends State<GlorovAnnouncementBar>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     GlorovHeaderScrollNotifier.instance.removeListener(_handleScrollChange);
     _controller.dispose();
     super.dispose();

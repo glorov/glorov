@@ -7,6 +7,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../models/glorov/glorov_hero_data.dart';
 import '../../repositories/glorov_repositories.dart';
+import '../../repositories/remote/medusa_api_config.dart';
 import '../../route/route_constants.dart';
 
 /// GLOROV Premium Storefront Botanical Hero Section
@@ -552,6 +553,15 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return Image.network(
         path,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            _buildAssetOrGradientFallback(),
+      );
+    }
+
+    if (path.startsWith('/')) {
+      return Image.network(
+        '${MedusaApiConfig.defaultBaseUrl}$path',
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) =>
             _buildAssetOrGradientFallback(),

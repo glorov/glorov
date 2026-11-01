@@ -15,16 +15,22 @@ class MedusaApiConfig {
   /// Compile-time environment configuration defaults
   static const String defaultBaseUrl = String.fromEnvironment(
     'MEDUSA_BASE_URL',
-    defaultValue: 'http://localhost:9000',
+    defaultValue: 'https://20.244.48.139.sslip.io/medusa',
   );
 
   static const String defaultPublishableKey = String.fromEnvironment(
     'MEDUSA_PUBLISHABLE_KEY',
-    defaultValue: '',
+    defaultValue: 'pk_3e00679a810ca538ba78aedc23b336788d82631606792292cbecad4fc422316a',
   );
 
   /// Local development configuration
   static const MedusaApiConfig local = MedusaApiConfig(
+    baseUrl: 'http://localhost:9000',
+    publishableKey: '',
+  );
+
+  /// Production remote configuration
+  static const MedusaApiConfig production = MedusaApiConfig(
     baseUrl: defaultBaseUrl,
     publishableKey: defaultPublishableKey,
   );

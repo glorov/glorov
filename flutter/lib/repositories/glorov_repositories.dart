@@ -54,12 +54,14 @@ class GlorovRepositories {
 
   static const String _defaultApiMode = String.fromEnvironment(
     'GLOROV_API_MODE',
-    defaultValue: 'mock',
+    defaultValue: 'remote',
   );
 
   RepositoryMode _mode =
       _defaultApiMode == 'remote' ? RepositoryMode.remote : RepositoryMode.mock;
-  MedusaApiConfig _apiConfig = MedusaApiConfig.local;
+  MedusaApiConfig _apiConfig = _defaultApiMode == 'remote'
+      ? MedusaApiConfig.production
+      : MedusaApiConfig.local;
   MedusaHttpClient? _httpClient;
   MedusaPincodeService? _pincodeService;
 
@@ -144,6 +146,10 @@ class GlorovRepositories {
 
     if (apiConfig != null) {
       reg._apiConfig = apiConfig;
+    } else if (resolvedMode == RepositoryMode.remote) {
+      reg._apiConfig = MedusaApiConfig.production;
+    } else {
+      reg._apiConfig = MedusaApiConfig.local;
     }
 
     final client = customHttpClient ??

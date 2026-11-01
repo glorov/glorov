@@ -73,7 +73,8 @@ class GlorovValueProps extends StatefulWidget {
   State<GlorovValueProps> createState() => _GlorovValuePropsState();
 }
 
-class _GlorovValuePropsState extends State<GlorovValueProps> {
+class _GlorovValuePropsState extends State<GlorovValueProps>
+    with WidgetsBindingObserver {
   List<GlorovTrustBadgeItem> _badges = GlorovTrustBadgeItem.defaults;
   GlorovTrustSectionSettings _settings = const GlorovTrustSectionSettings();
   bool _isLoading = true;
@@ -81,6 +82,7 @@ class _GlorovValuePropsState extends State<GlorovValueProps> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     if (widget.initialBadges != null) {
       _badges = widget.initialBadges!;
       _settings = widget.initialSettings ?? const GlorovTrustSectionSettings();
@@ -88,6 +90,19 @@ class _GlorovValuePropsState extends State<GlorovValueProps> {
     } else {
       _loadBadges();
     }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted && widget.initialBadges == null) {
+      _loadBadges();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   Future<void> _loadBadges() async {

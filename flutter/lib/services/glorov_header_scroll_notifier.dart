@@ -121,15 +121,30 @@ class GlorovHeaderScrollNotifier extends ChangeNotifier {
     _lastPixels = pixels;
   }
 
-  /// Resets header to default top state
-  void reset() {
+  /// Resets header to default top state without forcing category back to Seeds
+  void reset({bool resetCategory = false}) {
+    final bool changed = !_isTopNavVisible ||
+        _isBottomNavVisible ||
+        !_showIcons ||
+        !_showAnnouncement ||
+        (resetCategory && _selectedCategory != 'Seeds') ||
+        _lastPixels != 0.0 ||
+        _accumulatedDelta != 0.0;
+
     _isTopNavVisible = true;
     _isBottomNavVisible = false;
     _showIcons = true;
     _showAnnouncement = true;
-    _selectedCategory = 'Seeds';
+    if (resetCategory) {
+      _selectedCategory = 'Seeds';
+    }
     _lastPixels = 0.0;
     _accumulatedDelta = 0.0;
-    notifyListeners();
+
+    if (changed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    }
   }
 }

@@ -477,7 +477,13 @@ class GlorovOrderConfirmationScreen extends StatelessWidget {
             ),
             GlorovButton.outlined(
               label: 'CONTINUE SHOPPING',
-              onPressed: () => Navigator.pushNamed(context, homeScreenRoute),
+              onPressed: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.popUntil(context, (route) => route.isFirst);
+                } else {
+                  Navigator.pushReplacementNamed(context, homeScreenRoute);
+                }
+              },
             ),
           ],
         ),

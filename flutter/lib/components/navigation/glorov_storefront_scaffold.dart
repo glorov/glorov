@@ -71,7 +71,6 @@ class _GlorovStorefrontScaffoldState extends State<GlorovStorefrontScaffold> {
   void initState() {
     super.initState();
     if (widget.showTopNav) {
-      GlorovHeaderScrollNotifier.instance.reset();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           GlorovHeaderScrollNotifier.instance.reset();

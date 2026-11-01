@@ -127,8 +127,53 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
               child: Row(
                 children: [
                   InkWell(
-                    onTap: () => Navigator.pushReplacementNamed(
-                        context, homeScreenRoute),
+                    onTap: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      } else {
+                        Navigator.pushReplacementNamed(context, homeScreenRoute);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(4),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.arrow_back_ios,
+                              size: 11, color: Color(0xFF374151)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Back',
+                            style: TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF374151),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      '|',
+                      style: TextStyle(
+                        color: Color(0xFFD1D5DB),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.popUntil(context, (route) => route.isFirst);
+                      } else {
+                        Navigator.pushReplacementNamed(context, homeScreenRoute);
+                      }
+                    },
                     child: const Text('Home',
                         style: TextStyle(
                             fontSize: 12, color: Color(0xFF6B7280))),
@@ -137,9 +182,17 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
                       style: TextStyle(
                           fontSize: 12, color: Color(0xFF9CA3AF))),
                   InkWell(
-                    onTap: () => Navigator.pushReplacementNamed(
-                        context, productDetailsScreenRoute,
-                        arguments: prod),
+                    onTap: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      } else {
+                        Navigator.pushNamed(
+                          context,
+                          productDetailsScreenRoute,
+                          arguments: prod,
+                        );
+                      }
+                    },
                     child: Text(
                       prod.title,
                       style: const TextStyle(

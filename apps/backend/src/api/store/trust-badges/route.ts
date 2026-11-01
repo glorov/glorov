@@ -8,6 +8,7 @@ import { sendSanitizedError } from "../../../utils/error-handler";
  */
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     const badges = await TrustBadgeService.listBadges(true);
     const settings = await TrustBadgeService.getSettings();
 

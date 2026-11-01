@@ -92,11 +92,11 @@ class GlorovMobileBottomNav extends StatelessWidget {
                         if (activeRoute != homeScreenRoute &&
                             activeRoute != '/' &&
                             activeRoute != '') {
-                          Navigator.pushNamedAndRemoveUntil(
-                            context,
-                            homeScreenRoute,
-                            (route) => false,
-                          );
+                          if (Navigator.canPop(context)) {
+                            Navigator.popUntil(context, (route) => route.isFirst);
+                          } else {
+                            Navigator.pushReplacementNamed(context, homeScreenRoute);
+                          }
                         }
                       },
                     ),

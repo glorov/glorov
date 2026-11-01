@@ -14,6 +14,7 @@ import '../../core/theme/glorov_horizontal_scroll_behavior.dart';
 import '../../models/glorov/glorov_mock_data.dart';
 import '../../models/glorov/glorov_product.dart';
 import '../../route/route_constants.dart';
+import '../../services/glorov_header_scroll_notifier.dart';
 
 enum GlorovSortOption {
   recommended,
@@ -28,12 +29,14 @@ class GlorovCatalogScreen extends StatefulWidget {
   final String? initialCategory;
   final String? initialSearchQuery;
   final GlorovProductType? initialProductType;
+  final bool initialOffersOnly;
 
   const GlorovCatalogScreen({
     super.key,
     this.initialCategory,
     this.initialSearchQuery,
     this.initialProductType,
+    this.initialOffersOnly = false,
   });
 
   @override
@@ -45,6 +48,8 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
   String _selectedSubcategory = 'All';
   late String _searchQuery;
   GlorovSortOption _currentSort = GlorovSortOption.recommended;
+  late bool _offersOnly;
+  String _selectedPriceBracket = 'All'; // 'All', '<300', '300-700', '700+'
 
   // Filter States
   GlorovProductType? _filterProductType;
@@ -52,7 +57,6 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
   double? _minPrice;
   bool _inStockOnly = false;
   double? _minRating;
-  String? _selectedSunlight;
 
   @override
   void initState() {
@@ -60,33 +64,110 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
     _selectedCategory = widget.initialCategory ?? 'All Botanical';
     _searchQuery = widget.initialSearchQuery ?? '';
     _filterProductType = widget.initialProductType;
+    _offersOnly =
+        widget.initialOffersOnly || _selectedCategory.toLowerCase() == 'offers';
+    _syncNavCategory();
+  }
+
+  @override
+  void didUpdateWidget(GlorovCatalogScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialCategory != widget.initialCategory ||
+        oldWidget.initialOffersOnly != widget.initialOffersOnly) {
+      setState(() {
+        _selectedCategory = widget.initialCategory ?? 'All Botanical';
+        _selectedSubcategory = 'All';
+        _offersOnly = widget.initialOffersOnly ||
+            _selectedCategory.toLowerCase() == 'offers';
+      });
+      _syncNavCategory();
+    }
+  }
+
+  void _syncNavCategory() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      String navCat = 'Seeds';
+      final c = _selectedCategory.toLowerCase();
+      if (_offersOnly || c == 'offers') {
+        navCat = 'Offers';
+      } else if (c.contains('live plant') || c == 'plants') {
+        navCat = 'Live Plants';
+      } else if (c.contains('flowering')) {
+        navCat = 'Flowering';
+      } else if (c.contains('planter') || c.contains('pot')) {
+        navCat = 'Planters';
+      } else if (c.contains('care') || c.contains('soil')) {
+        navCat = 'Plant Care';
+      } else if (c.contains('herb')) {
+        navCat = 'Herbs';
+      } else if (c.contains('vegetable')) {
+        navCat = 'Vegetables';
+      } else if (c.contains('seed')) {
+        navCat = 'Seeds';
+      }
+      GlorovHeaderScrollNotifier.instance.selectCategory(navCat);
+    });
+  }
+
+  void _setPriceBracket(String bracket) {
+    setState(() {
+      _selectedPriceBracket = bracket;
+      switch (bracket) {
+        case '<300':
+          _minPrice = null;
+          _maxPrice = 300;
+          break;
+        case '300-700':
+          _minPrice = 300;
+          _maxPrice = 700;
+          break;
+        case '700+':
+          _minPrice = 700;
+          _maxPrice = null;
+          break;
+        default:
+          _minPrice = null;
+          _maxPrice = null;
+          break;
+      }
+    });
   }
 
   void _clearAllFilters() {
     setState(() {
       _selectedSubcategory = 'All';
+      _selectedPriceBracket = 'All';
       _filterProductType = null;
       _minPrice = null;
       _maxPrice = null;
       _inStockOnly = false;
       _minRating = null;
-      _selectedSunlight = null;
       _searchQuery = '';
     });
   }
 
   bool get _hasActiveFilters =>
       _selectedSubcategory != 'All' ||
+      _selectedPriceBracket != 'All' ||
       _filterProductType != null ||
       _minPrice != null ||
       _maxPrice != null ||
       _inStockOnly ||
       _minRating != null ||
-      _selectedSunlight != null ||
       _searchQuery.isNotEmpty;
 
   List<GlorovProduct> _getFilteredProducts() {
     List<GlorovProduct> list = List.from(GlorovMockData.products);
+
+    // Offers filter
+    if (_offersOnly || _selectedCategory.toLowerCase() == 'offers') {
+      list = list
+          .where((p) =>
+              (p.discountPercent != null && p.discountPercent! > 0) ||
+              p.effectivePrice < p.price)
+          .toList();
+    }
 
     // Search query filter
     if (_searchQuery.trim().isNotEmpty) {
@@ -108,13 +189,41 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
     }
 
     // Category filter
-    if (_selectedCategory != 'All Botanical' && _selectedCategory != 'All') {
-      final selectedCat = _selectedCategory.toLowerCase();
-      list = list
-          .where((p) =>
-              p.category.toLowerCase() == selectedCat ||
-              p.subcategory.toLowerCase() == selectedCat)
-          .toList();
+    final catNormalized = _selectedCategory.toLowerCase();
+    if (catNormalized != 'all botanical' &&
+        catNormalized != 'all' &&
+        catNormalized != 'offers') {
+      list = list.where((p) {
+        final cat = p.category.toLowerCase();
+        final sub = p.subcategory.toLowerCase();
+        if (catNormalized == 'flowering' ||
+            catNormalized == 'flowering plants') {
+          return sub.contains('flowering') || cat.contains('flowering');
+        }
+        if (catNormalized == 'herbs' || catNormalized == 'fruit & herb seeds') {
+          return sub.contains('herb') ||
+              cat.contains('herb') ||
+              p.title.toLowerCase().contains('herb');
+        }
+        if (catNormalized == 'vegetables' ||
+            catNormalized == 'vegetable seeds') {
+          return sub.contains('vegetable') || cat.contains('vegetable');
+        }
+        if (catNormalized == 'planters' || catNormalized == 'planters & pots') {
+          return cat.contains('planter') || cat.contains('pot');
+        }
+        if (catNormalized == 'plant care' ||
+            catNormalized == 'plant care & soil') {
+          return cat.contains('care') || cat.contains('soil');
+        }
+        if (catNormalized == 'live plants' || catNormalized == 'plants') {
+          return cat.contains('plant') || cat.contains('live');
+        }
+        if (catNormalized == 'seeds') {
+          return cat.contains('seed');
+        }
+        return cat == catNormalized || sub == catNormalized;
+      }).toList();
     }
 
     // Subcategory filter
@@ -148,19 +257,9 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
       list = list.where((p) => p.rating >= _minRating!).toList();
     }
 
-    // Sunlight filter
-    if (_selectedSunlight != null) {
-      list = list
-          .where((p) => p.sunlightRequirement
-              .toLowerCase()
-              .contains(_selectedSunlight!.toLowerCase()))
-          .toList();
-    }
-
     // Sorting
     switch (_currentSort) {
       case GlorovSortOption.recommended:
-        // Featured and bestsellers first
         list.sort((a, b) {
           if (a.isBestSeller && !b.isBestSeller) return -1;
           if (!a.isBestSeller && b.isBestSeller) return 1;
@@ -185,10 +284,18 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
   }
 
   GlorovCategory? get _currentCategoryData {
+    final catNorm = _selectedCategory.toLowerCase();
     try {
-      return GlorovMockData.categories.firstWhere(
-        (c) => c.title.toLowerCase() == _selectedCategory.toLowerCase(),
-      );
+      return GlorovMockData.categories.firstWhere((c) {
+        final ct = c.title.toLowerCase();
+        final cs = c.slug.toLowerCase();
+        return ct == catNorm ||
+            cs == catNorm ||
+            (catNorm == 'planters' && cs.contains('planter')) ||
+            (catNorm == 'plant care' && cs.contains('plant-care')) ||
+            (catNorm == 'live plants' && cs.contains('live-plants')) ||
+            (catNorm == 'seeds' && cs.contains('seeds'));
+      });
     } catch (_) {
       return null;
     }
@@ -212,11 +319,11 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
           // 1. Breadcrumbs & Banner
           _buildHeaderBanner(context, filtered.length, isDesktop),
 
-          // 2. Main Catalog Body with Responsive Layout
+          // 2. Main Catalog Body with Responsive Full-Width Layout
           Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(
-              horizontal: isDesktop ? AppSpacing.lg : AppSpacing.md,
+              horizontal: isDesktop ? AppSpacing.xl : AppSpacing.md,
               vertical: AppSpacing.lg,
             ),
             child: Center(
@@ -227,35 +334,21 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Toolbar: Results Count, Mobile Filter Trigger, Sort Dropdown
-                    _buildToolbar(
-                        context, filtered.length, isDesktop),
+                    // Toolbar: Results Count & Sort Dropdown
+                    _buildToolbar(context, filtered.length, isDesktop),
+
+                    const SizedBox(height: AppSpacing.sm),
+
+                    // Minimalist Top Filter Bar (Price brackets, In Stock, Rating)
+                    _buildTopFilterBar(isDesktop),
 
                     // Active Filter Chips Bar
                     if (_hasActiveFilters) _buildActiveFilterChips(),
 
-                    const SizedBox(height: AppSpacing.lg),
+                    const SizedBox(height: AppSpacing.md),
 
-                    // Grid + Sidebar
-                    isDesktop
-                        ? Row(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: [
-                              // Sidebar Filters (260px)
-                              SizedBox(
-                                width: 260,
-                                child: _buildFilterSidebarContent(),
-                              ),
-                              const SizedBox(width: AppSpacing.xl),
-                              // Product Grid
-                              Expanded(
-                                child: _buildProductGrid(
-                                    filtered, isDesktop),
-                              ),
-                            ],
-                          )
-                        : _buildProductGrid(filtered, isDesktop),
+                    // Full-width Responsive Product Grid (Zero 260px sidebar clutter!)
+                    _buildProductGrid(filtered, isDesktop),
                   ],
                 ),
               ),
@@ -272,6 +365,7 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
   Widget _buildHeaderBanner(BuildContext context, int count, bool isDesktop) {
     final catData = _currentCategoryData;
     final isSearch = _searchQuery.isNotEmpty;
+    final catNormalized = _selectedCategory.toLowerCase();
 
     String title;
     String subtitle;
@@ -281,8 +375,30 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
     } else if (catData != null) {
       title = catData.title;
       subtitle = catData.description;
+    } else if (catNormalized == 'flowering' ||
+        catNormalized == 'flowering plants') {
+      title = 'Flowering Plants';
+      subtitle =
+          'Vibrant seasonal blooms and elegant perennial flowering plants for your home and garden.';
+    } else if (catNormalized == 'herbs' ||
+        catNormalized == 'fruit & herb seeds') {
+      title = 'Fruit & Herb Seeds';
+      subtitle =
+          'Fragrant culinary kitchen herbs and high-yield fruit seeds tested for maximum germination.';
+    } else if (catNormalized == 'vegetables' ||
+        catNormalized == 'vegetable seeds') {
+      title = 'Vegetable Seeds';
+      subtitle =
+          'Certified organic, high-germination Desi heirloom vegetable seeds for your kitchen garden.';
+    } else if (_offersOnly || catNormalized == 'offers') {
+      title = 'Botanical Offers & Deals';
+      subtitle =
+          'Exclusive discounts, curated bundles, and seasonal deals on live plants, seeds, and gardening tools.';
     } else {
-      title = 'All Seeds & Live Plants';
+      title =
+          _selectedCategory.isNotEmpty && _selectedCategory != 'All Botanical'
+              ? _selectedCategory
+              : 'All Seeds & Live Plants';
       subtitle =
           'Browse our entire harvest of certified organic heirloom seeds, acclimatized foliage, and planters.';
     }
@@ -311,7 +427,54 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
               Row(
                 children: [
                   InkWell(
-                    onTap: () => Navigator.pushNamed(context, homeScreenRoute),
+                    key: const Key('catalog_back_button'),
+                    onTap: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      } else {
+                        Navigator.pushReplacementNamed(context, homeScreenRoute);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(4),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.arrow_back_ios,
+                              size: 11, color: AppColors.forestDark),
+                          SizedBox(width: 4),
+                          Text(
+                            'Back',
+                            style: TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.forestDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      '|',
+                      style: TextStyle(
+                        color: AppColors.borderSubtle,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.popUntil(context, (route) => route.isFirst);
+                      } else {
+                        Navigator.pushReplacementNamed(context, homeScreenRoute);
+                      }
+                    },
                     child: const Text(
                       'Home',
                       style: TextStyle(
@@ -345,7 +508,7 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
                         style: TextStyle(
                             color: AppColors.textMuted, fontSize: 12)),
                     Text(
-                      _selectedCategory,
+                      title,
                       style: const TextStyle(
                         fontFamily: AppTypography.primaryFont,
                         fontSize: 12,
@@ -391,13 +554,15 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
                           final isSelected = _selectedSubcategory == sub;
                           return GlorovYScrollPassThrough(
                             child: Padding(
-                              padding: const EdgeInsets.only(right: AppSpacing.sm),
+                              padding:
+                                  const EdgeInsets.only(right: AppSpacing.sm),
                               child: ChoiceChip(
                                 label: Text(sub),
                                 selected: isSelected,
                                 onSelected: (selected) {
                                   setState(() {
-                                    _selectedSubcategory = selected ? sub : 'All';
+                                    _selectedSubcategory =
+                                        selected ? sub : 'All';
                                   });
                                 },
                                 selectedColor: AppColors.forestDeep,
@@ -449,89 +614,203 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
           ),
         ),
 
-        // Actions: Mobile Filter Modal Trigger + Sort Dropdown
-        Row(
-          children: [
-            if (!isDesktop) ...[
-              OutlinedButton.icon(
-                onPressed: () => _openMobileFilterSheet(context),
-                icon: const Icon(Icons.tune, size: 16),
-                label: Text(
-                  _hasActiveFilters ? 'Filters (Active)' : 'Filters',
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.forestDeep,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  side: BorderSide(
-                    color: _hasActiveFilters
-                        ? AppColors.forestDeep
-                        : AppColors.borderMedium,
-                  ),
-                ),
+        // Sorting Dropdown
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+          decoration: BoxDecoration(
+            color: AppColors.surfacePure,
+            borderRadius: AppRadii.roundedMd,
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<GlorovSortOption>(
+              value: _currentSort,
+              icon: const Icon(Icons.keyboard_arrow_down, size: 18),
+              style: const TextStyle(
+                fontFamily: AppTypography.primaryFont,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
               ),
-              const SizedBox(width: AppSpacing.sm),
-            ],
-
-            // Sorting Dropdown
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.surfacePure,
-                borderRadius: AppRadii.roundedMd,
-                border: Border.all(color: AppColors.borderSubtle),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<GlorovSortOption>(
-                  value: _currentSort,
-                  icon: const Icon(Icons.keyboard_arrow_down, size: 18),
-                  style: const TextStyle(
-                    fontFamily: AppTypography.primaryFont,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                  onChanged: (val) {
-                    if (val != null) {
-                      setState(() {
-                        _currentSort = val;
-                      });
-                    }
-                  },
-                  items: const [
-                    DropdownMenuItem(
-                      value: GlorovSortOption.recommended,
-                      child: Text('Sort: Recommended'),
-                    ),
-                    DropdownMenuItem(
-                      value: GlorovSortOption.priceAsc,
-                      child: Text('Price: Low to High'),
-                    ),
-                    DropdownMenuItem(
-                      value: GlorovSortOption.priceDesc,
-                      child: Text('Price: High to Low'),
-                    ),
-                    DropdownMenuItem(
-                      value: GlorovSortOption.highestRated,
-                      child: Text('Highest Rated'),
-                    ),
-                    DropdownMenuItem(
-                      value: GlorovSortOption.bestSelling,
-                      child: Text('Bestselling'),
-                    ),
-                  ],
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() {
+                    _currentSort = val;
+                  });
+                }
+              },
+              items: const [
+                DropdownMenuItem(
+                  value: GlorovSortOption.recommended,
+                  child: Text('Sort: Recommended'),
                 ),
-              ),
+                DropdownMenuItem(
+                  value: GlorovSortOption.priceAsc,
+                  child: Text('Price: Low to High'),
+                ),
+                DropdownMenuItem(
+                  value: GlorovSortOption.priceDesc,
+                  child: Text('Price: High to Low'),
+                ),
+                DropdownMenuItem(
+                  value: GlorovSortOption.highestRated,
+                  child: Text('Highest Rated'),
+                ),
+                DropdownMenuItem(
+                  value: GlorovSortOption.bestSelling,
+                  child: Text('Bestselling'),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ],
     );
   }
 
+  /// Minimalist Top Filter Bar (Price brackets, In Stock, Rating, Clear)
+  Widget _buildTopFilterBar(bool isDesktop) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 4, bottom: AppSpacing.xs),
+      child: GlorovYScrollPassThrough(
+        child: ScrollConfiguration(
+          behavior: const GlorovHorizontalScrollBehavior(),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                // Price Range Filter Chips
+                _buildPriceChip('All Prices', 'All'),
+                const SizedBox(width: 8),
+                _buildPriceChip('Under ₹300', '<300'),
+                const SizedBox(width: 8),
+                _buildPriceChip('₹300 - ₹700', '300-700'),
+                const SizedBox(width: 8),
+                _buildPriceChip('₹700+', '700+'),
+                const SizedBox(width: 12),
+
+                // Vertical Divider
+                Container(
+                  height: 20,
+                  width: 1,
+                  color: AppColors.borderSubtle,
+                ),
+                const SizedBox(width: 12),
+
+                // In Stock Toggle Chip
+                FilterChip(
+                  label: const Text('In Stock Only'),
+                  selected: _inStockOnly,
+                  onSelected: (val) {
+                    setState(() => _inStockOnly = val);
+                  },
+                  selectedColor: const Color(0xFFE8F5E9),
+                  backgroundColor: AppColors.surfacePure,
+                  checkmarkColor: AppColors.forestDeep,
+                  labelStyle: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 12,
+                    fontWeight:
+                        _inStockOnly ? FontWeight.w700 : FontWeight.w500,
+                    color: _inStockOnly
+                        ? AppColors.forestDeep
+                        : AppColors.textSecondary,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: AppRadii.roundedFull,
+                    side: BorderSide(
+                      color: _inStockOnly
+                          ? AppColors.forestDeep
+                          : AppColors.borderSubtle,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // 4.5+ Rating Filter Chip
+                FilterChip(
+                  label: const Text('★ 4.5+ Stars'),
+                  selected: _minRating != null && _minRating! >= 4.5,
+                  onSelected: (val) {
+                    setState(() => _minRating = val ? 4.5 : null);
+                  },
+                  selectedColor: const Color(0xFFFEF3C7),
+                  backgroundColor: AppColors.surfacePure,
+                  checkmarkColor: const Color(0xFFD97706),
+                  labelStyle: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 12,
+                    fontWeight: (_minRating != null && _minRating! >= 4.5)
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                    color: (_minRating != null && _minRating! >= 4.5)
+                        ? const Color(0xFFB45309)
+                        : AppColors.textSecondary,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: AppRadii.roundedFull,
+                    side: BorderSide(
+                      color: (_minRating != null && _minRating! >= 4.5)
+                          ? const Color(0xFFF59E0B)
+                          : AppColors.borderSubtle,
+                    ),
+                  ),
+                ),
+
+                if (_hasActiveFilters) ...[
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: _clearAllFilters,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      minimumSize: const Size(40, 32),
+                    ),
+                    child: const Text(
+                      'Clear',
+                      style: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.error,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPriceChip(String label, String bracket) {
+    final isSelected = _selectedPriceBracket == bracket;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) => _setPriceBracket(bracket),
+      selectedColor: AppColors.forestDeep,
+      backgroundColor: AppColors.surfacePure,
+      labelStyle: TextStyle(
+        fontFamily: AppTypography.primaryFont,
+        fontSize: 12,
+        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+        color: isSelected ? Colors.white : AppColors.textSecondary,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadii.roundedFull,
+        side: BorderSide(
+          color: isSelected ? AppColors.forestDeep : AppColors.borderSubtle,
+        ),
+      ),
+    );
+  }
+
   Widget _buildActiveFilterChips() {
     return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
+      padding: const EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.xs),
       child: Wrap(
         spacing: AppSpacing.xs,
         runSpacing: AppSpacing.xs,
@@ -554,20 +833,10 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
             _filterChip('Subcategory: $_selectedSubcategory', () {
               setState(() => _selectedSubcategory = 'All');
             }),
-          if (_filterProductType != null)
-            _filterChip('Type: ${_filterProductType!.name.toUpperCase()}', () {
-              setState(() => _filterProductType = null);
+          if (_selectedPriceBracket != 'All')
+            _filterChip('Price: $_selectedPriceBracket', () {
+              _setPriceBracket('All');
             }),
-          if (_minPrice != null || _maxPrice != null)
-            _filterChip(
-              '₹${_minPrice?.toInt() ?? 0} - ₹${_maxPrice?.toInt() ?? '2000+'}',
-              () {
-                setState(() {
-                  _minPrice = null;
-                  _maxPrice = null;
-                });
-              },
-            ),
           if (_inStockOnly)
             _filterChip('In Stock Only', () {
               setState(() => _inStockOnly = false);
@@ -575,10 +844,6 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
           if (_minRating != null)
             _filterChip('⭐ ${_minRating!.toInt()}+ Stars', () {
               setState(() => _minRating = null);
-            }),
-          if (_selectedSunlight != null)
-            _filterChip('Light: $_selectedSunlight', () {
-              setState(() => _selectedSunlight = null);
             }),
           TextButton(
             onPressed: _clearAllFilters,
@@ -617,252 +882,6 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
     );
   }
 
-  Widget _buildFilterSidebarContent() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surfacePure,
-        borderRadius: AppRadii.roundedLg,
-        border: Border.all(color: AppColors.borderSubtle),
-        boxShadow: AppShadows.card,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Filter Products',
-                style: TextStyle(
-                  fontFamily: AppTypography.primaryFont,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              if (_hasActiveFilters)
-                InkWell(
-                  onTap: _clearAllFilters,
-                  child: const Text(
-                    'Reset',
-                    style: TextStyle(
-                      fontFamily: AppTypography.primaryFont,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.forestDeep,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const Divider(height: AppSpacing.lg),
-
-          // Categories Selection
-          _sidebarSectionTitle('Categories'),
-          ...GlorovMockData.categories.map((cat) {
-            final isSelected = _selectedCategory == cat.title;
-            return InkWell(
-              onTap: () {
-                setState(() {
-                  _selectedCategory = cat.title;
-                  _selectedSubcategory = 'All';
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Icon(
-                      isSelected
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_off,
-                      size: 16,
-                      color: isSelected
-                          ? AppColors.forestDeep
-                          : AppColors.textMuted,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        cat.title,
-                        style: TextStyle(
-                          fontFamily: AppTypography.primaryFont,
-                          fontSize: 13,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w400,
-                          color: isSelected
-                              ? AppColors.forestDeep
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-
-          const Divider(height: AppSpacing.lg),
-
-          // Product Type
-          _sidebarSectionTitle('Product Type'),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: GlorovProductType.values.map((type) {
-              final isSel = _filterProductType == type;
-              return ChoiceChip(
-                label: Text(type.name.toUpperCase()),
-                selected: isSel,
-                onSelected: (selected) {
-                  setState(() {
-                    _filterProductType = selected ? type : null;
-                  });
-                },
-                selectedColor: AppColors.forestDeep,
-                backgroundColor: AppColors.surfaceCream,
-                labelStyle: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: isSel ? Colors.white : AppColors.textSecondary,
-                ),
-              );
-            }).toList(),
-          ),
-
-          const Divider(height: AppSpacing.lg),
-
-          // Price Ranges
-          _sidebarSectionTitle('Price Range'),
-          _priceRangeTile('Under ₹500', 0, 500),
-          _priceRangeTile('₹500 - ₹1,000', 500, 1000),
-          _priceRangeTile('₹1,000 - ₹2,000', 1000, 2000),
-          _priceRangeTile('Above ₹2,000', 2000, 10000),
-
-          const Divider(height: AppSpacing.lg),
-
-          // Sunlight Requirements
-          _sidebarSectionTitle('Sunlight Requirements'),
-          _sunlightTile('Full Sun'),
-          _sunlightTile('Bright, Indirect Light'),
-          _sunlightTile('Low to Medium Indirect Light'),
-
-          const Divider(height: AppSpacing.lg),
-
-          // Availability
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text(
-              'In Stock Only',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-            ),
-            value: _inStockOnly,
-            activeColor: AppColors.forestDeep,
-            onChanged: (val) {
-              setState(() {
-                _inStockOnly = val ?? false;
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _sidebarSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontFamily: AppTypography.primaryFont,
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-        ),
-      ),
-    );
-  }
-
-  Widget _priceRangeTile(String label, double min, double max) {
-    final isSelected = _minPrice == min && _maxPrice == max;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          if (isSelected) {
-            _minPrice = null;
-            _maxPrice = null;
-          } else {
-            _minPrice = min;
-            _maxPrice = max;
-          }
-        });
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          children: [
-            Icon(
-              isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-              size: 16,
-              color: isSelected ? AppColors.forestDeep : AppColors.textMuted,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: AppTypography.primaryFont,
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color:
-                    isSelected ? AppColors.forestDeep : AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _sunlightTile(String light) {
-    final isSelected = _selectedSunlight == light;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedSunlight = isSelected ? null : light;
-        });
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          children: [
-            Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              size: 16,
-              color: isSelected ? AppColors.forestDeep : AppColors.textMuted,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                light,
-                style: TextStyle(
-                  fontFamily: AppTypography.primaryFont,
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected
-                      ? AppColors.forestDeep
-                      : AppColors.textSecondary,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildProductGrid(List<GlorovProduct> products, bool isDesktop) {
     if (products.isEmpty) {
       return _buildEmptyState();
@@ -873,7 +892,7 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
     double childAspectRatio = 0.68;
 
     if (isDesktop) {
-      crossAxisCount = width > 1200 ? 3 : 2;
+      crossAxisCount = width >= 1200 ? 4 : (width >= 800 ? 3 : 2);
       childAspectRatio = 0.72;
     } else if (width > 600) {
       crossAxisCount = 2;
@@ -956,72 +975,6 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  void _openMobileFilterSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.85,
-          decoration: const BoxDecoration(
-            color: AppColors.surfacePure,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(AppRadii.lg),
-              topRight: Radius.circular(AppRadii.lg),
-            ),
-          ),
-          child: Column(
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Filter Botanical Products',
-                      style: TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: _buildFilterSidebarContent(),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.forestDeep,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text('Apply Filters'),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

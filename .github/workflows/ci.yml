@@ -51,6 +51,10 @@ jobs:
         run: pnpm turbo lint
 
       - name: Run storefront and backend unit tests
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/medusa_test
+          JWT_SECRET: supersecret_ci_test_jwt_secret_32chars_long!
+          COOKIE_SECRET: supersecret_ci_test_cookie_secret_32chars!
         run: pnpm turbo test
 
   integration:

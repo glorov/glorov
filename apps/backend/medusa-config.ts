@@ -76,7 +76,11 @@ export default defineConfig({
     disable: false,
   },
   projectConfig: {
-    databaseUrl: process.env.DATABASE_URL,
+    databaseUrl:
+      process.env.DATABASE_URL ||
+      (process.env.NODE_ENV === "test"
+        ? "postgres://postgres:postgres@localhost:5432/medusa_test"
+        : undefined),
     redisUrl: process.env.REDIS_URL,
     http: {
       storeCors: process.env.STORE_CORS || "http://localhost:3000",

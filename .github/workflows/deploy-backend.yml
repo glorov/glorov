@@ -1,16 +1,6 @@
 name: Deploy Backend to Azure VM
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'apps/backend/**'
-      - 'packages/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'deploy/**'
-      - '.github/workflows/deploy-backend.yml'
   workflow_dispatch:
 
 concurrency:

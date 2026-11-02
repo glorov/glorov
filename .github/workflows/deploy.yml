@@ -1,9 +1,6 @@
 name: GLOROV Automated Deployment & Release Pipeline
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
   workflow_dispatch:
     inputs:
       target_environment:

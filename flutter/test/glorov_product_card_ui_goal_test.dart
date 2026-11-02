@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shop/components/home/glorov_featured_products.dart';
 import 'package:shop/components/product/glorov_product_card.dart';
@@ -123,8 +124,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Verify outline shopping bag icon matching reference image 1
-      expect(find.byIcon(Icons.shopping_bag_outlined), findsOneWidget);
+      // Verify bespoke GLOROV botanical cart icon rendered as SvgPicture
+      expect(find.byType(SvgPicture), findsWidgets);
 
       // Verify price is ₹119 in bold sans-serif
       expect(find.text('₹119'), findsOneWidget);

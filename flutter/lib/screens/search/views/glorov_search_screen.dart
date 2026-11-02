@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/icons/glorov_custom_icons.dart';
 import '../../../core/interactions/interactions.dart';
 import '../../../core/theme/app_breakpoints.dart';
 import '../../../core/theme/app_colors.dart';
@@ -1282,8 +1283,7 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
                     Expanded(
                       child: ElevatedButton.icon(
                         key: const Key('closest_match_add_to_cart_button'),
-                        icon: const Icon(
-                          Icons.add_shopping_cart_rounded,
+                        icon: GlorovCustomIcons.cart(
                           size: 15,
                           color: Colors.white,
                         ),
@@ -1554,8 +1554,7 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
                               color: AppColors.forestDeep.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(
-                              Icons.add_shopping_cart_rounded,
+                            child: GlorovCustomIcons.cart(
                               size: 16,
                               color: AppColors.forestDeep,
                             ),

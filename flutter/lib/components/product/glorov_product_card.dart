@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import '../../core/icons/glorov_custom_icons.dart';
 import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
@@ -300,45 +301,64 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                product.rating.toStringAsFixed(1),
-                                style: const TextStyle(
-                                  fontFamily: AppTypography.primaryFont,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF0F172A),
-                                  height: 1.0,
-                                ),
-                              ),
-                              const SizedBox(width: 3),
-                              const Icon(
-                                Icons.star_rounded,
-                                size: 13,
-                                color: Color(0xFF16A34A), // Rich green star
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 3),
-                                child: Text(
-                                  '|',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Color(0xFFCBD5E1),
-                                    height: 1.0,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                '${product.reviewCount}',
-                                style: const TextStyle(
-                                  fontFamily: AppTypography.primaryFont,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF475569),
-                                  height: 1.0,
-                                ),
-                              ),
-                            ],
+                            children: product.reviewCount == 0
+                                ? const [
+                                    Icon(
+                                      Icons.eco_rounded,
+                                      size: 12,
+                                      color: Color(0xFF16A34A),
+                                    ),
+                                    SizedBox(width: 3),
+                                    Text(
+                                      'New',
+                                      style: TextStyle(
+                                        fontFamily: AppTypography.primaryFont,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF16A34A),
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                  ]
+                                : [
+                                    Text(
+                                      product.rating.toStringAsFixed(1),
+                                      style: const TextStyle(
+                                        fontFamily: AppTypography.primaryFont,
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF0F172A),
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 3),
+                                    const Icon(
+                                      Icons.star_rounded,
+                                      size: 13,
+                                      color: Color(0xFF16A34A), // Rich green star
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 3),
+                                      child: Text(
+                                        '|',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Color(0xFFCBD5E1),
+                                          height: 1.0,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      '${product.reviewCount}',
+                                      style: const TextStyle(
+                                        fontFamily: AppTypography.primaryFont,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF475569),
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                  ],
                           ),
                         ),
                       ),
@@ -552,9 +572,8 @@ class _GlorovProductCardState extends State<GlorovProductCard> {
               ),
             ],
           ),
-          child: const Center(
-            child: Icon(
-              Icons.shopping_bag_outlined,
+          child: Center(
+            child: GlorovCustomIcons.cart(
               size: 18,
               color: Colors.white,
             ),

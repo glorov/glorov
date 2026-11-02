@@ -1372,9 +1372,8 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                               ),
                             ],
                           ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.shopping_bag_outlined,
+                          child: Center(
+                            child: GlorovCustomIcons.cart(
                               size: 18,
                               color: Colors.white,
                             ),

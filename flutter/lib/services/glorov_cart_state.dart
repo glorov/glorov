@@ -239,12 +239,17 @@ class GlorovCartState extends ChangeNotifier {
 
   double get milestoneProgressFraction {
     if (subtotal <= 0) return 0.0;
-    if (subtotal < 999.0) {
-      return (subtotal / 999.0) * 0.33;
+    if (subtotal < freeShippingThreshold) {
+      return (subtotal / freeShippingThreshold) * 0.25;
+    } else if (subtotal < 999.0) {
+      return 0.25 +
+          ((subtotal - freeShippingThreshold) /
+                  (999.0 - freeShippingThreshold)) *
+              0.25;
     } else if (subtotal < 1599.0) {
-      return 0.33 + ((subtotal - 999.0) / (1599.0 - 999.0)) * 0.33;
+      return 0.50 + ((subtotal - 999.0) / (1599.0 - 999.0)) * 0.25;
     } else if (subtotal < 2299.0) {
-      return 0.66 + ((subtotal - 1599.0) / (2299.0 - 1599.0)) * 0.34;
+      return 0.75 + ((subtotal - 1599.0) / (2299.0 - 1599.0)) * 0.25;
     }
     return 1.0;
   }

@@ -343,6 +343,8 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                 const nodeSize = 25.0;
                 final availableWidth = trackWidth - nodeSize;
 
+                final node0Reached =
+                    subtotal >= GlorovCartState.freeShippingThreshold;
                 final node1Reached = subtotal >= 999.0;
                 final node2Reached = subtotal >= 1599.0;
                 final node3Reached = subtotal >= 2299.0;
@@ -382,9 +384,20 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                         ),
                       ),
 
+                      // Milestone Node 0: Free Delivery
+                      Positioned(
+                        left: availableWidth * 0.25,
+                        child: _freeDeliveryMilestoneNodeCircle(
+                          context,
+                          state,
+                          node0Reached,
+                          size: nodeSize,
+                        ),
+                      ),
+
                       // Milestone Node 1: 10%
                       Positioned(
-                        left: availableWidth * 0.33,
+                        left: availableWidth * 0.50,
                         child: _milestoneNodeCircle(
                           context,
                           state,
@@ -396,7 +409,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
 
                       // Milestone Node 2: 15%
                       Positioned(
-                        left: availableWidth * 0.66,
+                        left: availableWidth * 0.75,
                         child: _milestoneNodeCircle(
                           context,
                           state,
@@ -423,6 +436,74 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _freeDeliveryMilestoneNodeCircle(
+    BuildContext context,
+    GlorovCartState state,
+    bool isReached, {
+    double size = 25,
+  }) {
+    return TapFeedback(
+      onTap: () {
+        if (!isReached) {
+          final needed = (GlorovCartState.freeShippingThreshold - state.subtotal)
+              .clamp(0.0, double.infinity)
+              .toStringAsFixed(0);
+          GlorovFeedback.showInfoToast(
+            context,
+            message: 'Add ₹$needed more to unlock Free Express Delivery!',
+          );
+        } else {
+          GlorovFeedback.showSuccessToast(
+            context,
+            message: '🎉 Free Express Delivery is unlocked for this order!',
+          );
+        }
+      },
+      effect: TapAnimationType.scale,
+      scaleDown: 0.90,
+      child: Container(
+        width: size,
+        height: size,
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          color: isReached ? const Color(0xFF0A4C36) : Colors.white,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: const Color(0xFF0A4C36),
+            width: isReached ? 1.8 : 1.4,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isReached
+                  ? const Color(0x330A4C36)
+                  : const Color(0x10000000),
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              'FREE',
+              maxLines: 1,
+              softWrap: false,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: AppTypography.primaryFont,
+                fontSize: 8.5,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.3,
+                color: isReached ? Colors.white : const Color(0xFF0A4C36),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -2506,10 +2587,127 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                       child: ListView.separated(
                         shrinkWrap: true,
                         padding: const EdgeInsets.all(16),
-                        itemCount: offers.length,
+                        itemCount: offers.length + 1,
                         separatorBuilder: (_, __) => const SizedBox(height: 14),
                         itemBuilder: (ctx, i) {
-                          final offer = offers[i];
+                          if (i == 0) {
+                            // Milestone Goal 1: Free Express Delivery
+                            final isFreeShippingUnlocked =
+                                state.isFreeShippingEligible;
+                            final freeShippingShortfall =
+                                (GlorovCartState.freeShippingThreshold -
+                                        subtotal)
+                                    .clamp(0.0, double.infinity);
+
+                            return Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: isFreeShippingUnlocked
+                                    ? const Color(0xFFF2FAF5)
+                                    : const Color(0xFFF9FAFB),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: isFreeShippingUnlocked
+                                      ? const Color(0xFF0A4C36)
+                                      : const Color(0xFFE5E7EB),
+                                  width: isFreeShippingUnlocked ? 1.8 : 1.0,
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Row(
+                                          children: [
+                                            Icon(
+                                              Icons.local_shipping_outlined,
+                                              size: 18,
+                                              color: Color(0xFF0A4C36),
+                                            ),
+                                            SizedBox(width: 6),
+                                            Text(
+                                              'Free Express Delivery',
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    AppTypography.primaryFont,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w800,
+                                                color: Color(0xFF0A4C36),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 3),
+                                        const Text(
+                                          'Free express shipping (save ₹99) on orders above ₹499',
+                                          style: TextStyle(
+                                            fontFamily:
+                                                AppTypography.primaryFont,
+                                            fontSize: 12.5,
+                                            color: Color(0xFF4B5563),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        const Text(
+                                          'Goal 1 • Automatically applied at ₹499',
+                                          style: TextStyle(
+                                            fontFamily:
+                                                AppTypography.primaryFont,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF059669),
+                                          ),
+                                        ),
+                                        if (!isFreeShippingUnlocked) ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Add ₹${freeShippingShortfall.toStringAsFixed(0)} more to unlock',
+                                            style: const TextStyle(
+                                              fontFamily:
+                                                  AppTypography.primaryFont,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFFDC2626),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: isFreeShippingUnlocked
+                                          ? const Color(0xFF0A4C36)
+                                          : const Color(0xFFE5E7EB),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      isFreeShippingUnlocked
+                                          ? 'UNLOCKED'
+                                          : 'GOAL 1',
+                                      style: TextStyle(
+                                        fontFamily: AppTypography.primaryFont,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        color: isFreeShippingUnlocked
+                                            ? Colors.white
+                                            : const Color(0xFF6B7280),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+
+                          final offer = offers[i - 1];
                           final isApplied = appliedPromo == offer.code;
                           final isEligible = subtotal >= offer.minSpend;
                           final isHigherThanCurrent = isEligible &&

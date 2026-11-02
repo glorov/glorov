@@ -130,5 +130,52 @@ void main() {
         expect(GlorovCartState.instance.promoDiscountAmount, closeTo(1975 * 0.15, 0.01));
       },
     );
+
+    testWidgets(
+      'Milestone roadmap displays all 4 goals (FREE, 10%, 15%, 20%) and FREE node is interactive',
+      (tester) async {
+        tester.view.physicalSize = const Size(1280, 900);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final product = GlorovMockData.products.first; // effectivePrice ~79
+        GlorovCartState.instance.addToCart(product, quantity: 1); // subtotal = 79 (< 499)
+
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: GlorovCartScreen(),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Verify all 4 goals are rendered
+        expect(find.text('FREE'), findsWidgets);
+        expect(find.text('10%'), findsWidgets);
+        expect(find.text('15%'), findsWidgets);
+        expect(find.text('20%'), findsWidgets);
+
+        // Tap FREE node when unreached (shortfall: 499 - 79 = 420)
+        await tester.tap(find.text('FREE').first);
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('Add ₹420 more to unlock Free Express Delivery'),
+          findsOneWidget,
+        );
+
+        // Now increase quantity so subtotal >= 499 (7 * 79 = 553)
+        final itemKey = GlorovCartState.instance.items.first.itemKey;
+        GlorovCartState.instance.updateQuantity(itemKey, 7);
+        await tester.pumpAndSettle();
+
+        // Tap FREE node when reached
+        await tester.tap(find.text('FREE').first);
+        await tester.pumpAndSettle();
+        expect(
+          find.textContaining('Free Express Delivery is unlocked for this order'),
+          findsOneWidget,
+        );
+      },
+    );
   });
 }

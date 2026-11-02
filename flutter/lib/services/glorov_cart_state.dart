@@ -70,6 +70,7 @@ class GlorovCartState extends ChangeNotifier {
   String? _appliedPromoCode;
   double _promoDiscountPercent = 0.0;
   bool _isFreeShippingPromo = false;
+  String? _couponRevocationNotice;
 
   static const double freeShippingThreshold = 499.0;
   static const double standardShippingCost = 99.0;
@@ -98,6 +99,92 @@ class GlorovCartState extends ChangeNotifier {
     ),
   ];
 
+  static double getMinSpendForCoupon(String code) {
+    final clean = code.trim().toUpperCase();
+    switch (clean) {
+      case 'DIWALI20':
+        return 2299.0;
+      case 'DIWALI15':
+        return 1599.0;
+      case 'DIWALI10':
+        return 999.0;
+      case 'SEEDS20':
+        return 599.0;
+      case 'GLOROV10':
+        return 499.0;
+      case 'FREESHIP':
+      default:
+        return 0.0;
+    }
+  }
+
+  static double getDiscountPercentForCoupon(String code) {
+    final clean = code.trim().toUpperCase();
+    switch (clean) {
+      case 'DIWALI20':
+      case 'SEEDS20':
+        return 20.0;
+      case 'DIWALI15':
+        return 15.0;
+      case 'DIWALI10':
+      case 'GLOROV10':
+        return 10.0;
+      case 'FREESHIP':
+      default:
+        return 0.0;
+    }
+  }
+
+  String? get couponRevocationNotice => _couponRevocationNotice;
+  bool get hasPendingCouponRevocationNotice => _couponRevocationNotice != null;
+
+  String? consumeCouponRevocationNotice() {
+    final notice = _couponRevocationNotice;
+    _couponRevocationNotice = null;
+    return notice;
+  }
+
+  /// Automatically validates whether the currently applied coupon meets its minimum spend limit.
+  /// If the cart subtotal has dropped below the threshold, automatically removes the coupon.
+  bool _validateAppliedCoupon() {
+    if (_appliedPromoCode == null) return false;
+    final minSpend = getMinSpendForCoupon(_appliedPromoCode!);
+    if (subtotal < minSpend) {
+      final code = _appliedPromoCode!;
+      _appliedPromoCode = null;
+      _promoDiscountPercent = 0.0;
+      _isFreeShippingPromo = false;
+      _couponRevocationNotice =
+          'Coupon $code removed: Minimum order of ₹${minSpend.toStringAsFixed(0)} required.';
+      return true;
+    }
+    return false;
+  }
+
+  /// Returns the highest milestone offer that is currently eligible for the cart subtotal.
+  GlorovMilestoneOffer? get highestEligibleOffer {
+    if (subtotal <= 0) return null;
+    for (final offer in milestoneOffers.reversed) {
+      if (subtotal >= offer.minSpend) {
+        return offer;
+      }
+    }
+    return null;
+  }
+
+  /// Returns a milestone offer that has been unlocked (target price reached)
+  /// and provides a higher discount percentage than what is currently applied.
+  GlorovMilestoneOffer? get higherUnlockedOffer {
+    if (subtotal <= 0 || _appliedPromoCode == null) return null;
+    for (final offer in milestoneOffers.reversed) {
+      if (subtotal >= offer.minSpend &&
+          offer.discountPercent > _promoDiscountPercent) {
+        return offer;
+      }
+    }
+    return null;
+  }
+
   GlorovCartState._internal() {
     _loadFromStorage();
   }
@@ -114,6 +201,7 @@ class GlorovCartState extends ChangeNotifier {
   GlorovAddress get selectedAddress => _selectedAddress;
   GlorovDeliveryOption get selectedDeliveryOption => _selectedDeliveryOption;
   String? get appliedPromoCode => _appliedPromoCode;
+  double get promoDiscountPercent => _promoDiscountPercent;
 
   double get subtotal =>
       _items.values.fold(0.0, (sum, item) => sum + item.totalPrice);
@@ -204,12 +292,15 @@ class GlorovCartState extends ChangeNotifier {
     } else {
       _items[key]!.quantity = newQuantity;
     }
+    _validateAppliedCoupon();
     _saveToStorage();
     notifyListeners();
   }
 
   void removeFromCart(String key) {
+    if (!_items.containsKey(key)) return;
     _items.remove(key);
+    _validateAppliedCoupon();
     _saveToStorage();
     notifyListeners();
   }
@@ -218,6 +309,7 @@ class GlorovCartState extends ChangeNotifier {
     if (!_items.containsKey(key)) return;
     final item = _items.remove(key)!;
     _wishlistIds.add(item.product.id);
+    _validateAppliedCoupon();
     _saveToStorage();
     notifyListeners();
   }
@@ -227,6 +319,7 @@ class GlorovCartState extends ChangeNotifier {
     _appliedPromoCode = null;
     _promoDiscountPercent = 0.0;
     _isFreeShippingPromo = false;
+    _couponRevocationNotice = null;
     _saveToStorage();
     notifyListeners();
   }
@@ -253,6 +346,7 @@ class GlorovCartState extends ChangeNotifier {
       _appliedPromoCode = 'DIWALI10';
       _promoDiscountPercent = 10.0;
       _isFreeShippingPromo = false;
+      _couponRevocationNotice = null;
       _saveToStorage();
       notifyListeners();
       return (true, 'Coupon DIWALI10 applied! 10% discount added.');
@@ -264,6 +358,7 @@ class GlorovCartState extends ChangeNotifier {
       _appliedPromoCode = 'DIWALI15';
       _promoDiscountPercent = 15.0;
       _isFreeShippingPromo = false;
+      _couponRevocationNotice = null;
       _saveToStorage();
       notifyListeners();
       return (true, 'Coupon DIWALI15 applied! 15% discount added.');
@@ -275,6 +370,7 @@ class GlorovCartState extends ChangeNotifier {
       _appliedPromoCode = 'DIWALI20';
       _promoDiscountPercent = 20.0;
       _isFreeShippingPromo = false;
+      _couponRevocationNotice = null;
       _saveToStorage();
       notifyListeners();
       return (true, 'Coupon DIWALI20 applied! 20% discount added.');
@@ -285,6 +381,7 @@ class GlorovCartState extends ChangeNotifier {
       _appliedPromoCode = 'GLOROV10';
       _promoDiscountPercent = 10.0;
       _isFreeShippingPromo = false;
+      _couponRevocationNotice = null;
       _saveToStorage();
       notifyListeners();
       return (true, 'Coupon GLOROV10 applied! You saved 10% on your cart.');
@@ -295,6 +392,7 @@ class GlorovCartState extends ChangeNotifier {
       _appliedPromoCode = 'SEEDS20';
       _promoDiscountPercent = 20.0;
       _isFreeShippingPromo = false;
+      _couponRevocationNotice = null;
       _saveToStorage();
       notifyListeners();
       return (true, 'Coupon SEEDS20 applied! You saved 20% on your order.');
@@ -302,6 +400,7 @@ class GlorovCartState extends ChangeNotifier {
       _appliedPromoCode = 'FREESHIP';
       _promoDiscountPercent = 0.0;
       _isFreeShippingPromo = true;
+      _couponRevocationNotice = null;
       _saveToStorage();
       notifyListeners();
       return (true, 'Coupon FREESHIP applied! Free delivery unlocked.');
@@ -314,6 +413,7 @@ class GlorovCartState extends ChangeNotifier {
     _appliedPromoCode = null;
     _promoDiscountPercent = 0.0;
     _isFreeShippingPromo = false;
+    _couponRevocationNotice = null;
     _saveToStorage();
     notifyListeners();
   }
@@ -653,6 +753,7 @@ class GlorovCartState extends ChangeNotifier {
                       variant: variant,
                       quantity: qty,
                     );
+                    _validateAppliedCoupon();
                     notifyListeners();
                   }
                 });
@@ -665,6 +766,7 @@ class GlorovCartState extends ChangeNotifier {
       final promoRaw = storage.getItem('glorov_promo_code');
       if (promoRaw != null && promoRaw.isNotEmpty) {
         applyCoupon(promoRaw);
+        _validateAppliedCoupon();
       }
     } catch (e) {
       debugPrint('Error loading from local storage: $e');

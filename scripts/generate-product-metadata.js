@@ -37,11 +37,12 @@ const MOCK_DATA_PATH = path.join(
   'glorov_mock_data.dart'
 );
 
-const MEDUSA_HOST = '20.244.48.139.sslip.io';
-const MEDUSA_PATH = '/medusa/store/products?limit=100';
+const MEDUSA_HOST = process.env.MEDUSA_HOST || 'api.glorov.tech';
+const MEDUSA_PATH = process.env.MEDUSA_PATH || '/medusa/store/products?limit=100';
 const PUBLISHABLE_KEY =
+  process.env.PUBLISHABLE_KEY ||
   'pk_3e00679a810ca538ba78aedc23b336788d82631606792292cbecad4fc422316a';
-const SITE_URL = 'https://glorovs.web.app';
+const SITE_URL = process.env.SITE_URL || 'https://glorov.tech';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
 
 /**

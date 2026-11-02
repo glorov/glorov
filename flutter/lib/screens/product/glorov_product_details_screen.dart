@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../components/common/glorov_y_scroll_pass_through.dart';
+import '../../components/logistics/glorov_delivery_availability_alert.dart';
 import '../../components/navigation/glorov_footer.dart';
 import '../../components/navigation/glorov_storefront_scaffold.dart';
 import '../../components/product/glorov_product_card.dart';
@@ -12,14 +13,15 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/theme/glorov_horizontal_scroll_behavior.dart';
-import '../../models/glorov/glorov_mock_data.dart';
 import '../../models/glorov/glorov_offer.dart';
+import '../../models/glorov/glorov_pincode_result.dart';
 import '../../models/glorov/glorov_product.dart';
 import '../../models/glorov/glorov_review.dart';
 import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
 import '../../services/glorov_cart_state.dart';
 import '../../services/glorov_header_scroll_notifier.dart';
+import '../../services/glorov_logistics_service.dart';
 import '../../services/meta/glorov_meta_service.dart';
 
 /// GLOROV Production-Grade Product Details & Ordering Screen
@@ -39,12 +41,14 @@ import '../../services/meta/glorov_meta_service.dart';
 /// - Customer ratings with AI summary & reviews
 /// - Sticky mobile bottom bar with price and green ADD TO CART button
 class GlorovProductDetailsScreen extends StatefulWidget {
-  final GlorovProduct product;
+  final GlorovProduct? product;
+  final String? productIdOrSlug;
   final bool isLoading;
 
   const GlorovProductDetailsScreen({
     super.key,
-    required this.product,
+    this.product,
+    this.productIdOrSlug,
     this.isLoading = false,
   });
 
@@ -55,6 +59,11 @@ class GlorovProductDetailsScreen extends StatefulWidget {
 
 class _GlorovProductDetailsScreenState
     extends State<GlorovProductDetailsScreen> {
+  GlorovProduct? _loadedProduct;
+  bool _isLoadingProduct = false;
+
+  GlorovProduct get _product => _loadedProduct ?? widget.product!;
+
   late int _selectedImageIndex;
   late int _quantity;
   GlorovProductVariant? _selectedVariant;
@@ -123,8 +132,8 @@ class _GlorovProductDetailsScreenState
   }
 
   void _initVariantState() {
-    if (widget.product.variants.isEmpty) return;
-    _selectedVariant ??= widget.product.variants.first;
+    if (_product.variants.isEmpty) return;
+    _selectedVariant ??= _product.variants.first;
     final parts =
         _selectedVariant!.name.split('/').map((s) => s.trim()).toList();
     if (parts.length >= 3) {
@@ -150,7 +159,7 @@ class _GlorovProductDetailsScreenState
   void _onSelectSize(String size) {
     _selectedPlantSize = size;
     GlorovProductVariant? match;
-    for (final v in widget.product.variants) {
+    for (final v in _product.variants) {
       final p = v.name.split('/').map((s) => s.trim()).toList();
       if (p.isNotEmpty && p[0] == size) {
         if (_selectedPlanterName != null &&
@@ -167,9 +176,9 @@ class _GlorovProductDetailsScreenState
         match ??= v;
       }
     }
-    match ??= widget.product.variants.firstWhere(
+    match ??= _product.variants.firstWhere(
       (v) => v.name.contains(size),
-      orElse: () => widget.product.variants.first,
+      orElse: () => _product.variants.first,
     );
     setState(() {
       _selectedVariant = match;
@@ -180,7 +189,7 @@ class _GlorovProductDetailsScreenState
   void _onSelectPlanter(String planter) {
     _selectedPlanterName = planter;
     GlorovProductVariant? match;
-    for (final v in widget.product.variants) {
+    for (final v in _product.variants) {
       if (v.name.contains(planter)) {
         if (_selectedPlantSize != null &&
             v.name.contains(_selectedPlantSize!)) {
@@ -194,9 +203,9 @@ class _GlorovProductDetailsScreenState
         match ??= v;
       }
     }
-    match ??= widget.product.variants.firstWhere(
+    match ??= _product.variants.firstWhere(
       (v) => v.name.contains(planter),
-      orElse: () => widget.product.variants.first,
+      orElse: () => _product.variants.first,
     );
     setState(() {
       _selectedVariant = match;
@@ -207,7 +216,7 @@ class _GlorovProductDetailsScreenState
   void _onSelectColor(String color) {
     _selectedColorName = color;
     GlorovProductVariant? match;
-    for (final v in widget.product.variants) {
+    for (final v in _product.variants) {
       if (v.name.contains(color)) {
         if (_selectedPlanterName != null &&
             v.name.contains(_selectedPlanterName!)) {
@@ -221,9 +230,9 @@ class _GlorovProductDetailsScreenState
         match ??= v;
       }
     }
-    match ??= widget.product.variants.firstWhere(
+    match ??= _product.variants.firstWhere(
       (v) => v.name.contains(color),
-      orElse: () => widget.product.variants.first,
+      orElse: () => _product.variants.first,
     );
     setState(() {
       _selectedVariant = match;
@@ -502,21 +511,11 @@ class _GlorovProductDetailsScreenState
 
   // Pincode estimator state
   final TextEditingController _pincodeController =
-      TextEditingController(text: '700059');
-  bool _isPincodeChecked = true;
-  late String _deliveryEstimateText = _formatDeliveryEstimate();
-
-  static String _formatDeliveryEstimate() {
-    final deliveryDate = DateTime.now().add(const Duration(days: 4));
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final weekday = days[deliveryDate.weekday - 1];
-    final month = months[deliveryDate.month - 1];
-    return 'Delivered by: $weekday, ${deliveryDate.day} $month';
-  }
+      TextEditingController();
+  bool _isPincodeChecked = false;
+  bool _isCheckingPincode = false;
+  GlorovPincodeResult? _pincodeResult;
+  late String _deliveryEstimateText = '';
 
   // Frequently bought together bundle state
   bool _bundleMainChecked = true;
@@ -559,7 +558,7 @@ class _GlorovProductDetailsScreenState
   Future<void> _fetchRelatedProducts() async {
     try {
       final related = await GlorovRepositories.products
-          .getRelatedProducts(widget.product.id, limit: 6);
+          .getRelatedProducts(_product.id, limit: 6);
       if (mounted && related.isNotEmpty) {
         setState(() => _relatedProducts = related);
       }
@@ -571,9 +570,9 @@ class _GlorovProductDetailsScreenState
     setState(() => _isLoadingReviews = true);
     try {
       final results = await Future.wait([
-        GlorovRepositories.reviews.getSummary(widget.product.id),
+        GlorovRepositories.reviews.getSummary(_product.id),
         GlorovRepositories.reviews.getReviews(
-          widget.product.id,
+          _product.id,
           sortBy: _reviewsSort,
           starFilter: _selectedStarFilter,
           photosOnly: _photosOnlyFilter,
@@ -602,26 +601,67 @@ class _GlorovProductDetailsScreenState
     GlorovHeaderScrollNotifier.instance.reset();
     _selectedImageIndex = 0;
     _quantity = 1;
-    if (widget.product.variants.isNotEmpty) {
-      _selectedVariant = widget.product.variants.first;
+    _pageScrollController.addListener(_onPageScroll);
+
+    if (widget.product != null) {
+      _initProductState(widget.product!);
+    } else if (widget.productIdOrSlug != null &&
+        widget.productIdOrSlug!.isNotEmpty) {
+      _fetchProduct(widget.productIdOrSlug!);
+    }
+
+    final savedPin = GlorovLogisticsService.instance.lastCheckedPincode;
+    if (savedPin != null && savedPin.trim().length == 6) {
+      _pincodeController.text = savedPin.trim();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _handleCheckPincode();
+        }
+      });
+    }
+  }
+
+  void _initProductState(GlorovProduct p) {
+    if (p.variants.isNotEmpty) {
+      _selectedVariant = p.variants.first;
     }
     _initVariantState();
     _fetchReviews();
     _fetchOffers();
     _fetchRelatedProducts();
-    _pageScrollController.addListener(_onPageScroll);
     _updateMetadata();
   }
 
+  Future<void> _fetchProduct(String lookup) async {
+    setState(() => _isLoadingProduct = true);
+    try {
+      final p = await GlorovRepositories.products.getProductById(lookup) ??
+          await GlorovRepositories.products.getProductBySlug(lookup);
+      if (mounted) {
+        if (p != null) {
+          setState(() {
+            _loadedProduct = p;
+            _isLoadingProduct = false;
+          });
+          _initProductState(p);
+        } else {
+          setState(() => _isLoadingProduct = false);
+        }
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingProduct = false);
+    }
+  }
+
   void _updateMetadata() {
-    final slugOrId = widget.product.slug.isNotEmpty
-        ? widget.product.slug
-        : widget.product.id;
+    final slugOrId = _product.slug.isNotEmpty
+        ? _product.slug
+        : _product.id;
     GlorovMetaService.instance.setProductMeta(
-      title: widget.product.title,
-      description: widget.product.description,
-      imageUrl: widget.product.imageUrls.isNotEmpty
-          ? widget.product.imageUrls.first
+      title: _product.title,
+      description: _product.description,
+      imageUrl: _product.imageUrls.isNotEmpty
+          ? _product.imageUrls.first
           : GlorovMetaService.defaultOgImage,
       productSlugOrId: slugOrId,
       price: _currentPrice,
@@ -629,11 +669,11 @@ class _GlorovProductDetailsScreenState
   }
 
   Future<void> _handleShareProduct() async {
-    final slugOrId = widget.product.slug.isNotEmpty
-        ? widget.product.slug
-        : widget.product.id;
+    final slugOrId = _product.slug.isNotEmpty
+        ? _product.slug
+        : _product.id;
     final didShareNative = await GlorovMetaService.instance.shareProduct(
-      title: widget.product.title,
+      title: _product.title,
       productSlugOrId: slugOrId,
     );
     if (!didShareNative && mounted) {
@@ -647,23 +687,27 @@ class _GlorovProductDetailsScreenState
   @override
   void didUpdateWidget(covariant GlorovProductDetailsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.product.id != widget.product.id) {
+    final hasNewProduct = widget.product != null &&
+        widget.product?.id != oldWidget.product?.id;
+    final hasNewId = widget.productIdOrSlug != null &&
+        widget.productIdOrSlug != oldWidget.productIdOrSlug;
+
+    if (hasNewProduct || hasNewId) {
       GlorovHeaderScrollNotifier.instance.reset();
       _lastRightColumnHeight = 0.0;
       _lastGalleryHeight = 0.0;
       _selectedImageIndex = 0;
       _quantity = 1;
-      _selectedVariant = widget.product.variants.isNotEmpty
-          ? widget.product.variants.first
-          : null;
-      _initVariantState();
       _showStickyBottomBar.value = false;
       _isSpecsExpanded = false;
       _selectedStageIndex = 0;
-      _fetchReviews();
-      _fetchOffers();
-      _fetchRelatedProducts();
-      _updateMetadata();
+
+      if (widget.product != null) {
+        _loadedProduct = widget.product;
+        _initProductState(widget.product!);
+      } else if (widget.productIdOrSlug != null) {
+        _fetchProduct(widget.productIdOrSlug!);
+      }
     }
   }
 
@@ -678,20 +722,20 @@ class _GlorovProductDetailsScreenState
   }
 
   double get _currentPrice =>
-      _selectedVariant?.effectivePrice ?? widget.product.effectivePrice;
+      _selectedVariant?.effectivePrice ?? _product.effectivePrice;
 
   double? get _currentOriginalPrice => _selectedVariant != null
       ? (_selectedVariant!.discountPrice != null
           ? _selectedVariant!.price
           : null)
-      : (widget.product.hasDiscount ? widget.product.price : null);
+      : (_product.hasDiscount ? _product.price : null);
 
   void _handleAddToCart({bool navigateToCart = false}) {
     if (_isAddingToCart) return;
     setState(() => _isAddingToCart = true);
 
     GlorovCartState.instance.addToCart(
-      widget.product,
+      _product,
       variant: _selectedVariant,
       quantity: _quantity,
     );
@@ -704,7 +748,7 @@ class _GlorovProductDetailsScreenState
 
     GlorovFeedback.showSuccessToast(
       context,
-      message: 'Added $_quantity x ${widget.product.title} to your bag!',
+      message: 'Added $_quantity x ${_product.title} to your bag!',
       actionLabel: 'VIEW BAG',
       onAction: () => Navigator.pushNamed(context, cartScreenRoute),
     );
@@ -714,27 +758,24 @@ class _GlorovProductDetailsScreenState
     });
   }
 
-  void _handleCheckPincode() {
+  Future<void> _handleCheckPincode() async {
     final code = _pincodeController.text.trim();
-    if (code.length == 6 && int.tryParse(code) != null) {
-      final deliveryDate = DateTime.now().add(const Duration(days: 4));
-      const months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-      ];
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      final weekday = days[deliveryDate.weekday - 1];
-      final month = months[deliveryDate.month - 1];
+    if (code.isEmpty) return;
 
+    setState(() => _isCheckingPincode = true);
+
+    final isPerishable = _product.productType == GlorovProductType.plants;
+    final result = await GlorovLogisticsService.instance.checkPincode(
+      code,
+      isPerishable: isPerishable,
+    );
+
+    if (mounted) {
       setState(() {
-        _isPincodeChecked = true;
-        _deliveryEstimateText =
-            'Delivered by: $weekday, ${deliveryDate.day} $month • Express Dispatch';
-      });
-    } else {
-      setState(() {
-        _isPincodeChecked = false;
-        _deliveryEstimateText = 'Please enter a valid 6-digit Indian PIN code';
+        _isCheckingPincode = false;
+        _pincodeResult = result;
+        _isPincodeChecked = result.serviceable;
+        _deliveryEstimateText = result.message;
       });
     }
   }
@@ -743,23 +784,15 @@ class _GlorovProductDetailsScreenState
     int itemsAdded = 0;
     if (_bundleMainChecked) {
       GlorovCartState.instance
-          .addToCart(widget.product, variant: _selectedVariant);
+          .addToCart(_product, variant: _selectedVariant);
       itemsAdded++;
     }
-    if (_bundleTrayChecked) {
-      final tray = GlorovMockData.products.firstWhere(
-        (p) => p.productType == GlorovProductType.supplies,
-        orElse: () => widget.product,
-      );
-      GlorovCartState.instance.addToCart(tray);
+    if (_bundleTrayChecked && _relatedProducts.isNotEmpty) {
+      GlorovCartState.instance.addToCart(_relatedProducts[0]);
       itemsAdded++;
     }
-    if (_bundleBagChecked) {
-      final bag = GlorovMockData.products.firstWhere(
-        (p) => p.category == 'Gardening Essentials',
-        orElse: () => widget.product,
-      );
-      GlorovCartState.instance.addToCart(bag);
+    if (_bundleBagChecked && _relatedProducts.length > 1) {
+      GlorovCartState.instance.addToCart(_relatedProducts[1]);
       itemsAdded++;
     }
 
@@ -776,7 +809,9 @@ class _GlorovProductDetailsScreenState
     final mediaWidth = MediaQuery.of(context).size.width;
     final isSticky = AppBreakpoints.isProductStickyLayout(mediaWidth);
 
-    if (widget.isLoading) {
+    if (widget.isLoading ||
+        _isLoadingProduct ||
+        (widget.product == null && _loadedProduct == null)) {
       return GlorovStorefrontScaffold(
         backgroundColor: Colors.white,
         currentRoute: productDetailsScreenRoute,
@@ -915,12 +950,12 @@ class _GlorovProductDetailsScreenState
                     Navigator.pushNamed(
                       context,
                       discoverScreenRoute,
-                      arguments: widget.product.category,
+                      arguments: _product.category,
                     );
                   }
                 },
                 child: Text(
-                  widget.product.category,
+                  _product.category,
                   style: const TextStyle(
                     fontFamily: AppTypography.primaryFont,
                     fontSize: 12,
@@ -935,7 +970,7 @@ class _GlorovProductDetailsScreenState
               ),
               Flexible(
                 child: Text(
-                  widget.product.title,
+                  _product.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -1180,7 +1215,7 @@ class _GlorovProductDetailsScreenState
                 const SizedBox(height: 20),
 
                 // 9. Care Highlights Card / Botanical Metric Cards
-                if (widget.product.productType == GlorovProductType.plants) ...[
+                if (_product.productType == GlorovProductType.plants) ...[
                   _buildCareHighlightsCard(),
                   const SizedBox(height: 20),
                 ] else ...[
@@ -1277,7 +1312,7 @@ class _GlorovProductDetailsScreenState
                   const SizedBox(height: 18),
 
                   // Care Highlights Card ("How easy it is to care?")
-                  if (widget.product.productType == GlorovProductType.plants) ...[
+                  if (_product.productType == GlorovProductType.plants) ...[
                     _buildCareHighlightsCard(),
                     const SizedBox(height: 18),
                   ] else ...[
@@ -1341,7 +1376,7 @@ class _GlorovProductDetailsScreenState
       listenable: GlorovCartState.instance,
       builder: (context, _) {
         final isWishlisted =
-            GlorovCartState.instance.isWishlisted(widget.product.id);
+            GlorovCartState.instance.isWishlisted(_product.id);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1351,7 +1386,7 @@ class _GlorovProductDetailsScreenState
               children: [
                 Expanded(
                   child: Text(
-                    widget.product.title,
+                    _product.title,
                     style: const TextStyle(
                       fontFamily: 'serif',
                       fontFamilyFallback: [
@@ -1371,12 +1406,12 @@ class _GlorovProductDetailsScreenState
                 TapFeedback(
                   key: const ValueKey('pdp_wishlist_toggle'),
                   onTap: () {
-                    GlorovCartState.instance.toggleWishlist(widget.product.id);
+                    GlorovCartState.instance.toggleWishlist(_product.id);
                     if (!isWishlisted) {
                       GlorovFeedback.showSuccessToast(
                         context,
                         message:
-                            'Added ${widget.product.title} to your Wishlist!',
+                            'Added ${_product.title} to your Wishlist!',
                         actionLabel: 'VIEW',
                         onAction: () =>
                             Navigator.pushNamed(context, bookmarkScreenRoute),
@@ -1444,45 +1479,63 @@ class _GlorovProductDetailsScreenState
               runSpacing: 4,
               children: [
                 // Star rating
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.star_rounded,
-                        size: 18, color: Color(0xFFEAB308)),
-                    const SizedBox(width: 3),
-                    Text(
-                      '${widget.product.rating.toStringAsFixed(1)} (${widget.product.reviewCount} reviews)',
-                      style: const TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1E293B),
+                _product.reviewCount == 0
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.eco_rounded,
+                              size: 16, color: Color(0xFF16A34A)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Brand New • Be the first to review',
+                            style: TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF16A34A),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.star_rounded,
+                              size: 18, color: Color(0xFFEAB308)),
+                          const SizedBox(width: 3),
+                          Text(
+                            '${_product.rating.toStringAsFixed(1)} (${_product.reviewCount} reviews)',
+                            style: const TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
                 const Text('•',
                     style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 13)),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      widget.product.inStock
+                      _product.inStock
                           ? Icons.check_circle_outline
                           : Icons.remove_circle_outline,
                       size: 14,
-                      color: widget.product.inStock
+                      color: _product.inStock
                           ? const Color(0xFF16A34A)
                           : const Color(0xFFDC2626),
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      widget.product.inStock ? 'In Stock' : 'Out of Stock',
+                      _product.inStock ? 'In Stock' : 'Out of Stock',
                       style: TextStyle(
                         fontFamily: AppTypography.primaryFont,
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
-                        color: widget.product.inStock
+                        color: _product.inStock
                             ? const Color(0xFF15803D)
                             : const Color(0xFFDC2626),
                       ),
@@ -1501,13 +1554,13 @@ class _GlorovProductDetailsScreenState
   // Component 2: Reusable Production Product Image Gallery with Badges & Zoom
   // ---------------------------------------------------------------------------
   Widget _buildGallery(BuildContext context, {bool isSticky = false}) {
-    final images = widget.product.imageUrls.isNotEmpty
-        ? widget.product.imageUrls
-        : [widget.product.primaryImage];
+    final images = _product.imageUrls.isNotEmpty
+        ? _product.imageUrls
+        : [_product.primaryImage];
 
-    final String? badgeText = widget.product.badges.isNotEmpty &&
-            widget.product.badges.first.trim().isNotEmpty
-        ? widget.product.badges.first.trim().toUpperCase()
+    final String? badgeText = _product.badges.isNotEmpty &&
+            _product.badges.first.trim().isNotEmpty
+        ? _product.badges.first.trim().toUpperCase()
         : null;
 
     return GlorovProductGallery(
@@ -1515,8 +1568,8 @@ class _GlorovProductDetailsScreenState
       selectedIndex: _selectedImageIndex,
       onImageSelected: (idx) => setState(() => _selectedImageIndex = idx),
       badgeText: badgeText,
-      sowingAdvice: widget.product.sowingDepth != null
-          ? 'How to sow: ${widget.product.sowingDepth} • ${widget.product.sunlightRequirement}'
+      sowingAdvice: _product.sowingDepth != null
+          ? 'How to sow: ${_product.sowingDepth} • ${_product.sunlightRequirement}'
           : null,
       delegateScrollController: _pageScrollController,
       isSticky: isSticky,
@@ -1527,14 +1580,14 @@ class _GlorovProductDetailsScreenState
   // Component 3: Contextual Botanical Lifecycle & Specification Metric Cards
   // ---------------------------------------------------------------------------
   Widget _buildBotanicalMetricCards() {
-    if (widget.product.productType == GlorovProductType.plants) {
+    if (_product.productType == GlorovProductType.plants) {
       return Row(
         children: [
           Expanded(
             child: _metricCard(
               icon: Icons.wb_sunny_outlined,
               iconColor: const Color(0xFFD97706),
-              stat: widget.product.sunlightRequirement,
+              stat: _product.sunlightRequirement,
               label: 'Sunlight',
             ),
           ),
@@ -1543,7 +1596,7 @@ class _GlorovProductDetailsScreenState
             child: _metricCard(
               icon: Icons.water_drop_outlined,
               iconColor: const Color(0xFF2563EB),
-              stat: widget.product.wateringNeeds,
+              stat: _product.wateringNeeds,
               label: 'Watering',
             ),
           ),
@@ -1552,7 +1605,7 @@ class _GlorovProductDetailsScreenState
             child: _metricCard(
               icon: Icons.favorite_border,
               iconColor: const Color(0xFF16A34A),
-              stat: widget.product.difficultyLevel,
+              stat: _product.difficultyLevel,
               label: 'Care Level',
             ),
           ),
@@ -1560,30 +1613,30 @@ class _GlorovProductDetailsScreenState
       );
     }
 
-    if (widget.product.productType == GlorovProductType.supplies ||
-        widget.product.productType == GlorovProductType.accessories) {
-      final hasSpecs = widget.product.material != null ||
-          widget.product.dimensions != null;
+    if (_product.productType == GlorovProductType.supplies ||
+        _product.productType == GlorovProductType.accessories) {
+      final hasSpecs = _product.material != null ||
+          _product.dimensions != null;
       if (!hasSpecs) return const SizedBox.shrink();
 
       return Row(
         children: [
-          if (widget.product.material != null)
+          if (_product.material != null)
             Expanded(
               child: _metricCard(
                 icon: Icons.shield_outlined,
                 iconColor: const Color(0xFF4B5563),
-                stat: widget.product.material!,
+                stat: _product.material!,
                 label: 'Material',
               ),
             ),
-          if (widget.product.dimensions != null) ...[
+          if (_product.dimensions != null) ...[
             const SizedBox(width: 8),
             Expanded(
               child: _metricCard(
                 icon: Icons.square_foot_outlined,
                 iconColor: const Color(0xFF059669),
-                stat: widget.product.dimensions!,
+                stat: _product.dimensions!,
                 label: 'Dimensions',
               ),
             ),
@@ -1603,7 +1656,7 @@ class _GlorovProductDetailsScreenState
 
     // Default for Seeds
     final String germStat = () {
-      for (final b in widget.product.badges) {
+      for (final b in _product.badges) {
         if (b.contains('%')) {
           return b
               .replaceAll('GERMINATION', '')
@@ -1629,7 +1682,7 @@ class _GlorovProductDetailsScreenState
           child: _metricCard(
             icon: Icons.calendar_month,
             iconColor: const Color(0xFFD97706),
-            stat: widget.product.germinationPeriod ?? '3-5 Days',
+            stat: _product.germinationPeriod ?? '3-5 Days',
             label: 'Sprout',
           ),
         ),
@@ -1638,7 +1691,7 @@ class _GlorovProductDetailsScreenState
           child: _metricCard(
             icon: Icons.local_florist,
             iconColor: const Color(0xFFDC2626),
-            stat: widget.product.harvestTime ?? '60-80 Days',
+            stat: _product.harvestTime ?? '60-80 Days',
             label: 'to Maturity',
           ),
         ),
@@ -1691,15 +1744,15 @@ class _GlorovProductDetailsScreenState
   // Component 4: Contextual Variant Selector (Packet / Pot / Option)
   // ---------------------------------------------------------------------------
   bool get _hasMultiAttributeVariants =>
-      widget.product.variants.any((v) => v.name.contains('/'));
+      _product.variants.any((v) => v.name.contains('/'));
 
   Widget _buildVariantSelector() {
-    if (widget.product.variants.isEmpty ||
-        (widget.product.variants.length == 1 &&
-            (widget.product.variants.first.name
+    if (_product.variants.isEmpty ||
+        (_product.variants.length == 1 &&
+            (_product.variants.first.name
                     .toLowerCase()
                     .contains('standard') ||
-                widget.product.variants.first.name.trim().isEmpty))) {
+                _product.variants.first.name.trim().isEmpty))) {
       return const SizedBox.shrink();
     }
 
@@ -1721,7 +1774,7 @@ class _GlorovProductDetailsScreenState
 
   Widget _buildPlantSizeSelector() {
     final sizes = <String>{};
-    for (final v in widget.product.variants) {
+    for (final v in _product.variants) {
       final p = v.name.split('/').map((s) => s.trim()).toList();
       if (p.length >= 3) {
         sizes.add(p[0]);
@@ -1818,7 +1871,7 @@ class _GlorovProductDetailsScreenState
 
   Widget _buildPlanterSelector() {
     final plantersMap = <String, double>{};
-    for (final v in widget.product.variants) {
+    for (final v in _product.variants) {
       final p = v.name.split('/').map((s) => s.trim()).toList();
       String? name;
       if (p.length >= 3) {
@@ -1925,7 +1978,7 @@ class _GlorovProductDetailsScreenState
 
   Widget _buildColorSwatches() {
     final colors = <String>{};
-    for (final v in widget.product.variants) {
+    for (final v in _product.variants) {
       final p = v.name.split('/').map((s) => s.trim()).toList();
       if (p.length >= 3) {
         colors.add(p[2]);
@@ -2009,19 +2062,19 @@ class _GlorovProductDetailsScreenState
   }
 
   Widget _buildStandardVariantSelector() {
-    final variants = widget.product.variants;
+    final variants = _product.variants;
 
     final String selectorTitle;
-    switch (widget.product.productType) {
+    switch (_product.productType) {
       case GlorovProductType.plants:
         selectorTitle = 'Select Plant Size';
         break;
       case GlorovProductType.supplies:
       case GlorovProductType.accessories:
-        selectorTitle = widget.product.category.toLowerCase().contains('pot') ||
-                widget.product.category.toLowerCase().contains('planter')
+        selectorTitle = _product.category.toLowerCase().contains('pot') ||
+                _product.category.toLowerCase().contains('planter')
             ? 'Select Pot Size'
-            : (widget.product.variants
+            : (_product.variants
                     .any((v) => v.name.toLowerCase().contains('teeth'))
                 ? 'Select Teeth / Size'
                 : 'Select Option');
@@ -2153,7 +2206,7 @@ class _GlorovProductDetailsScreenState
               ),
               const SizedBox(width: 8),
               () {
-                int? pct = widget.product.discountPercent;
+                int? pct = _product.discountPercent;
                 if (pct == null &&
                     _currentOriginalPrice != null &&
                     _currentOriginalPrice! > _currentPrice) {
@@ -2372,8 +2425,8 @@ class _GlorovProductDetailsScreenState
   }
 
   Widget _buildTrustReassuranceBadges() {
-    final isPlant = widget.product.productType == GlorovProductType.plants;
-    final isSeeds = widget.product.productType == GlorovProductType.seeds;
+    final isPlant = _product.productType == GlorovProductType.plants;
+    final isSeeds = _product.productType == GlorovProductType.seeds;
 
     final String guaranteeTitle = isPlant
         ? '30-Day Plant Guarantee'
@@ -2536,7 +2589,7 @@ class _GlorovProductDetailsScreenState
                             ),
                           ),
                           Text(
-                            widget.product.wateringNeeds,
+                            _product.wateringNeeds,
                             style: const TextStyle(
                               fontSize: 11,
                               color: Color(0xFF64748B),
@@ -2573,7 +2626,7 @@ class _GlorovProductDetailsScreenState
                             ),
                           ),
                           Text(
-                            widget.product.sunlightRequirement,
+                            _product.sunlightRequirement,
                             style: const TextStyle(
                               fontSize: 11,
                               color: Color(0xFF64748B),
@@ -2784,9 +2837,13 @@ class _GlorovProductDetailsScreenState
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: _isPincodeChecked
-                  ? const Color(0xFF16A34A)
-                  : const Color(0xFFD1D5DB),
+              color: _pincodeResult != null
+                  ? (_pincodeResult!.serviceable
+                      ? const Color(0xFF16A34A)
+                      : const Color(0xFFEA580C))
+                  : (_isPincodeChecked
+                      ? const Color(0xFF16A34A)
+                      : const Color(0xFFD1D5DB)),
               width: 1.2,
             ),
           ),
@@ -2826,7 +2883,7 @@ class _GlorovProductDetailsScreenState
                 ),
               ),
               TapFeedback(
-                onTap: _handleCheckPincode,
+                onTap: _isCheckingPincode ? null : _handleCheckPincode,
                 effect: TapAnimationType.scale,
                 scaleDown: 0.94,
                 duration: GlorovInteractionConfig.durationFast,
@@ -2841,45 +2898,73 @@ class _GlorovProductDetailsScreenState
                     ),
                   ),
                   alignment: Alignment.center,
-                  child: const Text(
-                    'CHECK',
-                    style: TextStyle(
-                      fontFamily: AppTypography.primaryFont,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+                  child: _isCheckingPincode
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text(
+                          'CHECK',
+                          style: TextStyle(
+                            fontFamily: AppTypography.primaryFont,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Icon(
-              _isPincodeChecked ? Icons.check_circle : Icons.error_outline,
-              size: 15,
-              color: _isPincodeChecked ? const Color(0xFF16A34A) : Colors.red,
-            ),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                _deliveryEstimateText,
-                style: TextStyle(
-                  fontFamily: AppTypography.primaryFont,
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: _isPincodeChecked
-                      ? const Color(0xFF15803D)
-                      : Colors.red.shade700,
+        if (_isCheckingPincode || _pincodeResult != null) ...[
+          GlorovDeliveryAvailabilityAlert(
+            result: _pincodeResult,
+            isLoading: _isCheckingPincode,
+            onTryAnother: () {
+              _pincodeController.clear();
+              setState(() {
+                _pincodeResult = null;
+                _isPincodeChecked = false;
+                _deliveryEstimateText = '';
+              });
+            },
+            onContactSupport: () {
+              Navigator.pushNamed(context, faqScreenRoute);
+            },
+          ),
+        ] else if (_deliveryEstimateText.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(
+                _isPincodeChecked ? Icons.check_circle : Icons.error_outline,
+                size: 15,
+                color: _isPincodeChecked ? const Color(0xFF16A34A) : Colors.red,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  _deliveryEstimateText,
+                  style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: _isPincodeChecked
+                        ? const Color(0xFF15803D)
+                        : Colors.red.shade700,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -2888,8 +2973,8 @@ class _GlorovProductDetailsScreenState
   // Component 9: Botanical Lifecycle Growing Tabs (Seeds & Plants Only)
   // ---------------------------------------------------------------------------
   Widget _buildBotanicalLifecycleTabs() {
-    if (widget.product.productType == GlorovProductType.supplies ||
-        widget.product.productType == GlorovProductType.accessories) {
+    if (_product.productType == GlorovProductType.supplies ||
+        _product.productType == GlorovProductType.accessories) {
       return const SizedBox.shrink();
     }
 
@@ -3032,10 +3117,14 @@ class _GlorovProductDetailsScreenState
   // Component 10: Frequently Bought Together Bundle Upsell (Video frame 6 & 7)
   // ---------------------------------------------------------------------------
   Widget _buildFrequentlyBoughtTogether() {
+    if (_relatedProducts.length < 2) return const SizedBox.shrink();
+    final bundleItem1 = _relatedProducts[0];
+    final bundleItem2 = _relatedProducts[1];
+
     double total = 0.0;
     if (_bundleMainChecked) total += _currentPrice;
-    if (_bundleTrayChecked) total += 295.0;
-    if (_bundleBagChecked) total += 449.0;
+    if (_bundleTrayChecked) total += bundleItem1.effectivePrice;
+    if (_bundleBagChecked) total += bundleItem2.effectivePrice;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -3069,27 +3158,25 @@ class _GlorovProductDetailsScreenState
           _bundleItemRow(
             checked: _bundleMainChecked,
             onChanged: (v) => setState(() => _bundleMainChecked = v ?? false),
-            title: widget.product.title,
+            title: _product.title,
             price: _currentPrice,
-            image: widget.product.primaryImage,
+            image: _product.primaryImage,
           ),
           const Divider(height: 16, color: Color(0xFFF3F4F6)),
           _bundleItemRow(
             checked: _bundleTrayChecked,
             onChanged: (v) => setState(() => _bundleTrayChecked = v ?? false),
-            title: 'Reusable 104 Holes Seedling Tray',
-            price: 295,
-            image:
-                'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=400&q=80',
+            title: bundleItem1.title,
+            price: bundleItem1.effectivePrice,
+            image: bundleItem1.primaryImage,
           ),
           const Divider(height: 16, color: Color(0xFFF3F4F6)),
           _bundleItemRow(
             checked: _bundleBagChecked,
             onChanged: (v) => setState(() => _bundleBagChecked = v ?? false),
-            title: 'HDPE Round Grow Bag (Set of 3)',
-            price: 449,
-            image:
-                'https://images.unsplash.com/photo-1512428813834-c702c7702b78?auto=format&fit=crop&w=400&q=80',
+            title: bundleItem2.title,
+            price: bundleItem2.effectivePrice,
+            image: bundleItem2.primaryImage,
           ),
 
           const SizedBox(height: 14),
@@ -3289,12 +3376,10 @@ class _GlorovProductDetailsScreenState
   // Component 12: Backend-Connected "You May Also Like" Related Products
   // ---------------------------------------------------------------------------
   Widget _buildYouMayAlsoLikeSection() {
-    final related = _relatedProducts.isNotEmpty
-        ? _relatedProducts
-        : GlorovMockData.products
-            .where((p) => p.id != widget.product.id)
-            .take(6)
-            .toList();
+    if (_relatedProducts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final related = _relatedProducts;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3349,9 +3434,9 @@ class _GlorovProductDetailsScreenState
   // ---------------------------------------------------------------------------
   Widget _buildCustomerReviewsSection() {
     final double avgRating =
-        _reviewSummary?.averageRating ?? widget.product.rating;
+        _reviewSummary?.averageRating ?? _product.rating;
     final int totalCount =
-        _reviewSummary?.totalReviews ?? widget.product.reviewCount;
+        _reviewSummary?.totalReviews ?? _product.reviewCount;
 
     // Collect all customer review photos across reviews
     final List<String> allReviewImages = [];
@@ -3386,33 +3471,43 @@ class _GlorovProductDetailsScreenState
                   ),
                 ),
                 const SizedBox(height: 3),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ...List.generate(
-                      5,
-                      (i) => Icon(
-                        i < avgRating.floor()
-                            ? Icons.star_rounded
-                            : (i < avgRating
-                                ? Icons.star_half_rounded
-                                : Icons.star_border_rounded),
-                        size: 18,
-                        color: const Color(0xFFEAB308),
+                totalCount == 0
+                    ? const Text(
+                        'No customer reviews yet',
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280),
+                        ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ...List.generate(
+                            5,
+                            (i) => Icon(
+                              i < avgRating.floor()
+                                  ? Icons.star_rounded
+                                  : (i < avgRating
+                                      ? Icons.star_half_rounded
+                                      : Icons.star_border_rounded),
+                              size: 18,
+                              color: const Color(0xFFEAB308),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${avgRating.toStringAsFixed(1)} ($totalCount reviews)',
+                            style: const TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${avgRating.toStringAsFixed(1)} ($totalCount reviews)',
-                      style: const TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1E293B),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
             OutlinedButton.icon(
@@ -3444,7 +3539,50 @@ class _GlorovProductDetailsScreenState
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
-          child: Column(
+          child: totalCount == 0
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0FDF4),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFBBF7D0)),
+                        ),
+                        child: const Icon(Icons.eco_rounded,
+                            size: 24, color: Color(0xFF16A34A)),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Be the first to rate this botanical specimen',
+                              style: TextStyle(
+                                fontFamily: AppTypography.primaryFont,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1F2937),
+                              ),
+                            ),
+                            SizedBox(height: 3),
+                            Text(
+                              'Share your verified planting experience and help other gardeners flourish.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Wrap(
@@ -3639,63 +3777,65 @@ class _GlorovProductDetailsScreenState
           ),
         ),
 
-        const SizedBox(height: 14),
+        if (totalCount > 0) ...[
+          const SizedBox(height: 14),
 
-        // 3. "Why customers love this" Dynamic AI Summary Card
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF), // Soft blue tint
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFBFDBFE)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.auto_awesome,
-                      size: 16, color: Color(0xFF2563EB)),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      _reviewSummary?.aiSummaryTitle ??
-                          'Why customers love this',
-                      style: const TextStyle(
-                        fontFamily: AppTypography.primaryFont,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1E40AF),
+          // 3. "Why customers love this" Dynamic AI Summary Card
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF), // Soft blue tint
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFBFDBFE)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.auto_awesome,
+                        size: 16, color: Color(0xFF2563EB)),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        _reviewSummary?.aiSummaryTitle ??
+                            'Why customers love this',
+                        style: const TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1E40AF),
+                        ),
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _reviewSummary?.aiSummaryText ??
+                      'Customers consistently praise this botanical product for its exceptional quality, packaging integrity, and vigorous growth. Reviewers highlight high satisfaction and great results.',
+                  style: const TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 12.5,
+                    height: 1.5,
+                    color: Color(0xFF1E3A8A),
                   ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                _reviewSummary?.aiSummaryText ??
-                    'Customers consistently praise this botanical product for its exceptional quality, packaging integrity, and vigorous growth. Reviewers highlight high satisfaction and great results.',
-                style: const TextStyle(
-                  fontFamily: AppTypography.primaryFont,
-                  fontSize: 12.5,
-                  height: 1.5,
-                  color: Color(0xFF1E3A8A),
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                '✨ Summarized and selected by AI from recent customer reviews',
-                style: TextStyle(
-                  fontFamily: AppTypography.primaryFont,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF3B82F6),
+                const SizedBox(height: 8),
+                const Text(
+                  '✨ Summarized and selected by AI from recent customer reviews',
+                  style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF3B82F6),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
 
         // 4. Customer Review Photos Carousel (if available)
         if (allReviewImages.isNotEmpty) ...[
@@ -3896,29 +4036,31 @@ class _GlorovProductDetailsScreenState
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _databaseReviewCard(rev),
                   )),
-              const SizedBox(height: 6),
-              Center(
-                child: TextButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      productReviewsScreenRoute,
-                      arguments: widget.product,
-                    );
-                  },
-                  icon: const Icon(Icons.arrow_forward_rounded,
-                      size: 16, color: AppColors.forestDeep),
-                  label: Text(
-                    'View all $totalCount verified customer reviews',
-                    style: const TextStyle(
-                      fontFamily: AppTypography.primaryFont,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.forestDeep,
+              if (totalCount > 0) ...[
+                const SizedBox(height: 6),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      Navigator.pushNamed(
+                        context,
+                        productReviewsScreenRoute,
+                        arguments: _product,
+                      );
+                    },
+                    icon: const Icon(Icons.arrow_forward_rounded,
+                        size: 16, color: AppColors.forestDeep),
+                    label: Text(
+                      'View all $totalCount verified customer reviews',
+                      style: const TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.forestDeep,
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
       ],
@@ -4249,7 +4391,7 @@ class _GlorovProductDetailsScreenState
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Review ${widget.product.title}',
+                      'Review ${_product.title}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -4427,8 +4569,8 @@ class _GlorovProductDetailsScreenState
                                 '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
 
                             final newReview = GlorovReview(
-                              id: 'rev_${widget.product.id}_${now.millisecondsSinceEpoch}',
-                              productId: widget.product.id,
+                              id: 'rev_${_product.id}_${now.millisecondsSinceEpoch}',
+                              productId: _product.id,
                               author: nameCtrl.text.trim(),
                               date: dateStr,
                               rating: selectedRating,
@@ -4549,47 +4691,47 @@ class _GlorovProductDetailsScreenState
   Widget _buildProductSpecifications() {
     final specs = <MapEntry<String, String>>[];
 
-    if (widget.product.botanicalName.isNotEmpty) {
-      specs.add(MapEntry('Botanical Name', widget.product.botanicalName));
+    if (_product.botanicalName.isNotEmpty) {
+      specs.add(MapEntry('Botanical Name', _product.botanicalName));
     }
-    specs.add(MapEntry('Category', widget.product.category));
-    if (widget.product.subcategory.isNotEmpty) {
-      specs.add(MapEntry('Subcategory', widget.product.subcategory));
+    specs.add(MapEntry('Category', _product.category));
+    if (_product.subcategory.isNotEmpty) {
+      specs.add(MapEntry('Subcategory', _product.subcategory));
     }
 
-    if (widget.product.productType == GlorovProductType.seeds) {
-      if (widget.product.sowingDepth != null) {
-        specs.add(MapEntry('Sowing Depth', widget.product.sowingDepth!));
+    if (_product.productType == GlorovProductType.seeds) {
+      if (_product.sowingDepth != null) {
+        specs.add(MapEntry('Sowing Depth', _product.sowingDepth!));
       }
-      if (widget.product.germinationPeriod != null) {
-        specs.add(MapEntry('Germination Time', widget.product.germinationPeriod!));
+      if (_product.germinationPeriod != null) {
+        specs.add(MapEntry('Germination Time', _product.germinationPeriod!));
       }
-      specs.add(MapEntry('Sunlight Requirement', widget.product.sunlightRequirement));
-      specs.add(MapEntry('Watering Schedule', widget.product.wateringNeeds));
-      specs.add(MapEntry('Difficulty Level', widget.product.difficultyLevel));
-      if (widget.product.plantingSeason != null) {
-        specs.add(MapEntry('Planting Season', widget.product.plantingSeason!));
+      specs.add(MapEntry('Sunlight Requirement', _product.sunlightRequirement));
+      specs.add(MapEntry('Watering Schedule', _product.wateringNeeds));
+      specs.add(MapEntry('Difficulty Level', _product.difficultyLevel));
+      if (_product.plantingSeason != null) {
+        specs.add(MapEntry('Planting Season', _product.plantingSeason!));
       }
-      if (widget.product.harvestTime != null) {
-        specs.add(MapEntry('Days to Harvest', widget.product.harvestTime!));
+      if (_product.harvestTime != null) {
+        specs.add(MapEntry('Days to Harvest', _product.harvestTime!));
       }
-      if (widget.product.packContents != null) {
-        specs.add(MapEntry('Pack Contents', widget.product.packContents!));
+      if (_product.packContents != null) {
+        specs.add(MapEntry('Pack Contents', _product.packContents!));
       }
-    } else if (widget.product.productType == GlorovProductType.plants) {
-      specs.add(MapEntry('Sunlight Requirement', widget.product.sunlightRequirement));
-      specs.add(MapEntry('Watering Schedule', widget.product.wateringNeeds));
-      specs.add(MapEntry('Difficulty Level', widget.product.difficultyLevel));
-      if (widget.product.potSize != null) {
-        specs.add(MapEntry('Recommended Pot', widget.product.potSize!));
+    } else if (_product.productType == GlorovProductType.plants) {
+      specs.add(MapEntry('Sunlight Requirement', _product.sunlightRequirement));
+      specs.add(MapEntry('Watering Schedule', _product.wateringNeeds));
+      specs.add(MapEntry('Difficulty Level', _product.difficultyLevel));
+      if (_product.potSize != null) {
+        specs.add(MapEntry('Recommended Pot', _product.potSize!));
       }
-      specs.add(MapEntry('Pet Friendly', widget.product.isPetFriendly ? 'Yes' : 'No'));
+      specs.add(MapEntry('Pet Friendly', _product.isPetFriendly ? 'Yes' : 'No'));
     } else {
-      if (widget.product.material != null) {
-        specs.add(MapEntry('Material', widget.product.material!));
+      if (_product.material != null) {
+        specs.add(MapEntry('Material', _product.material!));
       }
-      if (widget.product.dimensions != null) {
-        specs.add(MapEntry('Dimensions', widget.product.dimensions!));
+      if (_product.dimensions != null) {
+        specs.add(MapEntry('Dimensions', _product.dimensions!));
       }
       specs.add(MapEntry('Durability', 'Heavy Duty / Weatherproof'));
     }
@@ -4698,40 +4840,40 @@ class _GlorovProductDetailsScreenState
   Widget _buildFaqSection() {
     final List<MapEntry<String, String>> faqs;
 
-    if (widget.product.productType == GlorovProductType.seeds) {
+    if (_product.productType == GlorovProductType.seeds) {
       faqs = [
         MapEntry(
-          'When is the best time to sow ${widget.product.title}?',
-          'Plant seeds during ${widget.product.plantingSeason ?? "mild sunny weather"}. They thrive in ${widget.product.sunlightRequirement.toLowerCase()} with well-drained, aerated potting soil.',
+          'When is the best time to sow ${_product.title}?',
+          'Plant seeds during ${_product.plantingSeason ?? "mild sunny weather"}. They thrive in ${_product.sunlightRequirement.toLowerCase()} with well-drained, aerated potting soil.',
         ),
         MapEntry(
           'How deep should I sow the seeds?',
-          'Sow seeds at a depth of ${widget.product.sowingDepth ?? "1-2 cm"}. Gently cover with fine soil mix and mist lightly with water to keep the soil moist without displacing the seeds.',
+          'Sow seeds at a depth of ${_product.sowingDepth ?? "1-2 cm"}. Gently cover with fine soil mix and mist lightly with water to keep the soil moist without displacing the seeds.',
         ),
         MapEntry(
           'How often should I water the seedling?',
-          'Follow a ${widget.product.wateringNeeds.toLowerCase()} routine. Keep the upper layer moist during germination, then water only when the top 1 inch of soil feels dry to the touch.',
+          'Follow a ${_product.wateringNeeds.toLowerCase()} routine. Keep the upper layer moist during germination, then water only when the top 1 inch of soil feels dry to the touch.',
         ),
         const MapEntry(
           'What is GLOROV\'s guarantee & replacement policy?',
           'All GLOROV botanical seeds and plants are protected by our 100% "Arrives Healthy" guarantee. In the rare event of damage or non-germination, we provide free replacement support.',
         ),
       ];
-    } else if (widget.product.productType == GlorovProductType.plants) {
+    } else if (_product.productType == GlorovProductType.plants) {
       faqs = [
         MapEntry(
-          'What are the light requirements for ${widget.product.title}?',
-          'This live plant thrives best in ${widget.product.sunlightRequirement.toLowerCase()}. Avoid harsh scorching direct sun unless acclimated.',
+          'What are the light requirements for ${_product.title}?',
+          'This live plant thrives best in ${_product.sunlightRequirement.toLowerCase()}. Avoid harsh scorching direct sun unless acclimated.',
         ),
         MapEntry(
           'How frequently should I water this plant?',
-          'Follow a ${widget.product.wateringNeeds.toLowerCase()} schedule. Allow the top 1-2 inches of potting mix to dry out between waterings to prevent root rot.',
+          'Follow a ${_product.wateringNeeds.toLowerCase()} schedule. Allow the top 1-2 inches of potting mix to dry out between waterings to prevent root rot.',
         ),
         MapEntry(
           'Is this plant safe for pets?',
-          widget.product.isPetFriendly
-              ? 'Yes! ${widget.product.title} is certified non-toxic and pet-friendly for homes with dogs and cats.'
-              : '${widget.product.title} is best kept out of reach of curious cats and dogs.',
+          _product.isPetFriendly
+              ? 'Yes! ${_product.title} is certified non-toxic and pet-friendly for homes with dogs and cats.'
+              : '${_product.title} is best kept out of reach of curious cats and dogs.',
         ),
         const MapEntry(
           'What should I do immediately after my plant arrives?',
@@ -4741,8 +4883,8 @@ class _GlorovProductDetailsScreenState
     } else {
       faqs = [
         MapEntry(
-          'What materials is ${widget.product.title} crafted from?',
-          'Crafted from high-grade, durable materials (${widget.product.material ?? "heavy duty botanical grade"}) designed for long-lasting gardening use.',
+          'What materials is ${_product.title} crafted from?',
+          'Crafted from high-grade, durable materials (${_product.material ?? "heavy duty botanical grade"}) designed for long-lasting gardening use.',
         ),
         const MapEntry(
           'How do I care for and maintain this item?',
@@ -4892,11 +5034,11 @@ class _GlorovProductDetailsScreenState
               listenable: GlorovCartState.instance,
               builder: (context, _) {
                 final isSaved =
-                    GlorovCartState.instance.isInWishlist(widget.product.id);
+                    GlorovCartState.instance.isInWishlist(_product.id);
 
                 return TapFeedback(
                   onTap: () {
-                    GlorovCartState.instance.toggleWishlist(widget.product.id);
+                    GlorovCartState.instance.toggleWishlist(_product.id);
                     if (isSaved) {
                       GlorovFeedback.showInfoToast(
                         context,
@@ -4905,7 +5047,7 @@ class _GlorovProductDetailsScreenState
                     } else {
                       GlorovFeedback.showSuccessToast(
                         context,
-                        message: 'Saved "${widget.product.title}" to wishlist!',
+                        message: 'Saved "${_product.title}" to wishlist!',
                       );
                     }
                   },

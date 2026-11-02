@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../models/glorov/glorov_address.dart';
 import '../models/glorov/glorov_delivery_option.dart';
 import '../models/glorov/glorov_mock_data.dart';
+import '../repositories/glorov_repositories.dart';
 import '../models/glorov/glorov_order.dart';
 import '../models/glorov/glorov_payment_method.dart';
 import '../models/glorov/glorov_product.dart';
@@ -614,7 +615,13 @@ class GlorovCartState extends ChangeNotifier {
           final qty = entry['quantity'] as int? ?? 1;
 
           if (pid != null) {
-            final product = GlorovMockData.getProductById(pid);
+            GlorovProduct? product = GlorovProductCache.get(pid);
+            if (product == null) {
+              try {
+                product = GlorovMockData.getProductById(pid);
+              } catch (_) {}
+            }
+
             if (product != null) {
               GlorovProductVariant? variant;
               if (vid != null) {
@@ -629,6 +636,27 @@ class GlorovCartState extends ChangeNotifier {
                 variant: variant,
                 quantity: qty,
               );
+            } else {
+              Future.microtask(() {
+                GlorovRepositories.products.getProductById(pid).then((p) {
+                  if (p != null) {
+                    GlorovProductVariant? variant;
+                    if (vid != null) {
+                      try {
+                        variant = p.variants.firstWhere((v) => v.id == vid);
+                      } catch (_) {}
+                    }
+                    final key =
+                        variant != null ? '${p.id}_${variant.id}' : p.id;
+                    _items[key] = GlorovCartItem(
+                      product: p,
+                      variant: variant,
+                      quantity: qty,
+                    );
+                    notifyListeners();
+                  }
+                });
+              });
             }
           }
         }

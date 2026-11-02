@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../components/logistics/glorov_delivery_availability_alert.dart';
 import '../../components/navigation/glorov_storefront_scaffold.dart';
 import '../../components/product/glorov_product_card.dart';
 import '../../components/responsive/glorov_responsive.dart';
@@ -7,11 +8,13 @@ import '../../core/interactions/interactions.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../models/glorov/glorov_mock_data.dart';
+import '../../models/glorov/glorov_pincode_result.dart';
 import '../../models/glorov/glorov_product.dart';
+import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
 import '../../services/glorov_account_state.dart';
 import '../../services/glorov_cart_state.dart';
+import '../../services/glorov_logistics_service.dart';
 
 /// GLOROV Botanical Shopping Cart Screen
 /// Features signature botanical forest green theme, modern rounded geometry,
@@ -32,15 +35,31 @@ class GlorovCartScreen extends StatefulWidget {
 
 class _GlorovCartScreenState extends State<GlorovCartScreen> {
   final ScrollController _recommendedScrollController = ScrollController();
-  final TextEditingController _pincodeController = TextEditingController(text: '411001');
-  String _activePincode = '411001 (Pune)';
+  final TextEditingController _pincodeController = TextEditingController();
+  String _activePincode = '';
   String? _pincodeStatus;
-  bool _isPincodeValid = true;
+  bool _isPincodeValid = false;
   bool _isPincodeExpanded = false;
+  bool _isCheckingPincode = false;
+  GlorovPincodeResult? _pincodeResult;
+  List<GlorovProduct> _recommendedProducts = [];
 
   @override
   void initState() {
     super.initState();
+    _loadRecommendedProducts();
+
+    final savedPin = GlorovLogisticsService.instance.lastCheckedPincode;
+    if (savedPin != null && savedPin.trim().length == 6) {
+      _pincodeController.text = savedPin.trim();
+      _isPincodeExpanded = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _checkPincode();
+        }
+      });
+    }
+
     if (widget.initialShowOffers) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -48,6 +67,17 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
         }
       });
     }
+  }
+
+  Future<void> _loadRecommendedProducts() async {
+    try {
+      final prods = await GlorovRepositories.products.getProducts();
+      if (mounted) {
+        setState(() {
+          _recommendedProducts = prods;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -67,19 +97,23 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
     );
   }
 
-  void _checkPincode() {
+  Future<void> _checkPincode() async {
     final pin = _pincodeController.text.trim();
-    if (pin.length == 6 && int.tryParse(pin) != null) {
+    if (pin.isEmpty) return;
+
+    setState(() => _isCheckingPincode = true);
+    final result = await GlorovLogisticsService.instance.checkPincode(pin);
+
+    if (mounted) {
       setState(() {
-        _isPincodeValid = true;
+        _isCheckingPincode = false;
+        _pincodeResult = result;
+        _isPincodeValid = result.serviceable;
         _activePincode = pin;
-        _pincodeStatus = 'Delivering to $pin in 2-3 business days • Free Delivery unlocked';
-        _isPincodeExpanded = false;
-      });
-    } else {
-      setState(() {
-        _isPincodeValid = false;
-        _pincodeStatus = 'Please enter a valid 6-digit postal pincode';
+        _pincodeStatus = result.message;
+        if (result.serviceable) {
+          _isPincodeExpanded = false;
+        }
       });
     }
   }
@@ -544,7 +578,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                     ),
                   ),
                   TapFeedback(
-                    onTap: _checkPincode,
+                    onTap: _isCheckingPincode ? null : _checkPincode,
                     effect: TapAnimationType.scale,
                     scaleDown: 0.94,
                     child: Container(
@@ -558,16 +592,26 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                         ),
                       ),
                       alignment: Alignment.center,
-                      child: const Text(
-                        'CHECK',
-                        style: TextStyle(
-                          fontFamily: AppTypography.primaryFont,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
+                      child: _isCheckingPincode
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Text(
+                              'CHECK',
+                              style: TextStyle(
+                                fontFamily: AppTypography.primaryFont,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -575,7 +619,24 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
             ),
           ],
 
-          if (_pincodeStatus != null) ...[
+          if (_isCheckingPincode || _pincodeResult != null) ...[
+            GlorovDeliveryAvailabilityAlert(
+              result: _pincodeResult,
+              isLoading: _isCheckingPincode,
+              onTryAnother: () {
+                _pincodeController.clear();
+                setState(() {
+                  _pincodeResult = null;
+                  _pincodeStatus = null;
+                  _isPincodeValid = false;
+                  _isPincodeExpanded = true;
+                });
+              },
+              onContactSupport: () {
+                Navigator.pushNamed(context, faqScreenRoute);
+              },
+            ),
+          ] else if (_pincodeStatus != null) ...[
             const SizedBox(height: 6),
             Text(
               _pincodeStatus!,
@@ -583,7 +644,9 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
                 fontFamily: AppTypography.primaryFont,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: _isPincodeValid ? const Color(0xFF059669) : const Color(0xFFDC2626),
+                color: _isPincodeValid
+                    ? const Color(0xFF059669)
+                    : const Color(0xFFDC2626),
               ),
             ),
           ],
@@ -1078,21 +1141,10 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
   // Recommended Products Carousel (Botanical Green Design)
   // -------------------------------------------------------------
   Widget _buildRecommendedProductsSection(BuildContext context) {
-    final allProducts = GlorovMockData.products;
-    final npk = allProducts.firstWhere(
-      (p) => p.title.contains('Instagrow') || p.title.contains('NPK'),
-      orElse: () => allProducts.first,
-    );
-    final jade = allProducts.firstWhere(
-      (p) => p.title.contains('Jade Mini'),
-      orElse: () => allProducts.length > 1 ? allProducts[1] : allProducts.first,
-    );
-    final others = allProducts
-        .where((p) => p.id != npk.id && p.id != jade.id)
-        .take(6)
-        .toList();
-
-    final recommendedList = [npk, jade, ...others];
+    if (_recommendedProducts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final recommendedList = _recommendedProducts.take(8).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2516,7 +2568,7 @@ class _GlorovCartScreenState extends State<GlorovCartScreen> {
   // Empty Cart State (Botanical Theme)
   // -------------------------------------------------------------
   Widget _buildEmptyCart(BuildContext context) {
-    final suggested = GlorovMockData.products.take(4).toList();
+    final suggested = _recommendedProducts.take(4).toList();
 
     return GlorovContainer(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xl),

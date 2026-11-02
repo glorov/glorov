@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../route/route_constants.dart';
 import '../../../services/glorov_account_state.dart';
+import '../../../services/glorov_logistics_service.dart';
 import '../glorov_account_screen.dart';
 
 /// Customer Account Settings & Local Preferences Section
@@ -708,7 +709,119 @@ class GlorovSettingsSection extends StatelessWidget {
 
             const SizedBox(height: AppSpacing.lg),
 
-            // Card 5: Danger Zone / Reset Demo
+            // Card 5: Logistics & Courier Dashboard Connection Status
+            ListenableBuilder(
+              listenable: GlorovLogisticsService.instance,
+              builder: (context, _) {
+                final isConnected =
+                    GlorovLogisticsService.instance.isLogisticsConnected;
+
+                return _sectionCard(
+                  title: 'Logistics & Courier Dashboard Connection',
+                  subtitle:
+                      'Admin control for third-party courier aggregator (Shiprocket / Delhivery / Bluedart).',
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: isConnected
+                            ? const Color(0xFFF0FDF4)
+                            : const Color(0xFFFFF7ED),
+                        borderRadius: AppRadii.roundedMd,
+                        border: Border.all(
+                          color: isConnected
+                              ? const Color(0xFF86EFAC)
+                              : const Color(0xFFFDBA74),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isConnected
+                                ? Icons.cloud_done_outlined
+                                : Icons.cloud_off_outlined,
+                            size: 20,
+                            color: isConnected
+                                ? const Color(0xFF16A34A)
+                                : const Color(0xFFEA580C),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isConnected
+                                      ? 'Logistics Service: Connected & Active'
+                                      : 'Logistics Service: Not Connected in Dashboard',
+                                  style: TextStyle(
+                                    fontFamily: AppTypography.primaryFont,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: isConnected
+                                        ? const Color(0xFF15803D)
+                                        : const Color(0xFF9A3412),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  isConnected
+                                      ? 'Active air and surface courier corridors are enabled for postal delivery estimation.'
+                                      : 'When disconnected, all postal code checks display: "Delivery service currently not available on this location."',
+                                  style: TextStyle(
+                                    fontFamily: AppTypography.primaryFont,
+                                    fontSize: 12,
+                                    color: isConnected
+                                        ? const Color(0xFF166534)
+                                        : const Color(0xFFC2410C),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      activeThumbColor: AppColors.forestDark,
+                      title: const Text(
+                        'Connect Logistics Provider',
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Toggle integration with courier aggregator in the store dashboard.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      value: isConnected,
+                      onChanged: (val) {
+                        GlorovLogisticsService.instance
+                            .setLogisticsConnected(val);
+                        GlorovFeedback.showSuccessToast(
+                          context,
+                          message: val
+                              ? 'Logistics service connected in dashboard.'
+                              : 'Logistics service disconnected. Availability checks will report unserviceable.',
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
+
+            // Card 6: Danger Zone / Reset Demo
             Container(
               padding: const EdgeInsets.all(AppSpacing.xl),
               decoration: BoxDecoration(

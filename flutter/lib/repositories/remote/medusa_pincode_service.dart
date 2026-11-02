@@ -58,16 +58,13 @@ class MedusaPincodeService {
       return result.requireData;
     }
 
-    // Fallback estimation for development or temporary network disruption
-    return GlorovPincodeResult(
+    // When the backend or logistics aggregator is unreachable or unconfigured in dashboard,
+    // report that delivery service is not available rather than fabricating fake delivery estimates.
+    return GlorovPincodeResult.logisticsNotConnected(
       pincode: cleanPin,
-      serviceable: true,
-      status: 'serviceable_offline_estimate',
-      city: 'Metro Zone',
-      state: 'India',
-      estimatedDays: 3,
-      courierName: 'Standard Eco Transit',
-      message: 'Standard botanical delivery available (3–5 business days)',
+      message: 'Delivery service currently not available on this location.',
+      detailedMessage:
+          'Our logistics provider is not connected in the dashboard for this area. Please check back later or contact customer support.',
     );
   }
 }

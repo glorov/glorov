@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import '../../../components/logistics/glorov_delivery_availability_alert.dart';
 import '../../../core/interactions/interactions.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radii.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../models/glorov/glorov_address.dart';
+import '../../../models/glorov/glorov_pincode_result.dart';
+import '../../../services/glorov_logistics_service.dart';
 
 /// Reusable Botanical Address Form Dialog for Adding & Editing Delivery Addresses
 class GlorovAddressFormDialog extends StatefulWidget {
@@ -50,6 +53,8 @@ class _GlorovAddressFormDialogState extends State<GlorovAddressFormDialog> {
 
   String _label = 'Home';
   bool _isDefault = false;
+  bool _isCheckingServiceability = false;
+  GlorovPincodeResult? _pincodeResult;
 
   @override
   void initState() {
@@ -64,10 +69,41 @@ class _GlorovAddressFormDialogState extends State<GlorovAddressFormDialog> {
     _landmarkController = TextEditingController(text: addr?.landmark ?? '');
     _label = addr?.label ?? 'Home';
     _isDefault = addr?.isDefault ?? false;
+
+    _pincodeController.addListener(_onPincodeChanged);
+    if ((addr?.pincode ?? '').trim().length == 6) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkPincodeServiceability(addr!.pincode.trim());
+      });
+    }
+  }
+
+  void _onPincodeChanged() {
+    final pin = _pincodeController.text.trim();
+    if (pin.length == 6) {
+      _checkPincodeServiceability(pin);
+    } else if (pin.length < 6 && _pincodeResult != null) {
+      setState(() => _pincodeResult = null);
+    }
+  }
+
+  Future<void> _checkPincodeServiceability(String pin) async {
+    final cleanPin = pin.trim();
+    if (cleanPin.length != 6) return;
+
+    setState(() => _isCheckingServiceability = true);
+    final result = await GlorovLogisticsService.instance.checkPincode(cleanPin);
+    if (mounted) {
+      setState(() {
+        _isCheckingServiceability = false;
+        _pincodeResult = result;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _pincodeController.removeListener(_onPincodeChanged);
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
@@ -429,6 +465,18 @@ class _GlorovAddressFormDialogState extends State<GlorovAddressFormDialog> {
                     );
                   },
                 ),
+
+                if (_isCheckingServiceability || _pincodeResult != null) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  GlorovDeliveryAvailabilityAlert(
+                    result: _pincodeResult,
+                    isLoading: _isCheckingServiceability,
+                    onTryAnother: () {
+                      _pincodeController.clear();
+                      setState(() => _pincodeResult = null);
+                    },
+                  ),
+                ],
 
                 const SizedBox(height: AppSpacing.md),
 

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '../../models/glorov/glorov_account_settings.dart';
 import '../../models/glorov/glorov_address.dart';
 import '../../models/glorov/glorov_user_profile.dart';
@@ -208,6 +209,20 @@ class MedusaAccountRepository implements AccountRepository {
     }
 
     _updateClientToken(storedToken);
+
+    // In offline demo or development mode with seeded mock tokens, restore cached profile
+    if (storedToken.startsWith('demo_') || storedToken.startsWith('mock_')) {
+      final cachedProfile = _storage.getItem('glorov_profile');
+      if (cachedProfile != null && cachedProfile.isNotEmpty) {
+        try {
+          final profile = GlorovUserProfile.fromJson(
+              jsonDecode(cachedProfile) as Map<String, dynamic>);
+          _isAuthenticated = true;
+          _accountState.updateProfile(profile);
+          return ApiResult.success(profile);
+        } catch (_) {}
+      }
+    }
 
     final result = await client.get<GlorovUserProfile?>(
       MedusaEndpoints.customerProfile,

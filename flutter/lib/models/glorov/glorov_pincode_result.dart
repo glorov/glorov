@@ -14,6 +14,8 @@ class GlorovPincodeResult {
   final String? courierName;
   final double? rateInr;
   final String message;
+  final String? detailedMessage;
+  final bool isLogisticsConnected;
 
   const GlorovPincodeResult({
     required this.pincode,
@@ -29,13 +31,44 @@ class GlorovPincodeResult {
     this.courierName,
     this.rateInr,
     required this.message,
+    this.detailedMessage,
+    this.isLogisticsConnected = true,
   });
 
+  bool get isLogisticsDisconnected =>
+      !isLogisticsConnected || status == 'logistics_not_connected';
+
+  /// Standard factory for when logistics partner is not connected in the dashboard
+  factory GlorovPincodeResult.logisticsNotConnected({
+    required String pincode,
+    String? message,
+    String? detailedMessage,
+  }) {
+    return GlorovPincodeResult(
+      pincode: pincode.trim(),
+      serviceable: false,
+      status: 'logistics_not_connected',
+      isLogisticsConnected: false,
+      prepaidEligible: false,
+      codAvailable: false,
+      codEligible: false,
+      codRestrictionReason: 'logistics_not_connected',
+      message: message ??
+          'Delivery service currently not available on this location.',
+      detailedMessage: detailedMessage ??
+          'Our courier and logistics network is not connected for this area. Please try an alternate PIN code or contact nursery support.',
+    );
+  }
+
   factory GlorovPincodeResult.fromJson(Map<String, dynamic> json) {
+    final status = json['status']?.toString() ?? 'undetermined';
+    final isLogisticsConnected = json['is_logistics_connected'] as bool? ??
+        (status != 'logistics_not_connected');
+
     return GlorovPincodeResult(
       pincode: json['pincode']?.toString() ?? '',
       serviceable: json['serviceable'] as bool? ?? false,
-      status: json['status']?.toString() ?? 'undetermined',
+      status: status,
       city: json['city']?.toString(),
       state: json['state']?.toString(),
       prepaidEligible: json['prepaid_eligible'] as bool? ?? false,
@@ -46,6 +79,8 @@ class GlorovPincodeResult {
       courierName: json['courier_name']?.toString(),
       rateInr: (json['rate_inr'] as num?)?.toDouble(),
       message: json['message']?.toString() ?? '',
+      detailedMessage: json['detailed_message']?.toString(),
+      isLogisticsConnected: isLogisticsConnected,
     );
   }
 
@@ -63,5 +98,7 @@ class GlorovPincodeResult {
         'courier_name': courierName,
         'rate_inr': rateInr,
         'message': message,
+        'detailed_message': detailedMessage,
+        'is_logistics_connected': isLogisticsConnected,
       };
 }

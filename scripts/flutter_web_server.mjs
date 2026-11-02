@@ -38,9 +38,27 @@ const server = http.createServer((req, res) => {
     }
   }
 
-  // SPA fallback if file does not exist
+  // If the file does not exist directly, try resolving relative asset paths from root
   if (!fs.existsSync(filePath)) {
-    filePath = path.join(WEB_DIR, 'index.html');
+    // Check if the relative asset exists directly under WEB_DIR (e.g. /checkout/main.dart.js -> /main.dart.js)
+    const baseName = path.basename(urlPath);
+    const rootCandidate = path.join(WEB_DIR, baseName);
+    if (fs.existsSync(rootCandidate) && !fs.statSync(rootCandidate).isDirectory()) {
+      filePath = rootCandidate;
+    } else {
+      // Check if subpath relative to root exists (e.g. /checkout/assets/... -> /assets/...)
+      const matchAssets = urlPath.match(/\/(assets|canvaskit|icons)\/(.+)$/);
+      if (matchAssets) {
+        const subCandidate = path.join(WEB_DIR, matchAssets[1], matchAssets[2]);
+        if (fs.existsSync(subCandidate)) {
+          filePath = subCandidate;
+        } else {
+          filePath = path.join(WEB_DIR, 'index.html');
+        }
+      } else {
+        filePath = path.join(WEB_DIR, 'index.html');
+      }
+    }
   }
 
   const ext = path.extname(filePath).toLowerCase();

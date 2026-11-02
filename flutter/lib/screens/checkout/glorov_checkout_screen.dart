@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../components/cart/glorov_order_summary.dart';
+import '../../components/logistics/glorov_delivery_availability_alert.dart';
 import '../../components/navigation/glorov_footer.dart';
 import '../../components/navigation/glorov_storefront_scaffold.dart';
 import '../../components/responsive/glorov_responsive.dart';
@@ -13,10 +14,12 @@ import '../../core/theme/app_typography.dart';
 import '../../models/glorov/glorov_address.dart';
 import '../../models/glorov/glorov_delivery_option.dart';
 import '../../models/glorov/glorov_payment_method.dart';
+import '../../models/glorov/glorov_pincode_result.dart';
 import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
 import '../../services/glorov_account_state.dart';
 import '../../services/glorov_cart_state.dart';
+import '../../services/glorov_logistics_service.dart';
 import '../account/dialogs/address_form_dialog.dart';
 
 /// GLOROV Simulated Checkout Page
@@ -42,6 +45,8 @@ class _GlorovCheckoutScreenState extends State<GlorovCheckoutScreen> {
 
   GlorovPaymentMethod _selectedPayment = GlorovPaymentMethod.cod;
   bool _isSubmitting = false;
+  bool _isCheckingServiceability = false;
+  GlorovPincodeResult? _addressServiceabilityResult;
 
   @override
   void initState() {
@@ -55,10 +60,41 @@ class _GlorovCheckoutScreenState extends State<GlorovCheckoutScreen> {
     _stateController = TextEditingController(text: hasValidAddress ? initial.state : '');
     _pincodeController = TextEditingController(text: hasValidAddress ? initial.pincode : '');
     _landmarkController = TextEditingController(text: hasValidAddress ? (initial.landmark ?? '') : '');
+
+    _pincodeController.addListener(_onPincodeChanged);
+    if (hasValidAddress && initial.pincode.trim().length == 6) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkAddressServiceability(initial.pincode);
+      });
+    }
+  }
+
+  void _onPincodeChanged() {
+    final pin = _pincodeController.text.trim();
+    if (pin.length == 6) {
+      _checkAddressServiceability(pin);
+    } else if (pin.length < 6 && _addressServiceabilityResult != null) {
+      setState(() => _addressServiceabilityResult = null);
+    }
+  }
+
+  Future<void> _checkAddressServiceability(String pin) async {
+    final cleanPin = pin.trim();
+    if (cleanPin.length != 6) return;
+
+    setState(() => _isCheckingServiceability = true);
+    final result = await GlorovLogisticsService.instance.checkPincode(cleanPin);
+    if (mounted) {
+      setState(() {
+        _isCheckingServiceability = false;
+        _addressServiceabilityResult = result;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _pincodeController.removeListener(_onPincodeChanged);
     _nameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
@@ -79,6 +115,7 @@ class _GlorovCheckoutScreenState extends State<GlorovCheckoutScreen> {
       _pincodeController.text = addr.pincode;
       _landmarkController.text = addr.landmark ?? '';
     });
+    _checkAddressServiceability(addr.pincode);
   }
 
   GlorovAddress _buildCurrentAddress() {
@@ -113,6 +150,24 @@ class _GlorovCheckoutScreenState extends State<GlorovCheckoutScreen> {
         context,
         message: 'Please correct the errors in the delivery address.',
       );
+      return;
+    }
+
+    // Verify logistics serviceability before placing order
+    final pin = _pincodeController.text.trim();
+    final serviceability =
+        await GlorovLogisticsService.instance.checkPincode(pin);
+    if (!serviceability.serviceable) {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _addressServiceabilityResult = serviceability;
+        });
+        GlorovFeedback.showErrorToast(
+          context,
+          message: serviceability.message,
+        );
+      }
       return;
     }
 
@@ -718,6 +773,21 @@ class _GlorovCheckoutScreenState extends State<GlorovCheckoutScreen> {
                     controller: _landmarkController,
                     decoration: _inputDecoration('Nearby Landmark (Optional)',
                         'Near City Botanical Garden'),
+                  ),
+                ],
+                if (_isCheckingServiceability ||
+                    _addressServiceabilityResult != null) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  GlorovDeliveryAvailabilityAlert(
+                    result: _addressServiceabilityResult,
+                    isLoading: _isCheckingServiceability,
+                    onTryAnother: () {
+                      _pincodeController.clear();
+                      setState(() => _addressServiceabilityResult = null);
+                    },
+                    onContactSupport: () {
+                      Navigator.pushNamed(context, faqScreenRoute);
+                    },
                   ),
                 ],
               ],

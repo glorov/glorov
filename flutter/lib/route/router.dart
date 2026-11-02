@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shop/core/interactions/interactions.dart';
 import 'package:shop/entry_point.dart';
-import '../models/glorov/glorov_mock_data.dart';
 import '../models/glorov/glorov_order.dart';
+import '../models/glorov/glorov_mock_data.dart';
 import '../models/glorov/glorov_product.dart';
 import '../screens/cart/glorov_cart_screen.dart';
 import '../screens/catalog/glorov_catalog_screen.dart';
@@ -166,26 +166,40 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       }
     }
     GlorovProduct? product;
+    String? slugOrId = lookupId;
     if (settings.arguments is GlorovProduct) {
       product = settings.arguments as GlorovProduct;
+      slugOrId = product.slug.isNotEmpty ? product.slug : product.id;
     } else if (settings.arguments is String) {
       final argStr = settings.arguments as String;
-      product = GlorovMockData.getProductById(argStr) ??
+      slugOrId = argStr;
+      product = GlorovProductCache.get(argStr) ??
+          GlorovMockData.getProductById(argStr) ??
           GlorovMockData.getProductBySlug(argStr);
     } else if (lookupId != null && lookupId.isNotEmpty) {
-      product = GlorovMockData.getProductById(lookupId) ??
+      product = GlorovProductCache.get(lookupId) ??
+          GlorovMockData.getProductById(lookupId) ??
           GlorovMockData.getProductBySlug(lookupId);
     }
-    final resolvedProduct = product ?? GlorovMockData.products.first;
-    final slugOrId = resolvedProduct.slug.isNotEmpty
-        ? resolvedProduct.slug
-        : resolvedProduct.id;
+
+    final resolvedProduct = product ??
+        (lookupId != null
+            ? (GlorovMockData.getProductById(lookupId) ??
+                GlorovMockData.getProductBySlug(lookupId))
+            : null) ??
+        GlorovMockData.products.first;
+    final finalSlugOrId = slugOrId ??
+        (resolvedProduct.slug.isNotEmpty
+            ? resolvedProduct.slug
+            : resolvedProduct.id);
+
     return _buildRoute(
       GlorovProductDetailsScreen(
         product: resolvedProduct,
+        productIdOrSlug: finalSlugOrId,
       ),
       settings,
-      overrideRouteName: '/product/$slugOrId',
+      overrideRouteName: '/product/$finalSlugOrId',
     );
   }
 
@@ -256,8 +270,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         reviewProduct = settings.arguments as GlorovProduct;
       } else if (settings.arguments is String) {
         final argStr = settings.arguments as String;
-        reviewProduct = GlorovMockData.getProductById(argStr) ??
-            GlorovMockData.getProductBySlug(argStr);
+        reviewProduct = GlorovProductCache.get(argStr);
       }
       return _buildRoute(
         ProductReviewsScreen(product: reviewProduct),
@@ -419,9 +432,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         overrideRouteName: '/entry_point',
       );
     case 'profile':
+      final secParam = uri?.queryParameters['section'] ?? uri?.queryParameters['tab'];
+      final initialSection = secParam == 'settings'
+          ? GlorovAccountSection.settings
+          : secParam == 'addresses'
+              ? GlorovAccountSection.addresses
+              : secParam == 'profile'
+                  ? GlorovAccountSection.profile
+                  : GlorovAccountSection.overview;
       return _buildRoute(
-        const GlorovAccountScreen(
-          initialSection: GlorovAccountSection.overview,
+        GlorovAccountScreen(
+          initialSection: initialSection,
         ),
         settings,
         overrideRouteName: '/profile',

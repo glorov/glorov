@@ -128,6 +128,7 @@ jobs:
 
           echo "2. Checking Admin Dashboard (https://admin.glorov.tech)..."
           curl -f -s -I "https://admin.glorov.tech" | head -n 10
+          curl -f -s -I "https://admin.glorov.tech/app/" | head -n 10
 
           echo "3. Checking Backend Health (https://api.glorov.tech/health)..."
           curl -f -s -I "https://api.glorov.tech/health" | head -n 10

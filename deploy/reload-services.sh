@@ -9,6 +9,9 @@ set -e
 
 echo "🔄 [$(date '+%Y-%m-%d %H:%M:%S')] Reloading GLOROV services..."
 
+# Ensure Medusa Admin /app path compatibility
+ln -sfn /var/www/glorov/admin /var/www/glorov/admin/app 2>/dev/null || true
+
 # Ensure node & pm2 are available in PATH
 export PATH="${HOME}/.local/share/pnpm:${HOME}/.nvm/versions/node/$(node -v 2>/dev/null)/bin:/usr/local/bin:/usr/bin:/bin:${PATH}"
 

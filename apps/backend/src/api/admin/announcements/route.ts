@@ -36,6 +36,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     const item = await AnnouncementService.createAnnouncement({
       text: body.text,
       highlight_text: body.highlight_text,
+      badge_color: body.badge_color,
+      badge_text_color: body.badge_text_color,
       icon: body.icon,
       link_url: body.link_url,
       display_order: body.display_order !== undefined ? Number(body.display_order) : undefined,

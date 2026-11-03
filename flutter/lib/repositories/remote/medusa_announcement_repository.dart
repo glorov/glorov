@@ -27,12 +27,12 @@ class MedusaAnnouncementRepository implements AnnouncementRepository {
         },
       );
 
-      if (result.isSuccess && result.dataOrNull != null && result.dataOrNull!.isNotEmpty) {
+      if (result.isSuccess && result.dataOrNull != null) {
         return result.dataOrNull!;
       }
     } catch (_) {}
 
-    return GlorovAnnouncementItem.defaultItems;
+    return const <GlorovAnnouncementItem>[];
   }
 
   @override

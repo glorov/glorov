@@ -8,13 +8,12 @@ import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../models/glorov/glorov_mock_data.dart';
+import '../../models/glorov/glorov_product.dart';
 import '../../models/glorov/glorov_order.dart';
 import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
 import '../../services/glorov_account_state.dart';
 import '../../services/glorov_cart_state.dart';
-import '../../services/glorov_header_scroll_notifier.dart';
 
 /// GLOROV Order History & Shipment Tracking Screen
 /// Displays confirmed orders, item snapshots, live botanical transit tracking,
@@ -1012,10 +1011,11 @@ class _GlorovOrdersScreenState extends State<GlorovOrdersScreen> {
                         ),
                       ),
                     TextButton.icon(
-                      onPressed: () {
+                      onPressed: () async {
                         for (final item in order.items) {
                           final product =
-                              GlorovMockData.getProductById(item.productId);
+                              await GlorovRepositories.products.getProductById(item.productId) ??
+                              GlorovProductCache.get(item.productId);
                           if (product != null) {
                             GlorovCartState.instance.addToCart(
                               product,

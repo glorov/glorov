@@ -49,7 +49,7 @@ void main() {
 
       // Verify trust pills
       expect(find.text('Winter Botanical Special'), findsOneWidget);
-      expect(find.text('Free Shipping > ₹999'), findsOneWidget);
+      expect(find.text('Free Shipping for \$4.99'), findsOneWidget);
       expect(find.text('Safe Transit Guarantee'), findsOneWidget);
 
       // Verify botanical plant of the season highlight

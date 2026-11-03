@@ -9,6 +9,8 @@ class GlorovAnnouncementItem {
   final String? linkUrl;
   final int displayOrder;
   final bool isActive;
+  final Color? badgeColor;
+  final Color? badgeTextColor;
 
   const GlorovAnnouncementItem({
     required this.id,
@@ -18,7 +20,22 @@ class GlorovAnnouncementItem {
     this.linkUrl,
     this.displayOrder = 1,
     this.isActive = true,
+    this.badgeColor,
+    this.badgeTextColor,
   });
+
+  static Color? _parseHexColor(String? hexString) {
+    if (hexString == null) return null;
+    try {
+      final clean = hexString.replaceAll('#', '');
+      if (clean.length == 6) {
+        return Color(int.parse('FF$clean', radix: 16));
+      } else if (clean.length == 8) {
+        return Color(int.parse(clean, radix: 16));
+      }
+    } catch (_) {}
+    return null;
+  }
 
   factory GlorovAnnouncementItem.fromJson(Map<String, dynamic> json) {
     return GlorovAnnouncementItem(
@@ -29,6 +46,8 @@ class GlorovAnnouncementItem {
       linkUrl: json['link_url']?.toString(),
       displayOrder: (json['display_order'] as num?)?.toInt() ?? 1,
       isActive: json['is_active'] as bool? ?? true,
+      badgeColor: _parseHexColor(json['badge_color']?.toString()),
+      badgeTextColor: _parseHexColor(json['badge_text_color']?.toString()),
     );
   }
 

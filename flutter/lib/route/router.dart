@@ -156,13 +156,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       name == 'product' ||
       name == 'products') {
     String? lookupId;
+    final cleanSegments =
+        uri?.pathSegments.where((s) => s.isNotEmpty).toList() ?? [];
     if (uri != null) {
       if (uri.queryParameters.containsKey('id')) {
         lookupId = uri.queryParameters['id'];
       } else if (uri.queryParameters.containsKey('slug')) {
         lookupId = uri.queryParameters['slug'];
-      } else if (uri.pathSegments.length > 1) {
-        lookupId = uri.pathSegments.last;
+      } else if (cleanSegments.length > 1) {
+        lookupId = cleanSegments.last;
       }
     }
     GlorovProduct? product;
@@ -182,20 +184,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           GlorovMockData.getProductBySlug(lookupId);
     }
 
-    final resolvedProduct = product ??
-        (lookupId != null
-            ? (GlorovMockData.getProductById(lookupId) ??
-                GlorovMockData.getProductBySlug(lookupId))
-            : null) ??
-        GlorovMockData.products.first;
     final finalSlugOrId = slugOrId ??
-        (resolvedProduct.slug.isNotEmpty
-            ? resolvedProduct.slug
-            : resolvedProduct.id);
+        (product != null
+            ? (product.slug.isNotEmpty ? product.slug : product.id)
+            : lookupId ?? '');
 
     return _buildRoute(
       GlorovProductDetailsScreen(
-        product: resolvedProduct,
+        product: product,
         productIdOrSlug: finalSlugOrId,
       ),
       settings,

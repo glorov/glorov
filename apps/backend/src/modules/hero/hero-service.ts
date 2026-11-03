@@ -27,7 +27,7 @@ export const DEFAULT_HERO_CONFIG: HeroConfig = {
     },
     {
       icon: "local_shipping_outlined",
-      text: "Free Shipping > ₹999",
+      text: "Free Shipping for $4.99",
     },
     {
       icon: "eco_outlined",

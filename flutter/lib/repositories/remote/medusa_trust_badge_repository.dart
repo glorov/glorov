@@ -28,9 +28,9 @@ class MedusaTrustBadgeRepository implements TrustBadgeRepository {
 
             return GlorovTrustBadgeResponse(badges: badges, settings: settings);
           }
-          return GlorovTrustBadgeResponse(
-            badges: GlorovTrustBadgeItem.defaults,
-            settings: const GlorovTrustSectionSettings(),
+          return const GlorovTrustBadgeResponse(
+            badges: [],
+            settings: GlorovTrustSectionSettings(),
           );
         },
       );
@@ -39,11 +39,11 @@ class MedusaTrustBadgeRepository implements TrustBadgeRepository {
         return res.data!;
       }
     } catch (_) {
-      // Graceful fallback to botanical defaults
+      // Empty fallback
     }
 
     return const GlorovTrustBadgeResponse(
-      badges: GlorovTrustBadgeItem.defaults,
+      badges: [],
       settings: GlorovTrustSectionSettings(),
     );
   }

@@ -9,7 +9,7 @@ import 'package:shop/repositories/mock/local_trust_badge_repository.dart';
 
 void main() {
   setUp(() {
-    GlorovRepositories.init();
+    GlorovRepositories.resetToMockDefaults();
   });
 
   group('GLOROV Botanical Trust Guarantees Ribbon (Image 2 Redesign)', () {

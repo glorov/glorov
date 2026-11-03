@@ -1,31 +1,31 @@
 {
   "id": "hero_organic_botanical",
-  "tag": "ORGANIC BOTANICAL COLLECTION 2026",
-  "headline": "Grow Something\nBeautiful.",
-  "description": "Certified non-GMO heirloom seeds, nursery-acclimatized houseplants, and breathable terracotta planters. Cultivate a greener sanctuary at home with verified germination and transit protection.",
-  "cta_text": "Shop Seeds & Plants",
+  "tag": "CERTIFIED 100% ORGANIC NURSERY",
+  "headline": "Nurture Nature in Every Corner of Your Home",
+  "description": "Cultivate lush tranquility with cold-chain dispatched live houseplants, indigenous desi heirloom seeds, and nutrient-dense organic soil mixes delivered safely to your doorstep.",
+  "cta_text": "Explore Desi Seeds",
   "cta_route": "/categories/seeds",
-  "secondary_cta_text": "Explore Care Guides",
-  "secondary_cta_route": "/plant-doctor",
+  "secondary_cta_text": "View Live Houseplants",
+  "secondary_cta_route": "/categories/live-plants",
   "desktop_image_url": "assets/images/monstera_deliciosa_hero.jpg",
   "mobile_image_url": "assets/images/monstera_deliciosa_hero.jpg",
-  "plant_tag": "PLANT OF THE SEASON",
-  "plant_name": "Monstera Deliciosa • Swiss Cheese",
+  "plant_tag": "Air-Purifying Certified",
+  "plant_name": "Monstera Deliciosa Botanical Specimen",
   "plant_route": "/categories/live-plants",
   "trust_pills": [
     {
-      "icon": "ac_unit_rounded",
-      "text": "Winter Botanical Special"
+      "icon": "eco_outlined",
+      "text": "98%+ Germination Vigor"
     },
     {
-      "icon": "local_shipping_outlined",
-      "text": "Free Shipping > ₹999"
+      "icon": "shield",
+      "text": "100% Transit Protected"
     },
     {
       "icon": "eco_outlined",
-      "text": "Safe Transit Guarantee"
+      "text": "50k+ Gardens Planted"
     }
   ],
   "is_active": true,
-  "updated_at": "2026-11-01T00:00:00.000Z"
+  "updated_at": "2026-11-03T14:00:00.000Z"
 }

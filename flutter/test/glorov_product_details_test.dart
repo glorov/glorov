@@ -7,6 +7,7 @@ import 'package:shop/models/glorov/glorov_mock_data.dart';
 import 'package:shop/models/glorov/glorov_product.dart';
 import 'package:shop/screens/product/glorov_product_details_screen.dart';
 import 'package:shop/services/glorov_cart_state.dart';
+import 'package:shop/services/glorov_logistics_service.dart';
 
 class TestHttpOverrides extends HttpOverrides {
   @override
@@ -188,6 +189,7 @@ void main() {
 
     testWidgets('Pincode check calculates delivery date for valid 6-digit pin',
         (WidgetTester tester) async {
+      GlorovLogisticsService.instance.setLogisticsConnectedForTesting(true);
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -203,7 +205,8 @@ void main() {
       await tester.ensureVisible(checkButton);
       await tester.pumpAndSettle();
 
-      await tester.tap(checkButton);
+      await tester.enterText(find.byType(TextField).first, '700059');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Delivered by:'), findsOneWidget);

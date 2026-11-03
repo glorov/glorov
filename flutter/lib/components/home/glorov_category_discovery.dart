@@ -5,6 +5,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../models/glorov/glorov_product.dart';
+import '../../repositories/contracts/product_repository.dart';
+import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
 import '../../screens/discover/glorov_categories_screen.dart';
 
@@ -29,13 +32,13 @@ class BotanicalCategoryItem {
 /// GLOROV Category Discovery Component
 /// Clean, responsive layout tailored for mobile devices and desktop.
 /// Directly synchronised with the 4 root seeded botanical database categories.
-class GlorovCategoryDiscovery extends StatelessWidget {
-  final List<BotanicalCategoryItem> categories;
+class GlorovCategoryDiscovery extends StatefulWidget {
+  final List<BotanicalCategoryItem>? categories;
   final bool isLoading;
 
   const GlorovCategoryDiscovery({
     super.key,
-    this.categories = defaultCategories,
+    this.categories,
     this.isLoading = false,
   });
 
@@ -46,7 +49,7 @@ class GlorovCategoryDiscovery extends StatelessWidget {
       title: 'Seeds',
       description: 'Heirloom Desi Vegetable & Flower Seeds',
       imageUrl:
-          'assets/images/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg',
       count: 18,
       badge: 'High Germination',
     ),
@@ -54,7 +57,7 @@ class GlorovCategoryDiscovery extends StatelessWidget {
       id: 'live-plants',
       title: 'Live Plants',
       description: 'Acclimatized Indoor & Balcony Houseplants',
-      imageUrl: 'assets/images/products/indoor-plants/money-plant-golden-1.jpg',
+      imageUrl: 'https://res.cloudinary.com/naodmm8w/image/upload/v1793516579/glorov/products/indoor-plants/money-plant-golden-1.jpg',
       count: 24,
       badge: 'Nursery Dispatched',
     ),
@@ -62,7 +65,7 @@ class GlorovCategoryDiscovery extends StatelessWidget {
       id: 'planters-pots',
       title: 'Planters & Pots',
       description: 'Artisan Terracotta & Glazed Ceramic Pots',
-      imageUrl: 'assets/images/products/ceramic-planters/diamond-pot-1.jpg',
+      imageUrl: 'https://res.cloudinary.com/naodmm8w/image/upload/v1793516566/glorov/products/ceramic-planters/diamond-pot-1.jpg',
       count: 12,
       badge: 'Handcrafted',
     ),
@@ -71,14 +74,103 @@ class GlorovCategoryDiscovery extends StatelessWidget {
       title: 'Plant Care & Soil',
       description: '100% Organic Potting Mix & Garden Tools',
       imageUrl:
-          'assets/images/products/potting-mix-fertilizers/pot-o-mix-5-kg-potting-mix-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516582/glorov/products/potting-mix-fertilizers/pot-o-mix-5-kg-potting-mix-1.jpg',
       count: 15,
       badge: '100% Organic',
     ),
   ];
 
   @override
+  State<GlorovCategoryDiscovery> createState() =>
+      _GlorovCategoryDiscoveryState();
+}
+
+class _GlorovCategoryDiscoveryState extends State<GlorovCategoryDiscovery> {
+  List<BotanicalCategoryItem>? _remoteCategories;
+  bool _isLoadingRemote = true;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.categories != null) {
+      _isLoadingRemote = false;
+    } else {
+      _loadCategories();
+    }
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final results = await Future.wait([
+        GlorovRepositories.products.getCategories(),
+        GlorovRepositories.products.getProducts(),
+      ]);
+      final cats = results[0] as List<GlorovProductCategory>;
+      final prods = results[1] as List<GlorovProduct>;
+
+      if (mounted) {
+        if (cats.isNotEmpty) {
+          final items = cats.map((c) {
+            final matchingProd = prods.where((p) =>
+                p.category.toLowerCase() == c.name.toLowerCase() ||
+                p.category.toLowerCase().contains(c.slug.toLowerCase())
+            ).firstOrNull;
+
+            String desc = '${c.productCount} Botanical Varieties';
+            if (c.slug.contains('seed')) {
+              desc = 'Heirloom Desi Vegetable & Flower Seeds';
+            } else if (c.slug.contains('plant')) {
+              desc = 'Acclimatized Indoor & Balcony Houseplants';
+            } else if (c.slug.contains('planter') || c.slug.contains('pot')) {
+              desc = 'Artisan Terracotta & Glazed Ceramic Pots';
+            } else if (c.slug.contains('care') || c.slug.contains('soil')) {
+              desc = '100% Organic Potting Mix & Garden Tools';
+            }
+
+            return BotanicalCategoryItem(
+              id: c.slug,
+              title: c.name,
+              description: desc,
+              imageUrl: matchingProd?.primaryImage ?? '',
+              count: c.productCount > 0 ? c.productCount : (matchingProd != null ? 12 : 0),
+              badge: c.name == 'Seeds'
+                  ? 'High Germination'
+                  : (c.name.contains('Plant')
+                      ? 'Nursery Dispatched'
+                      : 'Handcrafted'),
+            );
+          }).toList();
+
+          setState(() {
+            _remoteCategories = items;
+            _isLoadingRemote = false;
+          });
+        } else {
+          setState(() {
+            _remoteCategories = [];
+            _isLoadingRemote = false;
+          });
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _remoteCategories = [];
+          _isLoadingRemote = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final categories = widget.categories ?? _remoteCategories ?? const [];
+    final bool isCurrentlyLoading = widget.isLoading ||
+        (widget.categories == null && _isLoadingRemote && _remoteCategories == null);
+
+    if (categories.isEmpty && !isCurrentlyLoading) {
+      return const SizedBox.shrink();
+    }
     final isDesktop = AppBreakpoints.isDesktop(context);
     final width = MediaQuery.of(context).size.width;
 
@@ -205,7 +297,7 @@ class GlorovCategoryDiscovery extends StatelessWidget {
 
               // 3. Responsive 4-Category Grid (Clean 2x2 on Mobile, 4 across on Desktop)
               GlorovSkeletonLoader(
-                loading: isLoading,
+                loading: isCurrentlyLoading,
                 skeleton: SkeletonScope(
                   child: GridView.builder(
                     shrinkWrap: true,

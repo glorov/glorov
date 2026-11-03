@@ -1,0 +1,312 @@
+'use client'
+
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useCart } from '../../context/StorefrontContext'
+import { GlorovCustomIcons } from '../../components/common/GlorovIcons'
+import { CartItemRow } from '../../components/cart/CartItemRow'
+import { FreeShippingProgressBar } from '../../components/cart/FreeShippingProgressBar'
+import { CouponVoucherCard } from '../../components/cart/CouponVoucherCard'
+import { CartPincodeBox } from '../../components/cart/CartPincodeBox'
+import { CartTransitGuarantee } from '../../components/cart/CartTransitGuarantee'
+import { RecommendedProductsSection } from '../../components/cart/RecommendedProductsSection'
+import { CartOrderSummary } from '../../components/cart/CartOrderSummary'
+import { CartStickyCheckoutBar } from '../../components/cart/CartStickyCheckoutBar'
+import { CartEmptyState } from '../../components/cart/CartEmptyState'
+import { AvailableOffersModal } from '../../components/cart/AvailableOffersModal'
+import { TaxBreakdownModal } from '../../components/cart/TaxBreakdownModal'
+
+/**
+ * GLOROV Botanical Shopping Cart Screen
+ * 100% matched with Flutter `GlorovCartScreen`:
+ * - Dedicated Top Bar with back arrow, Fraunces serif "Cart" title, counter pill, close action
+ * - Botanical Milestone Roadmap (FREE at ₹499, 10% at ₹999, 15% at ₹1,599, 20% at ₹2,299)
+ * - Compact cart items (56px thumbnail, variant chip, save-for-later, price strike, pill stepper)
+ * - Recommended Products Carousel with 162px cards, bestseller badge, and circular quick-add
+ * - In-flow mint coupon voucher with higher-offer upgrade banner
+ * - Express delivery pincode box
+ * - 3-pillar safe transit guarantee card
+ * - Order summary with comparison catalog value & savings percent
+ * - Mobile sticky checkout dock with tax breakdown trigger
+ * - Available offers & tax breakdown modal sheets
+ */
+export default function CartPage(): React.ReactElement {
+  const router = useRouter()
+  const {
+    cartItems,
+    cartCount,
+    cartSubtotal,
+    compareSubtotal,
+    overallDiscountPercent,
+    cartTotal,
+    discountAmount,
+    shippingAmount,
+    appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    moveToWishlist,
+    updateCartQuantity,
+    removeFromCart,
+    showToast,
+  } = useCart()
+
+  const [isOffersModalOpen, setIsOffersModalOpen] = useState(false)
+  const [isTaxModalOpen, setIsTaxModalOpen] = useState(false)
+
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back()
+    } else {
+      router.push('/')
+    }
+  }
+
+  return (
+    <div className="w-full min-h-screen bg-[#F9FAF8] text-[#111827] flex flex-col">
+      {/* 1. Clean Cart Top Bar (matching Flutter _buildTopHeader) */}
+      <header className="w-full bg-white border-b border-[#EBEFEA] px-4 py-3 select-none flex-shrink-0">
+        <div className="max-w-[1280px] mx-auto flex items-center justify-between">
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="p-1 rounded-full hover:bg-[#F2FAF5] text-[#0A4C36] transition-colors active:scale-90"
+              aria-label="Back"
+            >
+              <GlorovCustomIcons.arrowBack size={20} />
+            </button>
+            <div className="w-2" />
+            <h1 className="font-serif text-[21px] font-extrabold text-[#0A4C36] tracking-[-0.3px] leading-none">
+              Cart
+            </h1>
+            {cartCount > 0 && (
+              <>
+                <div className="w-2" />
+                <span className="px-[7px] py-[2px] rounded-[10px] bg-[#E8F5E9] text-[11px] font-extrabold text-[#0A4C36] leading-none">
+                  {cartCount}
+                </span>
+              </>
+            )}
+          </div>
+
+          <Link
+            href="/"
+            className="p-1.5 rounded-full hover:bg-stone-100 text-[#4B5563] transition-colors active:scale-90"
+            aria-label="Close cart"
+          >
+            <GlorovCustomIcons.close size={20} />
+          </Link>
+        </div>
+      </header>
+
+      {/* 2. Main Content */}
+      <main className="flex-1 w-full">
+        {cartItems.length === 0 ? (
+          <CartEmptyState />
+        ) : (
+          <div className="w-full max-w-[1280px] mx-auto px-2.5 sm:px-6 py-1.5 sm:py-4">
+            {/* Desktop Layout (>= 1024px, matching Flutter _buildDesktopLayout: flex 13 / flex 8) */}
+            <div className="hidden lg:flex items-start gap-6">
+              {/* Left Column: Milestone, Items, Recommendations (Flex 13) */}
+              <div className="flex-[13] min-w-0 flex flex-col gap-3">
+                <FreeShippingProgressBar
+                  subtotal={cartSubtotal}
+                  appliedCoupon={appliedCoupon}
+                  onOpenOffers={() => setIsOffersModalOpen(true)}
+                  onApplyCoupon={(code) => applyCoupon(code)}
+                  onShowNotice={(msg) => showToast('info', msg)}
+                />
+
+                <div className="flex flex-col">
+                  {cartItems.map((item) => (
+                    <CartItemRow
+                      key={item.id}
+                      item={item}
+                      appliedCoupon={appliedCoupon}
+                      onUpdateQuantity={(newQty) => updateCartQuantity(item.id, newQty)}
+                      onRemove={() => removeFromCart(item.id)}
+                      onMoveToWishlist={() => moveToWishlist(item.id)}
+                    />
+                  ))}
+                </div>
+
+                <div className="pt-2">
+                  <RecommendedProductsSection />
+                </div>
+              </div>
+
+              {/* Right Column: Coupon, Pincode, Order Summary, Guarantee (Flex 8) */}
+              <div className="flex-[8] min-w-0 flex flex-col gap-3.5 sticky top-4">
+                <CouponVoucherCard
+                  appliedCoupon={appliedCoupon}
+                  onApplyCoupon={(code) => applyCoupon(code)}
+                  onRemoveCoupon={removeCoupon}
+                  onOpenOffersModal={() => setIsOffersModalOpen(true)}
+                  subtotal={cartSubtotal}
+                />
+
+                <CartPincodeBox />
+
+                <CartOrderSummary
+                  subtotal={cartSubtotal}
+                  compareSubtotal={compareSubtotal}
+                  discountAmount={discountAmount}
+                  shippingAmount={shippingAmount}
+                  total={cartTotal}
+                  overallDiscountPercent={overallDiscountPercent}
+                  appliedCoupon={appliedCoupon}
+                  checkoutHref="/checkout"
+                />
+
+                <CartTransitGuarantee />
+              </div>
+            </div>
+
+            {/* Tablet Layout (640px to 1023px, matching Flutter _buildTabletLayout: flex 12 / flex 9) */}
+            <div className="hidden sm:flex lg:hidden items-start gap-4">
+              {/* Left Column: Milestone Progress, Items List, Recommendations (Flex 12) */}
+              <div className="flex-[12] min-w-0 flex flex-col gap-2.5">
+                <FreeShippingProgressBar
+                  subtotal={cartSubtotal}
+                  appliedCoupon={appliedCoupon}
+                  onOpenOffers={() => setIsOffersModalOpen(true)}
+                  onApplyCoupon={(code) => applyCoupon(code)}
+                  onShowNotice={(msg) => showToast('info', msg)}
+                />
+
+                <div className="flex flex-col">
+                  {cartItems.map((item) => (
+                    <CartItemRow
+                      key={item.id}
+                      item={item}
+                      appliedCoupon={appliedCoupon}
+                      onUpdateQuantity={(newQty) => updateCartQuantity(item.id, newQty)}
+                      onRemove={() => removeFromCart(item.id)}
+                      onMoveToWishlist={() => moveToWishlist(item.id)}
+                    />
+                  ))}
+                </div>
+
+                <div className="pt-2">
+                  <RecommendedProductsSection />
+                </div>
+              </div>
+
+              {/* Right Column: Coupon, Delivery/Pincode, Order Summary, Guarantee (Flex 9) */}
+              <div className="flex-[9] min-w-0 flex flex-col gap-3">
+                <CouponVoucherCard
+                  appliedCoupon={appliedCoupon}
+                  onApplyCoupon={(code) => applyCoupon(code)}
+                  onRemoveCoupon={removeCoupon}
+                  onOpenOffersModal={() => setIsOffersModalOpen(true)}
+                  subtotal={cartSubtotal}
+                />
+
+                <CartPincodeBox />
+
+                <CartOrderSummary
+                  subtotal={cartSubtotal}
+                  compareSubtotal={compareSubtotal}
+                  discountAmount={discountAmount}
+                  shippingAmount={shippingAmount}
+                  total={cartTotal}
+                  overallDiscountPercent={overallDiscountPercent}
+                  appliedCoupon={appliedCoupon}
+                  checkoutHref="/checkout"
+                />
+
+                <CartTransitGuarantee />
+              </div>
+            </div>
+
+            {/* Mobile Layout (< 640px, matching Flutter _buildMobileLayout: single column) */}
+            <div className="flex sm:hidden flex-col gap-2.5 pb-28">
+              {/* 1. Ultra-Compact Milestone Roadmap Progress Ribbon */}
+              <FreeShippingProgressBar
+                subtotal={cartSubtotal}
+                appliedCoupon={appliedCoupon}
+                onOpenOffers={() => setIsOffersModalOpen(true)}
+                onApplyCoupon={(code) => applyCoupon(code)}
+                onShowNotice={(msg) => showToast('info', msg)}
+              />
+
+              {/* 2. Compact Cart Items List */}
+              <div className="flex flex-col">
+                {cartItems.map((item) => (
+                  <CartItemRow
+                    key={item.id}
+                    item={item}
+                    appliedCoupon={appliedCoupon}
+                    onUpdateQuantity={(newQty) => updateCartQuantity(item.id, newQty)}
+                    onRemove={() => removeFromCart(item.id)}
+                    onMoveToWishlist={() => moveToWishlist(item.id)}
+                  />
+                ))}
+              </div>
+
+              {/* 3. Recommended Products Carousel (HIGH PRIORITY) */}
+              <div className="py-1">
+                <RecommendedProductsSection />
+              </div>
+
+              {/* 4. In-Flow Coupon Voucher Card */}
+              <CouponVoucherCard
+                appliedCoupon={appliedCoupon}
+                onApplyCoupon={(code) => applyCoupon(code)}
+                onRemoveCoupon={removeCoupon}
+                onOpenOffersModal={() => setIsOffersModalOpen(true)}
+                subtotal={cartSubtotal}
+              />
+
+              {/* 5. Express Delivery & Pincode Strip */}
+              <CartPincodeBox />
+
+              {/* 6. Safe Botanical Transit & Care Guarantee Strip */}
+              <CartTransitGuarantee />
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* 3. Mobile Sticky Checkout Dock (matching Flutter _buildStickyCheckoutBar) */}
+      {cartItems.length > 0 && (
+        <CartStickyCheckoutBar
+          total={cartTotal}
+          compareSubtotal={compareSubtotal}
+          overallDiscountPercent={overallDiscountPercent}
+          checkoutHref="/checkout"
+          onOpenTaxBreakdown={() => setIsTaxModalOpen(true)}
+        />
+      )}
+
+      {/* 4. Available Offers Modal Sheet */}
+      <AvailableOffersModal
+        isOpen={isOffersModalOpen}
+        onClose={() => setIsOffersModalOpen(false)}
+        subtotal={cartSubtotal}
+        appliedCoupon={appliedCoupon}
+        onApplyCoupon={(code) => {
+          applyCoupon(code)
+          setIsOffersModalOpen(false)
+        }}
+        onRemoveCoupon={() => {
+          removeCoupon()
+          setIsOffersModalOpen(false)
+        }}
+      />
+
+      {/* 5. Price & Tax Breakdown Modal Sheet */}
+      <TaxBreakdownModal
+        isOpen={isTaxModalOpen}
+        onClose={() => setIsTaxModalOpen(false)}
+        subtotal={cartSubtotal}
+        compareSubtotal={compareSubtotal}
+        discountAmount={discountAmount}
+        shippingAmount={shippingAmount}
+        total={cartTotal}
+        appliedCoupon={appliedCoupon}
+      />
+    </div>
+  )
+}

@@ -1,4 +1,3 @@
-import '../../models/glorov/glorov_mock_data.dart';
 import '../../models/glorov/glorov_product.dart';
 import '../../services/glorov_cart_state.dart';
 import '../../services/storage/local_storage.dart';
@@ -341,7 +340,7 @@ class MedusaCartRepository implements CartRepository {
   @override
   Future<void> addAllWishlistToCart() async {
     for (final id in _state.wishlistIds) {
-      final product = GlorovMockData.getProductById(id);
+      final product = GlorovProductCache.get(id);
       if (product != null) {
         await addItem(product);
       }

@@ -1,0 +1,39 @@
+import { NextResponse } from 'next/server'
+import { checkBackendHealth } from '../../../lib/api/health'
+import { SITE_NAME } from '../../../lib/constants'
+
+export const dynamic = 'force-dynamic'
+
+/**
+ * GET /api/health
+ * Storefront operational health endpoint.
+ * Verifies Node.js process and upstream Medusa backend connectivity.
+ */
+export async function GET() {
+  const startTime = Date.now()
+  const backendResult = await checkBackendHealth()
+
+  const isHealthy = backendResult.success
+
+  return NextResponse.json(
+    {
+      status: isHealthy ? 'healthy' : 'degraded',
+      service: '@glorov/storefront',
+      site: SITE_NAME,
+      timestamp: new Date().toISOString(),
+      uptime_seconds: process.uptime(),
+      latency_ms: Date.now() - startTime,
+      upstream_backend: {
+        connected: isHealthy,
+        status: backendResult.status,
+        details: backendResult.success ? backendResult.data : backendResult.error,
+      },
+    },
+    {
+      status: isHealthy ? 200 : 503,
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
+    }
+  )
+}

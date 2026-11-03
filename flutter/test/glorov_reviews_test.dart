@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shop/models/glorov/glorov_mock_data.dart';
@@ -9,7 +11,80 @@ import 'package:shop/repositories/mock/local_review_repository.dart';
 import 'package:shop/screens/product/glorov_product_details_screen.dart';
 import 'package:shop/screens/reviews/view/product_reviews_screen.dart';
 
+class _ReviewsTestHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) => _MockHttpClient();
+}
+
+class _MockHttpClient extends Fake implements HttpClient {
+  @override
+  bool autoUncompress = true;
+  @override
+  Duration? connectionTimeout;
+  @override
+  Duration idleTimeout = const Duration(seconds: 15);
+  @override
+  int? maxConnectionsPerHost;
+  @override
+  String? userAgent;
+
+  @override
+  Future<HttpClientRequest> getUrl(Uri url) async => _MockHttpClientRequest();
+}
+
+class _MockHttpClientRequest extends Fake implements HttpClientRequest {
+  @override
+  final HttpHeaders headers = _MockHttpHeaders();
+
+  @override
+  Future<HttpClientResponse> close() async => _MockHttpClientResponse();
+}
+
+class _MockHttpHeaders extends Fake implements HttpHeaders {
+  @override
+  void add(String name, Object value, {bool preserveHeaderCase = false}) {}
+  @override
+  void set(String name, Object value, {bool preserveHeaderCase = false}) {}
+}
+
+class _MockHttpClientResponse extends Fake implements HttpClientResponse {
+  @override
+  int get statusCode => 200;
+  @override
+  int get contentLength => 68;
+  @override
+  HttpClientResponseCompressionState get compressionState =>
+      HttpClientResponseCompressionState.notCompressed;
+
+  @override
+  StreamSubscription<List<int>> listen(
+    void Function(List<int> event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    const pngBytes = [
+      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+      0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+      0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+      0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+      0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+      0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+    ];
+    return Stream<List<int>>.value(pngBytes).listen(
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
+  }
+}
+
 void main() {
+  setUpAll(() {
+    HttpOverrides.global = _ReviewsTestHttpOverrides();
+  });
+
   setUp(() {
     GlorovRepositories.init(mode: RepositoryMode.mock);
   });
@@ -26,7 +101,7 @@ void main() {
         content: 'Seeds germinated in 3 days. Healthy vigorous plants.',
         isVerified: true,
         helpfulCount: 14,
-        images: ['assets/images/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg'],
+        images: ['https://res.cloudinary.com/naodmm8w/image/upload/v1793516587/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg'],
         sellerReply: 'GLOROV Care Team: Thank you for growing with us!',
       );
 
@@ -193,6 +268,88 @@ void main() {
         expect(GlorovReviewsData.summaries.containsKey(p.id), true,
             reason: 'Product ${p.id} (${p.title}) missing summary');
       }
+    });
+  });
+
+  group('Rating Constraints & Price-Correlated Distribution Audit', () {
+    test('Strict maximum cap of 50 ratings across all catalog products', () {
+      for (final p in GlorovMockData.products) {
+        final summary = GlorovReviewsData.summaries[p.id]!;
+        expect(summary.totalReviews <= 50, true,
+            reason: 'Product ${p.id} exceeds 50 cap with ${summary.totalReviews}');
+        expect(p.reviewCount <= 50, true,
+            reason: 'Product ${p.id} in mock catalog exceeds 50 cap with ${p.reviewCount}');
+      }
+    });
+
+    test('Written reviews count is between 3 to 5 for every product in catalog', () {
+      for (final p in GlorovMockData.products) {
+        final reviewList = GlorovReviewsData.reviews[p.id]!;
+        final summary = GlorovReviewsData.summaries[p.id]!;
+        expect(reviewList.length >= 3 && reviewList.length <= 5, true,
+            reason: 'Product ${p.id} has ${reviewList.length} reviews, expected 3 to 5');
+        expect(summary.totalReviews >= 3, true,
+            reason: 'Product ${p.id} has ${summary.totalReviews} total ratings, expected >= 3');
+      }
+    });
+
+    test('Zero default product catalog images in customer reviews', () {
+      for (final p in GlorovMockData.products) {
+        final reviewList = GlorovReviewsData.reviews[p.id]!;
+        for (final r in reviewList) {
+          for (final img in r.images) {
+            expect(img.startsWith('assets/images/products/'), false,
+                reason: 'Found default product image in review for ${p.id}: $img');
+          }
+        }
+      }
+    });
+
+    test('Mathematical consistency of star breakdown and average ratings', () {
+      for (final p in GlorovMockData.products) {
+        final summary = GlorovReviewsData.summaries[p.id]!;
+        int sumStars = 0;
+        int totalFromStars = 0;
+        for (int star = 1; star <= 5; star++) {
+          final count = summary.getCountForStar(star);
+          totalFromStars += count;
+          sumStars += star * count;
+        }
+        expect(totalFromStars, summary.totalReviews,
+            reason: 'Star breakdown sum does not equal totalReviews for ${p.id}');
+        final double expectedAvg =
+            (sumStars / summary.totalReviews * 10).round() / 10.0;
+        expect(summary.averageRating, expectedAvg,
+            reason: 'Average rating calculation discrepancy for ${p.id}');
+        expect(p.rating, summary.averageRating,
+            reason: 'Mock product rating does not match summary rating for ${p.id}');
+        expect(p.reviewCount, summary.totalReviews,
+            reason: 'Mock product reviewCount does not match summary totalReviews for ${p.id}');
+      }
+    });
+
+    test('Inverse price-to-ratings correlation (low-priced items have higher ratings volume)', () {
+      final lowPriced = GlorovMockData.products
+          .where((p) => p.price < 200 && p.reviewCount > 0)
+          .map((p) => p.reviewCount)
+          .toList();
+      final highPriced = GlorovMockData.products
+          .where((p) => p.price >= 800 && p.reviewCount > 0)
+          .map((p) => p.reviewCount)
+          .toList();
+
+      expect(lowPriced.isNotEmpty, true);
+      expect(highPriced.isNotEmpty, true);
+
+      final avgLow = lowPriced.reduce((a, b) => a + b) / lowPriced.length;
+      final avgHigh = highPriced.reduce((a, b) => a + b) / highPriced.length;
+
+      expect(avgLow > avgHigh, true,
+          reason: 'Low priced avg ($avgLow) should be higher than high priced avg ($avgHigh)');
+      expect(avgLow >= 30, true,
+          reason: 'Low priced seeds should have 30+ average ratings volume');
+      expect(avgHigh <= 10, true,
+          reason: 'High priced items should have <= 10 average ratings volume');
     });
   });
 

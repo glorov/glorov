@@ -79,34 +79,55 @@ class GlorovHeroData {
     this.isActive = true,
   });
 
+  bool get isEmpty => id.isEmpty || headline.isEmpty;
+  bool get isNotEmpty => !isEmpty;
+
+  static const GlorovHeroData empty = GlorovHeroData(
+    id: '',
+    tag: '',
+    headline: '',
+    description: '',
+    ctaText: '',
+    ctaRoute: '',
+    secondaryCtaText: '',
+    secondaryCtaRoute: '',
+    desktopImageUrl: '',
+    mobileImageUrl: '',
+    plantTag: '',
+    plantName: '',
+    plantRoute: '',
+    trustPills: [],
+    isActive: false,
+  );
+
   /// Canonical botanical defaults matching the website
   static const GlorovHeroData defaultData = GlorovHeroData(
     id: 'hero_organic_botanical',
-    tag: 'ORGANIC BOTANICAL COLLECTION 2026',
-    headline: 'Grow Something\nBeautiful.',
+    tag: 'CERTIFIED 100% ORGANIC NURSERY',
+    headline: 'Nurture Nature in Every Corner of Your Home',
     description:
-        'Certified non-GMO heirloom seeds, nursery-acclimatized houseplants, and breathable terracotta planters. Cultivate a greener sanctuary at home with verified germination and transit protection.',
-    ctaText: 'Shop Seeds & Plants',
+        'Cultivate lush tranquility with cold-chain dispatched live houseplants, indigenous desi heirloom seeds, and nutrient-dense organic soil mixes delivered safely to your doorstep.',
+    ctaText: 'Explore Desi Seeds',
     ctaRoute: '/categories/seeds',
-    secondaryCtaText: 'Explore Care Guides',
-    secondaryCtaRoute: '/plant-doctor',
+    secondaryCtaText: 'View Live Houseplants',
+    secondaryCtaRoute: '/categories/live-plants',
     desktopImageUrl: 'assets/images/monstera_deliciosa_hero.jpg',
     mobileImageUrl: 'assets/images/monstera_deliciosa_hero.jpg',
-    plantTag: 'PLANT OF THE SEASON',
-    plantName: 'Monstera Deliciosa • Swiss Cheese',
+    plantTag: 'Air-Purifying Certified',
+    plantName: 'Monstera Deliciosa Botanical Specimen',
     plantRoute: '/categories/live-plants',
     trustPills: [
       GlorovHeroTrustPill(
-        iconKey: 'ac_unit_rounded',
-        text: 'Winter Botanical Special',
+        iconKey: 'germination',
+        text: '98%+ Germination Vigor',
       ),
       GlorovHeroTrustPill(
-        iconKey: 'local_shipping_outlined',
-        text: 'Free Shipping > ₹999',
+        iconKey: 'transit',
+        text: '100% Transit Protected',
       ),
       GlorovHeroTrustPill(
-        iconKey: 'eco_outlined',
-        text: 'Safe Transit Guarantee',
+        iconKey: 'gardens',
+        text: '50k+ Gardens Planted',
       ),
     ],
     isActive: true,
@@ -125,23 +146,24 @@ class GlorovHeroData {
 
     return GlorovHeroData(
       id: json['id'] as String? ?? 'hero_organic_botanical',
-      tag: json['tag'] as String? ?? 'ORGANIC BOTANICAL COLLECTION 2026',
-      headline: json['headline'] as String? ?? 'Grow Something\nBeautiful.',
+      tag: json['tag'] as String? ?? 'CERTIFIED 100% ORGANIC NURSERY',
+      headline: json['headline'] as String? ??
+          'Nurture Nature in Every Corner of Your Home',
       description: json['description'] as String? ??
-          'Certified non-GMO heirloom seeds, nursery-acclimatized houseplants, and breathable terracotta planters. Cultivate a greener sanctuary at home with verified germination and transit protection.',
-      ctaText: json['cta_text'] as String? ?? 'Shop Seeds & Plants',
+          'Cultivate lush tranquility with cold-chain dispatched live houseplants, indigenous desi heirloom seeds, and nutrient-dense organic soil mixes delivered safely to your doorstep.',
+      ctaText: json['cta_text'] as String? ?? 'Explore Desi Seeds',
       ctaRoute: json['cta_route'] as String? ?? '/categories/seeds',
       secondaryCtaText:
-          json['secondary_cta_text'] as String? ?? 'Explore Care Guides',
+          json['secondary_cta_text'] as String? ?? 'View Live Houseplants',
       secondaryCtaRoute:
-          json['secondary_cta_route'] as String? ?? '/plant-doctor',
+          json['secondary_cta_route'] as String? ?? '/categories/live-plants',
       desktopImageUrl: json['desktop_image_url'] as String? ??
           'assets/images/monstera_deliciosa_hero.jpg',
       mobileImageUrl: json['mobile_image_url'] as String? ??
           'assets/images/monstera_deliciosa_hero.jpg',
-      plantTag: json['plant_tag'] as String? ?? 'PLANT OF THE SEASON',
+      plantTag: json['plant_tag'] as String? ?? 'Air-Purifying Certified',
       plantName: json['plant_name'] as String? ??
-          'Monstera Deliciosa • Swiss Cheese',
+          'Monstera Deliciosa Botanical Specimen',
       plantRoute: json['plant_route'] as String? ?? '/categories/live-plants',
       trustPills: pills.isNotEmpty ? pills : defaultData.trustPills,
       isActive: json['is_active'] as bool? ?? true,

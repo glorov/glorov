@@ -147,7 +147,7 @@ class GlorovNotification {
       ),
       GlorovNotification(
         id: 'notif_05',
-        title: 'Welcome to GLOROV Growing Club',
+        title: 'Welcome to GLOROV',
         message:
             'Enjoy ₹100 off your first organic heirloom order with code GLOROV10 at checkout. Free shipping on orders over ₹999.',
         timestamp: now.subtract(const Duration(days: 4)),

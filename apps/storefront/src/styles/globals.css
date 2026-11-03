@@ -1,0 +1,470 @@
+/* =============================================================================
+   GLOROV Global Styles
+   Source: flutter/lib/theme/glorov/glorov_colors.dart
+           flutter/lib/theme/glorov/glorov_typography.dart
+           flutter/lib/theme/glorov/glorov_spacing.dart
+           flutter/lib/theme/glorov/glorov_radii.dart
+           flutter/lib/theme/glorov/glorov_breakpoints.dart
+   ============================================================================= */
+
+@import './tokens.css';
+
+/* ─── Font Declarations ────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Plus Jakarta Display';
+  src: url('/fonts/PlusJakartaDisplay-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Display';
+  src: url('/fonts/PlusJakartaDisplay-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Display';
+  src: url('/fonts/PlusJakartaDisplay-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/Fraunces-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/Fraunces-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/Fraunces-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: url('/fonts/Fraunces-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Grandis Extended';
+  src: url('/fonts/GrandisExtended-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Grandis Extended';
+  src: url('/fonts/GrandisExtended-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─── Tailwind Directives ───────────────────────────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── GLOROV Brand CSS Custom Properties ──────────────────────────────────── */
+/* These mirror the Tailwind theme and allow usage in plain CSS when needed.  */
+:root {
+  /* Primary brand greens */
+  --color-forest-deep:   #1B4332;
+  --color-forest-medium: #2D6A4F;
+  --color-forest-dark:   #081C15;
+
+  /* Secondary greens */
+  --color-sage:          #52B788;
+  --color-sage-light:    #74C69D;
+  --color-mint:          #B7E4C7;
+  --color-mint-surface:  #E8F5E9;
+  --color-mint-badge:    #D8F3DC;
+
+  /* Earth & warm accents */
+  --color-earth-gold:    #DDA15E;
+  --color-terracotta:    #BC6C25;
+  --color-earth-warm:    #606C38;
+  --color-sun-amber:     #F4A261;
+
+  /* Surfaces */
+  --color-surface-pure:  #FFFFFF;
+  --color-surface-cream: #F9FAF8;
+  --color-surface-muted: #F3F4F1;
+
+  /* Tags */
+  --color-tag-dark-blue: #0C2340;
+
+  /* Borders */
+  --color-border-subtle: #E5E7EB;
+  --color-border-medium: #D1D5DB;
+  --color-border-light:  #F3F4F6;
+
+  /* Typography */
+  --color-text-primary:   #111827;
+  --color-text-secondary: #374151;
+  --color-text-muted:     #6B7280;
+  --color-text-disabled:  #9CA3AF;
+  --color-text-on-primary: #FFFFFF;
+
+  /* Semantic */
+  --color-error:          #EF4444;
+  --color-error-surface:  #FEF2F2;
+  --color-success:        #10B981;
+  --color-success-surface:#ECFDF5;
+  --color-warning:        #F59E0B;
+  --color-warning-surface:#FFFBEB;
+  --color-info:           #3B82F6;
+
+  /* Spacing tokens */
+  --space-xxs:  4px;
+  --space-xs:   8px;
+  --space-sm:   12px;
+  --space-md:   16px;
+  --space-lg:   24px;
+  --space-xl:   32px;
+  --space-xxl:  48px;
+  --space-hero: 64px;
+
+  /* Border radii */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 999px;
+
+  /* Max content width */
+  --max-content-width: 1280px;
+
+  /* Transitions */
+  --transition-fast:   100ms ease-in-out;
+  --transition-normal: 200ms ease-in-out;
+  --transition-slow:   300ms ease-in-out;
+
+  /* Z-index layers */
+  --z-header:  50;
+  --z-drawer:  60;
+  --z-modal:   70;
+  --z-toast:   80;
+  --z-tooltip: 90;
+}
+
+/* ─── Base Layer Overrides ──────────────────────────────────────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* Prevent horizontal overflow while keeping native browser history gestures & smooth scrolling */
+  html {
+    /* Prevent text size inflation on mobile */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+    min-height: 100%;
+    overflow-x: hidden;
+    /* Allow native trackpad 2-finger horizontal swipe back/forward navigation */
+    overscroll-behavior-x: auto;
+    overscroll-behavior-y: auto;
+  }
+
+  body {
+    background-color: var(--color-surface-cream);
+    color: var(--color-text-primary);
+    font-family: 'Plus Jakarta Display', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100%;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    /* Allow native trackpad 2-finger horizontal swipe back/forward navigation */
+    overscroll-behavior-x: auto;
+    overscroll-behavior-y: auto;
+    /* Minimum width to prevent extreme squishing */
+    min-width: 320px;
+    /* Anti-aliasing */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Ensure all images are responsive and don't overflow */
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* Remove default button styles */
+  button {
+    cursor: pointer;
+    background: none;
+    font-family: inherit;
+    border-width: 0;
+    border-style: solid;
+  }
+
+  /* Remove default input styles */
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  /* Remove list styles when used as navigation */
+  ul,
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Anchor links */
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Headings use Fraunces (display font) */
+  h1,
+  h2,
+  h3 {
+    font-family: 'Fraunces', ui-serif, serif;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--color-text-primary);
+  }
+
+  h4,
+  h5,
+  h6 {
+    font-family: 'Plus Jakarta Display', ui-sans-serif, sans-serif;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--color-text-primary);
+  }
+
+  /* Focus styles for keyboard accessibility */
+  :focus-visible {
+    outline: 2px solid var(--color-forest-deep);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  /* Screen-reader only utility */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* ─── GLOROV Botanical Custom Scrollbar System ──────────────────────────────── */
+  /*
+   * Matches Flutter GlorovScrollBehavior & ScrollbarThemeData:
+   * - 5px sleek, small, rounded capsule slider (crossAxisMargin: 2px, radius: 8px)
+   * - Translucent botanical green (0x660A4C36 / rgba(10, 76, 54, 0.35))
+   * - Rich emerald on hover (#1B6A4C)
+   * - Deep forest green on active drag (#0A4C36)
+   * - Transparent track (zero visual noise)
+   */
+
+  /* WebKit/Blink (Chrome, Edge, Safari, Opera) */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(10, 76, 54, 0.35);
+    border-radius: 9999px;
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #1B6A4C;
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background-color: #0A4C36;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Firefox standard scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(10, 76, 54, 0.35) transparent;
+  }
+
+  /* Compact / Mini scrollbar utility (for tight widgets, order summaries, dropdowns) */
+  .scrollbar-sm::-webkit-scrollbar {
+    width: 3.5px;
+    height: 3.5px;
+  }
+
+  .scrollbar-sm::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-sm::-webkit-scrollbar-thumb {
+    background-color: rgba(10, 76, 54, 0.28);
+    border-radius: 9999px;
+  }
+
+  .scrollbar-sm::-webkit-scrollbar-thumb:hover {
+    background-color: #1B6A4C;
+  }
+
+  .scrollbar-sm {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(10, 76, 54, 0.28) transparent;
+  }
+
+  /* Universal scrollbar suppression utilities for carousels & chip rows */
+  .no-scrollbar::-webkit-scrollbar,
+  .scrollbar-none::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    -webkit-appearance: none !important;
+  }
+
+  .no-scrollbar,
+  .scrollbar-none {
+    -ms-overflow-style: none !important; /* IE and Edge */
+    scrollbar-width: none !important; /* Firefox */
+  }
+}
+
+/* ─── Component Layer ───────────────────────────────────────────────────────── */
+@layer components {
+  /* Page container — max-width constraint with responsive padding */
+  .page-container {
+    width: 100%;
+    max-width: var(--max-content-width);
+    margin-left: auto;
+    margin-right: auto;
+    /* Responsive horizontal padding:
+       350px:  16px | tablet: 24px | desktop: 32px */
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+
+  @media (min-width: 641px) {
+    .page-container {
+      padding-left: var(--space-lg);
+      padding-right: var(--space-lg);
+    }
+  }
+
+  @media (min-width: 1025px) {
+    .page-container {
+      padding-left: var(--space-xl);
+      padding-right: var(--space-xl);
+    }
+  }
+
+  /* Skeleton shimmer animation */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-surface-muted) 25%,
+      var(--color-border-light) 50%,
+      var(--color-surface-muted) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* Search Placeholder Bottom-to-Top Rotation */
+  @keyframes hintSlideIn {
+    0% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0%);
+      opacity: 1;
+    }
+  }
+
+  @keyframes hintSlideOut {
+    0% {
+      transform: translateY(0%);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+  }
+
+  .animate-hint-in {
+    animation: hintSlideIn 380ms cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  }
+
+  .animate-hint-out {
+    animation: hintSlideOut 380ms cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+  }
+
+  /* Suppress Next.js dev overlay indicator in screenshots */
+  nextjs-portal,
+  [data-nextjs-toast],
+  [data-next-badge],
+  div[class*="next-badge"],
+  #__next-build-watcher {
+    display: none !important;
+  }
+}

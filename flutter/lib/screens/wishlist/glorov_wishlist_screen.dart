@@ -10,21 +10,54 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../models/glorov/glorov_mock_data.dart';
 import '../../models/glorov/glorov_product.dart';
+import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
 import '../../services/glorov_cart_state.dart';
 
 /// GLOROV Dedicated Botanical Wishlist Screen
 /// Synchronized with global wishlist IDs, providing 1-click add to cart,
 /// individual removals, and graceful empty state recovery.
-class GlorovWishlistScreen extends StatelessWidget {
+class GlorovWishlistScreen extends StatefulWidget {
   final bool isLoading;
 
   const GlorovWishlistScreen({
     super.key,
     this.isLoading = false,
   });
+
+  @override
+  State<GlorovWishlistScreen> createState() => _GlorovWishlistScreenState();
+}
+
+class _GlorovWishlistScreenState extends State<GlorovWishlistScreen> {
+  List<GlorovProduct> _allProducts = [];
+  bool _isLoadingProducts = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      final prods = await GlorovRepositories.products.getProducts();
+      if (mounted) {
+        setState(() {
+          _allProducts = prods;
+          _isLoadingProducts = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _allProducts = [];
+          _isLoadingProducts = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,13 +82,15 @@ class GlorovWishlistScreen extends StatelessWidget {
                 final wishlistIds =
                     GlorovCartState.instance.wishlistIds;
 
-                // Resolve wishlist IDs to actual products
+                // Resolve wishlist IDs to actual products from database
                 final List<GlorovProduct> products = wishlistIds
-                    .map((id) => GlorovMockData.getProductById(id))
+                    .map((id) =>
+                        _allProducts.where((p) => p.id == id).firstOrNull ??
+                        GlorovProductCache.get(id))
                     .whereType<GlorovProduct>()
                     .toList();
 
-                if (isLoading) {
+                if (widget.isLoading || (_isLoadingProducts && wishlistIds.isNotEmpty)) {
                   final isDesktop = AppBreakpoints.isDesktop(context);
                   return GlorovProductGridSkeleton(
                     count: 6,
@@ -263,7 +298,7 @@ class GlorovWishlistScreen extends StatelessWidget {
   }
 
   Widget _buildEmptyWishlist(BuildContext context) {
-    final suggested = GlorovMockData.products.take(4).toList();
+    final suggested = _allProducts.take(4).toList();
 
     return Column(
       children: [

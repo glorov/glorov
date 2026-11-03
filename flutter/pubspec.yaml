@@ -36,23 +36,11 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
-    - assets/images/products/vegetable-seeds/
-    - assets/images/products/flower-seeds/
-    - assets/images/products/herb-seeds/
-    - assets/images/products/indoor-plants/
-    - assets/images/products/air-purifying-plants/
-    - assets/images/products/flowering-plants/
-    - assets/images/products/succulents-bonsai/
-    - assets/images/products/ceramic-planters/
-    - assets/images/products/terracotta-pots/
-    - assets/images/products/potting-mix-fertilizers/
-    - assets/images/products/gardening-tools/
     - assets/icons/
     - assets/Illustration/
     - assets/flags/
     - assets/logo/
-    - assets/screens/
+    - assets/images/
 
   fonts:
     - family: Plus Jakarta

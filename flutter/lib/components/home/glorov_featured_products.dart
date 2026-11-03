@@ -6,8 +6,8 @@ import '../../core/theme/app_shadows.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/theme/glorov_horizontal_scroll_behavior.dart';
-import '../../models/glorov/glorov_mock_data.dart';
 import '../../models/glorov/glorov_product.dart';
+import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
 import '../../core/interactions/interactions.dart';
 import '../common/glorov_y_scroll_pass_through.dart';
@@ -28,6 +28,8 @@ class GlorovFeaturedProducts extends StatefulWidget {
 
 class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
   String _selectedCategory = 'All Featured';
+  List<GlorovProduct>? _remoteProducts;
+  bool _isLoading = true;
 
   final List<String> _tabs = [
     'All Featured',
@@ -35,60 +37,51 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
     'Heirloom Seeds',
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      final products = await GlorovRepositories.products.getProducts();
+      if (mounted) {
+        setState(() {
+          _remoteProducts = products;
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _remoteProducts = [];
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   List<GlorovProduct> _getCuratedProducts() {
+    final all = _remoteProducts ?? const [];
     if (_selectedCategory == 'Live Plants') {
-      return GlorovMockData.products
+      return all
           .where((p) =>
-              p.category == 'Live Plants' ||
+              p.category.toLowerCase().contains('plant') ||
               p.productType == GlorovProductType.plants)
           .take(16)
           .toList();
     }
     if (_selectedCategory == 'Heirloom Seeds') {
-      return GlorovMockData.products
+      return all
           .where((p) =>
-              p.category == 'Seeds' ||
+              p.category.toLowerCase().contains('seed') ||
               p.productType == GlorovProductType.seeds)
           .take(16)
           .toList();
     }
 
-    // Default 'All Featured': Curated high-converting selection (16 items)
-    const preferredIds = [
-      'glr-her-14', // Fenugreek Seeds - Culinary Herb
-      'glr-ind-19', // Peace Lily Plant - Low Maintenance
-      'glr-her-13', // Coriander Seeds - Culinary Herb
-      'glr-seed-01', // Green Chilli Seeds - 98% Germination
-      'glr-air-30', // ZZ Plant - NASA Air Purifier
-      'glr-flo-09', // Marigold Flower Seeds - Vibrant Blooms
-      'glr-suc-39', // Snake Plant - Golden Hahnii - Drought Tolerant
-      'glr-veg-02', // Green Head Cabbage Seeds - 98% Germination
-      'glr-flo-36', // Petunia Grandiflora Mixed Cascade - Continuous Blooms
-      'glr-air-28', // Aglaonema Pink Beauty Plant - NASA Air Purifier
-      'glr-veg-01', // Brinjal Banarasi Giant Seeds - 98% Germination
-      'glr-ind-21', // Jade Mini Plant - Low Maintenance
-      'glr-flo-35', // Bird of Paradise Plant - Continuous Blooms
-      'glr-her-15', // Holy Basil Seeds - Culinary Herb
-      'glr-ind-24', // Areca Palm Plant XL - Low Maintenance
-      'glr-veg-05', // Heirloom Tomato Seeds - 98% Germination
-    ];
-
-    final curated = <GlorovProduct>[];
-    for (final id in preferredIds) {
-      final match =
-          GlorovMockData.products.where((p) => p.id == id).firstOrNull;
-      if (match != null) curated.add(match);
-    }
-
-    if (curated.length < 16) {
-      for (final p in GlorovMockData.products) {
-        if (!curated.any((c) => c.id == p.id)) {
-          curated.add(p);
-          if (curated.length == 16) break;
-        }
-      }
-    }
-    return curated;
+    return all.take(16).toList();
   }
 
   @override
@@ -227,7 +220,7 @@ class _GlorovFeaturedProductsState extends State<GlorovFeaturedProducts> {
 
               // Product Grid (Strictly capped to 8 curated items)
               GlorovSkeletonLoader(
-                loading: widget.isLoading,
+                loading: widget.isLoading || _isLoading || _remoteProducts == null,
                 skeleton: GlorovProductGridSkeleton(
                   count: 8,
                   crossAxisCount: crossAxisCount,

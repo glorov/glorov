@@ -4,7 +4,6 @@ import '../../../components/navigation/glorov_storefront_scaffold.dart';
 import '../../../core/interactions/interactions.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../models/glorov/glorov_mock_data.dart';
 import '../../../models/glorov/glorov_product.dart';
 import '../../../models/glorov/glorov_review.dart';
 import '../../../repositories/glorov_repositories.dart';
@@ -56,19 +55,27 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
     if (_resolvedProduct == null) {
       if (widget.product != null) {
         _resolvedProduct = widget.product;
+        _loadReviews();
       } else {
         final args = ModalRoute.of(context)?.settings.arguments;
         if (args is GlorovProduct) {
           _resolvedProduct = args;
+          _loadReviews();
         } else if (args is String) {
-          _resolvedProduct = GlorovMockData.getProductById(args) ??
-              GlorovMockData.getProductBySlug(args) ??
-              GlorovMockData.products.first;
-        } else {
-          _resolvedProduct = GlorovMockData.products.first;
+          final cached = GlorovProductCache.get(args);
+          if (cached != null) {
+            _resolvedProduct = cached;
+            _loadReviews();
+          } else {
+            GlorovRepositories.products.getProductById(args).then((p) {
+              if (mounted && p != null) {
+                setState(() => _resolvedProduct = p);
+                _loadReviews();
+              }
+            });
+          }
         }
       }
-      _loadReviews();
     }
   }
 
@@ -113,7 +120,17 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final prod = _resolvedProduct ?? GlorovMockData.products.first;
+    if (_resolvedProduct == null) {
+      return const GlorovStorefrontScaffold(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 80),
+          child: Center(
+            child: CircularProgressIndicator(color: AppColors.forestDeep),
+          ),
+        ),
+      );
+    }
+    final prod = _resolvedProduct!;
     final avgRating = _reviewSummary?.averageRating ?? prod.rating;
     final totalCount = _reviewSummary?.totalReviews ?? prod.reviewCount;
 
@@ -233,9 +250,10 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
                       const SizedBox(height: 20),
 
                       // "Why customers love this" AI Summary Card
-                      _buildAiSummaryCard(),
-
-                      const SizedBox(height: 20),
+                      if (totalCount > 0) ...[
+                        _buildAiSummaryCard(),
+                        const SizedBox(height: 20),
+                      ],
 
                       // Search & Filter Toolbar
                       _buildSearchAndFilterToolbar(),
@@ -330,16 +348,15 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
             child: SizedBox(
               width: 80,
               height: 80,
-              child: prod.primaryImage.startsWith('assets/')
-                  ? Image.asset(prod.primaryImage, fit: BoxFit.cover)
-                  : Image.network(
-                      prod.primaryImage,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
-                          Icons.eco_rounded,
-                          size: 32,
-                          color: AppColors.forestDeep),
-                    ),
+              child: Image.network(
+                prod.primaryImage,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.eco_rounded,
+                  size: 32,
+                  color: AppColors.forestDeep,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -368,29 +385,38 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
                   ),
                 ],
                 const SizedBox(height: 6),
-                Row(
-                  children: [
-                    ...List.generate(
-                      5,
-                      (i) => Icon(
-                        i < avgRating.floor()
-                            ? Icons.star_rounded
-                            : Icons.star_border_rounded,
-                        size: 16,
-                        color: const Color(0xFFEAB308),
+                totalCount == 0
+                    ? const Text(
+                        'No customer reviews yet',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280),
+                        ),
+                      )
+                    : Row(
+                        children: [
+                          ...List.generate(
+                            5,
+                            (i) => Icon(
+                              i < avgRating.floor()
+                                  ? Icons.star_rounded
+                                  : Icons.star_border_rounded,
+                              size: 16,
+                              color: const Color(0xFFEAB308),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${avgRating.toStringAsFixed(1)} ($totalCount reviews)',
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF374151),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${avgRating.toStringAsFixed(1)} ($totalCount reviews)',
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF374151),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),
@@ -423,7 +449,47 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
-      child: Wrap(
+      child: totalCount == 0
+          ? Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFBBF7D0)),
+                  ),
+                  child: const Icon(Icons.eco_rounded,
+                      size: 26, color: Color(0xFF16A34A)),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'No ratings yet for this botanical product',
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'Be the first verified customer to share your rating and review!',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : Wrap(
         alignment: WrapAlignment.spaceBetween,
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: 24,
@@ -749,6 +815,10 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
             : names.first[0])
         : 'VB';
 
+    // Valid customer review photos from database
+    final validImages =
+        review.images.where((img) => img.trim().isNotEmpty).toList();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -868,13 +938,13 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
             ),
           ),
 
-          // Attached Images
-          if (review.hasImages) ...[
+          // Attached Images (excluding default product catalog images)
+          if (validImages.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: review.images.map((img) {
+              children: validImages.map((img) {
                 return InkWell(
                   onTap: () => _showImageLightbox(img, review.title),
                   borderRadius: BorderRadius.circular(6),
@@ -886,9 +956,15 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
                       decoration: BoxDecoration(
                         border: Border.all(color: const Color(0xFFE5E7EB)),
                       ),
-                      child: img.startsWith('assets/')
-                          ? Image.asset(img, fit: BoxFit.cover)
-                          : Image.network(img, fit: BoxFit.cover),
+                      child: Image.network(
+                        img,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 20,
+                          color: Color(0xFF9CA3AF),
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -1003,9 +1079,15 @@ class _ProductReviewsScreenState extends State<ProductReviewsScreen> {
               InteractiveViewer(
                 minScale: 0.8,
                 maxScale: 3.5,
-                child: imageUrl.startsWith('assets/')
-                    ? Image.asset(imageUrl, fit: BoxFit.contain)
-                    : Image.network(imageUrl, fit: BoxFit.contain),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.broken_image_outlined,
+                    size: 48,
+                    color: Colors.white54,
+                  ),
+                ),
               ),
               Positioned(
                 top: 12,

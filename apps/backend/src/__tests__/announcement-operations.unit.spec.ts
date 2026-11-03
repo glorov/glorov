@@ -80,10 +80,12 @@ describe("Announcement Bar & Marquee Ticker Operations", () => {
   });
 
   describe("Announcement Item CRUD", () => {
-    it("should create a new announcement item", async () => {
+    it("should create a new announcement item with custom badge color", async () => {
       const created = await AnnouncementService.createAnnouncement({
         text: "Limited Time: Free Botanical Gardening Masterclass with any planter purchase!",
         highlight_text: "FREE MASTERCLASS",
+        badge_color: "#D48B46",
+        badge_text_color: "#111827",
         icon: "spa",
         link_url: "/guide",
         display_order: 10,
@@ -93,26 +95,34 @@ describe("Announcement Bar & Marquee Ticker Operations", () => {
       expect(created.id).toBeDefined();
       expect(created.text).toContain("Free Botanical Gardening Masterclass");
       expect(created.highlight_text).toBe("FREE MASTERCLASS");
+      expect(created.badge_color).toBe("#D48B46");
+      expect(created.badge_text_color).toBe("#111827");
       expect(created.display_order).toBe(10);
 
       const found = await AnnouncementService.getAnnouncementById(created.id);
       expect(found).not.toBeNull();
       expect(found?.text).toBe(created.text);
+      expect(found?.badge_color).toBe("#D48B46");
     });
 
-    it("should update an existing announcement item", async () => {
+    it("should update an existing announcement item badge colors", async () => {
       const created = await AnnouncementService.createAnnouncement({
         text: "Seasonal Harvest Discount",
         highlight_text: "SALE",
+        badge_color: "#D48B46",
         is_active: true,
       });
 
       const updated = await AnnouncementService.updateAnnouncement(created.id, {
         text: "Updated: Seasonal Harvest 20% Discount",
+        badge_color: "#2D6A4F",
+        badge_text_color: "#FFFFFF",
         is_active: false,
       });
 
       expect(updated.text).toBe("Updated: Seasonal Harvest 20% Discount");
+      expect(updated.badge_color).toBe("#2D6A4F");
+      expect(updated.badge_text_color).toBe("#FFFFFF");
       expect(updated.is_active).toBe(false);
 
       // Inactive item should not appear in storefront list

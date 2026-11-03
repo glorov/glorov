@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/theme/app_breakpoints.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../route/route_constants.dart';
@@ -128,9 +127,9 @@ class GlorovFooter extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Brand & Mission Column (35%)
+        // Brand & Mission Column (50% - flex 6)
         Expanded(
-          flex: 4,
+          flex: 6,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -143,13 +142,16 @@ class GlorovFooter extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              const Text(
-                'Grow More. Live Greener.\nGLOROV is an organic seed sanctuary and live plant nursery dedicated to bringing vibrant botanical sanctuaries into homes and gardens across India.',
-                style: TextStyle(
-                  fontFamily: AppTypography.primaryFont,
-                  fontSize: 13,
-                  height: 1.6,
-                  color: Colors.white70,
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: const Text(
+                  'Grow More. Live Greener.\nGLOROV is an organic seed sanctuary and live plant nursery dedicated to bringing vibrant botanical sanctuaries into homes and gardens across India.',
+                  style: TextStyle(
+                    fontFamily: AppTypography.primaryFont,
+                    fontSize: 13,
+                    height: 1.6,
+                    color: Colors.white70,
+                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -175,11 +177,11 @@ class GlorovFooter extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(width: AppSpacing.xl),
+        const SizedBox(width: AppSpacing.xxl),
 
-        // Categories Column
+        // Categories Column (25% - flex 3)
         Expanded(
-          flex: 2,
+          flex: 3,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -198,11 +200,11 @@ class GlorovFooter extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(width: AppSpacing.lg),
+        const SizedBox(width: AppSpacing.xl),
 
-        // Support Column
+        // Support Column (25% - flex 3)
         Expanded(
-          flex: 2,
+          flex: 3,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -217,82 +219,6 @@ class GlorovFooter extends StatelessWidget {
                   context, 'Track Plant Delivery', ordersScreenRoute),
               _footerNavLink(
                   context, 'Contact Support', contactSupportScreenRoute),
-            ],
-          ),
-        ),
-
-        const SizedBox(width: AppSpacing.lg),
-
-        // Newsletter Column
-        Expanded(
-          flex: 3,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _columnHeader('Join the Growing Club'),
-              const SizedBox(height: AppSpacing.sm),
-              const Text(
-                'Receive weekly botanical care guides, seasonal planting calendars, and member-exclusive cultivar launches.',
-                style: TextStyle(
-                  fontFamily: AppTypography.primaryFont,
-                  fontSize: 12,
-                  height: 1.5,
-                  color: Colors.white70,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  const Expanded(
-                    child: SizedBox(
-                      height: 40,
-                      child: TextField(
-                        style: TextStyle(color: Colors.white, fontSize: 13),
-                        decoration: InputDecoration(
-                          hintText: 'Enter your email',
-                          hintStyle: TextStyle(
-                            color: Colors.white38,
-                            fontSize: 12,
-                          ),
-                          filled: true,
-                          fillColor: Colors.white12,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                          border: OutlineInputBorder(
-                            borderRadius: AppRadii.roundedMd,
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              'Thank you for joining the GLOROV Growing Club!'),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: AppColors.forestDeep,
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.sage,
-                      foregroundColor: AppColors.forestDark,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      minimumSize: const Size(40, 40),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: AppRadii.roundedMd,
-                      ),
-                    ),
-                    child: const Text(
-                      'Join',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         ),

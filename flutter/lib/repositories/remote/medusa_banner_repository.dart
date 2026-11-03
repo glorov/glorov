@@ -86,13 +86,13 @@ class MedusaBannerRepository implements BannerRepository {
         },
       );
 
-      if (result.isSuccess && result.dataOrNull != null && result.dataOrNull!.isNotEmpty) {
+      if (result.isSuccess && result.dataOrNull != null) {
         return result.dataOrNull!;
       }
     } catch (_) {
-      // Fall through to fallback
+      // Fall through to empty
     }
 
-    return GlorovHeroBannerSlider.defaultBotanicalSlides;
+    return const <GlorovBannerSlide>[];
   }
 }

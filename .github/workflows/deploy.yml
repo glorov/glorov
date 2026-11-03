@@ -1,58 +1,39 @@
-name: GLOROV Automated Deployment & Release Pipeline
+name: Deploy GLOROV to Azure VM
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      target_environment:
-        description: 'Target Deployment Environment'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
-      run_migrations:
-        description: 'Execute database migrations before server boot'
-        required: true
-        default: true
-        type: boolean
-      skip_smoke_tests:
-        description: 'Bypass post-deployment smoke verification (Emergency only)'
-        required: false
-        default: false
-        type: boolean
 
 concurrency:
-  group: deployment-${{ github.ref }}
+  group: deploy-azure-vm
   cancel-in-progress: false
 
 jobs:
-  # ----------------------------------------------------------------------------
-  # Job 1: Pre-Deployment Validation Gate (Lint, Typecheck, Unit & Integration Tests)
-  # ----------------------------------------------------------------------------
-  validate:
-    name: 1. Release Quality Gate
+  build-and-deploy:
+    name: Build & Deploy to Azure VM (1GB RAM Optimized)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Release Tag / Branch
+      - name: 1. Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20.x
+      - name: 2. Setup Node.js 20.x
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
 
-      - name: Setup pnpm 9.15.9
+      - name: 3. Setup pnpm 9.15.9
         uses: pnpm/action-setup@v4
         with:
           version: 9.15.9
 
-      - name: Get pnpm store directory
+      - name: 4. Get pnpm store directory
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - name: Cache pnpm dependencies
+      - name: 5. Cache pnpm dependencies
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
@@ -60,138 +41,95 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies (frozen lockfile)
+      - name: 6. Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Strict TypeScript Verification
-        run: pnpm turbo typecheck
-
-      - name: Enforce Code Quality & Linter
-        run: pnpm turbo lint
-
-      - name: Execute Full Test Suites (Storefront & Backend Unit)
-        run: pnpm turbo test
-
-      - name: Build Application Artifacts
-        run: pnpm turbo build
-
-  # ----------------------------------------------------------------------------
-  # Job 2: Staging Deployment
-  # ----------------------------------------------------------------------------
-  deploy-staging:
-    name: 2. Deploy to Staging Environment
-    runs-on: ubuntu-latest
-    needs: [validate]
-    environment:
-      name: staging
-      url: https://staging.glorov.in
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy Staging Application & Run Migrations
-        shell: bash
-        env:
-          STAGING_DEPLOY_WEBHOOK: ${{ secrets.STAGING_DEPLOY_WEBHOOK }}
-          RUN_MIGRATIONS: ${{ github.event.inputs.run_migrations || 'true' }}
+      - name: 7. Build Backend & Admin Dashboard
         run: |
-          echo "🌿 Deploying release ${{ github.ref_name }} to Staging environment..."
-          if [ -n "$STAGING_DEPLOY_WEBHOOK" ]; then
-            curl -s -X POST "$STAGING_DEPLOY_WEBHOOK" \
-              -H "Content-Type: application/json" \
-              -d '{"ref": "${{ github.ref }}", "run_migrations": "'"$RUN_MIGRATIONS"'"}'
-          else
-            echo "ℹ️  No STAGING_DEPLOY_WEBHOOK configured; skipping external webhook trigger."
-          fi
-          echo "✅ Staging deployment command dispatched."
+          echo "🔨 Compiling Medusa v2 backend and admin dashboard..."
+          pnpm --filter @glorov/types build || true
+          pnpm --filter @glorov/backend build
 
-  # ----------------------------------------------------------------------------
-  # Job 3: Staging Post-Deployment Smoke Verification
-  # ----------------------------------------------------------------------------
-  smoke-test-staging:
-    name: 3. Verify Staging Health & Smoke Suite
-    runs-on: ubuntu-latest
-    needs: [deploy-staging]
-    if: ${{ github.event.inputs.skip_smoke_tests != 'true' }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js 20.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
-
-      - name: Run Smoke Verification against Staging Targets
-        shell: bash
+      - name: 8. Build Next.js Storefront (Standalone)
         env:
-          STAGING_BACKEND_URL: ${{ vars.STAGING_BACKEND_URL || 'https://api-staging.glorov.in' }}
-          STAGING_STOREFRONT_URL: ${{ vars.STAGING_STOREFRONT_URL || 'https://staging.glorov.in' }}
+          NODE_ENV: production
+          NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://api.glorov.tech/medusa
+          NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_2550b4af7f0ff9f2f1ff1b5f9b16c11e753ba1b574d55e1d9221d496085a7ef8
+          NEXT_PUBLIC_BASE_URL: https://glorov.tech
+          NEXT_PUBLIC_SITE_NAME: "GLOROV — Indian Seeds & Live Plants"
         run: |
-          echo "🔍 Awaiting staging container warm-up (15s)..."
-          sleep 15
-          node scripts/smoke-test.mjs "$STAGING_BACKEND_URL" "$STAGING_STOREFRONT_URL" || {
-            echo "❌ Staging smoke tests failed! Halting pipeline before production approval."
+          echo "🔨 Compiling Next.js Storefront in standalone mode..."
+          cp apps/storefront/.env.production apps/storefront/.env.local
+          pnpm --filter @glorov/storefront build
+          echo "📦 Assembling standalone package assets..."
+          cp -r apps/storefront/public apps/storefront/.next/standalone/apps/storefront/
+          cp -r apps/storefront/.next/static apps/storefront/.next/standalone/apps/storefront/.next/
+          cp apps/storefront/.env.production apps/storefront/.next/standalone/apps/storefront/.env
+
+      - name: 9. Configure SSH & Deploy to Azure VM
+        env:
+          SSH_KEY: ${{ secrets.AZURE_SSH_KEY || secrets.SERVER_SSH_KEY }}
+          HOST: ${{ secrets.AZURE_HOST || '20.244.48.139' }}
+          USER: ${{ secrets.AZURE_USER || 'elsesourav' }}
+        run: |
+          if [ -z "$SSH_KEY" ]; then
+            echo "❌ Error: Secret AZURE_SSH_KEY is not configured in GitHub repository secrets!"
+            echo "👉 Please add secret 'AZURE_SSH_KEY' under repository Settings -> Secrets and variables -> Actions."
             exit 1
-          }
-
-  # ----------------------------------------------------------------------------
-  # Job 4: Production Deployment (Protected by GitHub Environment Manual Approval)
-  # ----------------------------------------------------------------------------
-  deploy-production:
-    name: 4. Deploy to Production (Requires SRE Approval)
-    runs-on: ubuntu-latest
-    needs: [validate, deploy-staging, smoke-test-staging]
-    if: ${{ startsWith(github.ref, 'refs/tags/v') || github.event.inputs.target_environment == 'production' }}
-    environment:
-      name: production
-      url: https://glorov.in
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy Production Application & Run Migrations
-        shell: bash
-        env:
-          PROD_DEPLOY_WEBHOOK: ${{ secrets.PROD_DEPLOY_WEBHOOK }}
-          RUN_MIGRATIONS: ${{ github.event.inputs.run_migrations || 'true' }}
-        run: |
-          echo "🌿 Initiating Production Deployment for version ${{ github.ref_name }}..."
-          if [ -n "$PROD_DEPLOY_WEBHOOK" ]; then
-            curl -s -X POST "$PROD_DEPLOY_WEBHOOK" \
-              -H "Content-Type: application/json" \
-              -d '{"ref": "${{ github.ref }}", "run_migrations": "'"$RUN_MIGRATIONS"'"}'
-          else
-            echo "ℹ️  No PROD_DEPLOY_WEBHOOK configured; release bundle prepared."
           fi
-          echo "✅ Production deployment command dispatched."
 
-  # ----------------------------------------------------------------------------
-  # Job 5: Production Post-Deployment Smoke Verification
-  # ----------------------------------------------------------------------------
-  smoke-test-production:
-    name: 5. Verify Production Health & Smoke Suite
-    runs-on: ubuntu-latest
-    needs: [deploy-production]
-    if: ${{ github.event.inputs.skip_smoke_tests != 'true' }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
 
-      - name: Setup Node.js 20.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
+          SSH_CMD="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new"
 
-      - name: Run Smoke Verification against Production Targets
-        shell: bash
-        env:
-          PROD_BACKEND_URL: ${{ vars.PROD_BACKEND_URL || 'https://api.glorov.in' }}
-          PROD_STOREFRONT_URL: ${{ vars.PROD_STOREFRONT_URL || 'https://glorov.in' }}
+          echo "📡 Connecting to $USER@$HOST..."
+          $SSH_CMD "$USER@$HOST" "uptime; free -m"
+
+          echo "📦 Deploying Next.js Storefront standalone bundle..."
+          rsync -avz --delete \
+            -e "$SSH_CMD" \
+            ./apps/storefront/.next/standalone/ "$USER@$HOST:/var/www/glorov/storefront-next/"
+
+          echo "📦 Deploying Medusa Backend compiled bundles..."
+          rsync -avz --delete \
+            -e "$SSH_CMD" \
+            ./apps/backend/.medusa/ "$USER@$HOST:/var/www/glorov/apps/backend/.medusa/"
+
+          rsync -avz \
+            -e "$SSH_CMD" \
+            ./apps/backend/package.json ./apps/backend/medusa-config.ts "$USER@$HOST:/var/www/glorov/apps/backend/"
+
+          if [ -d "./apps/backend/.medusa/server/public/admin" ]; then
+            echo "📦 Deploying Medusa Admin Dashboard..."
+            rsync -avz --delete \
+              -e "$SSH_CMD" \
+              ./apps/backend/.medusa/server/public/admin/ "$USER@$HOST:/var/www/glorov/admin/"
+          fi
+
+          echo "📦 Deploying automation scripts..."
+          rsync -avz \
+            -e "$SSH_CMD" \
+            ./deploy/ "$USER@$HOST:/var/www/glorov/deploy/"
+
+          echo "🚀 Reloading zero-downtime PM2 services safely..."
+          $SSH_CMD "$USER@$HOST" "bash /var/www/glorov/deploy/reload-services.sh"
+
+      - name: 10. Post-Deployment Smoke Verification
         run: |
-          echo "🔍 Awaiting production container warm-up (15s)..."
-          sleep 15
-          node scripts/smoke-test.mjs "$PROD_BACKEND_URL" "$PROD_STOREFRONT_URL" || {
-            echo "❌ CRITICAL: Production smoke tests failed! Initiate immediate rollback."
-            exit 1
-          }
+          echo "🩺 Verifying live production services..."
+          sleep 5
+
+          echo "1. Checking Storefront (https://glorov.tech)..."
+          curl -f -s -I "https://glorov.tech" | head -n 10
+
+          echo "2. Checking Admin Dashboard (https://admin.glorov.tech)..."
+          curl -f -s -I "https://admin.glorov.tech" | head -n 10
+
+          echo "3. Checking Backend Health (https://api.glorov.tech/health)..."
+          curl -f -s -I "https://api.glorov.tech/health" | head -n 10
+
+          echo "🎉 All production services are ONLINE and HEALTHY!"

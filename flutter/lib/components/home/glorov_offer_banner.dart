@@ -73,11 +73,62 @@ class _GlorovOfferBannerState extends State<GlorovOfferBanner>
     } catch (_) {
       if (mounted) {
         setState(() {
-          _offer = GlorovOffer.defaultWelcomeOffer;
+          _offer = null;
           _isLoading = false;
         });
       }
     }
+  }
+
+  Widget _buildSkeleton(BuildContext context) {
+    final isDesktop = MediaQuery.of(context).size.width >= 768;
+    return Container(
+      width: double.infinity,
+      height: isDesktop ? 68.0 : 86.0,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F4F6),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5E7EB),
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 12,
+                  width: 140,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  height: 10,
+                  width: 220,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _copyCouponCode(String code) async {
@@ -120,9 +171,7 @@ class _GlorovOfferBannerState extends State<GlorovOfferBanner>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      // Clean fallback skeleton while fetching
-      const defaultOffer = GlorovOffer.defaultWelcomeOffer;
-      return _buildCard(defaultOffer);
+      return _buildSkeleton(context);
     }
 
     final offer = _offer;

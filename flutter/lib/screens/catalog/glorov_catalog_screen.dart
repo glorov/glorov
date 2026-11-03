@@ -10,8 +10,9 @@ import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/theme/glorov_horizontal_scroll_behavior.dart';
-import '../../models/glorov/glorov_mock_data.dart';
 import '../../models/glorov/glorov_product.dart';
+import '../../repositories/contracts/product_repository.dart';
+import '../../repositories/glorov_repositories.dart';
 import '../../route/route_constants.dart';
 import '../../services/glorov_header_scroll_notifier.dart';
 
@@ -59,6 +60,10 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
   bool _inStockOnly = false;
   double? _minRating;
 
+  List<GlorovProduct>? _remoteProducts;
+  List<GlorovProductCategory>? _remoteCategories;
+  bool _isLoadingProducts = true;
+
   @override
   void initState() {
     super.initState();
@@ -68,6 +73,31 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
     _offersOnly =
         widget.initialOffersOnly || _selectedCategory.toLowerCase() == 'offers';
     _syncNavCategory();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      final results = await Future.wait([
+        GlorovRepositories.products.getProducts(),
+        GlorovRepositories.products.getCategories(),
+      ]);
+      if (mounted) {
+        setState(() {
+          _remoteProducts = results[0] as List<GlorovProduct>;
+          _remoteCategories = results[1] as List<GlorovProductCategory>;
+          _isLoadingProducts = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _remoteProducts = [];
+          _remoteCategories = [];
+          _isLoadingProducts = false;
+        });
+      }
+    }
   }
 
   @override
@@ -159,7 +189,7 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
       _searchQuery.isNotEmpty;
 
   List<GlorovProduct> _getFilteredProducts() {
-    List<GlorovProduct> list = List.from(GlorovMockData.products);
+    List<GlorovProduct> list = List.from(_remoteProducts ?? const []);
 
     // Offers filter
     if (_offersOnly || _selectedCategory.toLowerCase() == 'offers') {
@@ -284,11 +314,12 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
     return list;
   }
 
-  GlorovCategory? get _currentCategoryData {
+  GlorovProductCategory? get _currentCategoryData {
+    if (_remoteCategories == null) return null;
     final catNorm = _selectedCategory.toLowerCase();
     try {
-      return GlorovMockData.categories.firstWhere((c) {
-        final ct = c.title.toLowerCase();
+      return _remoteCategories!.firstWhere((c) {
+        final ct = c.name.toLowerCase();
         final cs = c.slug.toLowerCase();
         return ct == catNorm ||
             cs == catNorm ||
@@ -367,6 +398,13 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
     final catData = _currentCategoryData;
     final isSearch = _searchQuery.isNotEmpty;
     final catNormalized = _selectedCategory.toLowerCase();
+    final categorySubcategories = (_remoteProducts ?? [])
+        .where((p) =>
+            p.category.toLowerCase() == _selectedCategory.toLowerCase() &&
+            p.subcategory.trim().isNotEmpty)
+        .map((p) => p.subcategory.trim())
+        .toSet()
+        .toList();
 
     String title;
     String subtitle;
@@ -374,8 +412,9 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
       title = 'Search Results';
       subtitle = 'Showing matching results for "$_searchQuery"';
     } else if (catData != null) {
-      title = catData.title;
-      subtitle = catData.description;
+      title = catData.name;
+      subtitle =
+          'Discover botanical ${catData.name.toLowerCase()} curated for home and garden cultivation.';
     } else if (catNormalized == 'flowering' ||
         catNormalized == 'flowering plants') {
       title = 'Flowering Plants';
@@ -543,7 +582,7 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
               ),
 
               // Subcategory Pills (if available for current category)
-              if (catData != null && catData.subcategories.isNotEmpty) ...[
+              if (categorySubcategories.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.md),
                 GlorovYScrollPassThrough(
                   child: ScrollConfiguration(
@@ -551,7 +590,7 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        children: catData.subcategories.map((sub) {
+                        children: categorySubcategories.map((sub) {
                           final isSelected = _selectedSubcategory == sub;
                           return GlorovYScrollPassThrough(
                             child: Padding(
@@ -896,7 +935,7 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
       childAspectRatio = 0.66;
     }
 
-    if (widget.isLoading) {
+    if (widget.isLoading || _isLoadingProducts || _remoteProducts == null) {
       return GlorovProductGridSkeleton(
         count: 8,
         crossAxisCount: crossAxisCount,
@@ -913,7 +952,7 @@ class _GlorovCatalogScreenState extends State<GlorovCatalogScreen> {
     final double mainAxisSpacing = isMobile ? 10.0 : AppSpacing.md;
 
     return GlorovSkeletonLoader(
-      loading: widget.isLoading,
+      loading: widget.isLoading || _isLoadingProducts || _remoteProducts == null,
       skeleton: GlorovProductGridSkeleton(
         count: 8,
         crossAxisCount: crossAxisCount,

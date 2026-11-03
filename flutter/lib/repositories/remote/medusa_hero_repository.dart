@@ -24,7 +24,7 @@ class MedusaHeroRepository implements HeroRepository {
           if (json is Map<String, dynamic>) {
             return GlorovHeroData.fromJson(json);
           }
-          return GlorovHeroData.defaultData;
+          return GlorovHeroData.empty;
         },
       );
 
@@ -32,9 +32,9 @@ class MedusaHeroRepository implements HeroRepository {
         return result.dataOrNull!;
       }
     } catch (_) {
-      // Fall through to default
+      // Fall through to empty
     }
 
-    return GlorovHeroData.defaultData;
+    return GlorovHeroData.empty;
   }
 }

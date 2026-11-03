@@ -11,58 +11,68 @@
   "items": [
     {
       "id": "ann_free_shipping_499",
-      "text": "Free express botanical delivery on all orders over ₹499",
+      "text": "Free express botanical delivery on all orders over ₹499 • Pan-India safe transit",
       "highlight_text": "₹499 FREE DELIVERY",
+      "badge_color": "#D48B46",
+      "badge_text_color": "#111827",
       "icon": "local_shipping",
-      "link_url": "/store",
+      "link_url": "/policies/shipping",
       "display_order": 1,
       "is_active": true,
-      "created_at": "2026-10-31T00:00:00.000Z",
-      "updated_at": "2026-10-31T00:00:00.000Z"
+      "created_at": "2026-11-03T00:00:00.000Z",
+      "updated_at": "2026-11-03T00:00:00.000Z"
     },
     {
-      "id": "ann_grow_more_live_greener",
-      "text": "Grow More. Live Greener. Hand-conditioned indoor plants & heirloom seeds",
-      "highlight_text": "GLOROV BOTANICALS",
+      "id": "ann_germination_guarantee",
+      "text": "Heirloom & Indigenous Indian Desi Seeds Tested for Vigorous Growth",
+      "highlight_text": "98% GERMINATION",
+      "badge_color": "#D48B46",
+      "badge_text_color": "#111827",
       "icon": "spa",
-      "link_url": "/store",
+      "link_url": "/categories/seeds",
       "display_order": 2,
       "is_active": true,
-      "created_at": "2026-10-31T00:00:00.000Z",
-      "updated_at": "2026-10-31T00:00:00.000Z"
+      "created_at": "2026-11-03T00:00:00.000Z",
+      "updated_at": "2026-11-03T00:00:00.000Z"
+    },
+    {
+      "id": "ann_nursery_fresh_live_plants",
+      "text": "Air-Purifying & Rare Cultivars Direct From Our Pune & Bengaluru Nurseries",
+      "highlight_text": "NURSERY FRESH",
+      "badge_color": "#D48B46",
+      "badge_text_color": "#111827",
+      "icon": "star",
+      "link_url": "/categories/live-plants",
+      "display_order": 3,
+      "is_active": true,
+      "created_at": "2026-11-03T00:00:00.000Z",
+      "updated_at": "2026-11-03T00:00:00.000Z"
+    },
+    {
+      "id": "ann_artisan_planters",
+      "text": "Handcrafted Terracotta & Ceramic Planters with Optimal Root Aeration",
+      "highlight_text": "ARTISAN CRAFT",
+      "badge_color": "#7A1C2E",
+      "badge_text_color": "#FFFFFF",
+      "icon": "shield",
+      "link_url": "/categories/planters",
+      "display_order": 4,
+      "is_active": true,
+      "created_at": "2026-11-03T00:00:00.000Z",
+      "updated_at": "2026-11-03T00:00:00.000Z"
     },
     {
       "id": "ann_code_glorov10",
       "text": "Use code GLOROV10 at checkout for an extra 10% off your botanical order",
       "highlight_text": "USE CODE GLOROV10",
+      "badge_color": "#2D6A4F",
+      "badge_text_color": "#FFFFFF",
       "icon": "percent",
       "link_url": "/store",
-      "display_order": 3,
-      "is_active": true,
-      "created_at": "2026-10-31T00:00:00.000Z",
-      "updated_at": "2026-10-31T00:00:00.000Z"
-    },
-    {
-      "id": "ann_organic_seeds",
-      "text": "100% Organic & Non-GMO certified heirloom seeds with 0% GST exemption",
-      "highlight_text": "100% ORGANIC SEEDS",
-      "icon": "verified",
-      "link_url": "/store?category=seeds",
-      "display_order": 4,
-      "is_active": true,
-      "created_at": "2026-10-31T00:00:00.000Z",
-      "updated_at": "2026-10-31T00:00:00.000Z"
-    },
-    {
-      "id": "ann_pune_nursery_dispatch",
-      "text": "Direct dispatch from Pune Central Nursery Hub • Mon–Thu transit guaranteed",
-      "highlight_text": "PUNE DISPATCH",
-      "icon": "bolt",
-      "link_url": "/policies/shipping",
       "display_order": 5,
       "is_active": true,
-      "created_at": "2026-10-31T00:00:00.000Z",
-      "updated_at": "2026-10-31T00:00:00.000Z"
+      "created_at": "2026-11-03T00:00:00.000Z",
+      "updated_at": "2026-11-03T00:00:00.000Z"
     }
   ]
 }

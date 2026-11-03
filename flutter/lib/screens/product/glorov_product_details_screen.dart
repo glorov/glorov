@@ -605,6 +605,11 @@ class _GlorovProductDetailsScreenState
 
     if (widget.product != null) {
       _initProductState(widget.product!);
+      if (widget.productIdOrSlug != null &&
+          widget.productIdOrSlug!.isNotEmpty &&
+          GlorovRepositories.instance.mode == RepositoryMode.remote) {
+        _fetchProduct(widget.productIdOrSlug!, silent: true);
+      }
     } else if (widget.productIdOrSlug != null &&
         widget.productIdOrSlug!.isNotEmpty) {
       _fetchProduct(widget.productIdOrSlug!);
@@ -632,8 +637,8 @@ class _GlorovProductDetailsScreenState
     _updateMetadata();
   }
 
-  Future<void> _fetchProduct(String lookup) async {
-    setState(() => _isLoadingProduct = true);
+  Future<void> _fetchProduct(String lookup, {bool silent = false}) async {
+    if (!silent) setState(() => _isLoadingProduct = true);
     try {
       final p = await GlorovRepositories.products.getProductById(lookup) ??
           await GlorovRepositories.products.getProductBySlug(lookup);
@@ -645,11 +650,11 @@ class _GlorovProductDetailsScreenState
           });
           _initProductState(p);
         } else {
-          setState(() => _isLoadingProduct = false);
+          if (!silent) setState(() => _isLoadingProduct = false);
         }
       }
     } catch (_) {
-      if (mounted) setState(() => _isLoadingProduct = false);
+      if (mounted && !silent) setState(() => _isLoadingProduct = false);
     }
   }
 
@@ -3438,11 +3443,11 @@ class _GlorovProductDetailsScreenState
     final int totalCount =
         _reviewSummary?.totalReviews ?? _product.reviewCount;
 
-    // Collect all customer review photos across reviews
+    // Collect all authentic customer review photos across reviews
     final List<String> allReviewImages = [];
     for (final r in _reviews) {
       for (final img in r.images) {
-        if (!allReviewImages.contains(img)) {
+        if (img.trim().isNotEmpty && !allReviewImages.contains(img)) {
           allReviewImages.add(img);
         }
       }
@@ -3876,16 +3881,15 @@ class _GlorovProductDetailsScreenState
                       decoration: BoxDecoration(
                         border: Border.all(color: const Color(0xFFE5E7EB)),
                       ),
-                      child: imgUrl.startsWith('assets/')
-                          ? Image.asset(imgUrl, fit: BoxFit.cover)
-                          : Image.network(
-                              imgUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(
-                                  Icons.image_not_supported_outlined,
-                                  size: 20,
-                                  color: Color(0xFF9CA3AF)),
-                            ),
+                      child: Image.network(
+                        imgUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 20,
+                          color: Color(0xFF9CA3AF),
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -4101,6 +4105,10 @@ class _GlorovProductDetailsScreenState
             : names.first[0])
         : 'VB';
 
+    // Valid customer review photos from database
+    final validReviewImages =
+        review.images.where((img) => img.trim().isNotEmpty).toList();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -4223,13 +4231,13 @@ class _GlorovProductDetailsScreenState
             ),
           ),
 
-          // Customer Review Photos (if any)
-          if (review.hasImages) ...[
+          // Customer Review Photos (if any, excluding default product images)
+          if (validReviewImages.isNotEmpty) ...[
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: review.images.map((img) {
+              children: validReviewImages.map((img) {
                 return InkWell(
                   onTap: () => _showImageLightbox(
                       img, review.title.isNotEmpty ? review.title : 'Customer Photo'),
@@ -4242,16 +4250,15 @@ class _GlorovProductDetailsScreenState
                       decoration: BoxDecoration(
                         border: Border.all(color: const Color(0xFFE5E7EB)),
                       ),
-                      child: img.startsWith('assets/')
-                          ? Image.asset(img, fit: BoxFit.cover)
-                          : Image.network(
-                              img,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(
-                                  Icons.image_not_supported_outlined,
-                                  size: 18,
-                                  color: Color(0xFF9CA3AF)),
-                            ),
+                      child: Image.network(
+                        img,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 18,
+                          color: Color(0xFF9CA3AF),
+                        ),
+                      ),
                     ),
                   ),
                 );
@@ -4528,7 +4535,7 @@ class _GlorovProductDetailsScreenState
                           controller: photoUrlCtrl,
                           decoration: InputDecoration(
                             labelText: 'Photo Link or Asset Path (Optional)',
-                            hintText: 'e.g. assets/images/products/... or http://...',
+                            hintText: 'e.g. https://res.cloudinary.com/... or https://...',
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8)),
                             contentPadding: const EdgeInsets.symmetric(
@@ -4643,9 +4650,15 @@ class _GlorovProductDetailsScreenState
               InteractiveViewer(
                 minScale: 0.8,
                 maxScale: 3.5,
-                child: imageUrl.startsWith('assets/')
-                    ? Image.asset(imageUrl, fit: BoxFit.contain)
-                    : Image.network(imageUrl, fit: BoxFit.contain),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.broken_image_outlined,
+                    size: 48,
+                    color: Colors.white54,
+                  ),
+                ),
               ),
               Positioned(
                 top: 12,

@@ -8,7 +8,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_shadows.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../models/glorov/glorov_mock_data.dart';
 import '../../../models/glorov/glorov_product.dart';
 import '../../../repositories/glorov_repositories.dart';
 import '../../../route/route_constants.dart';
@@ -84,7 +83,8 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
 
   GlorovSearchResult _searchResult = const GlorovSearchResult(query: '');
   List<String> _recentSearches = [];
-  List<GlorovProduct> _popularPicks = GlorovMockData.products.take(6).toList();
+  List<GlorovProduct> _popularPicks = const [];
+  bool _isLoadingPopularPicks = true;
   String _selectedCategory = 'All';
   String _selectedSort = 'relevance';
   bool _isLoading = false;
@@ -114,12 +114,20 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
   Future<void> _loadPopularPicks() async {
     try {
       final products = await GlorovRepositories.products.getProducts();
-      if (mounted && products.isNotEmpty) {
+      if (mounted) {
         setState(() {
           _popularPicks = products.take(6).toList();
+          _isLoadingPopularPicks = false;
         });
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _popularPicks = const [];
+          _isLoadingPopularPicks = false;
+        });
+      }
+    }
   }
 
   @override
@@ -756,9 +764,12 @@ class _GlorovSearchScreenState extends State<GlorovSearchScreen> {
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
-        ..._popularPicks.map((product) {
-          return _buildProductListTile(product);
-        }),
+        if (_isLoadingPopularPicks && _popularPicks.isEmpty)
+          const GlorovSearchSkeleton(count: 3)
+        else
+          ..._popularPicks.map((product) {
+            return _buildProductListTile(product);
+          }),
       ],
     );
   }

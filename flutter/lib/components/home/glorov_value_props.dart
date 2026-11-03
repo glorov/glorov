@@ -74,7 +74,7 @@ class GlorovValueProps extends StatefulWidget {
 
 class _GlorovValuePropsState extends State<GlorovValueProps>
     with WidgetsBindingObserver {
-  List<GlorovTrustBadgeItem> _badges = GlorovTrustBadgeItem.defaults;
+  List<GlorovTrustBadgeItem> _badges = const [];
   GlorovTrustSectionSettings _settings = const GlorovTrustSectionSettings();
   bool _isLoading = true;
 
@@ -109,9 +109,7 @@ class _GlorovValuePropsState extends State<GlorovValueProps>
       final res = await GlorovRepositories.trustBadges.fetchTrustBadges();
       if (mounted) {
         setState(() {
-          if (res.badges.isNotEmpty) {
-            _badges = res.badges;
-          }
+          _badges = res.badges;
           _settings = res.settings;
           _isLoading = false;
         });
@@ -119,7 +117,7 @@ class _GlorovValuePropsState extends State<GlorovValueProps>
     } catch (_) {
       if (mounted) {
         setState(() {
-          _badges = GlorovTrustBadgeItem.defaults;
+          _badges = const [];
           _settings = const GlorovTrustSectionSettings();
           _isLoading = false;
         });

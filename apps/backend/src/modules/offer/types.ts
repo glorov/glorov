@@ -1,4 +1,13 @@
-export type OfferCategory = "welcome" | "sitewide" | "seeds" | "plants" | "bank";
+export type OfferCategory =
+  | "welcome"
+  | "sitewide"
+  | "seeds"
+  | "plants"
+  | "live-plants"
+  | "planters"
+  | "plant-care"
+  | "bank"
+  | string;
 export type DiscountType = "percentage" | "fixed" | "free_shipping";
 export type OfferIconType =
   | "card_giftcard"
@@ -7,6 +16,15 @@ export type OfferIconType =
   | "spa"
   | "local_shipping"
   | "auto_awesome";
+
+export interface ValidateCouponCartItem {
+  productId?: string;
+  variantId?: string;
+  title?: string;
+  category?: string;
+  price: number; // Unit price in INR
+  quantity: number;
+}
 
 export interface Offer {
   id: string;
@@ -22,6 +40,8 @@ export interface Offer {
   expiry_text?: string;
   terms?: string;
   category: OfferCategory;
+  applicable_categories?: string[]; // Specific category restrictions (e.g. ['seeds'], ['live-plants'])
+  max_discount?: number; // Optional cap on total discount in INR
   bg_color?: string;
   text_color?: string;
   accent_color?: string;
@@ -46,6 +66,8 @@ export interface CreateOfferInput {
   expiry_text?: string;
   terms?: string;
   category?: OfferCategory;
+  applicable_categories?: string[];
+  max_discount?: number;
   bg_color?: string;
   text_color?: string;
   accent_color?: string;
@@ -68,6 +90,8 @@ export interface UpdateOfferInput {
   expiry_text?: string;
   terms?: string;
   category?: OfferCategory;
+  applicable_categories?: string[];
+  max_discount?: number;
   bg_color?: string;
   text_color?: string;
   accent_color?: string;

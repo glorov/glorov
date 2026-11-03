@@ -45,17 +45,39 @@ class GlorovProductVariant {
     double standardPrice = 0.0;
     if (prices.isNotEmpty) {
       final p = prices.first as Map<String, dynamic>;
-      standardPrice = (p['amount'] as num?)?.toDouble() ?? 0.0;
+      final rawAmount = (p['amount'] as num?)?.toDouble() ?? 0.0;
+      // Medusa stores amounts in minor currency units (paise/cents): e.g. 9900 = 99.00 INR
+      standardPrice = rawAmount > 500 ? rawAmount / 100.0 : rawAmount;
     }
     final meta = json['metadata'] as Map<String, dynamic>? ?? {};
-    final discount = (meta['discount_price'] as num?)?.toDouble();
+    final rawDiscount = meta['discount_price'];
+    double? discount;
+    if (rawDiscount != null) {
+      if (rawDiscount is num) {
+        discount = rawDiscount.toDouble();
+      } else {
+        discount = double.tryParse(rawDiscount.toString());
+      }
+      if (discount != null && discount > 500) {
+        discount = discount / 100.0;
+      }
+    }
+
+    final rawPrice = json['price'];
+    double fallbackPrice = 0.0;
+    if (rawPrice is num) {
+      fallbackPrice = rawPrice.toDouble();
+    } else if (rawPrice != null) {
+      fallbackPrice = double.tryParse(rawPrice.toString()) ?? 0.0;
+    }
+    if (fallbackPrice > 500) {
+      fallbackPrice = fallbackPrice / 100.0;
+    }
 
     return GlorovProductVariant(
       id: json['id'] as String? ?? '',
       name: json['title'] as String? ?? json['name'] as String? ?? '',
-      price: standardPrice > 0
-          ? standardPrice
-          : ((json['price'] as num?)?.toDouble() ?? 0.0),
+      price: standardPrice > 0 ? standardPrice : fallbackPrice,
       discountPrice: discount,
     );
   }
@@ -142,6 +164,23 @@ class GlorovProduct {
     this.dimensions,
   });
 
+  bool get isEmpty => id.isEmpty || title.isEmpty;
+  bool get isNotEmpty => !isEmpty;
+
+  static const GlorovProduct empty = GlorovProduct(
+    id: '',
+    slug: '',
+    title: '',
+    botanicalName: '',
+    shortDescription: '',
+    description: '',
+    category: '',
+    subcategory: '',
+    productType: GlorovProductType.plants,
+    price: 0.0,
+    imageUrls: [],
+  );
+
   double get effectivePrice => discountPrice ?? price;
   bool get hasDiscount => discountPrice != null && discountPrice! < price;
   String get primaryImage => imageUrls.isNotEmpty ? imageUrls.first : '';
@@ -184,7 +223,7 @@ class GlorovProduct {
       };
 
   factory GlorovProduct.fromJson(Map<String, dynamic> json) {
-    return GlorovProduct(
+    final prod = GlorovProduct(
       id: json['id'] as String? ?? '',
       slug: json['slug'] as String? ?? '',
       title: json['title'] as String? ?? '',
@@ -233,6 +272,8 @@ class GlorovProduct {
       material: json['material'] as String?,
       dimensions: json['dimensions'] as String?,
     );
+    GlorovProductCache.cache(prod);
+    return prod;
   }
 
   /// Deserializes a Medusa v2 Storefront API Product Object into the GLOROV Domain Entity
@@ -317,7 +358,7 @@ class GlorovProduct {
       prodType = GlorovProductType.supplies;
     }
 
-    return GlorovProduct(
+    final prod = GlorovProduct(
       id: json['id'] as String? ?? '',
       slug: json['handle'] as String? ?? json['slug'] as String? ?? '',
       title: json['title'] as String? ?? '',
@@ -333,9 +374,24 @@ class GlorovProduct {
       productType: prodType,
       price: basePrice,
       discountPrice: discountPrice,
-      discountPercent: (meta['discount_percent'] as num?)?.toInt(),
-      rating: (meta['rating'] as num?)?.toDouble() ?? 4.8,
-      reviewCount: (meta['review_count'] as num?)?.toInt() ?? 0,
+      discountPercent: () {
+        final val = meta['discount_percent'];
+        if (val is num) return val.toInt();
+        if (val != null) return int.tryParse(val.toString());
+        return null;
+      }(),
+      rating: () {
+        final val = meta['rating'];
+        if (val is num) return val.toDouble();
+        if (val != null) return double.tryParse(val.toString()) ?? 4.8;
+        return 4.8;
+      }(),
+      reviewCount: () {
+        final val = meta['review_count'];
+        if (val is num) return val.toInt();
+        if (val != null) return int.tryParse(val.toString()) ?? 0;
+        return 0;
+      }(),
       imageUrls: images,
       inStock:
           json['status'] == 'published' || (meta['in_stock'] as bool? ?? true),
@@ -399,5 +455,28 @@ class GlorovProduct {
       material: meta['material'] as String?,
       dimensions: meta['dimensions'] as String?,
     );
+    GlorovProductCache.cache(prod);
+    return prod;
+  }
+}
+
+/// Global In-Memory Cache for Loaded Botanical Products
+class GlorovProductCache {
+  static final Map<String, GlorovProduct> _byId = {};
+  static final Map<String, GlorovProduct> _bySlug = {};
+
+  static void cache(GlorovProduct p) {
+    if (p.id.isNotEmpty) _byId[p.id] = p;
+    if (p.slug.isNotEmpty) _bySlug[p.slug] = p;
+  }
+
+  static void cacheAll(Iterable<GlorovProduct> products) {
+    for (final p in products) {
+      cache(p);
+    }
+  }
+
+  static GlorovProduct? get(String idOrSlug) {
+    return _byId[idOrSlug] ?? _bySlug[idOrSlug];
   }
 }

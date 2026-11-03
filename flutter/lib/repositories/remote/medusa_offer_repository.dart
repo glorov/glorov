@@ -25,12 +25,12 @@ class MedusaOfferRepository implements OfferRepository {
         },
       );
 
-      if (result.isSuccess && result.dataOrNull != null && result.dataOrNull!.isNotEmpty) {
+      if (result.isSuccess && result.dataOrNull != null) {
         return result.dataOrNull!;
       }
     } catch (_) {}
 
-    return [GlorovOffer.defaultWelcomeOffer];
+    return const <GlorovOffer>[];
   }
 
   @override
@@ -60,6 +60,6 @@ class MedusaOfferRepository implements OfferRepository {
       }
     } catch (_) {}
 
-    return GlorovOffer.defaultWelcomeOffer;
+    return null;
   }
 }

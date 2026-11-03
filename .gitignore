@@ -45,6 +45,9 @@ coverage/
 backups/
 *.sql.gz
 *.sql
+*.db
+*.sqlite
+*.sqlite3
 
 # IDE / Editor
 .idea/

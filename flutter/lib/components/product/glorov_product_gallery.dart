@@ -47,30 +47,31 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
   late int _currentIndex;
 
   List<String> get _safeImages {
-    if (widget.imageUrls.isNotEmpty) {
-      return widget.imageUrls;
-    }
-    return const [
-      'https://images.unsplash.com/photo-1592417817098-8f3d6ef23640?w=800&auto=format&fit=crop&q=80'
-    ];
+    return widget.imageUrls.where((u) => u.trim().isNotEmpty).toList();
   }
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.selectedIndex.clamp(0, _safeImages.length - 1);
+    final images = _safeImages;
+    _currentIndex = images.isNotEmpty
+        ? widget.selectedIndex.clamp(0, images.length - 1)
+        : 0;
   }
 
   @override
   void didUpdateWidget(covariant GlorovProductGallery oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.selectedIndex != oldWidget.selectedIndex) {
-      _currentIndex = widget.selectedIndex.clamp(0, _safeImages.length - 1);
+    final images = _safeImages;
+    if (images.isNotEmpty && widget.selectedIndex != oldWidget.selectedIndex) {
+      _currentIndex = widget.selectedIndex.clamp(0, images.length - 1);
     }
   }
 
   void _selectImage(int index) {
-    final validIndex = index.clamp(0, _safeImages.length - 1);
+    final images = _safeImages;
+    if (images.isEmpty) return;
+    final validIndex = index.clamp(0, images.length - 1);
     if (validIndex != _currentIndex) {
       setState(() => _currentIndex = validIndex);
       widget.onImageSelected?.call(validIndex);
@@ -78,13 +79,15 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
   }
 
   void _nextImage() {
-    if (_currentIndex < _safeImages.length - 1) {
+    final images = _safeImages;
+    if (images.isNotEmpty && _currentIndex < images.length - 1) {
       _selectImage(_currentIndex + 1);
     }
   }
 
   void _previousImage() {
-    if (_currentIndex > 0) {
+    final images = _safeImages;
+    if (images.isNotEmpty && _currentIndex > 0) {
       _selectImage(_currentIndex - 1);
     }
   }
@@ -403,6 +406,21 @@ class _GlorovProductGalleryState extends State<GlorovProductGallery> {
   @override
   Widget build(BuildContext context) {
     final images = _safeImages;
+    if (images.isEmpty) {
+      return Container(
+        height: 320,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceSubtle,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.center,
+        child: const Icon(
+          Icons.eco_outlined,
+          size: 48,
+          color: AppColors.sage,
+        ),
+      );
+    }
     final currentImg = images[_currentIndex.clamp(0, images.length - 1)];
     final isDesktop = AppBreakpoints.isDesktop(context);
 

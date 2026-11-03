@@ -5,7 +5,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radii.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../components/navigation/glorov_footer.dart';
 import '../../components/navigation/glorov_storefront_scaffold.dart';
 import '../../route/route_constants.dart';
 import '../../services/glorov_account_state.dart';
@@ -332,7 +331,6 @@ class _GlorovAccountScreenState extends State<GlorovAccountScreen> {
         final cartState = GlorovCartState.instance;
         final accountState = GlorovAccountState.instance;
 
-        final unreadNotifs = accountState.unreadNotificationCount;
         final ordersCount = cartState.orders.length;
         final addressCount = cartState.addresses.length;
         final wishlistCount = cartState.wishlistIds.length;

@@ -289,10 +289,11 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
   late final AnimationController _progressController;
   int _currentIndex = 0;
   bool _isInteracting = false;
+  bool _isLoadingRemote = true;
   List<GlorovBannerSlide>? _dynamicSlides;
 
   List<GlorovBannerSlide> get _activeSlides =>
-      widget.slides ?? _dynamicSlides ?? GlorovHeroBannerSlider.defaultBotanicalSlides;
+      widget.slides ?? _dynamicSlides ?? const [];
 
   int get _initialPage {
     if (_activeSlides.length <= 1) return 0;
@@ -340,20 +341,26 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
   }
 
   Future<void> _loadRemoteBanners() async {
-    if (widget.slides != null) return;
+    if (widget.slides != null) {
+      if (mounted) setState(() => _isLoadingRemote = false);
+      return;
+    }
     try {
       final remote = await GlorovRepositories.banners.fetchBanners();
-      if (mounted && remote.isNotEmpty) {
+      if (mounted) {
         setState(() {
           _dynamicSlides = remote;
+          _isLoadingRemote = false;
           _currentIndex = 0;
         });
-        if (_pageController.hasClients) {
+        if (_pageController.hasClients && remote.isNotEmpty) {
           _pageController.jumpToPage(_initialPage);
         }
       }
     } catch (_) {
-      // Retain default slides
+      if (mounted) {
+        setState(() => _isLoadingRemote = false);
+      }
     }
   }
 
@@ -463,7 +470,7 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isLoading) {
+    if (widget.isLoading || (widget.slides == null && _isLoadingRemote && _dynamicSlides == null)) {
       return GlorovHeroBannerSliderSkeleton(
         desktopHeight: widget.desktopHeight,
         mobileHeight: widget.mobileHeight,
@@ -479,10 +486,14 @@ class _GlorovHeroBannerSliderState extends State<GlorovHeroBannerSlider>
       );
     }
 
+    final slides = _activeSlides;
+    if (slides.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     final isDesktop = AppBreakpoints.isDesktop(context);
     final isTablet = AppBreakpoints.isTablet(context);
     final isWidescreen = isDesktop || isTablet;
-    final slides = _activeSlides;
     final bool fullWidth = widget.isFullWidth;
 
     return LayoutBuilder(

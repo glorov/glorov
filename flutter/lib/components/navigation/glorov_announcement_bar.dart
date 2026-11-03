@@ -38,7 +38,7 @@ class _GlorovAnnouncementBarState extends State<GlorovAnnouncementBar>
   late final AnimationController _controller;
   final GlobalKey _singleSetKey = GlobalKey();
 
-  List<GlorovAnnouncementItem> _items = GlorovAnnouncementItem.defaultItems;
+  List<GlorovAnnouncementItem> _items = const [];
   GlorovAnnouncementConfig _config = GlorovAnnouncementConfig.defaultConfig;
   double _singleSetWidth = 1400.0;
   bool _isHovered = false;
@@ -196,20 +196,12 @@ class _GlorovAnnouncementBarState extends State<GlorovAnnouncementBar>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Icon
-            Icon(
-              _getIconData(item.icon),
-              size: 13,
-              color: _config.highlightColor,
-            ),
-            const SizedBox(width: 6),
-
-            // Optional Highlight Badge (e.g. ₹499 FREE DELIVERY)
+            // Highlight Badge with embedded icon inside
             if (item.highlightText != null && item.highlightText!.trim().isNotEmpty) ...[
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                 decoration: BoxDecoration(
-                  color: _config.highlightColor,
+                  color: item.badgeColor ?? _config.highlightColor,
                   borderRadius: AppRadii.roundedSm,
                   boxShadow: const [
                     BoxShadow(
@@ -219,18 +211,36 @@ class _GlorovAnnouncementBarState extends State<GlorovAnnouncementBar>
                     ),
                   ],
                 ),
-                child: Text(
-                  item.highlightText!,
-                  style: const TextStyle(
-                    fontFamily: AppTypography.primaryFont,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.4,
-                    color: Color(0xFF111827),
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _getIconData(item.icon),
+                      size: 11.5,
+                      color: item.badgeTextColor ?? const Color(0xFF111827),
+                    ),
+                    const SizedBox(width: 4.5),
+                    Text(
+                      item.highlightText!,
+                      style: TextStyle(
+                        fontFamily: AppTypography.primaryFont,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.4,
+                        color: item.badgeTextColor ?? const Color(0xFF111827),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(width: 7),
+            ] else if (item.icon != null) ...[
+              Icon(
+                _getIconData(item.icon),
+                size: 13,
+                color: item.badgeColor ?? _config.highlightColor,
+              ),
+              const SizedBox(width: 6),
             ],
 
             // Message Text

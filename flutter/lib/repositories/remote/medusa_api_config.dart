@@ -15,7 +15,7 @@ class MedusaApiConfig {
   /// Compile-time environment configuration defaults
   static const String defaultBaseUrl = String.fromEnvironment(
     'MEDUSA_BASE_URL',
-    defaultValue: 'https://20.244.48.139.sslip.io/medusa',
+    defaultValue: 'https://api.glorov.tech/medusa',
   );
 
   static const String defaultPublishableKey = String.fromEnvironment(
@@ -23,10 +23,10 @@ class MedusaApiConfig {
     defaultValue: 'pk_3e00679a810ca538ba78aedc23b336788d82631606792292cbecad4fc422316a',
   );
 
-  /// Local development configuration
+  /// Local development configuration (connects to local Medusa backend on port 9000)
   static const MedusaApiConfig local = MedusaApiConfig(
     baseUrl: 'http://localhost:9000',
-    publishableKey: '',
+    publishableKey: defaultPublishableKey,
   );
 
   /// Production remote configuration

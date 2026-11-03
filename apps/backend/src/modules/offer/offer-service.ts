@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { Offer, CreateOfferInput, UpdateOfferInput } from "./types";
+import { Offer, CreateOfferInput, UpdateOfferInput, ValidateCouponCartItem } from "./types";
 
 const DATA_DIR = path.resolve(process.cwd(), "data");
 const OFFERS_FILE = path.join(DATA_DIR, "offers.json");
@@ -13,6 +13,9 @@ export interface ValidateCouponResult {
   error?: string;
   min_spend?: number;
   needed?: number;
+  applicable_categories?: string[];
+  eligible_subtotal?: number;
+  eligible_items_count?: number;
   next_tier?: {
     needed: number;
     code: string;
@@ -23,50 +26,27 @@ export interface ValidateCouponResult {
 
 export const DEFAULT_OFFERS: Offer[] = [
   {
-    id: "offer_winter_sale_20",
-    code: "WINTER20",
-    title: "Winter Sowing & Planting Fest",
-    tag: "WINTER BOTANICAL SALE",
-    description: "Enjoy Flat 20% OFF on all cold-hardy winter seeds, flowering blooms, and indoor greenery. Use code WINTER20 at checkout.",
-    discount_badge: "20% OFF",
-    discount_type: "percentage",
-    discount_value: 20,
-    min_spend: 799,
-    min_spend_text: "Min Order: ₹799",
-    expiry_text: "Winter Planting Special (November Event)",
-    terms: "Applicable on all seeds, indoor plants, and winter care supplies",
-    category: "sitewide",
-    bg_color: "#EAF2F8",
-    text_color: "#143528",
-    accent_color: "#1B5E20",
-    icon: "spa",
-    is_highlighted: true,
-    is_active: true,
-    display_order: 1,
-    created_at: new Date("2026-11-01T00:00:00Z").toISOString(),
-    updated_at: new Date("2026-11-01T00:00:00Z").toISOString(),
-  },
-  {
     id: "offer_welcome_glorov10",
     code: "GLOROV10",
     title: "Special Welcome Offer",
     tag: "SPECIAL WELCOME OFFER",
-    description: "Use code GLOROV10 at checkout for an extra 10% off your entire botanical order.",
+    description: "Flat 10% Off on your first order of heirloom seeds, indoor plants & glazed planters.",
     discount_badge: "10% OFF",
     discount_type: "percentage",
     discount_value: 10,
     min_spend: 499,
     min_spend_text: "Min Order: ₹499",
+    terms: "Valid on all botanical items",
     expiry_text: "Valid on first botanical order",
-    terms: "Applicable on seeds and live plants",
     category: "welcome",
+    applicable_categories: ["*"],
     bg_color: "#EAF4EE",
     text_color: "#1B3B2B",
     accent_color: "#1E3D2F",
     icon: "card_giftcard",
-    is_highlighted: false,
+    is_highlighted: true,
     is_active: true,
-    display_order: 2,
+    display_order: 1,
     created_at: new Date("2026-10-30T00:00:00Z").toISOString(),
     updated_at: new Date("2026-10-30T00:00:00Z").toISOString(),
   },
@@ -84,6 +64,7 @@ export const DEFAULT_OFFERS: Offer[] = [
     terms: "Not applicable on hamper products",
     expiry_text: "Festive limited offer",
     category: "sitewide",
+    applicable_categories: ["*"],
     bg_color: "#EAF4EE",
     text_color: "#1B3B2B",
     accent_color: "#93113A",
@@ -108,6 +89,7 @@ export const DEFAULT_OFFERS: Offer[] = [
     terms: "Not applicable on hamper products",
     expiry_text: "Festive limited offer",
     category: "sitewide",
+    applicable_categories: ["*"],
     bg_color: "#EAF4EE",
     text_color: "#1B3B2B",
     accent_color: "#93113A",
@@ -132,6 +114,7 @@ export const DEFAULT_OFFERS: Offer[] = [
     terms: "Not applicable on hamper products",
     expiry_text: "Festive limited offer",
     category: "sitewide",
+    applicable_categories: ["*"],
     bg_color: "#EAF4EE",
     text_color: "#1B3B2B",
     accent_color: "#93113A",
@@ -139,30 +122,6 @@ export const DEFAULT_OFFERS: Offer[] = [
     is_highlighted: false,
     is_active: true,
     display_order: 4,
-    created_at: new Date("2026-10-30T00:00:00Z").toISOString(),
-    updated_at: new Date("2026-10-30T00:00:00Z").toISOString(),
-  },
-  {
-    id: "offer_monsoon_thunder15",
-    code: "THUNDER15",
-    title: "Monsoon Thunder Sale",
-    tag: "LIMITED TIME OFFER",
-    description: "Flat 15% discount across all conditioned indoor plants and heirloom seed collections.",
-    discount_badge: "15% OFF",
-    discount_type: "percentage",
-    discount_value: 15,
-    min_spend: 1199,
-    min_spend_text: "Min Order: ₹1,199",
-    terms: "Excludes heavy garden tools",
-    expiry_text: "Expires in 4 days",
-    category: "sitewide",
-    bg_color: "#E8F5E9",
-    text_color: "#1B3B2B",
-    accent_color: "#2E7D32",
-    icon: "auto_awesome",
-    is_highlighted: false,
-    is_active: true,
-    display_order: 5,
     created_at: new Date("2026-10-30T00:00:00Z").toISOString(),
     updated_at: new Date("2026-10-30T00:00:00Z").toISOString(),
   },
@@ -180,37 +139,14 @@ export const DEFAULT_OFFERS: Offer[] = [
     terms: "Valid on all 0% GST seed collections",
     expiry_text: "Seasonal planting special",
     category: "seeds",
+    applicable_categories: ["seeds"],
     bg_color: "#FFF8E1",
     text_color: "#5D4037",
     accent_color: "#F57F17",
     icon: "spa",
     is_highlighted: false,
     is_active: true,
-    display_order: 6,
-    created_at: new Date("2026-10-30T00:00:00Z").toISOString(),
-    updated_at: new Date("2026-10-30T00:00:00Z").toISOString(),
-  },
-  {
-    id: "offer_shipping_freeship",
-    code: "FREESHIP",
-    title: "Free Express Botanical Courier",
-    tag: "FREE DELIVERY",
-    description: "Free moisture-conditioned nursery express courier across India on orders over ₹499.",
-    discount_badge: "FREE DELIVERY",
-    discount_type: "free_shipping",
-    discount_value: 0,
-    min_spend: 499,
-    min_spend_text: "Min Order: ₹499",
-    terms: "Pan-India express nursery dispatch",
-    expiry_text: "Pan-India delivery",
-    category: "sitewide",
-    bg_color: "#E1F5FE",
-    text_color: "#01579B",
-    accent_color: "#0288D1",
-    icon: "local_shipping",
-    is_highlighted: false,
-    is_active: true,
-    display_order: 7,
+    display_order: 5,
     created_at: new Date("2026-10-30T00:00:00Z").toISOString(),
     updated_at: new Date("2026-10-30T00:00:00Z").toISOString(),
   },
@@ -373,14 +309,29 @@ export class OfferService {
 
   public static async validateCoupon(
     code: string,
-    cartSubtotalINR: number
+    cartSubtotalINR: number,
+    items?: ValidateCouponCartItem[]
   ): Promise<ValidateCouponResult> {
     if (!code || typeof code !== "string" || !code.trim()) {
       return { valid: false, discount_amount: 0, error: "Please enter a valid coupon code" };
     }
     const cleanCode = code.trim().toUpperCase();
     const activeOffers = await this.listOffers(true);
-    const offer = activeOffers.find((o) => o.code.toUpperCase() === cleanCode);
+    let offer = activeOffers.find((o) => o.code.toUpperCase() === cleanCode);
+
+    if (!offer) {
+      if (cleanCode === "GLOROV10" || cleanCode === "FIRST10") {
+        offer =
+          activeOffers.find((o) => o.code.toUpperCase() === "GLOROV10") ||
+          activeOffers.find((o) => o.code.toUpperCase() === "DIWALI10");
+      } else if (cleanCode === "SEEDS20") {
+        offer = activeOffers.find((o) => o.code.toUpperCase() === "HEIRLOOM20");
+      } else if (cleanCode === "WINTER20") {
+        offer = activeOffers.find((o) => o.code.toUpperCase() === "DIWALI20");
+      } else if (cleanCode === "THUNDER15") {
+        offer = activeOffers.find((o) => o.code.toUpperCase() === "DIWALI15");
+      }
+    }
 
     if (!offer) {
       return {
@@ -391,7 +342,76 @@ export class OfferService {
     }
 
     const minSpend = offer.min_spend || 0;
-    if (cartSubtotalINR < minSpend) {
+
+    // Determine category restriction
+    const rawCategories =
+      offer.applicable_categories && offer.applicable_categories.length > 0
+        ? offer.applicable_categories
+        : offer.category && !["sitewide", "welcome", "all", "*"].includes(offer.category.toLowerCase())
+          ? [offer.category]
+          : ["*"];
+
+    const isCategoryRestricted = !rawCategories.some((c) =>
+      ["*", "all", "sitewide", "welcome"].includes(c.toLowerCase())
+    );
+
+    const normalizeCat = (c?: string) => (c || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Category Validation & Discount Calculation
+    let eligibleSubtotal = cartSubtotalINR;
+    let eligibleItemsCount = items ? items.length : 0;
+
+    if (isCategoryRestricted && items && items.length > 0) {
+      const normalizedTargets = rawCategories.map(normalizeCat);
+      const matchingItems = items.filter((item) => {
+        const itemCat = normalizeCat(item.category);
+        const itemTitle = normalizeCat(item.title);
+        return normalizedTargets.some(
+          (t) =>
+            (itemCat && (itemCat.includes(t) || t.includes(itemCat))) ||
+            (itemTitle && (itemTitle.includes(t) || t.includes(itemTitle)))
+        );
+      });
+
+      if (matchingItems.length === 0) {
+        const categoryLabel = rawCategories
+          .map((c) => c.charAt(0).toUpperCase() + c.slice(1))
+          .join(" or ");
+        return {
+          valid: false,
+          discount_amount: 0,
+          applicable_categories: rawCategories,
+          eligible_subtotal: 0,
+          eligible_items_count: 0,
+          offer,
+          error: `Coupon "${cleanCode}" is only valid for ${categoryLabel}. Your bag does not contain any eligible items.`,
+        };
+      }
+
+      eligibleSubtotal = matchingItems.reduce(
+        (acc, it) => acc + (it.price || 0) * (it.quantity || 1),
+        0
+      );
+      eligibleItemsCount = matchingItems.length;
+
+      if (eligibleSubtotal < minSpend) {
+        const needed = minSpend - eligibleSubtotal;
+        const categoryLabel = rawCategories
+          .map((c) => c.charAt(0).toUpperCase() + c.slice(1))
+          .join(" or ");
+        return {
+          valid: false,
+          discount_amount: 0,
+          min_spend: minSpend,
+          needed,
+          applicable_categories: rawCategories,
+          eligible_subtotal: eligibleSubtotal,
+          eligible_items_count: eligibleItemsCount,
+          offer,
+          error: `Add ₹${needed.toLocaleString("en-IN")} more of ${categoryLabel} items to unlock this ${offer.discount_badge} offer`,
+        };
+      }
+    } else if (cartSubtotalINR < minSpend) {
       const needed = minSpend - cartSubtotalINR;
       return {
         valid: false,
@@ -403,16 +423,23 @@ export class OfferService {
       };
     }
 
+    const basisSubtotal =
+      isCategoryRestricted && items && items.length > 0 ? eligibleSubtotal : cartSubtotalINR;
+
     let discountAmount = 0;
     let discountPercent: number | undefined;
 
     if (offer.discount_type === "percentage") {
       discountPercent = offer.discount_value;
-      discountAmount = Math.round((cartSubtotalINR * offer.discount_value) / 100);
+      discountAmount = Math.round((basisSubtotal * offer.discount_value) / 100);
     } else if (offer.discount_type === "fixed") {
-      discountAmount = Math.min(cartSubtotalINR, offer.discount_value);
+      discountAmount = Math.min(basisSubtotal, offer.discount_value);
     } else if (offer.discount_type === "free_shipping") {
       discountAmount = 0; // Handled via shipping waiver
+    }
+
+    if (offer.max_discount && discountAmount > offer.max_discount) {
+      discountAmount = offer.max_discount;
     }
 
     // Determine next higher discount tier if applicable
@@ -443,6 +470,9 @@ export class OfferService {
       offer,
       discount_amount: discountAmount,
       discount_percent: discountPercent,
+      applicable_categories: rawCategories,
+      eligible_subtotal: eligibleSubtotal,
+      eligible_items_count: eligibleItemsCount,
       next_tier: nextTier,
     };
   }

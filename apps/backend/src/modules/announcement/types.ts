@@ -2,7 +2,9 @@ export interface AnnouncementItem {
   id: string;
   text: string;
   highlight_text?: string;
-  icon?: string; // e.g. "local_shipping" | "bolt" | "spa" | "percent" | "verified" | "shield"
+  badge_color?: string; // Optional custom inside/badge background color e.g. "#D48B46"
+  badge_text_color?: string; // Optional custom badge text/icon color e.g. "#111827" or "#FFFFFF"
+  icon?: string; // e.g. "local_shipping" | "bolt" | "spa" | "percent" | "verified" | "shield" | "star"
   link_url?: string;
   display_order: number;
   is_active: boolean;
@@ -28,6 +30,8 @@ export interface AnnouncementStoreResponse {
 export interface CreateAnnouncementInput {
   text: string;
   highlight_text?: string;
+  badge_color?: string;
+  badge_text_color?: string;
   icon?: string;
   link_url?: string;
   display_order?: number;
@@ -37,6 +41,8 @@ export interface CreateAnnouncementInput {
 export interface UpdateAnnouncementInput {
   text?: string;
   highlight_text?: string;
+  badge_color?: string;
+  badge_text_color?: string;
   icon?: string;
   link_url?: string;
   display_order?: number;

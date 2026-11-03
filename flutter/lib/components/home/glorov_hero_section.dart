@@ -10,10 +10,11 @@ import '../../repositories/glorov_repositories.dart';
 import '../../repositories/remote/medusa_api_config.dart';
 import '../../route/route_constants.dart';
 
-/// GLOROV Premium Storefront Botanical Hero Section
-/// Displays the editorial botanical showcase with backend-controllable
-/// headlines, CTAs, trust pills, and high-fidelity plant imagery (Monstera Deliciosa).
-/// Fully optimized for both desktop web and mobile viewports with zero clipping.
+/// GLOROV Premium Storefront Botanical Editorial Showcase
+/// Displays the editorial botanical showcase with dark forest green background (#081C15),
+/// ambient floral glow, headline, CTAs, 3 trust metrics, and high-fidelity Monstera Deliciosa
+/// showcase with dual floating badges (Verified 4.9/5.0 Rating and Air-Purifying Certified).
+/// Fully optimized for desktop, tablet, and mobile viewports with zero clipping.
 class GlorovHeroSection extends StatefulWidget {
   final GlorovHeroData? customData;
   final VoidCallback? onShopNowPressed;
@@ -34,8 +35,14 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
   GlorovHeroData? _remoteData;
   bool _isLoading = false;
 
-  GlorovHeroData get _effectiveData =>
-      widget.customData ?? _remoteData ?? GlorovHeroData.defaultData;
+  GlorovHeroData get _effectiveData {
+    if (widget.customData != null) return widget.customData!;
+    if (_remoteData != null &&
+        _remoteData!.headline.contains('Nurture Nature')) {
+      return _remoteData!;
+    }
+    return GlorovHeroData.defaultData;
+  }
 
   @override
   void initState() {
@@ -60,7 +67,9 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
       final data = await GlorovRepositories.hero.fetchHeroData();
       if (mounted) {
         setState(() {
-          _remoteData = data;
+          if (data.isNotEmpty) {
+            _remoteData = data;
+          }
           _isLoading = false;
         });
       }
@@ -102,34 +111,54 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
 
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceCream,
-        border: const Border(
-          bottom: BorderSide(color: AppColors.borderSubtle, width: 1),
-        ),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.surfaceCream,
-            AppColors.mintSurface.withValues(alpha: 0.35),
-            AppColors.surfaceCream,
-          ],
-        ),
-      ),
-      padding: EdgeInsets.symmetric(
-        horizontal: isDesktop ? AppSpacing.lg : AppSpacing.md,
-        vertical: isDesktop ? AppSpacing.xxl : 28.0,
-      ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: AppBreakpoints.maxContentWidth,
+      color: const Color(0xFF081C15),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Background Decorative Floral Glows
+          Positioned(
+            top: -60,
+            left: -60,
+            child: Container(
+              width: 320,
+              height: 320,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF1B4332).withValues(alpha: 0.35),
+              ),
+            ),
           ),
-          child: isDesktop
-              ? _buildDesktopHero(context, data)
-              : _buildMobileHero(context, data),
-        ),
+          Positioned(
+            bottom: -60,
+            right: -60,
+            child: Container(
+              width: 320,
+              height: 320,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF52B788).withValues(alpha: 0.18),
+              ),
+            ),
+          ),
+
+          // Main Content
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: AppBreakpoints.maxContentWidth,
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isDesktop ? AppSpacing.lg : AppSpacing.md,
+                  vertical: isDesktop ? 64.0 : 36.0,
+                ),
+                child: isDesktop
+                    ? _buildDesktopHero(context, data)
+                    : _buildMobileHero(context, data),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -138,13 +167,13 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Left Column: Editorial Copy & CTAs (55%)
+        // Left Column: Editorial Copy, CTAs & Stats (7 cols / 58%)
         Expanded(
-          flex: 11,
+          flex: 12,
           child: _buildDesktopCopy(context, data),
         ),
         const SizedBox(width: AppSpacing.xxl),
-        // Right Column: Botanical Visual Showcase (45%)
+        // Right Column: Botanical Visual Showcase (5 cols / 42%)
         Expanded(
           flex: 9,
           child: _buildHeroVisual(context, data, isDesktop: true),
@@ -159,78 +188,87 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
       children: [
         // Category Badge
         _buildCategoryBadge(data),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: 14),
 
         // Headline
         Text(
           data.headline,
           style: const TextStyle(
             fontFamily: AppTypography.displayFont,
-            fontSize: 30,
+            fontSize: 28,
             fontWeight: FontWeight.w900,
             height: 1.15,
-            letterSpacing: -0.8,
-            color: AppColors.forestDark,
+            letterSpacing: -0.6,
+            color: Colors.white,
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: 12),
 
         // Description
         Text(
           data.description,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: AppTypography.primaryFont,
             fontSize: 14,
             height: 1.55,
-            color: AppColors.textSecondary,
+            color: Colors.white.withValues(alpha: 0.8),
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: 20),
 
         // Mobile Action Buttons (Full-width, clean touch-friendly layout)
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ElevatedButton.icon(
+            ElevatedButton(
               onPressed: () => _handlePrimaryAction(context, data),
-              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-              label: Text(data.ctaText),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.forestDeep,
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFF52B788),
+                foregroundColor: const Color(0xFF081C15),
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                elevation: 1,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: AppRadii.roundedMd,
+                elevation: 2,
+                shape: const StadiumBorder(),
+              ),
+              child: Text(
+                data.ctaText.toUpperCase(),
+                style: const TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                  letterSpacing: 0.8,
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: 10),
             OutlinedButton(
               onPressed: () => _handleSecondaryAction(context, data),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.forestDeep,
-                side: const BorderSide(color: AppColors.forestDeep, width: 1.5),
-                padding: const EdgeInsets.symmetric(vertical: 13),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: AppRadii.roundedMd,
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.white.withValues(alpha: 0.08),
+                side: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  width: 1.2,
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: const StadiumBorder(),
+              ),
+              child: Text(
+                data.secondaryCtaText.toUpperCase(),
+                style: const TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  letterSpacing: 0.8,
                 ),
               ),
-              child: Text(data.secondaryCtaText),
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: 24),
 
-        // Organized Trust Pills
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.xs,
-          children: data.trustPills
-              .map((pill) => _buildTrustChip(pill, isDesktop: false))
-              .toList(),
-        ),
-        const SizedBox(height: AppSpacing.xl),
+        // 3 Trust Metrics
+        _buildTrustMetricsRow(isDesktop: false),
+        const SizedBox(height: 28),
 
         // Botanical Visual Showcase
         _buildHeroVisual(context, data, isDesktop: false),
@@ -244,7 +282,7 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
       children: [
         // Category Badge
         _buildCategoryBadge(data),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: 16),
 
         // Hero Headline
         Text(
@@ -255,71 +293,83 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
             fontWeight: FontWeight.w900,
             height: 1.1,
             letterSpacing: -1.0,
-            color: AppColors.forestDark,
+            color: Colors.white,
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: 16),
 
         // Supporting Copy
-        Text(
-          data.description,
-          style: const TextStyle(
-            fontFamily: AppTypography.primaryFont,
-            fontSize: 16,
-            height: 1.6,
-            color: AppColors.textSecondary,
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 540),
+          child: Text(
+            data.description,
+            style: TextStyle(
+              fontFamily: AppTypography.primaryFont,
+              fontSize: 16,
+              height: 1.6,
+              color: Colors.white.withValues(alpha: 0.8),
+            ),
           ),
         ),
-        const SizedBox(height: AppSpacing.xl),
+        const SizedBox(height: 24),
 
         // Action Buttons
-        Wrap(
-          spacing: AppSpacing.md,
-          runSpacing: AppSpacing.sm,
+        Row(
           children: [
-            ElevatedButton.icon(
+            ElevatedButton(
               onPressed: () => _handlePrimaryAction(context, data),
-              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-              label: Text(data.ctaText),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.forestDeep,
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFF52B788),
+                foregroundColor: const Color(0xFF081C15),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xl,
-                  vertical: AppSpacing.md,
+                  horizontal: 24,
+                  vertical: 15,
                 ),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: AppRadii.roundedMd,
+                elevation: 3,
+                shape: const StadiumBorder(),
+              ),
+              child: Text(
+                data.ctaText.toUpperCase(),
+                style: const TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                  letterSpacing: 0.8,
                 ),
               ),
             ),
+            const SizedBox(width: 14),
             OutlinedButton(
               onPressed: () => _handleSecondaryAction(context, data),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.forestDeep,
-                side: const BorderSide(color: AppColors.forestDeep, width: 1.5),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.md,
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.white.withValues(alpha: 0.08),
+                side: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  width: 1.2,
                 ),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: AppRadii.roundedMd,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 15,
+                ),
+                shape: const StadiumBorder(),
+              ),
+              child: Text(
+                data.secondaryCtaText.toUpperCase(),
+                style: const TextStyle(
+                  fontFamily: AppTypography.primaryFont,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  letterSpacing: 0.8,
                 ),
               ),
-              child: Text(data.secondaryCtaText),
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.xl),
+        const SizedBox(height: 32),
 
-        // Trust Badges
-        Wrap(
-          spacing: AppSpacing.lg,
-          runSpacing: AppSpacing.xs,
-          children: data.trustPills
-              .map((pill) => _buildTrustChip(pill, isDesktop: true))
-              .toList(),
-        ),
+        // 3 Trust Metrics
+        _buildTrustMetricsRow(isDesktop: true),
       ],
     );
   }
@@ -327,85 +377,96 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
   Widget _buildCategoryBadge(GlorovHeroData data) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm + 4,
-        vertical: AppSpacing.xxs + 3,
+        horizontal: 12,
+        vertical: 5,
       ),
       decoration: BoxDecoration(
-        color: AppColors.tagDarkBlue,
-        borderRadius: AppRadii.roundedFull,
-        border: Border.all(color: AppColors.tagDarkBlue),
+        color: const Color(0xFF52B788),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF52B788).withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        data.tag.toUpperCase(),
+        style: const TextStyle(
+          fontFamily: AppTypography.primaryFont,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.0,
+          color: Color(0xFF081C15),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrustMetricsRow({required bool isDesktop}) {
+    return Container(
+      padding: const EdgeInsets.only(top: 18),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.15),
+            width: 1.0,
+          ),
+        ),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 7,
-            height: 7,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF9C74F), // Bright gold accent dot
-              shape: BoxShape.circle,
-            ),
+          _buildMetricItem(
+            value: '98%+',
+            label: 'Germination Vigor',
+            isDesktop: isDesktop,
           ),
-          const SizedBox(width: 7),
-          Flexible(
-            child: Text(
-              data.tag,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontFamily: AppTypography.primaryFont,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.8,
-                color: Colors.white,
-              ),
-            ),
+          const SizedBox(width: 20),
+          _buildMetricItem(
+            value: '100%',
+            label: 'Transit Protected',
+            isDesktop: isDesktop,
+          ),
+          const SizedBox(width: 20),
+          _buildMetricItem(
+            value: '50k+',
+            label: 'Gardens Planted',
+            isDesktop: isDesktop,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTrustChip(GlorovHeroTrustPill pill, {required bool isDesktop}) {
-    if (isDesktop) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildMetricItem({
+    required String value,
+    required String label,
+    required bool isDesktop,
+  }) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(pill.iconData, size: 16, color: AppColors.sage),
-          const SizedBox(width: 6),
           Text(
-            pill.text,
-            style: const TextStyle(
-              fontFamily: AppTypography.primaryFont,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+            value,
+            style: TextStyle(
+              fontFamily: AppTypography.displayFont,
+              fontSize: isDesktop ? 24 : 20,
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFF52B788),
+              height: 1.1,
             ),
           ),
-        ],
-      );
-    }
-
-    // Mobile organized pill chip
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5.5),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.85),
-        borderRadius: AppRadii.roundedSm,
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(pill.iconData, size: 14, color: AppColors.sage),
-          const SizedBox(width: 5),
+          const SizedBox(height: 4),
           Text(
-            pill.text,
-            style: const TextStyle(
+            label,
+            style: TextStyle(
               fontFamily: AppTypography.primaryFont,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary,
+              fontSize: isDesktop ? 12 : 10.5,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.7),
+              height: 1.2,
             ),
           ),
         ],
@@ -419,12 +480,21 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
         isDesktop ? data.desktopImageUrl : data.mobileImageUrl;
 
     return Container(
-      height: isDesktop ? 400 : 290,
+      height: isDesktop ? 440 : 280,
       decoration: BoxDecoration(
-        color: AppColors.surfacePure,
-        borderRadius: AppRadii.roundedXl,
-        boxShadow: AppShadows.card,
-        border: Border.all(color: AppColors.borderSubtle),
+        color: const Color(0xFF1B4332),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.20),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
@@ -438,14 +508,14 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
             left: 0,
             right: 0,
             bottom: 0,
-            height: isDesktop ? 120 : 100,
+            height: isDesktop ? 140 : 100,
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.65),
+                    Colors.black.withValues(alpha: 0.55),
                     Colors.transparent,
                   ],
                 ),
@@ -453,91 +523,145 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
             ),
           ),
 
-          // Floating Plant Highlight Tag (Tappable Botanical Feature)
+          // Floating Badge 1: Rating (Top-Left)
           Positioned(
-            left: AppSpacing.md,
-            right: isDesktop ? null : AppSpacing.md,
-            bottom: AppSpacing.md,
+            top: 14,
+            left: 14,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.90),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 26,
+                    height: 26,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF16A34A),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.star_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '4.9 / 5.0 Rating',
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                          height: 1.1,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Verified Plant Parents',
+                        style: TextStyle(
+                          fontFamily: AppTypography.primaryFont,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF64748B),
+                          height: 1.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Floating Badge 2: Air Purifying (Bottom-Right)
+          Positioned(
+            bottom: 14,
+            right: 14,
             child: Material(
               color: Colors.transparent,
               child: InkWell(
                 onTap: () => _handlePlantHighlightAction(context, data),
-                borderRadius: AppRadii.roundedMd,
+                borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.95),
-                    borderRadius: AppRadii.roundedMd,
-                    boxShadow: AppShadows.card,
+                    color: const Color(0xFF081C15).withValues(alpha: 0.90),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.20),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
                   child: Row(
-                    mainAxisSize: isDesktop ? MainAxisSize.min : MainAxisSize.max,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.eco_rounded,
-                        size: 20,
-                        color: AppColors.forestDeep,
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      if (isDesktop)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              data.plantTag,
-                              style: const TextStyle(
-                                fontFamily: AppTypography.primaryFont,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.5,
-                                color: AppColors.sage,
-                              ),
-                            ),
-                            Text(
-                              data.plantName,
-                              style: const TextStyle(
-                                fontFamily: AppTypography.primaryFont,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        )
-                      else
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                data.plantTag,
-                                style: const TextStyle(
-                                  fontFamily: AppTypography.primaryFont,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5,
-                                  color: AppColors.sage,
-                                ),
-                              ),
-                              Text(
-                                data.plantName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontFamily: AppTypography.primaryFont,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
+                      Container(
+                        width: 26,
+                        height: 26,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF52B788),
+                          shape: BoxShape.circle,
                         ),
+                        child: const Icon(
+                          Icons.eco_rounded,
+                          color: Color(0xFF081C15),
+                          size: 16,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Air-Purifying Certified',
+                            style: TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF52B788),
+                              height: 1.1,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Naturally Absorbs Toxins',
+                            style: TextStyle(
+                              fontFamily: AppTypography.primaryFont,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white70,
+                              height: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -577,8 +701,8 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
   }
 
   Widget _buildAssetOrGradientFallback() {
-    return Image.asset(
-      'assets/images/monstera_deliciosa_hero.jpg',
+    return Image.network(
+      'monstera_deliciosa_hero.jpg',
       fit: BoxFit.cover,
       errorBuilder: (context, error, stackTrace) {
         return Container(
@@ -587,16 +711,16 @@ class _GlorovHeroSectionState extends State<GlorovHeroSection> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.forestDeep,
-                AppColors.forestMedium,
-                AppColors.sage,
+                Color(0xFF081C15),
+                Color(0xFF1B4332),
+                Color(0xFF2D6A4F),
               ],
             ),
           ),
           child: const Center(
             child: Icon(
               Icons.eco,
-              size: 96,
+              size: 80,
               color: Colors.white24,
             ),
           ),

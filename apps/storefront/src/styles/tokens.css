@@ -1,0 +1,96 @@
+/**
+ * GLOROV Centralized Design Tokens
+ * Source: flutter/lib/theme/glorov/ (glorov_colors.dart, glorov_typography.dart, glorov_spacing.dart, glorov_radii.dart, glorov_breakpoints.dart)
+ */
+
+:root {
+  /* ─── 1. Primary Botanical Greens ────────────────────────────────────────── */
+  --color-forest-deep:   #1B4332;
+  --color-forest-medium: #2D6A4F;
+  --color-forest-dark:   #081C15;
+
+  /* ─── 2. Secondary Greens & Accents ──────────────────────────────────────── */
+  --color-sage:          #52B788;
+  --color-sage-light:    #74C69D;
+  --color-mint:          #B7E4C7;
+  --color-mint-surface:  #E8F5E9;
+  --color-mint-badge:    #D8F3DC;
+
+  /* ─── 3. Botanical Earth & Warm Accents ─────────────────────────────────── */
+  --color-earth-gold:    #DDA15E;
+  --color-terracotta:    #BC6C25;
+  --color-earth-warm:    #606C38;
+  --color-sun-amber:     #F4A261;
+
+  /* ─── 4. Surfaces & Backgrounds ─────────────────────────────────────────── */
+  --color-surface-pure:  #FFFFFF;
+  --color-surface-cream: #F9FAF8;
+  --color-surface-muted: #F3F4F1;
+  --color-surface-card:  #FFFFFF;
+
+  /* ─── 5. Tags & Announcement Elements ───────────────────────────────────── */
+  --color-tag-dark-blue:       #0C2340;
+  --color-tag-dark-blue-hover: #08192E;
+  --color-tag-text-white:      #FFFFFF;
+
+  /* ─── 6. Neutral Borders & Dividers ─────────────────────────────────────── */
+  --color-border-subtle: #E5E7EB;
+  --color-border-medium: #D1D5DB;
+  --color-border-light:  #F3F4F6;
+
+  /* ─── 7. Typography Roles ───────────────────────────────────────────────── */
+  --color-text-primary:    #111827;
+  --color-text-secondary:  #374151;
+  --color-text-muted:      #6B7280;
+  --color-text-disabled:   #9CA3AF;
+  --color-text-on-primary: #FFFFFF;
+
+  /* ─── 8. Semantic Status Tokens ─────────────────────────────────────────── */
+  --color-brand-error:           #EF4444;
+  --color-brand-error-surface:   #FEF2F2;
+  --color-brand-success:         #10B981;
+  --color-brand-success-surface: #ECFDF5;
+  --color-brand-warning:         #F59E0B;
+  --color-brand-warning-surface: #FFFBEB;
+  --color-brand-info:            #3B82F6;
+
+  /* ─── 9. Spacing Scale ──────────────────────────────────────────────────── */
+  --space-xxs:  4px;
+  --space-xs:   8px;
+  --space-sm:   12px;
+  --space-md:   16px;
+  --space-lg:   24px;
+  --space-xl:   32px;
+  --space-xxl:  48px;
+  --space-hero: 64px;
+
+  /* ─── 10. Border Radii ──────────────────────────────────────────────────── */
+  --radius-none: 0px;
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 999px;
+
+  /* ─── 11. Layout & Breakpoints ──────────────────────────────────────────── */
+  --max-content-width: 1280px;
+
+  /* ─── 12. Elevation & Box Shadows ───────────────────────────────────────── */
+  --shadow-header: 0 1px 4px rgba(0, 0, 0, 0.08);
+  --shadow-card:   0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-float:  0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-modal:  0 8px 32px rgba(0, 0, 0, 0.16);
+
+  /* ─── 13. Z-Index Conventions ───────────────────────────────────────────── */
+  --z-header:  50;
+  --z-drawer:  60;
+  --z-modal:   70;
+  --z-toast:   80;
+  --z-tooltip: 90;
+
+  /* ─── 14. Motion & Transitions ──────────────────────────────────────────── */
+  --transition-fast:   100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   300ms cubic-bezier(0.4, 0, 0.2, 1);
+}

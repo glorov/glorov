@@ -1,6 +1,5 @@
 import '../../models/glorov/glorov_product.dart';
 import '../contracts/product_repository.dart';
-import '../mock/mock_product_repository.dart';
 import 'medusa_endpoints.dart';
 import 'medusa_http_client.dart';
 
@@ -14,8 +13,8 @@ class MedusaProductRepository implements ProductRepository {
   @override
   Future<List<GlorovProduct>> getProducts({GlorovProductFilter? filter}) async {
     final queryParams = <String, dynamic>{
-      'limit': 50,
-      'fields': '*variants,*categories,*images,+metadata',
+      'limit': 100,
+      'fields': '*variants,*variants.prices,*categories,*images,+metadata',
     };
 
     if (filter != null) {
@@ -54,13 +53,10 @@ class MedusaProductRepository implements ProductRepository {
     );
 
     if (result.isFailure) {
-      return const MockProductRepository().getProducts(filter: filter);
+      return <GlorovProduct>[];
     }
 
     List<GlorovProduct> products = result.requireData;
-    if (products.isEmpty && (filter == null || (filter.searchQuery == null && filter.category == null))) {
-      return const MockProductRepository().getProducts(filter: filter);
-    }
 
     // Apply client-side botanical filter refinements if specified
     if (filter != null) {
@@ -126,7 +122,7 @@ class MedusaProductRepository implements ProductRepository {
     final result = await client.get<GlorovProduct?>(
       MedusaEndpoints.productById(id),
       queryParameters: {
-        'fields': '*variants,*categories,*images,+metadata',
+        'fields': '*variants,*variants.prices,*categories,*images,+metadata',
       },
       parser: (json) {
         if (json is Map && json['product'] is Map) {
@@ -138,7 +134,7 @@ class MedusaProductRepository implements ProductRepository {
     );
 
     if (result.isFailure || result.dataOrNull == null) {
-      return const MockProductRepository().getProductById(id);
+      return null;
     }
 
     return result.dataOrNull;
@@ -151,7 +147,7 @@ class MedusaProductRepository implements ProductRepository {
       queryParameters: {
         'handle': slug,
         'limit': 1,
-        'fields': '*variants,*categories,*images,+metadata',
+        'fields': '*variants,*variants.prices,*categories,*images,+metadata',
       },
       parser: (json) {
         if (json is Map &&
@@ -166,7 +162,7 @@ class MedusaProductRepository implements ProductRepository {
     );
 
     if (result.isFailure || result.dataOrNull == null) {
-      return const MockProductRepository().getProductBySlug(slug);
+      return null;
     }
 
     return result.dataOrNull;
@@ -176,6 +172,9 @@ class MedusaProductRepository implements ProductRepository {
   Future<List<GlorovProductCategory>> getCategories() async {
     final result = await client.get<List<GlorovProductCategory>>(
       MedusaEndpoints.productCategories,
+      queryParameters: {
+        'limit': 50,
+      },
       parser: (json) {
         if (json is Map && json['product_categories'] is List) {
           return (json['product_categories'] as List).map((c) {
@@ -195,8 +194,8 @@ class MedusaProductRepository implements ProductRepository {
       },
     );
 
-    if (result.isFailure || result.dataOrNull == null || result.dataOrNull!.isEmpty) {
-      return const MockProductRepository().getCategories();
+    if (result.isFailure || result.dataOrNull == null) {
+      return <GlorovProductCategory>[];
     }
 
     return result.dataOrNull ?? <GlorovProductCategory>[];

@@ -6,7 +6,11 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useCustomerAuth } from '../../context/CustomerAuthContext'
 import { AccountNavSidebar } from '../../components/account/AccountNavSidebar'
 
-export default function AccountLayout({ children }: { children: React.ReactNode }) {
+export default function AccountLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   const pathname = usePathname()
   const router = useRouter()
   const { isLoading } = useCustomerAuth()

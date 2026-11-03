@@ -340,3 +340,70 @@ export async function getRelatedProductsForProduct(
   )
   return filtered.length > 0 ? filtered.slice(0, limit) : MOCK_PRODUCTS.filter((p) => p.id !== product.id).slice(0, limit)
 }
+
+/**
+ * Fetches all active products from Medusa backend with fallback and caching.
+ */
+export async function getAllStoreProducts(limit: number = 100): Promise<GlorovProductItem[]> {
+  try {
+    const baseUrl = MEDUSA_BACKEND_URL.replace(/\/$/, '')
+    const res = await fetch(
+      `${baseUrl}/store/products?limit=${limit}&fields=*variants,*variants.prices,*categories,*images,+metadata`,
+      {
+        headers: {
+          'x-publishable-api-key': MEDUSA_PUBLISHABLE_KEY,
+          Accept: 'application/json',
+        },
+        next: { revalidate: 60 },
+        signal: AbortSignal.timeout(8000),
+      }
+    )
+
+    if (res.ok) {
+      const data = await res.json()
+      if (Array.isArray(data.products) && data.products.length > 0) {
+        const transformed = data.products.map(transformMedusaProduct)
+        const backendSlugs = new Set(transformed.map((p: GlorovProductItem) => p.slug))
+        const remainingMock = MOCK_PRODUCTS.filter((p) => !backendSlugs.has(p.slug))
+        return [...transformed, ...remainingMock]
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch store products from Medusa backend:', error)
+  }
+
+  return MOCK_PRODUCTS
+}
+
+/**
+ * Fetches products for a specific category slug or subcategory handle.
+ */
+export async function getProductsByCategory(slug: string): Promise<GlorovProductItem[]> {
+  const allProducts = await getAllStoreProducts(100)
+  const cleanSlug = slug.toLowerCase().trim()
+
+  return allProducts.filter((p) => {
+    const catLower = p.category.toLowerCase()
+    const subcatLower = (p.subcategory || '').toLowerCase()
+    const pType = p.productType
+
+    if (cleanSlug === 'seeds') return catLower.includes('seed') || pType === 'seeds'
+    if (cleanSlug === 'live-plants' || cleanSlug === 'plants') return catLower.includes('plant') || pType === 'plants'
+    if (cleanSlug === 'planters' || cleanSlug === 'planters-pots') return catLower.includes('planter') || catLower.includes('pot') || pType === 'planters'
+    if (cleanSlug === 'plant-care' || cleanSlug === 'plant-care-soil' || cleanSlug === 'care') return catLower.includes('care') || catLower.includes('soil') || pType === 'care'
+    if (cleanSlug === 'flowering' || cleanSlug === 'flowering-plants') return subcatLower.includes('flower') || catLower.includes('flower') || p.badges?.includes('FLOWERING')
+    if (cleanSlug === 'vegetables' || cleanSlug === 'vegetable-seeds') return subcatLower.includes('vegetable') || catLower.includes('vegetable')
+    if (cleanSlug === 'herbs' || cleanSlug === 'herb-seeds') return subcatLower.includes('herb') || catLower.includes('herb') || p.tags?.includes('spicy')
+    if (cleanSlug === 'indoor-plants') return subcatLower.includes('indoor') || catLower.includes('indoor')
+    if (cleanSlug === 'air-purifying-plants') return subcatLower.includes('air') || catLower.includes('air')
+    if (cleanSlug === 'succulents-bonsai') return subcatLower.includes('succulent') || catLower.includes('succulent') || subcatLower.includes('bonsai')
+    if (cleanSlug === 'ceramic-planters') return subcatLower.includes('ceramic') || catLower.includes('ceramic')
+    if (cleanSlug === 'terracotta-pots') return subcatLower.includes('terracotta') || catLower.includes('terracotta')
+    if (cleanSlug === 'potting-mix-fertilizers') return subcatLower.includes('potting') || subcatLower.includes('fertilizer') || catLower.includes('soil')
+    if (cleanSlug === 'gardening-tools') return subcatLower.includes('tool') || catLower.includes('tool')
+    if (cleanSlug === 'offers') return p.discountPrice !== undefined && p.discountPrice < p.price
+
+    return catLower === cleanSlug || subcatLower === cleanSlug || catLower.includes(cleanSlug) || subcatLower.includes(cleanSlug)
+  })
+}
+

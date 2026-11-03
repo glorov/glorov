@@ -7,6 +7,10 @@ import { FeaturedProductsSection } from '../components/home/FeaturedProductsSect
 import { BotanicalEditorialShowcase } from '../components/home/BotanicalEditorialShowcase'
 import { ScrollRevealSection } from '../components/ui/ScrollRevealSection'
 import { SITE_NAME, BASE_URL } from '../lib/constants'
+import { getStoreBanners } from '../lib/api/banners'
+import { getAllStoreProducts } from '../lib/api/products'
+
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — Authentic Indian Seeds, Live Houseplants & Organic Care`,
@@ -41,7 +45,11 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [banners, products] = await Promise.all([
+    getStoreBanners(),
+    getAllStoreProducts(50),
+  ])
   // JSON-LD Structured Data for Botanical Organization & E-Commerce WebSite
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -87,7 +95,7 @@ export default function HomePage() {
 
       <div className="w-full">
         {/* 1. Multi-device Hero Banner Slider (Instant above-the-fold display) */}
-        <HeroBannerSlider />
+        <HeroBannerSlider banners={banners} />
 
         {/* 2. Trust Badges & Botanical Value Props (Smooth Hardware-Accelerated Reveal) */}
         <ScrollRevealSection delay={0.04} yOffset={24}>
@@ -101,7 +109,7 @@ export default function HomePage() {
 
         {/* 4. Featured Botanical Products (Smooth Hardware-Accelerated Reveal) */}
         <ScrollRevealSection delay={0.05} yOffset={28}>
-          <FeaturedProductsSection />
+          <FeaturedProductsSection initialProducts={products} />
         </ScrollRevealSection>
 
         {/* 5. Editorial Botanical Showcase (Smooth Hardware-Accelerated Reveal) */}

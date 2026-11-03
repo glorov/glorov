@@ -45,6 +45,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: 7. Build Backend & Admin Dashboard
+        env:
+          NODE_ENV: production
+          MEDUSA_BACKEND_URL: https://api.glorov.tech
         run: |
           echo "🔨 Compiling Medusa v2 backend and admin dashboard..."
           pnpm --filter @glorov/types build || true
@@ -90,7 +93,7 @@ jobs:
           $SSH_CMD "$USER@$HOST" "uptime; free -m"
 
           echo "📦 Deploying Next.js Storefront standalone bundle..."
-          rsync -avz --delete \
+          rsync -avzL --delete \
             -e "$SSH_CMD" \
             ./apps/storefront/.next/standalone/ "$USER@$HOST:/var/www/glorov/storefront-next/"
 

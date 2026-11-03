@@ -1,13 +1,18 @@
 import type { Metadata } from 'next'
 import React from 'react'
-import { notFound, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { PageContainer } from '../../../components/layout/PageContainer'
 import { Breadcrumbs } from '../../../components/layout/Breadcrumbs'
 import { ProductCard } from '../../../components/product/ProductCard'
 import { Pagination } from '../../../components/common/Pagination'
 import { EmptyState } from '../../../components/feedback/EmptyState'
-import { MOCK_PRODUCTS, MOCK_CATEGORY_DETAILS, CATEGORY_NAV_ITEMS } from '../../../lib/mock-data'
+import { MOCK_CATEGORY_DETAILS, CATEGORY_NAV_ITEMS } from '../../../lib/mock-data'
+import { GLOROV_BOTANICAL_CATEGORIES } from '../../../lib/botanical-categories'
+import { getProductsByCategory } from '../../../lib/api/products'
+
+export const dynamicParams = true
+export const revalidate = 60
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>
@@ -37,10 +42,35 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const categoryDetail = MOCK_CATEGORY_DETAILS.find((c) => c.slug === slug)
   const navItem = CATEGORY_NAV_ITEMS.find((c) => c.route.endsWith(`/${slug}`))
 
-  const title = categoryDetail?.title ?? navItem?.label ?? slug
-  const desc = categoryDetail?.description
-    ? `${categoryDetail.description} — Shop online at GLOROV with 100% safe transit guarantee.`
-    : `Shop authentic botanical ${title} online from GLOROV. Premium quality with transit guarantee.`
+  let botanicalMatchTitle: string | undefined
+  let botanicalMatchDesc: string | undefined
+  for (const cat of GLOROV_BOTANICAL_CATEGORIES) {
+    if (cat.handle === slug) {
+      botanicalMatchTitle = cat.title
+      botanicalMatchDesc = cat.description
+      break
+    }
+    const sub = cat.subCategories.find((s) => s.handle === slug)
+    if (sub) {
+      botanicalMatchTitle = sub.title
+      botanicalMatchDesc = sub.description || `Browse authentic ${sub.title} cultivated with 100% transit guarantee.`
+      break
+    }
+  }
+
+  const title =
+    categoryDetail?.title ??
+    navItem?.label ??
+    botanicalMatchTitle ??
+    slug
+      .split('-')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ')
+
+  const desc =
+    categoryDetail?.description ??
+    botanicalMatchDesc ??
+    `Shop authentic botanical ${title} online from GLOROV. Premium quality with transit guarantee.`
   const imageUrl = categoryDetail?.imageUrl || '/og-image.jpg'
 
   return {
@@ -83,13 +113,34 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const categoryDetail = MOCK_CATEGORY_DETAILS.find((c) => c.slug === slug)
   const navItem = CATEGORY_NAV_ITEMS.find((c) => c.route.endsWith(`/${slug}`))
 
-  if (!categoryDetail && !navItem && slug !== 'offers') {
-    notFound()
+  let botanicalMatchTitle: string | undefined
+  let botanicalMatchDesc: string | undefined
+  for (const cat of GLOROV_BOTANICAL_CATEGORIES) {
+    if (cat.handle === slug) {
+      botanicalMatchTitle = cat.title
+      botanicalMatchDesc = cat.description
+      break
+    }
+    const sub = cat.subCategories.find((s) => s.handle === slug)
+    if (sub) {
+      botanicalMatchTitle = sub.title
+      botanicalMatchDesc = sub.description || `Browse authentic ${sub.title} cultivated with 100% transit guarantee.`
+      break
+    }
   }
 
-  const categoryTitle = categoryDetail?.title ?? navItem?.label ?? 'Botanical Collection'
+  const categoryTitle =
+    categoryDetail?.title ??
+    navItem?.label ??
+    botanicalMatchTitle ??
+    slug
+      .split('-')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ')
+
   const categoryDescription =
     categoryDetail?.description ??
+    botanicalMatchDesc ??
     `Handpicked botanical cultivars, accessories, and organic gardening essentials curated by GLOROV.`
 
   const activeSubcat = query.subcat ?? 'All'
@@ -98,24 +149,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const currentPage = parseInt(query.page ?? '1', 10) || 1
   const itemsPerPage = 8
 
-  // Filter products by category/slug
-  let products = MOCK_PRODUCTS.filter((p) => {
-    if (slug === 'seeds') return p.category === 'Seeds' || p.productType === 'seeds'
-    if (slug === 'live-plants') return p.category === 'Live Plants' || p.productType === 'plants'
-    if (slug === 'planters') return p.category.includes('Planters') || p.productType === 'planters'
-    if (slug === 'plant-care') return p.category.includes('Care') || p.productType === 'care'
-    if (slug === 'flowering') {
-      return (
-        p.subcategory?.includes('Flower') ||
-        p.category.includes('Flower') ||
-        p.badges?.includes('FLOWERING')
-      )
-    }
-    if (slug === 'vegetables') return p.subcategory?.includes('Vegetable')
-    if (slug === 'herbs') return p.tags?.includes('spicy') || p.subcategory?.includes('Herb')
-    if (slug === 'offers') return p.discountPrice !== undefined && p.discountPrice < p.price
-    return true
-  })
+  // Fetch live products for category from Medusa backend (with fallback to mock data)
+  let products = await getProductsByCategory(slug)
 
   // Subcategory filter
   if (activeSubcat !== 'All' && !activeSubcat.startsWith('All ')) {

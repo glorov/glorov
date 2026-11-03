@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { PageContainer } from '../layout/PageContainer'
 import { ProductCard } from '../product/ProductCard'
 import { MOCK_PRODUCTS } from '../../lib/mock-data'
+import type { GlorovProductItem } from '../../types/storefront'
 import { cn } from '../../lib/utils/cn'
 
 const CURATED_FEATURED_SLUGS = [
@@ -16,32 +17,96 @@ const CURATED_FEATURED_SLUGS = [
   'white-cucumber-seeds-khira',
   'petunia-mix-seeds',
   'dahlia-seeds',
+  'green-chilli-seeds',
+  'anthurium-red-plant',
+  'marigold-african-double-seeds',
+  'money-plant-golden',
+  'peace-lily-plant',
+  'jade-plant-mini',
+  'cosmos-mix-seeds',
+  'aglaonema-pink-beauty-plant',
 ]
 
-export function FeaturedProductsSection({ className }: { className?: string }) {
-  const [activeTab, setActiveTab] = useState<'all' | 'plants' | 'seeds'>('all')
+export interface FeaturedProductsSectionProps {
+  className?: string
+  initialProducts?: GlorovProductItem[]
+  limit?: number
+}
 
-  const filteredProducts = React.useMemo(() => {
+/**
+ * FeaturedProductsSection
+ * Fetches and displays 16 botanical products at a time with category filter tabs.
+ * Mirrors Flutter `GlorovFeaturedProducts`:
+ * - Curated selection of 16 hand-picked items (Seeds, Live Plants, Flowering, Planters)
+ * - Dynamic live fetch from /api/products?limit=16 with instant local catalog hydration
+ * - Interactive filter tabs: All Featured, Live Plants, Heirloom Seeds
+ * - Botanical specimen counter chip with direct catalog navigation
+ */
+export function FeaturedProductsSection({
+  className,
+  initialProducts,
+  limit = 16,
+}: FeaturedProductsSectionProps) {
+  const [activeTab, setActiveTab] = useState<'all' | 'plants' | 'seeds'>('all')
+  const [remoteProducts, setRemoteProducts] = useState<GlorovProductItem[] | null>(null)
+  const productSource = initialProducts && initialProducts.length > 0 ? initialProducts : MOCK_PRODUCTS
+
+  // Dynamic fetch 16 products at a time from API
+  useEffect(() => {
+    let isMounted = true
+    async function fetchProducts() {
+      try {
+        const res = await fetch(`/api/products?limit=${limit}&category=${activeTab}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (isMounted && Array.isArray(data.products) && data.products.length > 0) {
+            setRemoteProducts(data.products)
+          }
+        }
+      } catch {
+        // Fall back gracefully to productSource
+      }
+    }
+
+    fetchProducts()
+    return () => {
+      isMounted = false
+    }
+  }, [activeTab, limit])
+
+  const filteredProducts = useMemo(() => {
+    // If remote products were successfully fetched for this tab, use them (up to limit)
+    if (remoteProducts && remoteProducts.length > 0) {
+      return remoteProducts.slice(0, limit)
+    }
+
+    // Instant local catalog resolution
     if (activeTab === 'all') {
       const curated = CURATED_FEATURED_SLUGS.map((slug) =>
-        MOCK_PRODUCTS.find((p) => p.slug === slug)
-      ).filter(Boolean) as typeof MOCK_PRODUCTS
-      return curated.length > 0 ? curated : MOCK_PRODUCTS.slice(0, 8)
+        productSource.find((p) => p.slug === slug)
+      ).filter(Boolean) as GlorovProductItem[]
+      return curated.length >= limit ? curated.slice(0, limit) : productSource.slice(0, limit)
     }
     if (activeTab === 'plants') {
-      return MOCK_PRODUCTS.filter((product) =>
-        product.category.toLowerCase().includes('plant') ||
-        product.productType === 'plants'
-      ).slice(0, 8)
+      return productSource
+        .filter(
+          (product) =>
+            product.category.toLowerCase().includes('plant') ||
+            product.productType === 'plants'
+        )
+        .slice(0, limit)
     }
     if (activeTab === 'seeds') {
-      return MOCK_PRODUCTS.filter((product) =>
-        product.category.toLowerCase().includes('seed') ||
-        product.productType === 'seeds'
-      ).slice(0, 8)
+      return productSource
+        .filter(
+          (product) =>
+            product.category.toLowerCase().includes('seed') ||
+            product.productType === 'seeds'
+        )
+        .slice(0, limit)
     }
-    return MOCK_PRODUCTS.slice(0, 8)
-  }, [activeTab])
+    return productSource.slice(0, limit)
+  }, [activeTab, remoteProducts, productSource, limit])
 
   return (
     <section className={cn('w-full bg-[#F9FAF8] py-8 sm:py-12 border-t border-[#E5E7EB]', className)}>
@@ -72,7 +137,10 @@ export function FeaturedProductsSection({ className }: { className?: string }) {
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-6 sm:mb-8 select-none">
           <button
             type="button"
-            onClick={() => setActiveTab('all')}
+            onClick={() => {
+              setActiveTab('all')
+              setRemoteProducts(null)
+            }}
             className={cn(
               'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all border shrink-0',
               activeTab === 'all'
@@ -85,11 +153,14 @@ export function FeaturedProductsSection({ className }: { className?: string }) {
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             )}
-            <span>All Featured</span>
+            <span>All Featured (16)</span>
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('plants')}
+            onClick={() => {
+              setActiveTab('plants')
+              setRemoteProducts(null)
+            }}
             className={cn(
               'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all border shrink-0',
               activeTab === 'plants'
@@ -102,11 +173,14 @@ export function FeaturedProductsSection({ className }: { className?: string }) {
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             )}
-            <span>Live Plants</span>
+            <span>Live Plants (16)</span>
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('seeds')}
+            onClick={() => {
+              setActiveTab('seeds')
+              setRemoteProducts(null)
+            }}
             className={cn(
               'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all border shrink-0',
               activeTab === 'seeds'
@@ -119,25 +193,34 @@ export function FeaturedProductsSection({ className }: { className?: string }) {
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             )}
-            <span>Heirloom Seeds</span>
+            <span>Heirloom Seeds (16)</span>
           </button>
         </div>
 
-        {/* Product Cards Grid */}
+        {/* Product Cards Grid — 16 items rendered cleanly across responsive breakpoints */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-2 gap-y-2.5 sm:gap-4 lg:gap-5">
           {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
 
-        {/* Bottom Catalog Discovery Link */}
-        <div className="mt-8 sm:mt-10 text-center">
+        {/* Specimen Counter Pill matching Flutter */}
+        <div className="mt-8 sm:mt-10 p-4 sm:p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5 text-center sm:text-left">
+            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#E8F5E9] text-[#1B4332] text-sm shrink-0">
+              🌱
+            </span>
+            <span className="text-[12.5px] sm:text-[13px] font-semibold text-[#374151]">
+              Showing <span className="font-bold text-[#1B4332]">{filteredProducts.length}</span> hand-picked botanicals of 60+ specimens
+            </span>
+          </div>
+
           <Link
             href="/categories"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-[#F3F4F6] text-[#1B4332] font-bold text-xs uppercase tracking-wider border border-[#1B4332]/30 shadow-sm transition-all active:scale-95"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1B4332] hover:bg-[#2D6A4F] text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all active:scale-95 shrink-0"
           >
-            <span>Explore Entire Botanical Nursery</span>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <span>Explore Full Catalog (60+)</span>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </Link>

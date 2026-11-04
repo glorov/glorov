@@ -47,6 +47,7 @@ jobs:
       - name: 7. Build Backend & Admin Dashboard
         env:
           NODE_ENV: production
+          ADMIN_PATH: "/"
           MEDUSA_BACKEND_URL: https://api.glorov.tech
         run: |
           echo "🔨 Compiling Medusa v2 backend and admin dashboard..."

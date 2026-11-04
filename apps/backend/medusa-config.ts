@@ -71,7 +71,7 @@ validateProductionConfig()
 
 export default defineConfig({
   admin: {
-    path: (process.env.ADMIN_PATH as `/${string}`) || "/app",
+    path: (process.env.ADMIN_PATH as `/${string}`) || (process.env.NODE_ENV === "production" ? "/" : "/app"),
     backendUrl:
       process.env.MEDUSA_BACKEND_URL ||
       (process.env.NODE_ENV === "production" ? "https://api.glorov.tech" : "http://localhost:9000"),

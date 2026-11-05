@@ -7,6 +7,7 @@ loadEnv(process.env.NODE_ENV || "development", process.cwd())
  */
 export function validateProductionConfig(env: NodeJS.ProcessEnv = process.env): void {
   if (env.NODE_ENV !== "production") return
+  if (env.MEDUSA_BUILD_PHASE === "true" || env.BUILD_ONLY === "true" || env.CI === "true") return
 
   const missing: string[] = []
   if (!env.DATABASE_URL) missing.push("DATABASE_URL")
@@ -80,10 +81,14 @@ export default defineConfig({
   projectConfig: {
     databaseUrl:
       process.env.DATABASE_URL ||
-      (process.env.NODE_ENV === "test"
+      (process.env.NODE_ENV === "test" || process.env.MEDUSA_BUILD_PHASE === "true" || process.env.BUILD_ONLY === "true" || process.env.CI === "true"
         ? "postgres://postgres:postgres@localhost:5432/medusa_test"
         : undefined),
-    redisUrl: process.env.REDIS_URL,
+    redisUrl:
+      process.env.REDIS_URL ||
+      (process.env.MEDUSA_BUILD_PHASE === "true" || process.env.BUILD_ONLY === "true" || process.env.CI === "true"
+        ? "redis://localhost:6379"
+        : undefined),
     http: {
       storeCors: process.env.STORE_CORS || "http://localhost:3000",
       adminCors: process.env.ADMIN_CORS || "http://localhost:5173,http://localhost:9000",

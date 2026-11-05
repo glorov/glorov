@@ -32,6 +32,16 @@ else
   PORT=9000 pm2 start "npx medusa start" --name glorov-backend --node-args="--max-old-space-size=256"
 fi
 
+# Ensure standalone node_modules packages from .pnpm are properly linked
+if [ -d /var/www/glorov/storefront-next/node_modules/.pnpm ]; then
+  echo "🔗 Linking standalone pnpm dependencies..."
+  cd /var/www/glorov/storefront-next/node_modules
+  for pkg in .pnpm/*/node_modules/*; do
+    [ -d "$pkg" ] && ln -sfn "$pkg" $(basename "$pkg") 2>/dev/null || true
+  done
+  cd - > /dev/null
+fi
+
 # Reload Next.js storefront (standalone mode on port 3001)
 if pm2 describe glorov-storefront > /dev/null 2>&1; then
   echo "♻️ Reloading PM2 glorov-storefront..."

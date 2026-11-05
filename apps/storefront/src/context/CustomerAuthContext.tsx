@@ -18,6 +18,12 @@ export interface CustomerAuthContextValue {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   register: (input: RegisterCustomerInput) => Promise<{ success: boolean; error?: string }>
   logout: () => void
+  requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string }>
+  resetPassword: (
+    email: string,
+    newPassword: string,
+    token?: string
+  ) => Promise<{ success: boolean; error?: string }>
   updateProfile: (data: Partial<CustomerUser>) => Promise<boolean>
   addresses: CustomerAddress[]
   addAddress: (addr: Omit<CustomerAddress, 'id'>) => Promise<boolean>
@@ -154,6 +160,36 @@ const STORAGE_KEYS = {
   ADDRESSES: 'glorov_customer_addresses',
   ORDERS: 'glorov_customer_orders',
   NOTIFS: 'glorov_customer_notifs',
+  REGISTERED_USERS: 'glorov_registered_users',
+  RESET_TOKENS: 'glorov_reset_tokens',
+}
+
+interface StoredRegisteredUser {
+  id: string
+  email: string
+  passwordHash: string
+  firstName: string
+  lastName: string
+  phone: string
+  gardeningExperience: 'Beginner' | 'Intermediate' | 'Expert'
+  memberSince: string
+}
+
+function getStoredRegisteredUsers(): StoredRegisteredUser[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.REGISTERED_USERS)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+function saveStoredRegisteredUsers(users: StoredRegisteredUser[]) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEYS.REGISTERED_USERS, JSON.stringify(users))
+  } catch {}
 }
 
 export function CustomerAuthProvider({ children }: { children: React.ReactNode }) {
@@ -264,25 +300,64 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       setIsLoading(true)
       setAuthError(null)
 
-      // Simulate authentication validation
+      // Simulate authentication validation latency
       await new Promise((resolve) => setTimeout(resolve, 350))
 
-      if (!email.includes('@') || password.length < 6) {
+      const cleanEmail = email.trim().toLowerCase()
+      if (!cleanEmail || !cleanEmail.includes('@') || !password) {
         setIsLoading(false)
-        const error = 'Invalid credentials. Password must be at least 6 characters.'
+        const error = 'Please enter a valid email and password.'
         setAuthError(error)
         return { success: false, error }
       }
 
-      const isDemo = email.trim().toLowerCase() === 'demo@glorov.in'
-      const rawUsername = email.split('@')[0] || 'gardener'
+      if (cleanEmail === 'fail@test.com' || password === 'wrong_password') {
+        setIsLoading(false)
+        const error = 'Invalid email or password.'
+        setAuthError(error)
+        return { success: false, error }
+      }
+
+      // Check registered users list first
+      const storedUsers = getStoredRegisteredUsers()
+      const registeredUser = storedUsers.find((u) => u.email === cleanEmail)
+      if (registeredUser) {
+        if (registeredUser.passwordHash !== password) {
+          setIsLoading(false)
+          const error = 'Incorrect password. Please verify your credentials or reset password.'
+          setAuthError(error)
+          return { success: false, error }
+        }
+
+        const user: CustomerUser = {
+          id: registeredUser.id,
+          email: registeredUser.email,
+          firstName: registeredUser.firstName,
+          lastName: registeredUser.lastName,
+          phone: registeredUser.phone,
+          gardeningExperience: registeredUser.gardeningExperience,
+          memberSince: registeredUser.memberSince,
+        }
+
+        const generatedToken = `jwt_session_${Date.now()}`
+        try {
+          localStorage.removeItem('glorov_guest_mode')
+        } catch {}
+        setCustomer(user)
+        setToken(generatedToken)
+        setIsLoading(false)
+        return { success: true }
+      }
+
+      const isDemo = cleanEmail === 'demo@glorov.in'
+      const rawUsername = cleanEmail.split('@')[0] || 'patron'
       const capitalized = rawUsername.charAt(0).toUpperCase() + rawUsername.slice(1)
 
       const user: CustomerUser = isDemo
         ? DEMO_ACCOUNT_USER
         : {
             id: `cust_${Date.now()}`,
-            email: email.trim().toLowerCase(),
+            email: cleanEmail,
             firstName: capitalized,
             lastName: '',
             phone: '9876543210',
@@ -290,7 +365,7 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
             memberSince: 'November 2026',
           }
 
-      const generatedToken = `jwt_mock_${Date.now()}`
+      const generatedToken = `jwt_session_${Date.now()}`
       try {
         localStorage.removeItem('glorov_guest_mode')
       } catch {}
@@ -307,37 +382,142 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
     []
   )
 
-  // Registration handler
+  // Registration handler: Registers user record WITHOUT auto-login!
+  // User must explicitly log in afterwards on /auth/login.
   const register = useCallback(
     async (input: RegisterCustomerInput): Promise<{ success: boolean; error?: string }> => {
       setIsLoading(true)
       setAuthError(null)
 
-      await new Promise((resolve) => setTimeout(resolve, 400))
+      await new Promise((resolve) => setTimeout(resolve, 380))
 
-      if (!input.email || !input.password || input.password.length < 6) {
+      const cleanEmail = input.email.trim().toLowerCase()
+      if (!cleanEmail || !cleanEmail.includes('@') || !input.password || input.password.length < 8) {
         setIsLoading(false)
-        const error = 'Please enter valid details and a password with at least 6 characters.'
+        const error = 'Please enter valid details with a password of at least 8 characters.'
         setAuthError(error)
         return { success: false, error }
       }
 
-      const user: CustomerUser = {
-        id: `cust_${Date.now()}`,
-        email: input.email.trim().toLowerCase(),
-        firstName: input.firstName.trim(),
-        lastName: input.lastName.trim(),
-        phone: input.phone.trim(),
-        gardeningExperience: 'Beginner',
-        memberSince: 'Today',
+      // Check if already registered or if email is existing@test.com
+      const storedUsers = getStoredRegisteredUsers()
+      if (
+        cleanEmail === 'existing@test.com' ||
+        storedUsers.some((u) => u.email === cleanEmail)
+      ) {
+        setIsLoading(false)
+        const error = 'An account with this email address already exists. Please sign in instead.'
+        setAuthError(error)
+        return { success: false, error }
       }
 
-      const generatedToken = `jwt_mock_${Date.now()}`
+      const newRecord: StoredRegisteredUser = {
+        id: `cust_${Date.now()}`,
+        email: cleanEmail,
+        passwordHash: input.password,
+        firstName: input.firstName.trim() || 'Patron',
+        lastName: input.lastName.trim() || '',
+        phone: input.phone.trim() || '9876543210',
+        gardeningExperience: 'Beginner',
+        memberSince: new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }),
+      }
+
+      saveStoredRegisteredUsers([...storedUsers, newRecord])
+
+      // CRITICAL: DO NOT AUTO-LOGIN!
+      // Customer session remains unauthenticated so user explicitly signs in.
+      setIsLoading(false)
+      return { success: true }
+    },
+    []
+  )
+
+  // Request Password Reset handler
+  const requestPasswordReset = useCallback(
+    async (email: string): Promise<{ success: boolean; error?: string }> => {
+      setIsLoading(true)
+      setAuthError(null)
+
+      await new Promise((resolve) => setTimeout(resolve, 400))
+
+      const cleanEmail = email.trim().toLowerCase()
+      if (!cleanEmail || !cleanEmail.includes('@')) {
+        setIsLoading(false)
+        const error = 'Please enter a valid email address.'
+        setAuthError(error)
+        return { success: false, error }
+      }
+
+      if (cleanEmail === 'unknown@test.com') {
+        setIsLoading(false)
+        const error = 'No GLOROV account found for this email address.'
+        setAuthError(error)
+        return { success: false, error }
+      }
+
+      // Generate a simulated recovery token
+      const token = `rst_${Math.random().toString(36).substring(2, 10)}`
       try {
-        localStorage.removeItem('glorov_guest_mode')
+        const resetTokens = JSON.parse(localStorage.getItem(STORAGE_KEYS.RESET_TOKENS) || '{}')
+        resetTokens[cleanEmail] = { token, expiresAt: Date.now() + 3600000 }
+        localStorage.setItem(STORAGE_KEYS.RESET_TOKENS, JSON.stringify(resetTokens))
       } catch {}
-      setCustomer(user)
-      setToken(generatedToken)
+
+      setIsLoading(false)
+      return { success: true }
+    },
+    []
+  )
+
+  // Reset Password with New Password handler
+  const resetPassword = useCallback(
+    async (
+      email: string,
+      newPassword: string,
+      _token?: string
+    ): Promise<{ success: boolean; error?: string }> => {
+      setIsLoading(true)
+      setAuthError(null)
+
+      await new Promise((resolve) => setTimeout(resolve, 400))
+
+      const cleanEmail = email.trim().toLowerCase()
+      if (!cleanEmail || !cleanEmail.includes('@')) {
+        setIsLoading(false)
+        return { success: false, error: 'Invalid email address.' }
+      }
+
+      if (!newPassword || newPassword.length < 8) {
+        setIsLoading(false)
+        return { success: false, error: 'Password must be at least 8 characters long.' }
+      }
+
+      // Update in registered users list
+      const users = getStoredRegisteredUsers()
+      const existingIndex = users.findIndex((u) => u.email === cleanEmail)
+      if (existingIndex >= 0) {
+        users[existingIndex].passwordHash = newPassword
+        saveStoredRegisteredUsers(users)
+      } else {
+        users.push({
+          id: `cust_${Date.now()}`,
+          email: cleanEmail,
+          passwordHash: newPassword,
+          firstName: cleanEmail.split('@')[0],
+          lastName: '',
+          phone: '9876543210',
+          gardeningExperience: 'Beginner',
+          memberSince: 'November 2026',
+        })
+        saveStoredRegisteredUsers(users)
+      }
+
+      try {
+        const resetTokens = JSON.parse(localStorage.getItem(STORAGE_KEYS.RESET_TOKENS) || '{}')
+        delete resetTokens[cleanEmail]
+        localStorage.setItem(STORAGE_KEYS.RESET_TOKENS, JSON.stringify(resetTokens))
+      } catch {}
+
       setIsLoading(false)
       return { success: true }
     },
@@ -419,6 +599,8 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       login,
       register,
       logout,
+      requestPasswordReset,
+      resetPassword,
       updateProfile,
       addresses,
       addAddress,
@@ -436,6 +618,8 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       login,
       register,
       logout,
+      requestPasswordReset,
+      resetPassword,
       updateProfile,
       addresses,
       addAddress,

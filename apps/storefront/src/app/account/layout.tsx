@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCustomerAuth } from '../../context/CustomerAuthContext'
+import { BotanicalLoadingState } from '../../components/feedback/BotanicalLoadingState'
 import { AccountNavSidebar } from '../../components/account/AccountNavSidebar'
 
 export default function AccountLayout({
@@ -27,11 +28,11 @@ export default function AccountLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-[#1B4332] border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-stone-500 font-medium">Loading your green sanctuary...</p>
-        </div>
+      <div className="min-h-[60vh] flex items-center justify-center py-12">
+        <BotanicalLoadingState
+          label="GLOROV ACCOUNT"
+          sublabel="Loading your green sanctuary..."
+        />
       </div>
     )
   }

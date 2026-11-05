@@ -11,26 +11,26 @@ import { CategoryIcons, GlorovCustomIcons } from '../common/GlorovIcons'
 import { GlorovAccountIcon } from '../common/GlorovAccountIcon'
 import { cn } from '../../lib/utils/cn'
 
-const DESKTOP_SEARCH_HINTS = [
-  'Search for plants, seeds, fertilizers & pots...',
-  'Search "Desi Heirloom & Hybrid Seeds"...',
-  'Search "Air Purifying Live Houseplants"...',
-  'Search "Artisan Ceramic & Clay Planters"...',
-  'Search "Organic Plant Food & Vermicompost"...',
-  'Search "Fresh Kitchen Herbs & Mint"...',
-  'Search "Seasonal Flower Seeds & Bulbs"...',
-  'Search "Garden Tools & Pruning Shears"...',
+const DESKTOP_SEARCH_KEYWORDS = [
+  'plants, seeds, fertilizers & pots',
+  'Desi Heirloom & Hybrid Seeds',
+  'Air Purifying Live Houseplants',
+  'Artisan Ceramic & Clay Planters',
+  'Organic Plant Food & Vermicompost',
+  'Fresh Kitchen Herbs & Mint',
+  'Seasonal Flower Seeds & Bulbs',
+  'Garden Tools & Pruning Shears',
 ]
 
-const MOBILE_SEARCH_HINTS = [
-  'Search for plants, seeds, pots...',
-  'Search "Heirloom Seeds"...',
-  'Search "Indoor Plants"...',
-  'Search "Ceramic Pots"...',
-  'Search "Organic Fertilizer"...',
-  'Search "Kitchen Herbs"...',
-  'Search "Flower Seeds"...',
-  'Search "Garden Tools"...',
+const MOBILE_SEARCH_KEYWORDS = [
+  'plants, seeds, pots',
+  'Heirloom Seeds',
+  'Indoor Plants',
+  'Ceramic Pots',
+  'Organic Fertilizer',
+  'Kitchen Herbs',
+  'Flower Seeds',
+  'Garden Tools',
 ]
 
 interface NavCategory {
@@ -42,7 +42,7 @@ interface NavCategory {
 }
 
 interface SearchRotatingPlaceholderProps {
-  hints: string[]
+  keywords: string[]
   isDesktop?: boolean
   visible: boolean
   isPaused?: boolean
@@ -50,14 +50,15 @@ interface SearchRotatingPlaceholderProps {
 
 /**
  * Animated rotating search placeholder component.
- * Exact 1:1 translation of Flutter's `AnimatedSwitcher` + `SlideTransition`:
- * - Exiting placeholder moves bottom-to-top (`translateY(0%) -> translateY(-120%)`) with `easeInCubic` & fades out.
- * - Incoming placeholder moves bottom-to-top (`translateY(120%) -> translateY(0%)`) with `easeOutCubic` & fades in.
- * - Exactly one placeholder is visible in static state.
- * - Hardware accelerated 380ms transition duration matching Flutter duration.
+ * - Static "Search for" prefix always remains visible and completely stationary, followed by exactly 1 space.
+ * - Rotating keyword terms smoothly slide from bottom to top (translateY(75%) -> translateY(0%)),
+ *   with the exiting term sliding up (translateY(0%) -> translateY(-75%)) and fading out.
+ * - Smooth cubic-bezier(0.16, 1, 0.3, 1) spring-like deceleration.
+ * - Non-dark placeholder tone (#6B7280) with enhanced font width (font-semibold) without quotation marks.
+ * - Hardware-accelerated 420ms transition duration.
  */
 function SearchRotatingPlaceholder({
-  hints,
+  keywords,
   isDesktop = false,
   visible,
   isPaused = false,
@@ -73,46 +74,59 @@ function SearchRotatingPlaceholder({
 
     const interval = setInterval(() => {
       setPrevIndex(currentIndex)
-      setCurrentIndex((prev) => (prev + 1) % hints.length)
-    }, 5000)
+      setCurrentIndex((prev) => (prev + 1) % keywords.length)
+    }, 4000)
 
     return () => clearInterval(interval)
-  }, [visible, isPaused, currentIndex, hints.length])
+  }, [visible, isPaused, currentIndex, keywords.length])
 
-  // Clear exiting slide after the 380ms transition completes
+  // Clear exiting slide after the 420ms transition completes
   useEffect(() => {
     if (prevIndex === null) return
     const timer = setTimeout(() => {
       setPrevIndex(null)
-    }, 380)
+    }, 420)
     return () => clearTimeout(timer)
   }, [prevIndex])
 
   if (!visible) return null
 
   return (
-    <div className="relative w-full h-[20px] overflow-hidden pointer-events-none select-none pl-1 [contain:paint]">
-      {prevIndex !== null && (
-        <span
-          key={`prev-${prevIndex}`}
-          className={cn(
-            'absolute inset-0 flex items-center text-[#9CA3AF] truncate leading-none will-change-transform will-change-opacity animate-hint-out',
-            isDesktop ? 'text-[13.5px]' : 'text-[12.5px]'
-          )}
-        >
-          {hints[prevIndex % hints.length]}
-        </span>
-      )}
+    <div className="relative flex items-center w-full h-[22px] overflow-hidden pointer-events-none select-none pl-0.5">
+      {/* 1. Static Prefix: Always stays completely stationary with exact 1-space spacing */}
       <span
-        key={`curr-${currentIndex}`}
         className={cn(
-          'absolute inset-0 flex items-center text-[#9CA3AF] truncate leading-none will-change-transform will-change-opacity',
-          isDesktop ? 'text-[13.5px]' : 'text-[12.5px]',
-          prevIndex !== null ? 'animate-hint-in' : ''
+          'text-[#6B7280] font-normal shrink-0 mr-[3px] select-none whitespace-nowrap',
+          isDesktop ? 'text-[13.5px]' : 'text-[12.5px]'
         )}
       >
-        {hints[currentIndex % hints.length]}
+        Search for
       </span>
+
+      {/* 2. Rotating Refined Keyword Container: More font width, soft non-deep color */}
+      <div className="relative flex-1 min-w-0 h-full overflow-hidden [contain:paint]">
+        {prevIndex !== null && (
+          <span
+            key={`prev-${prevIndex}`}
+            className={cn(
+              'absolute inset-0 flex items-center font-semibold text-[#6B7280] truncate leading-none will-change-transform will-change-opacity animate-hint-out',
+              isDesktop ? 'text-[13.5px]' : 'text-[12.5px]'
+            )}
+          >
+            {keywords[prevIndex % keywords.length]}
+          </span>
+        )}
+        <span
+          key={`curr-${currentIndex}`}
+          className={cn(
+            'absolute inset-0 flex items-center font-semibold text-[#6B7280] truncate leading-none will-change-transform will-change-opacity',
+            isDesktop ? 'text-[13.5px]' : 'text-[12.5px]',
+            prevIndex !== null ? 'animate-hint-in' : ''
+          )}
+        >
+          {keywords[currentIndex % keywords.length]}
+        </span>
+      </div>
     </div>
   )
 }
@@ -226,7 +240,7 @@ export function Header({ currentCategory, className }: HeaderProps) {
               {/* Dynamic Animated Rotating Placeholder */}
               <div className="relative flex-1 min-w-0 h-full flex items-center overflow-hidden">
                 <SearchRotatingPlaceholder
-                  hints={DESKTOP_SEARCH_HINTS}
+                  keywords={DESKTOP_SEARCH_KEYWORDS}
                   isDesktop={true}
                   visible={true}
                   isPaused={false}
@@ -291,32 +305,30 @@ export function Header({ currentCategory, className }: HeaderProps) {
         </div>
       </div>
 
-      {/* 2. Mobile Top Row (< 1024px) */}
-      <div className="block lg:hidden w-full bg-white px-3.5 py-[7px]">
-        <div className="flex items-center justify-between gap-2.5">
-          {/* Left Slot: Brand Logo (Balanced 66px width to ensure search input is perfectly centered) */}
-          <div className="w-[66px] flex items-center justify-start shrink-0">
-            <Link
-              href="/"
-              aria-label="GLOROV Home"
-              onClick={() => setSelectedCategory('')}
-              className="flex items-center shrink-0 rounded p-0.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1B4332]"
-            >
-              <div className="relative h-[25px] w-[63px] shrink-0">
-                <Image
-                  src="/logo/glorov-logo.svg"
-                  alt="GLOROV"
-                  width={63}
-                  height={25}
-                  priority
-                  unoptimized
-                  className="h-[25px] w-[63px] object-contain object-left select-none"
-                />
-              </div>
-            </Link>
-          </div>
+      {/* 2. Mobile Top Row (< 1024px) — Maximized Search Field Width */}
+      <div className="block lg:hidden w-full bg-white px-2.5 sm:px-4 py-1.5">
+        <div className="flex items-center gap-2 sm:gap-2.5 w-full">
+          {/* Left Slot: Brand Logo (Natural shrink-0 width) */}
+          <Link
+            href="/"
+            aria-label="GLOROV Home"
+            onClick={() => setSelectedCategory('')}
+            className="flex items-center shrink-0 rounded p-0.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1B4332]"
+          >
+            <div className="relative h-[25px] w-[58px] sm:w-[63px] shrink-0">
+              <Image
+                src="/logo/glorov-logo.svg"
+                alt="GLOROV"
+                width={58}
+                height={25}
+                priority
+                unoptimized
+                className="h-[25px] w-[58px] sm:w-[63px] object-contain object-left select-none"
+              />
+            </div>
+          </Link>
 
-          {/* Middle: Centered Rounded Search Pill with Bottom-to-Top Rotating Hints */}
+          {/* Middle: Expanded Rounded Search Pill Taking Maximum Available Space */}
           <Link
             href="/search"
             prefetch={true}
@@ -325,17 +337,17 @@ export function Header({ currentCategory, className }: HeaderProps) {
           >
             <div
               className={cn(
-                'flex items-center h-[38px] bg-[#F4F4F5] rounded-[20px] border px-2.5 transition-all overflow-hidden',
+                'flex items-center h-[38px] sm:h-[40px] bg-[#F4F4F5] rounded-[20px] border px-2 sm:px-2.5 transition-all overflow-hidden',
                 'border-[#E5E7EB] active:bg-[#ECEEF0]'
               )}
             >
-              <span aria-hidden="true" className="text-[#1B4332] p-1 shrink-0">
-                <GlorovCustomIcons.search size={18} />
+              <span aria-hidden="true" className="text-[#1B4332] pr-1 pl-0.5 shrink-0">
+                <GlorovCustomIcons.search size={17} />
               </span>
 
               <div className="relative flex-1 min-w-0 h-full flex items-center overflow-hidden">
                 <SearchRotatingPlaceholder
-                  hints={MOBILE_SEARCH_HINTS}
+                  keywords={MOBILE_SEARCH_KEYWORDS}
                   isDesktop={false}
                   visible={true}
                   isPaused={false}
@@ -344,21 +356,19 @@ export function Header({ currentCategory, className }: HeaderProps) {
             </div>
           </Link>
 
-          {/* Right Slot: Cart Button with Live Badge (Balanced 66px width matching left slot) */}
-          <div className="w-[66px] flex items-center justify-end shrink-0">
-            <Link
-              href="/cart"
-              aria-label={`Cart, ${cartCount} items`}
-              className="relative flex items-center justify-center w-9 h-9 rounded-full text-[#1E293B] hover:bg-[#F3F4F6] active:scale-90 transition-transform shrink-0"
-            >
-              <GlorovCustomIcons.cart size={21} />
-              {cartCount > 0 && (
-                <span className="absolute top-0 right-0 min-w-[16px] h-[16px] px-1 rounded-full bg-[#1B4332] text-white text-[9.5px] font-bold flex items-center justify-center shadow-sm">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-          </div>
+          {/* Right Slot: Cart Button with Live Badge (Natural shrink-0 width) */}
+          <Link
+            href="/cart"
+            aria-label={`Cart, ${cartCount} items`}
+            className="relative flex items-center justify-center w-9 h-9 rounded-full text-[#1E293B] hover:bg-[#F3F4F6] active:scale-90 transition-transform shrink-0"
+          >
+            <GlorovCustomIcons.cart size={21} />
+            {cartCount > 0 && (
+              <span className="absolute top-0 right-0 min-w-[16px] h-[16px] px-1 rounded-full bg-[#1B4332] text-white text-[9.5px] font-bold flex items-center justify-center shadow-sm">
+                {cartCount}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
 

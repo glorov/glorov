@@ -8,8 +8,40 @@ import type { CustomerNotification } from '../../../types/account'
 type NotifCategoryFilter = 'all' | 'order' | 'gardening_tip' | 'wishlist'
 
 export default function NotificationsPage() {
-  const { notifications, markNotificationAsRead } = useCustomerAuth()
+  const { customer, notifications, markNotificationAsRead } = useCustomerAuth()
   const [filter, setFilter] = useState<NotifCategoryFilter>('all')
+
+  if (!customer) {
+    return (
+      <div className="p-6 sm:p-10 rounded-3xl bg-white border border-stone-200/90 shadow-xs text-center space-y-4">
+        <div className="w-14 h-14 mx-auto rounded-full bg-[#E8F5E9] border-1.5 border-[#86EFAC] text-[#1B4332] flex items-center justify-center">
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-stone-900 font-serif">Sign In to View Notifications</h2>
+          <p className="text-xs sm:text-sm text-stone-500 mt-1 max-w-md mx-auto">
+            Please sign in to view dispatch milestones, temperature warnings, and cultivation alerts.
+          </p>
+        </div>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <Link
+            href="/auth/login?redirect=/account/notifications"
+            className="px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-bold hover:bg-[#163829] transition shadow-xs"
+          >
+            Sign In to GLOROV
+          </Link>
+          <Link
+            href="/auth/signup?redirect=/account/notifications"
+            className="px-5 py-2.5 rounded-xl border border-stone-200 text-stone-700 text-xs font-semibold hover:bg-stone-50 transition"
+          >
+            Create Account
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   const filteredNotifs = notifications.filter((notif) => {
     if (filter === 'all') return true

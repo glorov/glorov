@@ -3,13 +3,17 @@
 import React from 'react'
 import { cn } from '../../lib/utils/cn'
 
+export type QuantitySelectorSize = 'sm' | 'md' | 'lg'
+export type QuantitySelectorVariant = 'default' | 'cart' | 'pill'
+
 export interface QuantitySelectorProps {
   value: number
   onChange: (newValue: number) => void
   min?: number
   max?: number
   disabled?: boolean
-  size?: 'sm' | 'md'
+  size?: QuantitySelectorSize
+  variant?: QuantitySelectorVariant
   className?: string
 }
 
@@ -17,12 +21,11 @@ export interface QuantitySelectorProps {
  * @component QuantitySelector
  *
  * @description
- * Stepper control for item counts migrated directly from Flutter `GlorovProductDetailsScreen` and Cart.
- * Features:
- * - Decrement (-) button disabled at minimum bound.
- * - Increment (+) button disabled at maximum bound.
- * - High contrast border and centered numerical value.
- * - Minimum 44px touch target on mobile viewports.
+ * Stepper control for item quantity increment/decrement with 3 distinct size scales:
+ * - 'sm': Very small compact pill stepper (26px height), tailored for inside cart items.
+ * - 'md': Standard medium stepper (40px height), ideal for lists, modals, and compact cards.
+ * - 'lg': Prominent large stepper (44px mobile / 48px desktop height), matching the exact
+ *         height and rounded radius of PDP "Add To Cart" & "Buy Now" buttons.
  */
 export function QuantitySelector({
   value,
@@ -31,6 +34,7 @@ export function QuantitySelector({
   max = 99,
   disabled = false,
   size = 'md',
+  variant = 'default',
   className,
 }: QuantitySelectorProps) {
   const handleDecrement = (e: React.MouseEvent) => {
@@ -49,53 +53,94 @@ export function QuantitySelector({
     }
   }
 
-  const sizeClasses = {
-    sm: 'h-8 text-xs',
-    md: 'h-10 text-sm',
+  const isCartStyle = variant === 'cart' || (variant === 'pill' && size === 'sm')
+
+  // Container styling across sizes
+  const containerClasses: Record<QuantitySelectorSize, string> = {
+    sm: isCartStyle
+      ? 'h-[26px] bg-[#F4F9F6] border-[1.1px] border-[#0A4C36] rounded-full px-1 text-[#0A4C36] shadow-2xs'
+      : 'h-7 sm:h-8 px-1 bg-white border border-[#D1D5DB] rounded-md text-[#111827]',
+    md: 'h-10 px-1.5 bg-white border border-[#D1D5DB] rounded-[8px] text-[#111827] shadow-2xs',
+    lg: 'h-11 sm:h-12 px-2 bg-white border border-[#D1D5DB] rounded-lg sm:rounded-[10px] text-[#111827] shadow-2xs',
   }
+
+  // Button sizing across scales
+  const buttonClasses: Record<QuantitySelectorSize, string> = {
+    sm: isCartStyle
+      ? 'w-5 h-5 rounded-full flex items-center justify-center text-[#0A4C36] hover:bg-[#E8F3ED] disabled:opacity-30 transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#0A4C36]'
+      : 'w-6 h-full rounded flex items-center justify-center text-[#4B5563] hover:text-[#111827] hover:bg-[#F3F4F6] disabled:opacity-30 transition-all active:scale-95 focus-visible:outline-none',
+    md: 'w-8 h-8 rounded-md flex items-center justify-center text-[#4B5563] hover:text-[#111827] hover:bg-stone-100 disabled:opacity-30 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]',
+    lg: 'w-8 h-8 sm:w-9 sm:h-9 rounded-md sm:rounded-lg flex items-center justify-center text-stone-600 hover:text-stone-900 hover:bg-stone-100 disabled:opacity-30 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]',
+  }
+
+  // Numeric text sizing
+  const textClasses: Record<QuantitySelectorSize, string> = {
+    sm: isCartStyle
+      ? 'min-w-[18px] text-center font-extrabold text-[11.5px] text-[#0A4C36] px-1 select-none leading-none'
+      : 'min-w-[22px] text-center font-bold text-xs text-[#111827] px-1 select-none leading-none',
+    md: 'min-w-[28px] sm:min-w-[32px] text-center font-bold text-sm text-[#111827] px-1 select-none',
+    lg: 'min-w-[32px] sm:min-w-[36px] text-center font-bold text-sm sm:text-base text-[#111827] px-1 select-none',
+  }
+
+  const iconDimension = size === 'sm' ? 10 : size === 'lg' ? 14 : 12
+  const strokeWidth = size === 'sm' ? 2.8 : 2.4
 
   return (
     <div
       role="group"
       aria-label="Quantity selector"
       className={cn(
-        'inline-flex items-center bg-white border border-[#D1D5DB] rounded-glorov-sm overflow-hidden select-none',
-        sizeClasses[size],
+        'inline-flex items-center select-none',
+        containerClasses[size],
         disabled && 'opacity-50 cursor-not-allowed',
         className
       )}
     >
-      {/* Minus Button */}
+      {/* Decrement Button */}
       <button
         type="button"
         onClick={handleDecrement}
         disabled={value <= min || disabled}
         aria-label="Decrease quantity"
-        className="flex items-center justify-center w-8 sm:w-9 h-full text-[#4B5563] hover:text-[#111827] hover:bg-[#F3F4F6] disabled:opacity-30 disabled:hover:bg-transparent active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]"
+        className={buttonClasses[size]}
       >
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
+        <svg
+          width={iconDimension}
+          height={iconDimension}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+        >
+          <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
       </button>
 
       {/* Numerical Value */}
-      <span
-        aria-live="polite"
-        className="min-w-[28px] sm:min-w-[36px] px-1 text-center font-bold text-[#111827]"
-      >
+      <span aria-live="polite" className={textClasses[size]}>
         {value}
       </span>
 
-      {/* Plus Button */}
+      {/* Increment Button */}
       <button
         type="button"
         onClick={handleIncrement}
         disabled={value >= max || disabled}
         aria-label="Increase quantity"
-        className="flex items-center justify-center w-8 sm:w-9 h-full text-[#4B5563] hover:text-[#111827] hover:bg-[#F3F4F6] disabled:opacity-30 disabled:hover:bg-transparent active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]"
+        className={buttonClasses[size]}
       >
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+        <svg
+          width={iconDimension}
+          height={iconDimension}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+        >
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
       </button>
     </div>

@@ -262,7 +262,23 @@ export async function getProductBySlugOrId(slugOrId: string): Promise<GlorovProd
   const mockMatch = MOCK_PRODUCTS.find(
     (p) => p.slug === cleanSlug || p.id === cleanSlug
   )
-  return mockMatch || null
+  if (mockMatch) {
+    if (!mockMatch.botanicalSpecs) {
+      mockMatch.botanicalSpecs = {
+        germinationPeriod: '5 — 8 Days',
+        sowingDepth: '0.5 cm',
+        plantingSeason: 'All Seasons (Monsoon / Summer)',
+        harvestTime: '65 — 75 Days from Sowing',
+        packContents: 'Approx. 100 Seeds (Minimum 98% Germination)',
+        sunlightRequirement: 'Full Sun (6 — 8 Hours Daily)',
+        wateringNeeds: 'Moderate • Water when top soil is dry',
+        difficultyLevel: 'Beginner Friendly',
+        potSize: '10 — 12 Inch Diameter or 24L Grow Bag',
+      }
+    }
+    return mockMatch
+  }
+  return null
 }
 
 /**

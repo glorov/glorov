@@ -16,6 +16,7 @@ import {
   useMotionValue,
   useReducedMotion,
 } from "motion/react";
+import { getOptimizedImageUrl } from "../../lib/utils/image";
 
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -867,7 +868,7 @@ function Stage({
                   }`}
                 >
                   <img
-                    src={img}
+                    src={getOptimizedImageUrl(img, { width: 96, height: 96, crop: 'fill', quality: 'auto' })}
                     alt={`Thumbnail ${idx + 1}`}
                     className="size-full object-cover select-none pointer-events-none"
                     draggable={false}

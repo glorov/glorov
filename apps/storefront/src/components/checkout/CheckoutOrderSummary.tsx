@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import type { CartItem } from '../../types/cart'
 import { formatINR } from '../product/ProductPrice'
 import { GlorovCustomIcons } from '../common/GlorovIcons'
+import { GlorovImage } from '../ui/GlorovImage'
 import { useCart, useToast, MILESTONE_COUPONS } from '../../context/StorefrontContext'
 
 export interface CheckoutOrderSummaryProps {
@@ -219,26 +219,25 @@ export const CheckoutOrderSummary: React.FC<CheckoutOrderSummaryProps> = ({
 }
 
 const CheckoutItemRow: React.FC<{ item: CartItem }> = ({ item }) => {
-  const [imageError, setImageError] = React.useState(false)
-
   return (
     <div className="py-2.5 flex items-center gap-3 first:pt-0 last:pb-0">
       <div className="relative w-11 h-11 rounded-[8px] overflow-hidden border border-[#EFEFEF] bg-[#F9FAF8] flex-shrink-0">
-        {!imageError && item.image ? (
-          <Image
+        {item.image ? (
+          <GlorovImage
             src={item.image}
             alt={item.title}
             fill
             sizes="44px"
             className="object-cover"
-            onError={() => setImageError(true)}
+            containerClassName="w-full h-full"
+            fallbackTitle={item.title}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[#16A34A] bg-[#F3F7F5]">
             <GlorovCustomIcons.spa size={18} />
           </div>
         )}
-        <span className="absolute bottom-0 right-0 px-1 rounded-tl-[4px] bg-[#0A4C36]/85 text-white text-[8.5px] font-black leading-tight">
+        <span className="absolute bottom-0 right-0 px-1 rounded-tl-[4px] bg-[#0A4C36]/85 text-white text-[8.5px] font-black leading-tight z-10">
           x{item.quantity}
         </span>
       </div>

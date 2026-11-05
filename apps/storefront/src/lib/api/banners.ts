@@ -50,6 +50,7 @@ export async function getStoreBanners(): Promise<BannerSlideItem[]> {
             ctaText: b.cta_text || 'Explore Nursery',
             ctaRoute: b.cta_route || '/categories/seeds',
             bgColor: b.bg_color || undefined,
+            isImageOnly: true,
           }))
         }
       }

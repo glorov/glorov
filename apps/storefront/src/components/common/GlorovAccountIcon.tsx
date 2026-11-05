@@ -26,7 +26,7 @@ export function getInitials(user?: CustomerUser | null): string {
     const namePart = user.email.split('@')[0]
     return namePart.slice(0, 2).toUpperCase()
   }
-  return 'AS'
+  return 'G'
 }
 
 export const GlorovAccountIcon: React.FC<GlorovAccountIconProps> = ({

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import { ProductType } from '@/types/storefront'
 
 export interface ProductFaqSectionProps {
@@ -13,9 +14,16 @@ export interface ProductFaqSectionProps {
   isPetFriendly?: boolean
 }
 
+const EASE = [0.23, 1, 0.32, 1] as const
+const DISCLOSE = { type: 'spring', stiffness: 220, damping: 28, mass: 0.8 } as const
+const INSTANT = { duration: 0 } as const
+
 /**
  * GLOROV ProductFaqSection
- * Contextual Frequently Asked Questions accordion matching Flutter `_buildFaqSection()`.
+ * Contextual Frequently Asked Questions accordion matching Image 2:
+ * - Editorial Fraunces serif heading with botanical question circle icon.
+ * - Distinct 22px rounded capsule cards with smooth spring physics disclosure.
+ * - Morphing rotating chevron indicator without jumpiness.
  */
 export const ProductFaqSection: React.FC<ProductFaqSectionProps> = ({
   productTitle,
@@ -27,6 +35,7 @@ export const ProductFaqSection: React.FC<ProductFaqSectionProps> = ({
   isPetFriendly = true,
 }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const reduced = useReducedMotion()
 
   let faqs: { q: string; a: string }[] = []
 
@@ -95,53 +104,105 @@ export const ProductFaqSection: React.FC<ProductFaqSectionProps> = ({
     setOpenIndex((prev) => (prev === idx ? null : idx))
   }
 
+  const discloseTransition = reduced
+    ? INSTANT
+    : {
+        height: DISCLOSE,
+        opacity: { duration: 0.2, ease: EASE, delay: 0.02 },
+      }
+
   return (
-    <div className="w-full flex flex-col gap-3.5">
-      <div className="flex items-center gap-2">
-        <svg width={20} height={20} className="w-5 h-5 text-[#1B4332] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <div className="w-full flex flex-col gap-4">
+      {/* 1. Header with Question Circle Icon matching Image 2 */}
+      <div className="flex items-center gap-2.5">
+        <svg
+          width={22}
+          height={22}
+          className="w-[22px] h-[22px] text-[#163E30] shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="12" cy="12" r="9" strokeWidth="2.2" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2.2}
+            d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"
+          />
+          <circle cx="12" cy="17" r="1" fill="currentColor" strokeWidth="0" />
         </svg>
-        <h3 className="font-serif font-bold text-lg text-[#1B4332]">
+        <h3 className="font-serif font-bold text-xl sm:text-2xl text-[#163E30] tracking-tight">
           Frequently Asked Questions
         </h3>
       </div>
 
-      <div className="space-y-2.5">
+      {/* 2. FAQ List: Rounded capsule cards matching Image 2 */}
+      <div className="space-y-3">
         {faqs.map((f, idx) => {
           const isOpen = openIndex === idx
+          const answerId = `faq-answer-${idx}`
 
           return (
             <div
               key={`faq-${idx}`}
-              className="rounded-xl border border-[#E5E7EB] bg-white overflow-hidden transition-all shadow-2xs"
+              className="rounded-[22px] border border-[#E2E8F0] bg-white overflow-hidden transition-all shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-[#CBD5E1]"
             >
               <button
                 type="button"
                 onClick={() => toggle(idx)}
-                className="w-full p-3.5 sm:p-4 text-left flex items-center justify-between gap-3 select-none"
+                aria-expanded={isOpen}
+                aria-controls={answerId}
+                className="w-full px-5 sm:px-6 py-4 sm:py-4.5 text-left flex items-center justify-between gap-4 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#163E30]"
               >
-                <span className="text-[13.5px] font-bold text-[#1F2937]">
+                <span className="text-[14.5px] sm:text-[15.5px] font-bold text-[#1E293B] leading-snug">
                   {f.q}
                 </span>
-                <svg
-                  width={16}
-                  height={16}
-                  className={`w-4 h-4 text-stone-500 shrink-0 transition-transform duration-200 ${
-                    isOpen ? 'rotate-180' : ''
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+
+                {/* Rotating Chevron Icon with Spring Physics */}
+                <motion.div
+                  aria-hidden="true"
+                  initial={false}
+                  animate={{ rotate: isOpen ? 180 : 0 }}
+                  transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                  className="shrink-0 text-[#64748B]"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                  <svg
+                    width={18}
+                    height={18}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2.4}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </motion.div>
               </button>
 
-              {isOpen && (
-                <div className="px-3.5 sm:px-4 pb-3.5 sm:pb-4 text-xs sm:text-[12.5px] text-[#4B5563] leading-relaxed border-t border-stone-100 pt-2.5">
+              {/* Collapsible Answer with Spring Height and Opacity Transition */}
+              <motion.div
+                id={answerId}
+                inert={!isOpen}
+                initial={false}
+                animate={{
+                  height: isOpen ? 'auto' : 0,
+                  opacity: isOpen ? 1 : 0,
+                }}
+                transition={discloseTransition}
+                style={{ overflow: 'hidden' }}
+              >
+                <motion.div
+                  initial={false}
+                  animate={{ y: isOpen ? 0 : -6 }}
+                  transition={reduced ? INSTANT : DISCLOSE}
+                  className="px-5 sm:px-6 pb-4 sm:pb-5 pt-1 text-[13.5px] sm:text-[14px] text-[#475569] leading-relaxed border-t border-[#F1F5F9]"
+                >
                   {f.a}
-                </div>
-              )}
+                </motion.div>
+              </motion.div>
             </div>
           )
         })}

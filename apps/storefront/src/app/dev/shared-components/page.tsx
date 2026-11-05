@@ -193,14 +193,18 @@ export default function SharedComponentsShowcasePage() {
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1B4332]">
               6. Quantity Stepper
             </h3>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <div>
-                <span className="text-[11px] text-text-muted block mb-1">Standard (PDP)</span>
+                <span className="text-[11px] text-text-muted block mb-1">Large (PDP)</span>
+                <QuantitySelector value={quantity} onChange={setQuantity} min={1} max={10} size="lg" />
+              </div>
+              <div>
+                <span className="text-[11px] text-text-muted block mb-1">Medium (Standard)</span>
                 <QuantitySelector value={quantity} onChange={setQuantity} min={1} max={10} size="md" />
               </div>
               <div>
-                <span className="text-[11px] text-text-muted block mb-1">Compact (Cart Item)</span>
-                <QuantitySelector value={quantity} onChange={setQuantity} min={1} max={10} size="sm" />
+                <span className="text-[11px] text-text-muted block mb-1">Small (Cart Pill)</span>
+                <QuantitySelector value={quantity} onChange={setQuantity} min={1} max={10} size="sm" variant="cart" />
               </div>
             </div>
           </div>

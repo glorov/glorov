@@ -475,6 +475,8 @@ export const AnnouncementsAdminPage = () => {
                 alignItems: "center",
                 gap: "2.5rem",
                 animation: `marquee ${configData.speed_seconds}s linear infinite`,
+                transform: "translate3d(0, 0, 0)",
+                willChange: "transform",
               }}
             >
               {[...(activeItems.length ? activeItems : items), ...(activeItems.length ? activeItems : items), ...(activeItems.length ? activeItems : items)].map(
@@ -533,8 +535,8 @@ export const AnnouncementsAdminPage = () => {
             </div>
             <style>{`
               @keyframes marquee {
-                0% { transform: translateX(0); }
-                100% { transform: translateX(-50%); }
+                0% { transform: translate3d(0, 0, 0); }
+                100% { transform: translate3d(-50%, 0, 0); }
               }
             `}</style>
           </div>

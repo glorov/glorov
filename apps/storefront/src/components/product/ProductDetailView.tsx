@@ -19,6 +19,7 @@ import { ProductFaqSection } from './ProductFaqSection'
 import { ProductReviewsSection } from './ProductReviewsSection'
 import { MobileStickyPurchaseBar } from './MobileStickyPurchaseBar'
 import { ProductCard } from './ProductCard'
+import { QuantitySelector } from '../common/QuantitySelector'
 
 export interface ProductDetailViewProps {
   product: GlorovProductItem
@@ -241,28 +242,14 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     <div className="w-full flex flex-col gap-2.5 pt-1">
       {/* Desktop Layout: Stepper + Add To Cart + Buy Now on 1 line */}
       <div className="hidden sm:flex items-center gap-3">
-        {/* Quantity Stepper */}
-        <div className="h-12 px-2 bg-white rounded-[10px] border border-[#D1D5DB] flex items-center gap-2 select-none">
-          <button
-            type="button"
-            onClick={() => setQuantity((q) => (q > 1 ? q - 1 : 1))}
-            className="w-8 h-8 rounded-md flex items-center justify-center text-stone-600 hover:bg-stone-100 font-bold text-base transition"
-            aria-label="Decrease quantity"
-          >
-            -
-          </button>
-          <span className="w-6 text-center font-bold text-[#111827] text-sm">
-            {quantity}
-          </span>
-          <button
-            type="button"
-            onClick={() => setQuantity((q) => q + 1)}
-            className="w-8 h-8 rounded-md flex items-center justify-center text-stone-600 hover:bg-stone-100 font-bold text-base transition"
-            aria-label="Increase quantity"
-          >
-            +
-          </button>
-        </div>
+        {/* Quantity Stepper (Size LG matching 48px height & 10px radius) */}
+        <QuantitySelector
+          value={quantity}
+          onChange={setQuantity}
+          min={1}
+          max={99}
+          size="lg"
+        />
 
         {/* Green Add to Cart Button */}
         <button
@@ -294,27 +281,14 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
       {/* Mobile Layout: Row 1 (Stepper + Add To Cart), Row 2 (Buy Now) */}
       <div className="flex sm:hidden flex-col gap-2.5">
         <div className="flex items-center gap-2.5">
-          <div className="h-11 px-2 bg-white rounded-lg border border-[#D1D5DB] flex items-center gap-1 select-none">
-            <button
-              type="button"
-              onClick={() => setQuantity((q) => (q > 1 ? q - 1 : 1))}
-              className="w-7 h-7 rounded flex items-center justify-center text-stone-600 font-bold text-sm"
-              aria-label="Decrease quantity"
-            >
-              -
-            </button>
-            <span className="w-5 text-center font-bold text-[#111827] text-xs">
-              {quantity}
-            </span>
-            <button
-              type="button"
-              onClick={() => setQuantity((q) => q + 1)}
-              className="w-7 h-7 rounded flex items-center justify-center text-stone-600 font-bold text-sm"
-              aria-label="Increase quantity"
-            >
-              +
-            </button>
-          </div>
+          <QuantitySelector
+            value={quantity}
+            onChange={setQuantity}
+            min={1}
+            max={99}
+            size="lg"
+            className="h-11 rounded-lg"
+          />
 
           <button
             type="button"

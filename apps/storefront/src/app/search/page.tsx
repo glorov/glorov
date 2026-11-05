@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import React, { Suspense } from 'react'
 import { SearchClientView } from '../../components/search/SearchClientView'
+import { BotanicalLoadingState } from '../../components/feedback/BotanicalLoadingState'
 import { SITE_NAME } from '../../lib/constants'
 
 export const metadata: Metadata = {
@@ -36,11 +37,11 @@ export const metadata: Metadata = {
 
 function SearchLoadingFallback(): React.ReactElement {
   return (
-    <div className="w-full min-h-[50vh] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3 text-stone-500">
-        <div className="w-8 h-8 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin" />
-        <span className="text-xs font-medium">Loading nursery search...</span>
-      </div>
+    <div className="w-full min-h-[50vh] flex items-center justify-center py-12">
+      <BotanicalLoadingState
+        label="GLOROV SEARCH"
+        sublabel="Searching heirloom seeds & botanical collection..."
+      />
     </div>
   )
 }

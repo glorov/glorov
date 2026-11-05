@@ -26,15 +26,20 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-        pathname: '/naodmm8w/**',
+        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'i.imgur.com',
       },
     ],
-    // Prefer modern formats
+    // Prefer modern high-compression formats
     formats: ['image/avif', 'image/webp'],
+    // Granular responsive widths for mobile & desktop to prevent downloading oversized assets
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Cache optimized images aggressively (1 year TTL)
+    minimumCacheTTL: 31536000,
   },
 
   // Environment variables that are safe to expose to the browser

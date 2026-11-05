@@ -3,6 +3,7 @@ import React from 'react'
 import '../styles/globals.css'
 import { StorefrontLayout } from '../components/layout/StorefrontLayout'
 import { BotanicalSplashScreen } from '../components/layout/BotanicalSplashScreen'
+import { GlorovGSymbol } from '../components/ui/GlorovGSymbol'
 import { BASE_URL, SITE_NAME } from '../lib/constants'
 
 export const metadata: Metadata = {
@@ -126,8 +127,9 @@ export default function RootLayout({
                 position: 'absolute',
                 width: 64,
                 height: 64,
-                border: '3px solid rgba(30, 58, 47, 0.12)',
-                borderTopColor: '#1E3A2F',
+                border: '3px solid rgba(2, 65, 26, 0.12)',
+                borderTopColor: '#71b109',
+                borderRightColor: '#95d507',
                 borderRadius: '50%',
                 animation: 'glr-spin 0.9s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite',
               }}
@@ -144,25 +146,12 @@ export default function RootLayout({
                 justifyContent: 'center',
               }}
             >
-              <svg
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#1E3A2F"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2L12 22" />
-                <path d="M17 7C17 7 13 8 12 12C11 8 7 7 7 7" />
-                <path d="M17 14C17 14 13 15 12 19C11 15 7 14 7 14" />
-              </svg>
+              <GlorovGSymbol size={36} />
             </div>
           </div>
           <div
             style={{
-              color: '#1E3A2F',
+              color: '#02411a',
               fontSize: 18,
               fontWeight: 700,
               letterSpacing: '0.12em',

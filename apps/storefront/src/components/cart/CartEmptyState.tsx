@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { GlorovCustomIcons } from '../common/GlorovIcons'
+import { GlorovImage } from '../ui/GlorovImage'
 import { MOCK_PRODUCTS } from '../../lib/mock-data'
 import { useCart } from '../../context/StorefrontContext'
 
@@ -113,12 +113,14 @@ export const CartEmptyState: React.FC = () => {
                 {/* Media with Overlays */}
                 <div className="relative w-full aspect-square bg-[#F4F7F4] overflow-hidden shrink-0 rounded-t-[20px]">
                   <Link href={`/products/${prod.slug || prod.id}`} className="block w-full h-full">
-                    <Image
+                    <GlorovImage
                       src={prod.primaryImage}
                       alt={prod.title}
                       fill
                       sizes="(max-width: 768px) 50vw, 25vw"
                       className="object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
+                      containerClassName="w-full h-full"
+                      fallbackTitle={prod.title}
                     />
                   </Link>
 

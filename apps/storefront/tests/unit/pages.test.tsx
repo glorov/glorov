@@ -18,11 +18,12 @@ vi.mock('next/navigation', () => ({
 }))
 
 describe('Homepage — HeroBannerSlider', () => {
-  it('renders active slide title, tag, and CTA button', () => {
+  it('renders carousel slider with navigation controls and accessibility semantics', () => {
     render(<HeroBannerSlider />)
+    expect(screen.getByRole('region', { name: /Promotional Hero Banners/i })).toBeDefined()
     expect(screen.getByText(/Grow Fresh\. Live Green\./i)).toBeDefined()
-    expect(screen.getByText('GROW YOUR OWN')).toBeDefined()
-    expect(screen.getByText(/SHOP VEGETABLE SEEDS/i)).toBeDefined()
+    expect(screen.getByLabelText('Next banner slide')).toBeDefined()
+    expect(screen.getByLabelText('Previous banner slide')).toBeDefined()
   })
 
   it('cycles to next slide when next button is clicked', () => {
@@ -68,13 +69,13 @@ describe('Homepage — FeaturedProductsSection', () => {
       </StorefrontProvider>
     )
 
-    expect(screen.getByText('All Featured')).toBeDefined()
-    expect(screen.getByText('Live Plants')).toBeDefined()
-    expect(screen.getByText('Heirloom Seeds')).toBeDefined()
+    expect(screen.getByText(/All Featured/)).toBeDefined()
+    expect(screen.getByText(/Live Plants/)).toBeDefined()
+    expect(screen.getByText(/Heirloom Seeds/)).toBeDefined()
 
-    const plantTab = screen.getByText('Live Plants')
+    const plantTab = screen.getByText(/Live Plants/)
     fireEvent.click(plantTab)
-    expect(screen.getByText(/Monstera Deliciosa/i)).toBeDefined()
+    expect(screen.getAllByText(/Peace Lily Plant/i).length).toBeGreaterThan(0)
   })
 })
 

@@ -2,7 +2,7 @@
 
 import React, { Suspense } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import { GlorovImage } from '../../../components/ui/GlorovImage'
 import { useSearchParams } from 'next/navigation'
 import { useCheckout } from '../../../context/StorefrontContext'
 import { Breadcrumbs } from '../../../components/layout/Breadcrumbs'
@@ -147,7 +147,15 @@ function OrderConfirmationContent(): React.ReactElement {
               <div key={it.id} className="py-3 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-stone-200 bg-stone-50 flex-shrink-0">
-                    <Image src={it.image} alt={it.title} fill sizes="48px" className="object-cover" />
+                    <GlorovImage
+                      src={it.image}
+                      alt={it.title}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                      containerClassName="w-full h-full"
+                      fallbackTitle={it.title}
+                    />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-stone-900 truncate">{it.title}</p>

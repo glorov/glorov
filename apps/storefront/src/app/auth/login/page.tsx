@@ -36,9 +36,9 @@ function LoginForm() {
 
   const handleDemoLogin = async () => {
     setLocalError(null)
-    setEmail('aarav.sharma@glorov.in')
+    setEmail('demo@glorov.in')
     setPassword('DemoPass123!')
-    const res = await login('aarav.sharma@glorov.in', 'DemoPass123!')
+    const res = await login('demo@glorov.in', 'DemoPass123!')
     if (res.success) {
       router.push(redirectPath)
     }
@@ -169,7 +169,7 @@ function LoginForm() {
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
-          <span>One-Tap Demo Login (Aarav Sharma)</span>
+          <span>One-Tap Demo Login (demo@glorov.in)</span>
         </button>
       </form>
 

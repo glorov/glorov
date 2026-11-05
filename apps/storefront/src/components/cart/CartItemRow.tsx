@@ -4,6 +4,7 @@ import React from 'react'
 import type { CartItem } from '../../types/cart'
 import { GlorovImage } from '../ui/GlorovImage'
 import { GlorovCustomIcons } from '../common/GlorovIcons'
+import { QuantitySelector } from '../common/QuantitySelector'
 
 export interface CartItemRowProps {
   item: CartItem
@@ -113,35 +114,14 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({
             </div>
 
             {/* Compact Botanical Green Outlined Pill Stepper [- 2 +] */}
-            <div className="h-[24px] bg-[#F4F9F6] border-[1.1px] border-[#0A4C36] rounded-full px-1 flex items-center shadow-2xs">
-              <button
-                type="button"
-                onClick={() => onUpdateQuantity(item.quantity - 1)}
-                className="px-1 py-0.5 text-[#0A4C36] hover:opacity-75 transition-opacity active:scale-90"
-                aria-label="Decrease quantity"
-              >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-              </button>
-
-              <span className="text-[11.5px] font-extrabold text-[#0A4C36] px-1.5 min-w-[18px] text-center select-none leading-none">
-                {item.quantity}
-              </span>
-
-              <button
-                type="button"
-                disabled={item.quantity >= 20}
-                onClick={() => onUpdateQuantity(item.quantity + 1)}
-                className="px-1 py-0.5 text-[#0A4C36] hover:opacity-75 transition-opacity active:scale-90 disabled:opacity-30"
-                aria-label="Increase quantity"
-              >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-              </button>
-            </div>
+            <QuantitySelector
+              value={item.quantity}
+              onChange={onUpdateQuantity}
+              min={1}
+              max={20}
+              size="sm"
+              variant="cart"
+            />
           </div>
         </div>
       </div>

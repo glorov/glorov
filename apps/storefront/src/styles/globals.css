@@ -431,7 +431,7 @@
   /* Search Placeholder Bottom-to-Top Rotation */
   @keyframes hintSlideIn {
     0% {
-      transform: translateY(100%);
+      transform: translateY(75%);
       opacity: 0;
     }
     100% {
@@ -446,17 +446,17 @@
       opacity: 1;
     }
     100% {
-      transform: translateY(-100%);
+      transform: translateY(-75%);
       opacity: 0;
     }
   }
 
   .animate-hint-in {
-    animation: hintSlideIn 380ms cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+    animation: hintSlideIn 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .animate-hint-out {
-    animation: hintSlideOut 380ms cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+    animation: hintSlideOut 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   /* Suppress Next.js dev overlay indicator in screenshots */
@@ -466,5 +466,19 @@
   div[class*="next-badge"],
   #__next-build-watcher {
     display: none !important;
+  }
+
+  /* GPU-Accelerated Ticker Marquee for Ultra-Smooth Subpixel Glide */
+  .glorov-marquee-track {
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    will-change: transform;
+    contain: layout paint style;
   }
 }

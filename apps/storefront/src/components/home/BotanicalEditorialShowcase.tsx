@@ -80,7 +80,6 @@ export function BotanicalEditorialShowcase({ className }: { className?: string }
                 alt="Monstera Deliciosa Botanical Specimen"
                 fill
                 priority
-                unoptimized
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 40vw"
                 className="object-cover object-center"
                 containerClassName="w-full h-full"

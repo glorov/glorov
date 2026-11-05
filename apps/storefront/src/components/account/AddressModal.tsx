@@ -118,7 +118,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Aarav Sharma"
+                placeholder="Full Name"
                 className="w-full px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:border-brand-primary"
               />
             </div>

@@ -30,6 +30,8 @@ export function MobileMenuDrawer() {
               src="/logo/glorov-logo.svg"
               alt="GLOROV"
               fill
+              unoptimized
+              priority
               className="object-contain object-left"
             />
           </div>

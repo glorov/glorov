@@ -196,11 +196,8 @@ const BannersAdminPage = () => {
   const openNewBannerModal = () => {
     setEditingBanner({
       title: "",
-      subtitle: "",
-      tag: "GROW WITH GLOROV",
-      desktop_image_url: "/banners/banner_garden_begins_desktop.png",
-      mobile_image_url: "/banners/banner_garden_begins_mobile.jpg",
-      cta_text: "EXPLORE COLLECTION",
+      desktop_image_url: "",
+      mobile_image_url: "",
       cta_route: "/categories/seeds",
       display_order: banners.length + 1,
       is_active: true,
@@ -365,7 +362,7 @@ const BannersAdminPage = () => {
               <Table.HeaderCell className="w-12 text-center">Order</Table.HeaderCell>
               <Table.HeaderCell className="w-24">Desktop Asset</Table.HeaderCell>
               <Table.HeaderCell className="w-20">Mobile Asset</Table.HeaderCell>
-              <Table.HeaderCell>Campaign Title &amp; Tag</Table.HeaderCell>
+              <Table.HeaderCell>Slide Title</Table.HeaderCell>
               <Table.HeaderCell>Connected Page</Table.HeaderCell>
               <Table.HeaderCell className="w-28 text-center">Status</Table.HeaderCell>
               <Table.HeaderCell className="w-32 text-right">Actions</Table.HeaderCell>
@@ -401,13 +398,7 @@ const BannersAdminPage = () => {
                     </div>
                   </Table.Cell>
                   <Table.Cell>
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        {b.tag}
-                      </span>
-                      <p className="font-medium text-sm text-ui-fg-base">{b.title}</p>
-                      <p className="text-xs text-ui-fg-subtle line-clamp-1">{b.subtitle}</p>
-                    </div>
+                    <p className="font-medium text-sm text-ui-fg-base">{b.title}</p>
                   </Table.Cell>
                   <Table.Cell>
                     <div className="flex items-center gap-1.5">
@@ -461,33 +452,15 @@ const BannersAdminPage = () => {
             </div>
 
             <form onSubmit={handleSaveBanner} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-medium text-ui-fg-subtle mb-1 block">Title *</label>
-                  <Input
-                    required
-                    value={editingBanner.title || ""}
-                    onChange={(e) => setEditingBanner({ ...editingBanner, title: e.target.value })}
-                    placeholder="e.g. Plant a Seed. Grow a Dream."
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-ui-fg-subtle mb-1 block">Tag / Badge</label>
-                  <Input
-                    value={editingBanner.tag || ""}
-                    onChange={(e) => setEditingBanner({ ...editingBanner, tag: e.target.value })}
-                    placeholder="e.g. GROW WITH GLOROV"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label className="text-xs font-medium text-ui-fg-subtle mb-1 block">Subtitle / Description</label>
+                <label className="text-xs font-medium text-ui-fg-subtle mb-1 block">Slide Title / Name *</label>
                 <Input
-                  value={editingBanner.subtitle || ""}
-                  onChange={(e) => setEditingBanner({ ...editingBanner, subtitle: e.target.value })}
-                  placeholder="e.g. A greener tomorrow begins with what you plant today."
+                  required
+                  value={editingBanner.title || ""}
+                  onChange={(e) => setEditingBanner({ ...editingBanner, title: e.target.value })}
+                  placeholder="e.g. Plant a Seed. Grow a Dream."
                 />
+                <p className="text-[11px] text-ui-fg-muted mt-1">Used for admin reference and accessible image label.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -497,7 +470,7 @@ const BannersAdminPage = () => {
                     required
                     value={editingBanner.desktop_image_url || ""}
                     onChange={(e) => setEditingBanner({ ...editingBanner, desktop_image_url: e.target.value })}
-                    placeholder="/banners/banner_plant_seed_desktop.png"
+                    placeholder="https://... or /banners/...png"
                   />
                 </div>
                 <div>
@@ -505,36 +478,25 @@ const BannersAdminPage = () => {
                   <Input
                     value={editingBanner.mobile_image_url || ""}
                     onChange={(e) => setEditingBanner({ ...editingBanner, mobile_image_url: e.target.value })}
-                    placeholder="/banners/banner_plant_seed_mobile.jpg"
+                    placeholder="https://... or /banners/...jpg (Optional)"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-medium text-ui-fg-subtle mb-1 block">CTA Button Text</label>
-                  <Input
-                    value={editingBanner.cta_text || "SHOP NOW"}
-                    onChange={(e) => setEditingBanner({ ...editingBanner, cta_text: e.target.value })}
-                    placeholder="SHOP NOW"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-ui-fg-subtle mb-1 block">Connected Store Page</label>
-                  <select
-                    className="w-full h-10 px-3 rounded-lg border border-ui-border-base bg-ui-bg-field text-sm text-ui-fg-base"
-                    value={editingBanner.cta_route || "/categories/seeds"}
-                    onChange={(e) => setEditingBanner({ ...editingBanner, cta_route: e.target.value })}
-                  >
-                    {PAGE_CONNECTION_PRESETS.map((p) => (
-                      <option key={p.route} value={p.route}>
-                        {p.label} ({p.route})
-                      </option>
-                    ))}
-                    <option value="/custom">Custom Route...</option>
-                  </select>
-                </div>
+              <div>
+                <label className="text-xs font-medium text-ui-fg-subtle mb-1 block">Connected Store Page / Destination Route</label>
+                <select
+                  className="w-full h-10 px-3 rounded-lg border border-ui-border-base bg-ui-bg-field text-sm text-ui-fg-base"
+                  value={editingBanner.cta_route || "/categories/seeds"}
+                  onChange={(e) => setEditingBanner({ ...editingBanner, cta_route: e.target.value })}
+                >
+                  {PAGE_CONNECTION_PRESETS.map((p) => (
+                    <option key={p.route} value={p.route}>
+                      {p.label} ({p.route})
+                    </option>
+                  ))}
+                  <option value="/custom">Custom Route...</option>
+                </select>
               </div>
 
               {editingBanner.cta_route === "/custom" && (

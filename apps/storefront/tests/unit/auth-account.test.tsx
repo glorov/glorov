@@ -65,22 +65,22 @@ const sampleOrder: CustomerOrder = {
 }
 
 describe('Account — AccountNavSidebar', () => {
-  it('renders customer profile information and navigation tabs', () => {
+  it('renders guest mode for unauthenticated visitors and navigation tabs', () => {
     render(
       <CustomerAuthProvider>
         <AccountNavSidebar />
       </CustomerAuthProvider>
     )
 
-    expect(screen.getByText('Aarav Sharma')).toBeDefined()
-    expect(screen.getByText('aarav.sharma@glorov.in')).toBeDefined()
+    expect(screen.getByText('Guest Customer')).toBeDefined()
+    expect(screen.getByText('Sign in to access your botanical profile')).toBeDefined()
+    expect(screen.getByText('Sign In / Register →')).toBeDefined()
     expect(screen.getByText('Account Overview')).toBeDefined()
     expect(screen.getByText('Personal Profile')).toBeDefined()
     expect(screen.getByText('Delivery Addresses')).toBeDefined()
     expect(screen.getByText('Order History & Tracking')).toBeDefined()
     expect(screen.getByText('Botanical Wishlist')).toBeDefined()
     expect(screen.getByText('Notifications')).toBeDefined()
-    expect(screen.getByText('Sign Out')).toBeDefined()
   })
 })
 
@@ -164,6 +164,7 @@ describe('CustomerAuthContext — State Management & CRUD', () => {
   function TestAuthConsumer() {
     const {
       customer,
+      login,
       updateProfile,
       addresses,
       addAddress,
@@ -174,7 +175,13 @@ describe('CustomerAuthContext — State Management & CRUD', () => {
 
     return (
       <div>
-        <span data-testid="user-name">{customer?.firstName}</span>
+        <span data-testid="user-name">{customer?.firstName || 'Guest'}</span>
+        <button
+          onClick={() => login('demo@glorov.in', 'password123')}
+          data-testid="demo-login-btn"
+        >
+          Demo Login
+        </button>
         <button
           onClick={() => updateProfile({ firstName: 'Rohan' })}
           data-testid="update-btn"
@@ -187,7 +194,7 @@ describe('CustomerAuthContext — State Management & CRUD', () => {
           onClick={() =>
             addAddress({
               name: 'Farmhouse',
-              fullName: 'Aarav Sharma',
+              fullName: 'Demo Customer',
               phoneNumber: '9876543210',
               addressLine1: 'NH-44 Farm Lane',
               city: 'Bengaluru',
@@ -228,8 +235,14 @@ describe('CustomerAuthContext — State Management & CRUD', () => {
       </CustomerAuthProvider>
     )
 
-    // Initial customer
-    expect(screen.getByTestId('user-name').textContent).toBe('Aarav')
+    // Initial visitor is guest
+    expect(screen.getByTestId('user-name').textContent).toBe('Guest')
+
+    // Perform login (demo account)
+    fireEvent.click(screen.getByTestId('demo-login-btn'))
+    await waitFor(() => {
+      expect(screen.getByTestId('user-name').textContent).toBe('Demo')
+    })
 
     // Profile update
     fireEvent.click(screen.getByTestId('update-btn'))

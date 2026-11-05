@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import Image from 'next/image'
+import { GlorovImage } from '../ui/GlorovImage'
 import type { CustomerOrder } from '../../types/account'
 import { formatINR } from '../product/ProductPrice'
 import { OrderTrackingModal } from './OrderTrackingModal'
@@ -54,7 +54,15 @@ export const OrderHistoryCard: React.FC<OrderHistoryCardProps> = ({ order }) => 
             <div key={item.id} className="py-2.5 flex items-center justify-between gap-3 first:pt-0 last:pb-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-stone-200 bg-stone-50 flex-shrink-0">
-                  <Image src={item.image} alt={item.title} fill sizes="48px" className="object-cover" />
+                  <GlorovImage
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    sizes="48px"
+                    className="object-cover"
+                    containerClassName="w-full h-full"
+                    fallbackTitle={item.title}
+                  />
                 </div>
                 <div className="min-w-0">
                   <p className="font-bold text-stone-900 truncate">{item.title}</p>

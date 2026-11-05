@@ -30,21 +30,21 @@ export interface CustomerAuthContextValue {
 
 const CustomerAuthContext = createContext<CustomerAuthContextValue | undefined>(undefined)
 
-const DEFAULT_SAMPLE_USER: CustomerUser = {
-  id: 'cust_aarav_sharma_01',
-  email: 'aarav.sharma@glorov.in',
-  firstName: 'Aarav',
-  lastName: 'Sharma',
+export const DEMO_ACCOUNT_USER: CustomerUser = {
+  id: 'cust_demo_01',
+  email: 'demo@glorov.in',
+  firstName: 'Demo',
+  lastName: 'Customer',
   phone: '9876543210',
   gardeningExperience: 'Intermediate',
-  memberSince: 'March 2026',
+  memberSince: 'November 2026',
 }
 
-const DEFAULT_SAMPLE_ADDRESSES: CustomerAddress[] = [
+export const DEMO_ACCOUNT_ADDRESSES: CustomerAddress[] = [
   {
-    id: 'addr_01',
+    id: 'addr_demo_01',
     name: 'Home / Terrace Garden',
-    fullName: 'Aarav Sharma',
+    fullName: 'Demo Customer',
     phoneNumber: '9876543210',
     addressLine1: 'Flat 402, Green Meadows, Indiranagar',
     addressLine2: 'Near Indiranagar Metro Station',
@@ -54,30 +54,18 @@ const DEFAULT_SAMPLE_ADDRESSES: CustomerAddress[] = [
     countryCode: 'in',
     isDefault: true,
   },
-  {
-    id: 'addr_02',
-    name: 'Nursery Workshop & Studio',
-    fullName: 'Aarav Sharma',
-    phoneNumber: '9876543210',
-    addressLine1: 'Plot 18, Botanical Enclave, Whitefield',
-    city: 'Bengaluru',
-    state: 'Karnataka',
-    pincode: '560066',
-    countryCode: 'in',
-    isDefault: false,
-  },
 ]
 
-const DEFAULT_SAMPLE_ORDERS: CustomerOrder[] = [
+export const DEMO_ACCOUNT_ORDERS: CustomerOrder[] = [
   {
-    id: 'ord_sample_01',
+    id: 'ord_demo_01',
     displayId: 'GLR-881920',
     createdAt: '28 Oct 2026, 03:45 PM',
     status: 'shipped',
     paymentStatus: 'captured',
     fulfillmentStatus: 'shipped',
     totalAmount: 763,
-    itemCount: 3,
+    itemCount: 2,
     items: [
       {
         id: 'item-01',
@@ -99,7 +87,7 @@ const DEFAULT_SAMPLE_ORDERS: CustomerOrder[] = [
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793516598/glorov/banners/banner_plant_seed_desktop.png',
       },
     ],
-    shippingAddress: DEFAULT_SAMPLE_ADDRESSES[0],
+    shippingAddress: DEMO_ACCOUNT_ADDRESSES[0],
     carrierName: 'Shiprocket Botanical Cold-Chain',
     trackingCode: 'SR-GLR-9921820',
     estimatedDeliveryDate: '04 Nov 2026',
@@ -124,14 +112,14 @@ const DEFAULT_SAMPLE_ORDERS: CustomerOrder[] = [
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793516593/glorov/banners/banner_garden_begins_desktop.png',
       },
     ],
-    shippingAddress: DEFAULT_SAMPLE_ADDRESSES[0],
+    shippingAddress: DEMO_ACCOUNT_ADDRESSES[0],
     carrierName: 'BlueDart Express',
     trackingCode: 'BD-88410291',
     estimatedDeliveryDate: '16 Sep 2026',
   },
 ]
 
-const DEFAULT_SAMPLE_NOTIFICATIONS: CustomerNotification[] = [
+export const DEFAULT_SAMPLE_NOTIFICATIONS: CustomerNotification[] = [
   {
     id: 'notif_01',
     title: 'Order Dispatched!',
@@ -169,52 +157,72 @@ const STORAGE_KEYS = {
 }
 
 export function CustomerAuthProvider({ children }: { children: React.ReactNode }) {
-  const [customer, setCustomer] = useState<CustomerUser | null>(DEFAULT_SAMPLE_USER)
-  const [token, setToken] = useState<string | null>('demo_customer_token_jwt')
-  const [addresses, setAddresses] = useState<CustomerAddress[]>(DEFAULT_SAMPLE_ADDRESSES)
-  const [orders, setOrders] = useState<CustomerOrder[]>(DEFAULT_SAMPLE_ORDERS)
-  const [notifications, setNotifications] = useState<CustomerNotification[]>(
-    DEFAULT_SAMPLE_NOTIFICATIONS
-  )
+  // Standard E-Commerce Model: Default state for all first-time visitors is unauthenticated / guest
+  const [customer, setCustomer] = useState<CustomerUser | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [addresses, setAddresses] = useState<CustomerAddress[]>([])
+  const [orders, setOrders] = useState<CustomerOrder[]>([])
+  const [notifications, setNotifications] = useState<CustomerNotification[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [isHydrated, setIsHydrated] = useState<boolean>(false)
 
-  // Safe client-side hydration
+  // Safe client-side hydration from localStorage only if real session exists
   useEffect(() => {
     try {
-      const isGuest = localStorage.getItem('glorov_guest_mode') === 'true'
-      if (isGuest) {
-        setCustomer(null)
-        setToken(null)
-        return
-      }
-
       const storedUser = localStorage.getItem(STORAGE_KEYS.USER)
       const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN)
-      if (storedUser) {
-        setCustomer(JSON.parse(storedUser))
-      } else {
-        // Auto-initialize demo authenticated patron for testing
-        setCustomer(DEFAULT_SAMPLE_USER)
+
+      if (storedUser && storedToken) {
+        try {
+          const parsedUser = JSON.parse(storedUser)
+          // Actively purge any legacy mock auto-login (e.g. Aarav Sharma)
+          if (
+            parsedUser?.id === 'cust_aarav_sharma_01' ||
+            parsedUser?.email === 'aarav.sharma@glorov.in'
+          ) {
+            localStorage.removeItem(STORAGE_KEYS.USER)
+            localStorage.removeItem(STORAGE_KEYS.TOKEN)
+            localStorage.removeItem(STORAGE_KEYS.ADDRESSES)
+            localStorage.removeItem(STORAGE_KEYS.ORDERS)
+            localStorage.removeItem(STORAGE_KEYS.NOTIFS)
+            localStorage.removeItem('glorov_guest_mode')
+            setCustomer(null)
+            setToken(null)
+            setAddresses([])
+            setOrders([])
+            setNotifications([])
+            return
+          }
+
+          setCustomer(parsedUser)
+          setToken(storedToken)
+
+          const storedAddrs = localStorage.getItem(STORAGE_KEYS.ADDRESSES)
+          if (storedAddrs) setAddresses(JSON.parse(storedAddrs))
+
+          const storedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS)
+          if (storedOrders) setOrders(JSON.parse(storedOrders))
+
+          const storedNotifs = localStorage.getItem(STORAGE_KEYS.NOTIFS)
+          if (storedNotifs) setNotifications(JSON.parse(storedNotifs))
+          return
+        } catch {
+          // If parse fails, clear corrupt session
+          localStorage.removeItem(STORAGE_KEYS.USER)
+          localStorage.removeItem(STORAGE_KEYS.TOKEN)
+        }
       }
 
-      if (storedToken) {
-        setToken(storedToken)
-      } else {
-        setToken('demo_customer_token_jwt')
-      }
-
-      const storedAddrs = localStorage.getItem(STORAGE_KEYS.ADDRESSES)
-      if (storedAddrs) setAddresses(JSON.parse(storedAddrs))
-
-      const storedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS)
-      if (storedOrders) setOrders(JSON.parse(storedOrders))
-
-      const storedNotifs = localStorage.getItem(STORAGE_KEYS.NOTIFS)
-      if (storedNotifs) setNotifications(JSON.parse(storedNotifs))
+      // Default for first-time visits: Guest (unauthenticated)
+      setCustomer(null)
+      setToken(null)
+      setAddresses([])
+      setOrders([])
+      setNotifications([])
     } catch {
-      // Fallback to defaults
+      setCustomer(null)
+      setToken(null)
     } finally {
       setIsHydrated(true)
     }
@@ -266,15 +274,21 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         return { success: false, error }
       }
 
-      const user: CustomerUser = {
-        id: `cust_${Date.now()}`,
-        email: email.trim().toLowerCase(),
-        firstName: email.split('@')[0] || 'Gardener',
-        lastName: '',
-        phone: '9876543210',
-        gardeningExperience: 'Intermediate',
-        memberSince: 'November 2026',
-      }
+      const isDemo = email.trim().toLowerCase() === 'demo@glorov.in'
+      const rawUsername = email.split('@')[0] || 'gardener'
+      const capitalized = rawUsername.charAt(0).toUpperCase() + rawUsername.slice(1)
+
+      const user: CustomerUser = isDemo
+        ? DEMO_ACCOUNT_USER
+        : {
+            id: `cust_${Date.now()}`,
+            email: email.trim().toLowerCase(),
+            firstName: capitalized,
+            lastName: '',
+            phone: '9876543210',
+            gardeningExperience: 'Intermediate',
+            memberSince: 'November 2026',
+          }
 
       const generatedToken = `jwt_mock_${Date.now()}`
       try {
@@ -282,6 +296,11 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       } catch {}
       setCustomer(user)
       setToken(generatedToken)
+      if (isDemo) {
+        setAddresses(DEMO_ACCOUNT_ADDRESSES)
+        setOrders(DEMO_ACCOUNT_ORDERS)
+        setNotifications(DEFAULT_SAMPLE_NOTIFICATIONS)
+      }
       setIsLoading(false)
       return { success: true }
     },
@@ -329,10 +348,16 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
   const logout = useCallback(() => {
     setCustomer(null)
     setToken(null)
+    setAddresses([])
+    setOrders([])
+    setNotifications([])
     try {
-      localStorage.setItem('glorov_guest_mode', 'true')
       localStorage.removeItem(STORAGE_KEYS.USER)
       localStorage.removeItem(STORAGE_KEYS.TOKEN)
+      localStorage.removeItem(STORAGE_KEYS.ADDRESSES)
+      localStorage.removeItem(STORAGE_KEYS.ORDERS)
+      localStorage.removeItem(STORAGE_KEYS.NOTIFS)
+      localStorage.removeItem('glorov_guest_mode')
     } catch {}
   }, [])
 

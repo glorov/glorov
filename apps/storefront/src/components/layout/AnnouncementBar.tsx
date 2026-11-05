@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
+import React, { useState, useEffect, useMemo } from 'react'
 import type { AnnouncementItem, AnnouncementConfig } from '../../types/storefront'
 import { MOCK_ANNOUNCEMENTS } from '../../lib/mock-data'
 import { HeaderScrollContext } from '../../context/HeaderScrollContext'
@@ -154,7 +153,8 @@ export function AnnouncementIcon({
 }
 
 /**
- * Single dynamic item inside the announcement bar with icon INSIDE the badge pill
+ * Single dynamic item inside the announcement bar with icon INSIDE the badge pill.
+ * Purely informational ticker element with no clickable links or pointer interactions.
  */
 function SingleAnnouncement({
   item,
@@ -171,11 +171,10 @@ function SingleAnnouncement({
     item.badgeTextColor ||
     item.badge_text_color ||
     getContrastTextColor(badgeColor)
-  const link = item.link || item.link_url
 
-  const content = (
+  return (
     <div
-      className="inline-flex items-center gap-2 px-4 h-[34px] shrink-0 select-none"
+      className="inline-flex items-center gap-2 px-4 h-[34px] shrink-0 select-none cursor-default pointer-events-none"
       style={{ color: defaultTextColor }}
     >
       {/* Highlight Badge with embedded Icon inside the colored pill */}
@@ -224,16 +223,6 @@ function SingleAnnouncement({
       <span className="opacity-35 text-[12px] pl-3 select-none font-bold">•</span>
     </div>
   )
-
-  if (link) {
-    return (
-      <Link href={link} className="hover:opacity-90 transition-opacity">
-        {content}
-      </Link>
-    )
-  }
-
-  return content
 }
 
 /**
@@ -246,8 +235,8 @@ function SingleAnnouncement({
  * - Dynamic per-item badge colors: each badge inside color & text color is controlled from admin dashboard.
  * - Icon inside badge: vector icons are cleanly nested inside each announcement badge with perfect contrast.
  * - Dynamic scroll auto-hide: collapses smoothly from 34px to 0px on scroll.
- * - Hardware-accelerated continuous marquee auto-scrolling moving right-to-left.
- * - Pauses smoothly on mouse hover and mobile touch when pause_on_hover is enabled.
+ * - Non-interactive / No click option: strictly informational display with no links or pointer cursors.
+ * - Ultra-smooth 60/120fps motion: hardware-accelerated 3D transform (`translate3d`) with zero main-thread JS interference.
  */
 export function AnnouncementBar({
   items: initialItems,
@@ -257,7 +246,6 @@ export function AnnouncementBar({
 }: AnnouncementBarProps) {
   const [items, setItems] = useState<AnnouncementItem[]>(initialItems || MOCK_ANNOUNCEMENTS)
   const [config, setConfig] = useState<AnnouncementConfig | null>(initialConfig || null)
-  const [isPaused, setIsPaused] = useState(false)
   const headerScroll = React.useContext(HeaderScrollContext)
   const showAnnouncement = headerScroll ? headerScroll.showAnnouncement : true
 
@@ -344,70 +332,78 @@ export function AnnouncementBar({
   const bgColor = config?.bgColor || config?.bg_color || '#1E392A'
   const textColor = config?.textColor || config?.text_color || '#FFFFFF'
   const speed = forcedSpeed ?? config?.speedSeconds ?? config?.speed_seconds ?? 32
-  const pauseOnHover = config?.pauseOnHover ?? config?.pause_on_hover ?? true
+  const pauseOnHover = config?.pauseOnHover ?? config?.pause_on_hover ?? false
   const fallbackBadgeColor = config?.highlightColor || config?.highlight_color || '#D48B46'
+
+  // Ensure enough items in each half-track so wide screens (e.g. 4K, 1440p) loop seamlessly
+  const displayItems = useMemo(() => {
+    if (!items || items.length === 0) return []
+    let list = [...items]
+    while (list.length < 6) {
+      list = [...list, ...items]
+    }
+    return list
+  }, [items])
 
   return (
     <aside
       role="region"
       aria-label="Store Announcements"
-      onMouseEnter={() => pauseOnHover && setIsPaused(true)}
-      onMouseLeave={() => pauseOnHover && setIsPaused(false)}
-      onTouchStart={() => pauseOnHover && setIsPaused(true)}
-      onTouchEnd={() => pauseOnHover && setIsPaused(false)}
-      onFocus={() => pauseOnHover && setIsPaused(true)}
-      onBlur={() => pauseOnHover && setIsPaused(false)}
       style={{ backgroundColor: bgColor }}
       className={cn(
-        'w-full border-b border-black/15 overflow-hidden flex items-center relative z-40 transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] will-change-[height,opacity]',
-        showAnnouncement ? 'h-[34px] opacity-100' : 'h-0 opacity-0 pointer-events-none border-b-0',
+        'group w-full overflow-hidden relative z-40 transition-[max-height,opacity,transform] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] will-change-[max-height,opacity,transform] cursor-default select-none pointer-events-none',
+        showAnnouncement
+          ? 'max-h-[34px] opacity-100 translate-y-0 border-b border-black/15'
+          : 'max-h-0 opacity-0 -translate-y-full border-b-0 pointer-events-none',
         className
       )}
     >
-      {/* Left and Right edge fade masks matching dynamic background color */}
-      <div
-        className="absolute left-0 top-0 bottom-0 w-8 z-10 pointer-events-none"
-        style={{
-          background: `linear-gradient(to right, ${bgColor}, transparent)`,
-        }}
-      />
-      <div
-        className="absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none"
-        style={{
-          background: `linear-gradient(to left, ${bgColor}, transparent)`,
-        }}
-      />
+      <div className="h-[34px] flex items-center w-full relative">
+        {/* Left and Right edge fade masks matching dynamic background color */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-8 z-10 pointer-events-none"
+          style={{
+            background: `linear-gradient(to right, ${bgColor}, transparent)`,
+          }}
+        />
+        <div
+          className="absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none"
+          style={{
+            background: `linear-gradient(to left, ${bgColor}, transparent)`,
+          }}
+        />
 
-      <div
-        className={cn(
-          'flex items-center whitespace-nowrap w-max will-change-transform',
-          showAnnouncement && 'animate-marquee'
-        )}
-        style={{
-          animationPlayState: isPaused ? 'paused' : 'running',
-          animationDuration: `${speed}s`,
-        }}
-      >
-        {/* Render duplicate sets for continuous infinite seamless loop */}
-        <div className="flex items-center">
-          {items.map((item) => (
-            <SingleAnnouncement
-              key={item.id}
-              item={item}
-              defaultBadgeColor={fallbackBadgeColor}
-              defaultTextColor={textColor}
-            />
-          ))}
-        </div>
-        <div className="flex items-center" aria-hidden="true">
-          {items.map((item) => (
-            <SingleAnnouncement
-              key={`dup-${item.id}`}
-              item={item}
-              defaultBadgeColor={fallbackBadgeColor}
-              defaultTextColor={textColor}
-            />
-          ))}
+        <div
+          className={cn(
+            'flex items-center whitespace-nowrap w-max glorov-marquee-track animate-marquee',
+            pauseOnHover && 'group-hover:[animation-play-state:paused]'
+          )}
+          style={{
+            animationDuration: `${speed}s`,
+            animationTimingFunction: 'linear',
+          }}
+        >
+          {/* Render duplicate sets for continuous infinite seamless loop */}
+          <div className="flex items-center glorov-marquee-track">
+            {displayItems.map((item, idx) => (
+              <SingleAnnouncement
+                key={`track1-${item.id}-${idx}`}
+                item={item}
+                defaultBadgeColor={fallbackBadgeColor}
+                defaultTextColor={textColor}
+              />
+            ))}
+          </div>
+          <div className="flex items-center glorov-marquee-track" aria-hidden="true">
+            {displayItems.map((item, idx) => (
+              <SingleAnnouncement
+                key={`track2-${item.id}-${idx}`}
+                item={item}
+                defaultBadgeColor={fallbackBadgeColor}
+                defaultTextColor={textColor}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </aside>

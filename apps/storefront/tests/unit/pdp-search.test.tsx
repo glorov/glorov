@@ -135,10 +135,19 @@ describe('PDP — PincodeChecker', () => {
 
 describe('PDP — BotanicalSpecsTable', () => {
   it('renders growing metrics and difficulty level', () => {
+    const testSpecs = {
+      botanicalName: 'Capsicum annuum',
+      germinationPeriod: '5 — 8 Days',
+      harvestTime: '60 — 70 Days',
+      difficultyLevel: 'Beginner Friendly',
+      sunlightRequirement: 'Full Sun (6+ hrs)',
+      wateringNeeds: 'Moderate',
+      plantingSeason: 'Year Round',
+    }
     render(
       <BotanicalSpecsTable
-        specs={mockProduct.botanicalSpecs}
-        botanicalName={mockProduct.botanicalName}
+        specs={testSpecs}
+        botanicalName="Capsicum annuum"
       />
     )
 
@@ -151,10 +160,23 @@ describe('PDP — BotanicalSpecsTable', () => {
 
 describe('PDP — ProductReviewsSection', () => {
   it('renders star summary and verified customer testimonials', () => {
+    const testReviews = [
+      {
+        id: 'rev-1',
+        author: 'Sunita Sharma',
+        isVerified: true,
+        verified: true,
+        rating: 5,
+        title: 'Outstanding germination on my Mumbai balcony',
+        content: 'Why gardeners praise these green chilli seeds',
+        date: '2 days ago',
+      },
+    ]
+
     render(
       <ProductReviewsSection
         summary={mockProduct.reviewsSummary}
-        reviews={mockProduct.customerReviews}
+        reviews={testReviews}
         productTitle={mockProduct.title}
       />
     )

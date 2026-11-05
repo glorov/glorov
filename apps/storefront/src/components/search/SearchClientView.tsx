@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { MOCK_PRODUCTS } from '@/lib/mock-data'
 import { useCart } from '@/context/StorefrontContext'
 import { GlorovProductItem } from '@/types/storefront'
 import { ProductCard } from '../product/ProductCard'
+import { GlorovImage } from '../ui/GlorovImage'
 
 const RECENT_SEARCHES_STORAGE_KEY = 'glorov_recent_searches'
 const MAX_RECENT_SEARCHES = 10
@@ -586,12 +586,14 @@ export const SearchClientView: React.FC = () => {
                     >
                       {/* Product Thumbnail */}
                       <div className="relative w-[58px] h-[58px] rounded-lg overflow-hidden bg-[#F4F7F4] shrink-0 border border-[#E5ECE8]">
-                        <Image
+                        <GlorovImage
                           src={product.primaryImage || product.imageUrls[0]}
                           alt={product.title}
                           fill
                           sizes="58px"
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          containerClassName="w-full h-full"
+                          fallbackTitle={product.title}
                         />
                       </div>
 
@@ -659,12 +661,14 @@ export const SearchClientView: React.FC = () => {
                       <div className="flex gap-3.5 sm:gap-4 items-center">
                         {/* High-Res Product Thumbnail with Signature Badge */}
                         <div className="relative w-[96px] h-[96px] sm:w-[108px] sm:h-[108px] rounded-[16px] overflow-hidden bg-[#F4F7F4] shrink-0 border border-[#E5ECE8]">
-                          <Image
+                          <GlorovImage
                             src={closestProduct.primaryImage || closestProduct.imageUrls[0]}
                             alt={closestProduct.title}
                             fill
                             sizes="108px"
                             className="object-cover"
+                            containerClassName="w-full h-full"
+                            fallbackTitle={closestProduct.title}
                           />
                           {(closestProduct.isBestSeller || (closestProduct.discountPercent && closestProduct.discountPercent >= 20)) && (
                             <span className="absolute top-0 left-0 bg-[#0C2340] text-white text-[8.5px] font-extrabold uppercase px-1.5 py-0.5 rounded-tl-[16px] rounded-br-[6px] shadow-xs flex items-center gap-0.5 leading-none">
@@ -835,12 +839,14 @@ export const SearchClientView: React.FC = () => {
                               className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-[#E5ECE8] hover:border-[#0A4C36]/40 hover:shadow-xs transition-all group"
                             >
                               <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-[#F4F7F4] shrink-0 border border-[#E5ECE8]">
-                                <Image
+                                <GlorovImage
                                   src={product.primaryImage || product.imageUrls[0]}
                                   alt={product.title}
                                   fill
                                   sizes="56px"
                                   className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                  containerClassName="w-full h-full"
+                                  fallbackTitle={product.title}
                                 />
                               </div>
 

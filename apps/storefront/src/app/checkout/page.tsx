@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import { GlorovImage } from '../../components/ui/GlorovImage'
 import { useCart, useCheckout, useToast } from '../../context/StorefrontContext'
 import { PageContainer } from '../../components/layout/PageContainer'
 import { CheckoutAddressForm } from '../../components/checkout/CheckoutAddressForm'
@@ -322,19 +322,18 @@ export default function CheckoutPage(): React.ReactElement {
 }
 
 const ReviewBagItemRow: React.FC<{ item: CartItem }> = ({ item }) => {
-  const [imageError, setImageError] = React.useState(false)
-
   return (
     <div className="py-3 flex items-center gap-3 first:pt-1 last:pb-1">
       <div className="relative w-12 h-12 rounded-[10px] overflow-hidden border border-[#EFEFEF] bg-[#F9FAF8] flex-shrink-0">
-        {!imageError && item.image ? (
-          <Image
+        {item.image ? (
+          <GlorovImage
             src={item.image}
             alt={item.title}
             fill
             sizes="48px"
             className="object-cover"
-            onError={() => setImageError(true)}
+            containerClassName="w-full h-full"
+            fallbackTitle={item.title}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[#16A34A] bg-[#F3F7F5]">

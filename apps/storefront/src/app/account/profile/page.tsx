@@ -174,7 +174,7 @@ export default function ProfilePage() {
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Aarav"
+                placeholder="First name"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:border-transparent transition"
               />
             </div>
@@ -189,7 +189,7 @@ export default function ProfilePage() {
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="Sharma"
+                placeholder="Last name"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:border-transparent transition"
               />
             </div>

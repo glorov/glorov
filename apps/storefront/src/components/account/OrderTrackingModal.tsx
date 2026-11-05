@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import Image from 'next/image'
+import { GlorovImage } from '../ui/GlorovImage'
 import type { CustomerOrder } from '../../types/account'
 import { formatINR } from '../product/ProductPrice'
 
@@ -241,7 +241,15 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
                 <div key={item.id} className="flex items-center justify-between gap-3 p-2 rounded-xl bg-stone-50 border border-stone-100">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="relative w-9 h-9 rounded-lg overflow-hidden bg-white border border-stone-200 flex-shrink-0">
-                      <Image src={item.image} alt={item.title} fill sizes="36px" className="object-cover" />
+                      <GlorovImage
+                        src={item.image}
+                        alt={item.title}
+                        fill
+                        sizes="36px"
+                        className="object-cover"
+                        containerClassName="w-full h-full"
+                        fallbackTitle={item.title}
+                      />
                     </div>
                     <div className="min-w-0">
                       <p className="font-semibold text-stone-900 truncate text-[11px]">{item.title}</p>

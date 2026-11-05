@@ -106,7 +106,7 @@ function SignupForm() {
               required
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Aarav"
+              placeholder="First name"
               className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
@@ -120,7 +120,7 @@ function SignupForm() {
               required
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              placeholder="Sharma"
+              placeholder="Last name"
               className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
@@ -137,7 +137,7 @@ function SignupForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="aarav@domain.com"
+            placeholder="name@example.com"
             className="w-full px-3 py-2 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-none focus:ring-2 focus:ring-brand-primary"
           />
         </div>

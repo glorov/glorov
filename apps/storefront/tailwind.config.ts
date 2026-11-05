@@ -174,16 +174,16 @@ const config: Config = {
           '100%': { transform: 'translateY(0)' },
         },
         marquee: {
-          '0%': { transform: 'translateX(0%)' },
-          '100%': { transform: 'translateX(-50%)' },
+          '0%': { transform: 'translate3d(0, 0, 0)' },
+          '100%': { transform: 'translate3d(-50%, 0, 0)' },
         },
         hintSlideIn: {
-          '0%': { transform: 'translateY(120%)', opacity: '0' },
+          '0%': { transform: 'translateY(75%)', opacity: '0' },
           '100%': { transform: 'translateY(0%)', opacity: '1' },
         },
         hintSlideOut: {
           '0%': { transform: 'translateY(0%)', opacity: '1' },
-          '100%': { transform: 'translateY(-120%)', opacity: '0' },
+          '100%': { transform: 'translateY(-75%)', opacity: '0' },
         },
         shimmer: {
           '0%': { transform: 'translateX(-100%)' },
@@ -195,8 +195,8 @@ const config: Config = {
         'slide-right': 'slideRight 200ms cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-up':    'slideUp 200ms cubic-bezier(0.16, 1, 0.3, 1)',
         'marquee':     'marquee 32s linear infinite',
-        'hint-in':     'hintSlideIn 380ms cubic-bezier(0.215, 0.61, 0.355, 1) forwards',
-        'hint-out':    'hintSlideOut 380ms cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards',
+        'hint-in':     'hintSlideIn 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'hint-out':    'hintSlideOut 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'shimmer':     'shimmer 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite',
       },
     },

@@ -23,8 +23,8 @@ export interface HeaderScrollState {
 
 export const HeaderScrollContext = createContext<HeaderScrollState | undefined>(undefined)
 
-// Exact thresholds migrated directly from Flutter `GlorovHeaderScrollNotifier`
-const TOP_THRESHOLD = 12.0
+// Exact thresholds for smooth storefront header scroll transitions
+const TOP_THRESHOLD = 34.0
 const STICKY_ACTIVATION_THRESHOLD = 180.0
 const DOWN_TOLERANCE = 14.0
 const UP_TOLERANCE = 8.0
@@ -57,10 +57,14 @@ export function HeaderScrollProvider({ children }: { children: React.ReactNode }
       const pixels =
         typeof window !== 'undefined' && window.scrollY > 0
           ? window.scrollY
-          : scrollEl
-            ? scrollEl.scrollTop
-            : 0
+          : typeof document !== 'undefined' && document.documentElement.scrollTop > 0
+            ? document.documentElement.scrollTop
+            : scrollEl && scrollEl.scrollTop > 0
+              ? scrollEl.scrollTop
+              : 0
       const doc = typeof document !== 'undefined' ? document.documentElement : null
+
+      // 1. Zone 1: Maximum Top of the page (pixels <= 34):
       const maxScroll =
         doc && typeof window !== 'undefined'
           ? Math.max(0, doc.scrollHeight - window.innerHeight)
@@ -155,11 +159,8 @@ export function HeaderScrollProvider({ children }: { children: React.ReactNode }
       window.addEventListener('scroll', handleScroll, { passive: true })
     }
 
-    const handleCapture = (e: Event) => {
-      const target = e.target as HTMLElement | null
-      if (target && target.id === 'glorov-page-scroll') {
-        handleScroll()
-      }
+    const handleCapture = () => {
+      handleScroll()
     }
     if (typeof document !== 'undefined') {
       document.addEventListener('scroll', handleCapture, { capture: true, passive: true })

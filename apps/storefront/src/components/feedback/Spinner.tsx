@@ -1,5 +1,6 @@
 import React from 'react'
 import { cn } from '../../lib/utils/cn'
+import { GlorovGSymbol } from '../ui/GlorovGSymbol'
 import type { ComponentSize } from '../../types/ui'
 
 export interface SpinnerProps {
@@ -10,9 +11,10 @@ export interface SpinnerProps {
   size?: ComponentSize
   /**
    * Color theme variant for the spinner.
+   * 'botanical-g' renders the branded G SVG logo inside an animated botanical ring.
    * @default 'primary'
    */
-  variant?: 'primary' | 'white' | 'muted'
+  variant?: 'primary' | 'white' | 'muted' | 'botanical-g'
   /**
    * Accessibility label for screen readers.
    * @default 'Loading content...'
@@ -29,7 +31,7 @@ export interface SpinnerProps {
  *
  * @description
  * Branded loading spinner matching GLOROV colors.
- * Accessible with screen reader label and smooth SVG animation.
+ * Accessible with screen reader label and smooth animation.
  */
 export function Spinner({
   size = 'md',
@@ -37,6 +39,47 @@ export function Spinner({
   label = 'Loading...',
   className,
 }: SpinnerProps) {
+  if (variant === 'botanical-g') {
+    const boxSize = size === 'sm' ? 'w-8 h-8' : size === 'lg' ? 'w-16 h-16' : 'w-10 h-10'
+    const logoPx = size === 'sm' ? 18 : size === 'lg' ? 36 : 22
+
+    return (
+      <div
+        role="status"
+        aria-label={label}
+        className={cn('inline-flex items-center justify-center relative', boxSize, className)}
+      >
+        {/* Ambient Ring Track with G Logo Forest Green */}
+        <div className="absolute inset-0 rounded-full border-2 border-[#02411a]/15 shadow-sm" />
+
+        {/* Dynamic Rotating Spinner Ring using G SVG Logo Colors */}
+        <svg
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full animate-spin pointer-events-none"
+          viewBox="0 0 40 40"
+          fill="none"
+        >
+          <circle
+            cx="20"
+            cy="20"
+            r="16"
+            stroke="#71b109"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeDasharray="75"
+            strokeDashoffset="45"
+          />
+        </svg>
+
+        {/* Centered GLOROV G SVG Logo (Instant Inline Vector) */}
+        <div className="relative z-10 flex items-center justify-center animate-pulse">
+          <GlorovGSymbol size={logoPx} />
+        </div>
+        <span className="sr-only">{label}</span>
+      </div>
+    )
+  }
+
   const sizeMap = {
     sm: 'w-4 h-4',
     md: 'w-8 h-8',
@@ -47,6 +90,7 @@ export function Spinner({
     primary: 'text-forest-deep',
     white: 'text-white',
     muted: 'text-text-muted',
+    'botanical-g': 'text-forest-deep',
   }[variant]
 
   return (

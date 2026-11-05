@@ -115,10 +115,13 @@ export function HeroBannerSlider({
   const [isPaused, setIsPaused] = useState(false)
   const [progress, setProgress] = useState(0)
 
-  // Drag tracking refs
+  // Drag tracking refs with 2-axis gesture disambiguation
   const startXRef = useRef<number>(0)
+  const startYRef = useRef<number>(0)
   const dragDeltaRef = useRef<number>(0)
   const isPointerDownRef = useRef<boolean>(false)
+  const isLockedRef = useRef<'none' | 'horizontal' | 'vertical'>('none')
+  const capturedPointerIdRef = useRef<number | null>(null)
 
   // Real index for indicators and screen readers (0 to slidesCount - 1)
   const activeRealIndex =
@@ -198,7 +201,11 @@ export function HeroBannerSlider({
     return () => clearInterval(interval)
   }, [isPaused, isDragging, slidesCount, autoPlayIntervalMs, handleNext])
 
+  // Gesture disambiguation threshold: minimum movement before deciding direction
+  const GESTURE_THRESHOLD = 8
+
   // Pointer drag gesture handlers for real-time mouse drag & touch swipe
+  // 2-axis gesture disambiguation ensures vertical page scrolling is NEVER blocked
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (slidesCount <= 1) return
     if (e.button !== 0 && e.pointerType === 'mouse') return
@@ -206,63 +213,102 @@ export function HeroBannerSlider({
     if ((e.target as HTMLElement).closest('button')) return
 
     isPointerDownRef.current = true
+    isLockedRef.current = 'none'
     startXRef.current = e.clientX
+    startYRef.current = e.clientY
     dragDeltaRef.current = 0
-    setIsDragging(true)
-    setDragOffset(0)
-    setIsPaused(true)
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId)
-    } catch {}
+    capturedPointerIdRef.current = null
+    // NOTE: Intentionally do NOT set pointer capture or setIsDragging here.
+    // Leaving pointer uncaptured on touchstart lets the browser freely initiate vertical page scroll.
   }
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isPointerDownRef.current) return
-    const deltaX = e.clientX - startXRef.current
-    dragDeltaRef.current = deltaX
-    setDragOffset(deltaX)
+
+    const diffX = e.clientX - startXRef.current
+    const diffY = e.clientY - startYRef.current
+
+    // If already identified as vertical scroll, do not interfere with browser scroll
+    if (isLockedRef.current === 'vertical') {
+      return
+    }
+
+    // Disambiguate gesture direction once threshold is crossed
+    if (isLockedRef.current === 'none') {
+      const absX = Math.abs(diffX)
+      const absY = Math.abs(diffY)
+
+      if (absX <= GESTURE_THRESHOLD && absY <= GESTURE_THRESHOLD) {
+        return // Still inside threshold window
+      }
+
+      if (absY >= absX) {
+        // Vertical gesture dominates -> release to browser for native page scrolling
+        isLockedRef.current = 'vertical'
+        isPointerDownRef.current = false
+        return
+      }
+
+      // Horizontal gesture dominates -> lock to horizontal carousel drag
+      isLockedRef.current = 'horizontal'
+      setIsDragging(true)
+      setIsPaused(true)
+      setDragOffset(0)
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId)
+        capturedPointerIdRef.current = e.pointerId
+      } catch {}
+    }
+
+    if (isLockedRef.current === 'horizontal') {
+      dragDeltaRef.current = diffX
+      setDragOffset(diffX)
+    }
   }
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isPointerDownRef.current) return
-    isPointerDownRef.current = false
-    setIsDragging(false)
-    setIsPaused(false)
+    if (!isPointerDownRef.current && isLockedRef.current !== 'horizontal') return
 
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId)
-    } catch {}
+    if (capturedPointerIdRef.current !== null) {
+      try {
+        e.currentTarget.releasePointerCapture(capturedPointerIdRef.current)
+      } catch {}
+      capturedPointerIdRef.current = null
+    }
 
+    const wasHorizontal = isLockedRef.current === 'horizontal'
     const deltaX = dragDeltaRef.current
     const threshold = 40 // min pixel delta to trigger slide change
 
-    if (deltaX < -threshold) {
-      handleNext()
-    } else if (deltaX > threshold) {
-      handlePrev()
-    }
+    isPointerDownRef.current = false
+    isLockedRef.current = 'none'
+    setIsDragging(false)
+    setIsPaused(false)
     setDragOffset(0)
+
+    if (wasHorizontal) {
+      if (deltaX < -threshold) {
+        handleNext()
+      } else if (deltaX > threshold) {
+        handlePrev()
+      }
+    }
   }
 
   const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isPointerDownRef.current) return
+    if (capturedPointerIdRef.current !== null) {
+      try {
+        e.currentTarget.releasePointerCapture(capturedPointerIdRef.current)
+      } catch {}
+      capturedPointerIdRef.current = null
+    }
+
     isPointerDownRef.current = false
+    isLockedRef.current = 'none'
     setIsDragging(false)
     setIsPaused(false)
-
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId)
-    } catch {}
-
-    const deltaX = dragDeltaRef.current
-    const threshold = 40
-
-    if (deltaX < -threshold) {
-      handleNext()
-    } else if (deltaX > threshold) {
-      handlePrev()
-    }
     setDragOffset(0)
+    // Abort cleanly without changing slides
   }
 
   const handleSlideClick = (e: React.MouseEvent) => {
@@ -367,47 +413,12 @@ export function HeroBannerSlider({
                   {/* Accessible Screen Reader / SEO Semantic Content (only on primary slides, not animation clones) */}
                   {!isClone && (
                     <div className="sr-only">
-                      {slide.tag && <span>{slide.tag}</span>}
                       {slide.title && <h2>{slide.title}</h2>}
-                      {slide.subtitle && <p>{slide.subtitle}</p>}
-                      {slide.ctaText && <span>{slide.ctaText}</span>}
                     </div>
                   )}
-
-                {/* Optional Editorial Text Overlay (Rendered only if isImageOnly === false) */}
-                {!slide.isImageOnly && (
-                  <div className="absolute inset-0 flex flex-col justify-end md:justify-center p-5 sm:p-10 lg:p-16 z-10 max-w-2xl text-white bg-gradient-to-r from-black/65 via-black/35 to-transparent">
-                    {slide.tag && (
-                      <span className="inline-block w-max px-2.5 py-1 mb-2 sm:mb-3 rounded-full bg-white/20 text-white font-extrabold text-[10px] sm:text-xs tracking-wider uppercase border border-white/35">
-                        {slide.tag}
-                      </span>
-                    )}
-
-                    {slide.title && (
-                      <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black leading-tight text-white drop-shadow-md">
-                        {slide.title}
-                      </h2>
-                    )}
-
-                    {slide.subtitle && (
-                      <p className="text-xs sm:text-base text-white/90 line-clamp-2 mt-1 sm:mt-2 font-normal max-w-lg drop-shadow">
-                        {slide.subtitle}
-                      </p>
-                    )}
-
-                    <div className="mt-4 sm:mt-6">
-                      <span className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-[8px] bg-[#1E3D2F] text-white font-bold text-xs sm:text-sm uppercase tracking-wider shadow-md">
-                        <span>{slide.ctaText}</span>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </Link>
-            </div>
-          )})}
+                </Link>
+              </div>
+            )})}
         </div>
 
         {/* Desktop Floating Circular Navigation Arrows (< and >) */}

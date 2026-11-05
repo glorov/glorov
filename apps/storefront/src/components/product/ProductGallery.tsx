@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { GlorovImage } from '../ui/GlorovImage'
 import { Lightbox } from '../ui/Lightbox'
+import { getOptimizedImageUrl } from '../../lib/utils/image'
 
 export interface ProductGalleryProps {
   title: string
@@ -32,19 +33,6 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
   const primaryImageRef = useRef<HTMLDivElement>(null)
   const thumbnailScrollRef = useRef<HTMLDivElement>(null)
 
-  // Prevent vertical mouse-wheel scroll when hovering the thumbnail strip
-  useEffect(() => {
-    const el = thumbnailScrollRef.current
-    if (!el) return
-    const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) > 0) {
-        e.preventDefault()
-        el.scrollLeft += e.deltaY
-      }
-    }
-    el.addEventListener('wheel', onWheel, { passive: false })
-    return () => el.removeEventListener('wheel', onWheel)
-  }, [])
   const displayImages = useMemo(() => {
     return images.length > 0 ? images : [primaryImage]
   }, [images, primaryImage])
@@ -61,12 +49,16 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
   const [isTransitioning, setIsTransitioning] = useState<boolean>(true)
   const [isZoomModalOpen, setIsZoomModalOpen] = useState<boolean>(false)
 
-  // Real-time Drag / Swipe state
+  // Real-time Drag / Swipe state with 2-axis gesture disambiguation
   const [isDragging, setIsDragging] = useState<boolean>(false)
   const [dragOffset, setDragOffset] = useState<number>(0)
   const startXRef = useRef<number>(0)
+  const startYRef = useRef<number>(0)
   const dragDeltaRef = useRef<number>(0)
   const isPointerDownRef = useRef<boolean>(false)
+  const isLockedRef = useRef<'none' | 'horizontal' | 'vertical'>('none')
+  const capturedPointerIdRef = useRef<number | null>(null)
+  const GESTURE_THRESHOLD = 8
 
   // Active real index for indicators, badges, and modal (0 to totalImages - 1)
   const activeRealIndex =
@@ -123,53 +115,103 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     }
   }, [isTransitioning])
 
-  // Pointer drag event handlers for mouse and touch drag move
+  // Pointer drag gesture handlers for real-time mouse drag & touch swipe
+  // 2-axis gesture disambiguation ensures vertical page scrolling is NEVER blocked
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (totalImages <= 1) return
     if (e.button !== 0 && e.pointerType === 'mouse') return
+    if ((e.target as HTMLElement).closest('button')) return
+
     isPointerDownRef.current = true
+    isLockedRef.current = 'none'
     startXRef.current = e.clientX
+    startYRef.current = e.clientY
     dragDeltaRef.current = 0
-    setIsDragging(true)
-    setDragOffset(0)
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId)
-    } catch {}
+    capturedPointerIdRef.current = null
+    // Yield on pointerdown so vertical scrolling starts unhindered
   }
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isPointerDownRef.current) return
-    const delta = e.clientX - startXRef.current
-    dragDeltaRef.current = delta
-    setDragOffset(delta)
+
+    const diffX = e.clientX - startXRef.current
+    const diffY = e.clientY - startYRef.current
+
+    if (isLockedRef.current === 'vertical') {
+      return
+    }
+
+    if (isLockedRef.current === 'none') {
+      const absX = Math.abs(diffX)
+      const absY = Math.abs(diffY)
+
+      if (absX <= GESTURE_THRESHOLD && absY <= GESTURE_THRESHOLD) {
+        return
+      }
+
+      if (absY >= absX) {
+        // Vertical gesture dominates -> let browser scroll page smoothly
+        isLockedRef.current = 'vertical'
+        isPointerDownRef.current = false
+        return
+      }
+
+      // Horizontal gesture dominates -> lock to gallery slide drag
+      isLockedRef.current = 'horizontal'
+      setIsDragging(true)
+      setDragOffset(0)
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId)
+        capturedPointerIdRef.current = e.pointerId
+      } catch {}
+    }
+
+    if (isLockedRef.current === 'horizontal') {
+      dragDeltaRef.current = diffX
+      setDragOffset(diffX)
+    }
   }
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isPointerDownRef.current) return
-    isPointerDownRef.current = false
-    setIsDragging(false)
+    if (!isPointerDownRef.current && isLockedRef.current !== 'horizontal') return
 
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId)
-    } catch {}
+    if (capturedPointerIdRef.current !== null) {
+      try {
+        e.currentTarget.releasePointerCapture(capturedPointerIdRef.current)
+      } catch {}
+      capturedPointerIdRef.current = null
+    }
 
+    const wasHorizontal = isLockedRef.current === 'horizontal'
     const delta = dragDeltaRef.current
     const threshold = 45 // min pixel delta to trigger slide change
 
-    if (delta < -threshold) {
-      handleNext()
-    } else if (delta > threshold) {
-      handlePrev()
-    }
+    isPointerDownRef.current = false
+    isLockedRef.current = 'none'
+    setIsDragging(false)
     setDragOffset(0)
+
+    if (wasHorizontal) {
+      if (delta < -threshold) {
+        handleNext()
+      } else if (delta > threshold) {
+        handlePrev()
+      }
+    }
   }
 
-  const handlePointerCancel = () => {
-    if (isPointerDownRef.current) {
-      isPointerDownRef.current = false
-      setIsDragging(false)
-      setDragOffset(0)
+  const handlePointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (capturedPointerIdRef.current !== null) {
+      try {
+        e.currentTarget.releasePointerCapture(capturedPointerIdRef.current)
+      } catch {}
+      capturedPointerIdRef.current = null
     }
+
+    isPointerDownRef.current = false
+    isLockedRef.current = 'none'
+    setIsDragging(false)
+    setDragOffset(0)
   }
 
   const primaryBadge = badges.length > 0 && badges[0].trim().length > 0 ? badges[0].trim().toUpperCase() : null
@@ -326,13 +368,13 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
         </div>
       )}
 
-      {/* 3. Horizontal Thumbnail Selector Strip with isolated X-axis scroll */}
+      {/* 3. Horizontal Thumbnail Selector Strip with non-blocking vertical page scroll */}
       {totalImages > 1 && (
         <div
           ref={thumbnailScrollRef}
           role="region"
           aria-label="Thumbnail previews"
-          className="flex items-center gap-2.5 overflow-x-auto py-1 scrollbar-none no-scrollbar touch-pan-x select-none overscroll-x-contain overscroll-y-none"
+          className="flex items-center gap-2.5 overflow-x-auto py-1 scrollbar-none no-scrollbar touch-pan-y select-none overscroll-x-contain"
         >
           {displayImages.map((img, idx) => {
             const isSelected = idx === activeRealIndex
@@ -349,7 +391,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
                 aria-label={`View image ${idx + 1} of ${totalImages}`}
               >
                 <GlorovImage
-                  src={img}
+                  src={getOptimizedImageUrl(img, { width: 128, height: 128, crop: 'fill', quality: 'auto' })}
                   alt={`${title} thumbnail ${idx + 1}`}
                   fill
                   sizes="64px"

@@ -144,6 +144,7 @@ export function Footer({ className }: FooterProps) {
                   src="/logo/glorov-logo.svg"
                   alt="GLOROV"
                   fill
+                  unoptimized
                   className="object-contain object-left"
                 />
               </div>

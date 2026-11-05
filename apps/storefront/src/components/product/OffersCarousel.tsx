@@ -9,27 +9,6 @@ export interface OfferItem {
   subtext: string
 }
 
-const DEFAULT_OFFERS: OfferItem[] = [
-  {
-    id: 'off-1',
-    title: 'Winter Sowing & Planting Fest',
-    code: 'WINTER20',
-    subtext: 'Min Order: ₹2,299',
-  },
-  {
-    id: 'off-2',
-    title: 'Special Welcome Offer',
-    code: 'GLOROV10',
-    subtext: 'Min Order: ₹499',
-  },
-  {
-    id: 'off-3',
-    title: '10% OFF',
-    code: 'DIWALI10',
-    subtext: 'On orders above ₹999',
-  },
-]
-
 export interface OffersCarouselProps {
   offers?: OfferItem[]
   onCopyCode?: (code: string) => void
@@ -44,7 +23,7 @@ export const OffersCarousel: React.FC<OffersCarouselProps> = ({
   offers: initialOffers,
   onCopyCode,
 }) => {
-  const [offersList, setOffersList] = useState<OfferItem[]>(initialOffers || DEFAULT_OFFERS)
+  const [offersList, setOffersList] = useState<OfferItem[]>(initialOffers || [])
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
   useEffect(() => {
@@ -57,7 +36,7 @@ export const OffersCarousel: React.FC<OffersCarouselProps> = ({
     fetch('/api/offers')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data && Array.isArray(data.offers) && data.offers.length > 0) {
+        if (data && Array.isArray(data.offers)) {
           const transformed: OfferItem[] = data.offers
             .filter((o: { is_active?: boolean }) => o.is_active !== false)
             .map((o: { id: string; title: string; code: string; min_spend_text?: string; description?: string }) => ({
@@ -66,13 +45,15 @@ export const OffersCarousel: React.FC<OffersCarouselProps> = ({
               code: o.code,
               subtext: o.min_spend_text || o.description || 'Special Botanical Discount',
             }))
-          if (transformed.length > 0) {
-            setOffersList(transformed)
-          }
+          setOffersList(transformed)
         }
       })
       .catch(() => {})
   }, [initialOffers])
+
+  if (offersList.length === 0) {
+    return null
+  }
 
   const handleCopy = (code: string) => {
     if (typeof window !== 'undefined' && navigator.clipboard) {

@@ -12,6 +12,7 @@ import {
   Table,
   Toaster,
   toast,
+  usePrompt,
 } from "@medusajs/ui";
 
 export interface Offer {
@@ -145,6 +146,7 @@ function renderIcon(icon: string) {
 }
 
 const OffersAdminPage = () => {
+  const prompt = usePrompt();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [previewOfferId, setPreviewOfferId] = useState<string | null>(null);
@@ -160,10 +162,10 @@ const OffersAdminPage = () => {
       if (res.ok) {
         const data = res.data;
         setOffers(data.offers || []);
-        if (data.highlighted_offer) {
+        if (data.highlighted_offer && data.highlighted_offer.is_active) {
           setPreviewOfferId(data.highlighted_offer.id);
-        } else if (data.offers && data.offers.length > 0) {
-          setPreviewOfferId(data.offers[0].id);
+        } else {
+          setPreviewOfferId(null);
         }
       } else {
         toast.error("Error", { description: res.error || "Failed to load offers from backend API." });
@@ -189,21 +191,25 @@ const OffersAdminPage = () => {
     }
     const highlighted = offers.find((o) => o.is_highlighted && o.is_active);
     if (highlighted) return highlighted;
-    return offers[0] || null;
+    return null;
   }, [offers, previewOfferId]);
 
   // Handle active status toggle
   const handleToggleActive = async (offer: Offer) => {
     try {
+      const willBeActive = !offer.is_active;
       const res = await adminFetch<any>(`/admin/offers/${offer.id}`, {
         method: "POST",
-        body: { is_active: !offer.is_active },
+        body: {
+          is_active: willBeActive,
+          // When deactivating, ensure is_highlighted is cleared so inactive offers cannot be featured
+          is_highlighted: willBeActive ? offer.is_highlighted : false,
+        },
       });
       if (res.ok) {
-        const updated = res.data;
-        setOffers((prev) => prev.map((o) => (o.id === offer.id ? updated.offer : o)));
+        await fetchOffers();
         toast.success("Updated", {
-          description: `Offer ${offer.code} is now ${!offer.is_active ? "Active" : "Inactive"}.`,
+          description: `Offer ${offer.code} is now ${willBeActive ? "Active" : "Inactive"}.`,
         });
       } else {
         toast.error("Error", { description: res.error || "Failed to update offer status." });
@@ -216,14 +222,23 @@ const OffersAdminPage = () => {
   // Handle highlighted toggle (featured on homepage welcome section)
   const handleToggleHighlighted = async (offer: Offer) => {
     try {
+      const willBeHighlighted = !offer.is_highlighted;
+      // An offer must be active to be featured as a banner
+      const willBeActive = willBeHighlighted ? true : offer.is_active;
+
       const res = await adminFetch<any>(`/admin/offers/${offer.id}`, {
         method: "POST",
-        body: { is_highlighted: !offer.is_highlighted },
+        body: {
+          is_highlighted: willBeHighlighted,
+          is_active: willBeActive,
+        },
       });
       if (res.ok) {
         await fetchOffers();
         toast.success("Featured Offer Updated", {
-          description: `Offer ${offer.code} is now set as the Homepage Welcome Banner.`,
+          description: willBeHighlighted
+            ? `Offer ${offer.code} is now set as the Homepage Welcome Banner.`
+            : `Offer ${offer.code} removed from Homepage Welcome Banner.`,
         });
       } else {
         toast.error("Error", { description: res.error || "Failed to update featured offer." });
@@ -235,7 +250,13 @@ const OffersAdminPage = () => {
 
   // Handle delete offer
   const handleDeleteOffer = async (id: string, code: string) => {
-    if (!window.confirm(`Are you sure you want to delete promotional offer '${code}'?`)) {
+    const userConfirmed = await prompt({
+      title: "Delete Promotional Offer",
+      description: `Are you sure you want to delete promotional offer '${code}'?`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+    });
+    if (!userConfirmed) {
       return;
     }
     try {
@@ -253,7 +274,13 @@ const OffersAdminPage = () => {
 
   // Handle seed defaults
   const handleSeedDefaults = async () => {
-    if (!window.confirm("Restore default botanical campaigns? This will reset all offers.")) {
+    const userConfirmed = await prompt({
+      title: "Restore Default Campaigns",
+      description: "Restore default botanical campaigns? This will reset all promotional offers.",
+      confirmText: "Restore Defaults",
+      cancelText: "Cancel",
+    });
+    if (!userConfirmed) {
       return;
     }
     try {
@@ -496,8 +523,11 @@ const OffersAdminPage = () => {
             </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-ui-fg-muted text-sm">
-            No offers available. Click "+ Create New Offer" or "Restore Defaults" above.
+          <div className="text-center py-8 text-ui-fg-muted text-sm bg-ui-bg-subtle/50 rounded-xl border border-dashed border-ui-border-base p-6">
+            <p className="font-medium text-ui-fg-base mb-1">No Active Homepage Banner Selected</p>
+            <p className="text-xs text-ui-fg-subtle">
+              Click &quot;Set Banner&quot; on any active offer in the table below to feature it on the storefront homepage.
+            </p>
           </div>
         )}
       </Container>
@@ -510,7 +540,7 @@ const OffersAdminPage = () => {
               All Configured Offers ({offers.length})
             </Heading>
             <Text className="text-xs text-ui-fg-muted">
-              {activeOffers.length} active on storefront • 1 featured homepage banner
+              {activeOffers.length} active on storefront • {offers.filter((o) => o.is_highlighted && o.is_active).length} featured homepage banner
             </Text>
           </div>
         </div>

@@ -26,26 +26,26 @@ export interface ValidateCouponResult {
 
 export const DEFAULT_OFFERS: Offer[] = [
   {
-    id: "offer_welcome_glorov10",
-    code: "GLOROV10",
-    title: "Special Welcome Offer",
-    tag: "SPECIAL WELCOME OFFER",
-    description: "Flat 10% Off on your first order of heirloom seeds, indoor plants & glazed planters.",
-    discount_badge: "10% OFF",
+    id: "offer_winter_sale_20",
+    code: "WINTER20",
+    title: "Winter Sowing & Planting Fest",
+    tag: "WINTER BOTANICAL SALE",
+    description: "Enjoy Flat 20% OFF on all cold-hardy winter seeds, flowering blooms, and indoor greenery.",
+    discount_badge: "20% OFF",
     discount_type: "percentage",
-    discount_value: 10,
-    min_spend: 499,
-    min_spend_text: "Min Order: ₹499",
-    terms: "Valid on all botanical items",
-    expiry_text: "Valid on first botanical order",
-    category: "welcome",
+    discount_value: 20,
+    min_spend: 2299,
+    min_spend_text: "Min Order: ₹2,299",
+    expiry_text: "Winter Planting Special",
+    terms: "Applicable on all seeds, indoor plants, and winter care supplies",
+    category: "sitewide",
     applicable_categories: ["*"],
-    bg_color: "#EAF4EE",
-    text_color: "#1B3B2B",
-    accent_color: "#1E3D2F",
-    icon: "card_giftcard",
-    is_highlighted: true,
-    is_active: true,
+    bg_color: "#EAF2F8",
+    text_color: "#143528",
+    accent_color: "#1B5E20",
+    icon: "spa",
+    is_highlighted: false,
+    is_active: false,
     display_order: 1,
     created_at: new Date("2026-10-30T00:00:00Z").toISOString(),
     updated_at: new Date("2026-10-30T00:00:00Z").toISOString(),
@@ -126,6 +126,31 @@ export const DEFAULT_OFFERS: Offer[] = [
     updated_at: new Date("2026-10-30T00:00:00Z").toISOString(),
   },
   {
+    id: "offer_monsoon_thunder15",
+    code: "THUNDER15",
+    title: "Monsoon Thunder Sale",
+    tag: "LIMITED TIME OFFER",
+    description: "Flat 15% discount across all conditioned indoor plants and heirloom seed collections.",
+    discount_badge: "15% OFF",
+    discount_type: "percentage",
+    discount_value: 15,
+    min_spend: 1599,
+    min_spend_text: "Min Order: ₹1,599",
+    terms: "Excludes heavy garden tools",
+    expiry_text: "Seasonal offer",
+    category: "sitewide",
+    applicable_categories: ["*"],
+    bg_color: "#E8F5E9",
+    text_color: "#1B3B2B",
+    accent_color: "#2E7D32",
+    icon: "auto_awesome",
+    is_highlighted: false,
+    is_active: false,
+    display_order: 5,
+    created_at: new Date("2026-10-30T00:00:00Z").toISOString(),
+    updated_at: new Date("2026-10-30T00:00:00Z").toISOString(),
+  },
+  {
     id: "offer_seeds_heirloom20",
     code: "HEIRLOOM20",
     title: "Desi Heirloom Seed Fest",
@@ -145,8 +170,33 @@ export const DEFAULT_OFFERS: Offer[] = [
     accent_color: "#F57F17",
     icon: "spa",
     is_highlighted: false,
-    is_active: true,
-    display_order: 5,
+    is_active: false,
+    display_order: 6,
+    created_at: new Date("2026-10-30T00:00:00Z").toISOString(),
+    updated_at: new Date("2026-10-30T00:00:00Z").toISOString(),
+  },
+  {
+    id: "offer_shipping_freeship",
+    code: "FREESHIP",
+    title: "Free Express Botanical Courier",
+    tag: "FREE DELIVERY",
+    description: "Free moisture-conditioned nursery express courier across India on orders over ₹499.",
+    discount_badge: "FREE DELIVERY",
+    discount_type: "free_shipping",
+    discount_value: 0,
+    min_spend: 499,
+    min_spend_text: "Min Order: ₹499",
+    terms: "Pan-India express nursery dispatch",
+    expiry_text: "Pan-India delivery",
+    category: "sitewide",
+    applicable_categories: ["*"],
+    bg_color: "#E1F5FE",
+    text_color: "#01579B",
+    accent_color: "#0288D1",
+    icon: "local_shipping",
+    is_highlighted: false,
+    is_active: false,
+    display_order: 7,
     created_at: new Date("2026-10-30T00:00:00Z").toISOString(),
     updated_at: new Date("2026-10-30T00:00:00Z").toISOString(),
   },
@@ -164,7 +214,7 @@ export class OfferService {
       }
       const raw = fs.readFileSync(OFFERS_FILE, "utf8");
       const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed) || parsed.length === 0) {
+      if (!Array.isArray(parsed)) {
         fs.writeFileSync(OFFERS_FILE, JSON.stringify(DEFAULT_OFFERS, null, 2), "utf8");
         return [...DEFAULT_OFFERS];
       }
@@ -204,10 +254,8 @@ export class OfferService {
   public static async getHighlightedOffer(): Promise<Offer | null> {
     const activeOffers = await this.listOffers(true);
     // Find active offer explicitly marked as highlighted
-    const highlighted = activeOffers.find((o) => o.is_highlighted);
-    if (highlighted) return highlighted;
-    // Fallback to first active offer
-    return activeOffers[0] || null;
+    const highlighted = activeOffers.find((o) => o.is_highlighted && o.is_active);
+    return highlighted || null;
   }
 
   public static async createOffer(input: CreateOfferInput): Promise<Offer> {
@@ -215,8 +263,14 @@ export class OfferService {
     const now = new Date().toISOString();
     const cleanCode = input.code.trim().toUpperCase();
 
+    let isHighlighted = input.is_highlighted !== undefined ? Boolean(input.is_highlighted) : false;
+    let isActive = input.is_active !== undefined ? Boolean(input.is_active) : true;
+    if (!isActive) {
+      isHighlighted = false;
+    }
+
     // If marked as highlighted, unmark any existing highlighted offers to keep single banner focus
-    if (input.is_highlighted) {
+    if (isHighlighted) {
       offers.forEach((o) => {
         o.is_highlighted = false;
       });
@@ -240,8 +294,8 @@ export class OfferService {
       text_color: input.text_color || "#1B3B2B",
       accent_color: input.accent_color || "#1E3D2F",
       icon: input.icon || "card_giftcard",
-      is_highlighted: input.is_highlighted !== undefined ? Boolean(input.is_highlighted) : false,
-      is_active: input.is_active !== undefined ? Boolean(input.is_active) : true,
+      is_highlighted: isHighlighted,
+      is_active: isActive,
       display_order: input.display_order !== undefined ? Number(input.display_order) : offers.length + 1,
       created_at: now,
       updated_at: now,
@@ -259,8 +313,18 @@ export class OfferService {
 
     const existing = offers[index];
 
-    // If toggling or setting highlighted to true, ensure exclusivity
-    if (input.is_highlighted === true) {
+    // Ensure inactive offers cannot remain or become highlighted as banner
+    let isHighlighted = input.is_highlighted !== undefined ? Boolean(input.is_highlighted) : existing.is_highlighted;
+    let isActive = input.is_active !== undefined ? Boolean(input.is_active) : existing.is_active;
+
+    if (!isActive) {
+      isHighlighted = false;
+    } else if (isHighlighted) {
+      isActive = true;
+    }
+
+    // If setting highlighted to true, ensure exclusivity
+    if (isHighlighted) {
       offers.forEach((o) => {
         if (o.id !== id) {
           o.is_highlighted = false;
@@ -286,8 +350,8 @@ export class OfferService {
       text_color: input.text_color !== undefined ? input.text_color : existing.text_color,
       accent_color: input.accent_color !== undefined ? input.accent_color : existing.accent_color,
       icon: input.icon !== undefined ? input.icon : existing.icon,
-      is_highlighted: input.is_highlighted !== undefined ? Boolean(input.is_highlighted) : existing.is_highlighted,
-      is_active: input.is_active !== undefined ? Boolean(input.is_active) : existing.is_active,
+      is_highlighted: isHighlighted,
+      is_active: isActive,
       display_order: input.display_order !== undefined ? Number(input.display_order) : existing.display_order,
       updated_at: new Date().toISOString(),
     };
@@ -317,27 +381,13 @@ export class OfferService {
     }
     const cleanCode = code.trim().toUpperCase();
     const activeOffers = await this.listOffers(true);
-    let offer = activeOffers.find((o) => o.code.toUpperCase() === cleanCode);
-
-    if (!offer) {
-      if (cleanCode === "GLOROV10" || cleanCode === "FIRST10") {
-        offer =
-          activeOffers.find((o) => o.code.toUpperCase() === "GLOROV10") ||
-          activeOffers.find((o) => o.code.toUpperCase() === "DIWALI10");
-      } else if (cleanCode === "SEEDS20") {
-        offer = activeOffers.find((o) => o.code.toUpperCase() === "HEIRLOOM20");
-      } else if (cleanCode === "WINTER20") {
-        offer = activeOffers.find((o) => o.code.toUpperCase() === "DIWALI20");
-      } else if (cleanCode === "THUNDER15") {
-        offer = activeOffers.find((o) => o.code.toUpperCase() === "DIWALI15");
-      }
-    }
+    const offer = activeOffers.find((o) => o.code.toUpperCase() === cleanCode);
 
     if (!offer) {
       return {
         valid: false,
         discount_amount: 0,
-        error: `Coupon "${cleanCode}" is invalid or expired`,
+        error: `Coupon "${cleanCode}" is invalid, inactive, or expired`,
       };
     }
 

@@ -4,6 +4,8 @@ import { OfferService } from "../modules/offer/offer-service";
 describe("Authoritative Checkout & Category Offer Validation Service", () => {
   beforeEach(async () => {
     await OfferService.seedDefaults(true);
+    // Explicitly activate HEIRLOOM20 for category verification tests
+    await OfferService.updateOffer("offer_seeds_heirloom20", { is_active: true });
   });
 
   describe("1. Category-Based Offer Validation", () => {
@@ -52,6 +54,20 @@ describe("Authoritative Checkout & Category Offer Validation Service", () => {
       // Discount must be 20% of 553 (seeds only), NOT 20% of 1051!
       expect(result.verifiedCart.discountAmount).toBe(Math.round(553 * 0.2));
       expect(result.verifiedCart.appliedOffer?.eligibleSubtotal).toBe(553);
+    });
+
+    it("strictly rejects inactive coupons (e.g. WINTER20) during checkout validation", async () => {
+      const result = await CheckoutValidationService.validateCheckout({
+        items: [
+          { productId: "glr-seed-01", title: "Green Chilli Seeds", category: "seeds", quantity: 30, clientPrice: 79 },
+        ],
+        couponCode: "WINTER20",
+        paymentMethod: "upi",
+      });
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => /invalid|inactive|expired/i.test(e))).toBe(true);
+      expect(result.verifiedCart.discountAmount).toBe(0);
     });
   });
 

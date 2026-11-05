@@ -1,8 +1,9 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { CustomerReviewItem, ProductReviewSummary } from '@/types/storefront'
 import { RatingStars } from './RatingStars'
+import { WriteReviewModal } from './WriteReviewModal'
 
 export interface ProductReviewsSectionProps {
   summary?: ProductReviewSummary
@@ -13,16 +14,30 @@ export interface ProductReviewsSectionProps {
 /**
  * GLOROV ProductReviewsSection
  * Complete customer review module with star distribution bars,
- * AI verified feedback summary card, and verified buyer testimonials.
+ * AI verified feedback summary card, verified buyer testimonials,
+ * and interactive themed review submission modal.
  */
 export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   summary,
   reviews = [],
   productTitle,
 }) => {
+  const [isWriteReviewOpen, setIsWriteReviewOpen] = useState<boolean>(false)
+  const [reviewList, setReviewList] = useState<CustomerReviewItem[]>(reviews)
+  const [starCounts, setStarCounts] = useState<Record<number, number>>(
+    summary?.starCounts ?? { 5: 32, 4: 4, 3: 2, 2: 0, 1: 0 }
+  )
+
+  const handleReviewSubmit = (newRev: CustomerReviewItem) => {
+    setReviewList((prev) => [newRev, ...prev])
+    setStarCounts((prev) => ({
+      ...prev,
+      [newRev.rating]: (prev[newRev.rating] || 0) + 1,
+    }))
+  }
+
+  const totalReviews = reviewList.length > 0 ? reviewList.length : (summary?.totalReviews ?? 1)
   const averageRating = summary?.averageRating ?? 4.8
-  const totalReviews = summary?.totalReviews ?? (reviews.length || 1)
-  const starCounts = summary?.starCounts ?? { 5: 32, 4: 4, 3: 2, 2: 0, 1: 0 }
 
   return (
     <section id="reviews" className="w-full my-8 p-6 rounded-2xl bg-white border border-stone-200 shadow-xs">
@@ -37,9 +52,12 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
         </div>
         <button
           type="button"
-          onClick={() => alert('Review submission will be enabled in customer account phase.')}
-          className="px-4 py-2 rounded-xl text-xs font-semibold border border-stone-300 hover:border-brand-primary text-stone-700 hover:text-brand-primary transition"
+          onClick={() => setIsWriteReviewOpen(true)}
+          className="px-4 py-2 rounded-xl text-xs font-semibold border border-stone-300 hover:border-brand-primary text-stone-700 hover:text-brand-primary transition flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
         >
+          <svg className="w-3.5 h-3.5 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
           Write a Review
         </button>
       </div>
@@ -108,7 +126,7 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
 
       {/* Review List */}
       <div className="mt-6 flex flex-col divide-y divide-stone-100">
-        {reviews.map((rev) => (
+        {reviewList.map((rev) => (
           <article key={rev.id} className="py-5 first:pt-0 last:pb-0">
             <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2">
@@ -127,10 +145,20 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
               <h3 className="font-bold text-xs text-stone-900">{rev.title}</h3>
             </div>
 
-            <p className="text-xs text-stone-600 leading-relaxed">{rev.content}</p>
+            <p className="text-xs text-stone-600 leading-relaxed whitespace-pre-line">{rev.content}</p>
           </article>
         ))}
       </div>
+
+      {/* Themed Review Submission Modal */}
+      {isWriteReviewOpen && (
+        <WriteReviewModal
+          isOpen={isWriteReviewOpen}
+          onClose={() => setIsWriteReviewOpen(false)}
+          productTitle={productTitle}
+          onSubmitReview={handleReviewSubmit}
+        />
+      )}
     </section>
   )
 }

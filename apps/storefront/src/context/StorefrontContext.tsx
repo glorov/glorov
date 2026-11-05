@@ -32,75 +32,13 @@ export const FREE_SHIPPING_THRESHOLD = 499
 
 export const MILESTONE_COUPONS: MilestoneOffer[] = [
   {
-    code: 'HEIRLOOM20',
-    title: '20% OFF Desi Seeds',
-    description: '20% off on all heirloom seeds above ₹499',
-    minSpend: 499,
-    discountPercent: 20,
-    category: 'seeds',
-    applicableCategories: ['seeds'],
-  },
-  {
-    code: 'SEEDS20',
-    title: '20% OFF Seeds',
-    description: '20% off on seed orders above ₹599',
-    minSpend: 599,
-    discountPercent: 20,
-    category: 'seeds',
-    applicableCategories: ['seeds'],
-  },
-  {
-    code: 'PLANTS15',
-    title: '15% OFF Live Plants',
-    description: '15% off air-purifying & indoor plants above ₹699',
-    minSpend: 699,
-    discountPercent: 15,
-    category: 'live-plants',
-    applicableCategories: ['live plants', 'live-plants', 'plants'],
-  },
-  {
-    code: 'PLANTERS10',
-    title: '10% OFF Planters',
-    description: '10% off ceramic & terracotta pots above ₹799',
-    minSpend: 799,
-    discountPercent: 10,
-    category: 'planters',
-    applicableCategories: ['planters', 'planters & pots', 'pots'],
-  },
-  {
-    code: 'WINTER20',
-    title: '20% OFF Winter Fest',
-    description: '20% off sitewide winter planting special on orders above ₹2,299',
-    minSpend: 2299,
-    discountPercent: 20,
-  },
-  {
-    code: 'FIRST10',
-    title: '10% OFF Welcome',
-    description: '10% off on your first order',
-    minSpend: 499,
-    discountPercent: 10,
-  },
-  {
-    code: 'GLOROV10',
-    title: '10% OFF Special',
-    description: '10% off on all botanical items',
-    minSpend: 499,
-    discountPercent: 10,
-  },
-  {
     code: 'DIWALI10',
     title: '10% OFF',
     description: 'On orders above ₹999',
     minSpend: 999,
     discountPercent: 10,
-  },
-  {
-    code: 'THUNDER15',
-    title: '15% OFF',
-    description: '15% off across indoor plants, potting blends, and seeds on orders above ₹1,599',
-    minSpend: 1599,
-    discountPercent: 15,
+    category: 'sitewide',
+    applicableCategories: ['*'],
   },
   {
     code: 'DIWALI15',
@@ -108,6 +46,8 @@ export const MILESTONE_COUPONS: MilestoneOffer[] = [
     description: 'On orders above ₹1,599',
     minSpend: 1599,
     discountPercent: 15,
+    category: 'sitewide',
+    applicableCategories: ['*'],
   },
   {
     code: 'DIWALI20',
@@ -115,6 +55,17 @@ export const MILESTONE_COUPONS: MilestoneOffer[] = [
     description: 'On orders above ₹2,299',
     minSpend: 2299,
     discountPercent: 20,
+    category: 'sitewide',
+    applicableCategories: ['*'],
+  },
+  {
+    code: 'HEIRLOOM20',
+    title: '20% OFF Desi Seeds',
+    description: '20% off on all heirloom seeds above ₹499',
+    minSpend: 499,
+    discountPercent: 20,
+    category: 'seeds',
+    applicableCategories: ['seeds'],
   },
 ]
 
@@ -167,6 +118,11 @@ export interface StorefrontContextValue {
   updateCartQuantity: (itemId: string, quantity: number) => void
   clearCart: () => void
 
+  // Dynamic backend offers state
+  activeOffers: MilestoneOffer[]
+  welcomeBannerOffer: any | null
+  refreshOffers: () => Promise<void>
+
   // Wishlist State
   wishlistIds: string[]
   isInWishlist: (productId: string) => boolean
@@ -194,7 +150,7 @@ export interface StorefrontContextValue {
   closeMobileMenu: () => void
 }
 
-const StorefrontContext = createContext<StorefrontContextValue | undefined>(undefined)
+export const StorefrontContext = createContext<StorefrontContextValue | undefined>(undefined)
 
 const STORAGE_KEYS = {
   CART: 'glorov_cart_items',
@@ -219,6 +175,39 @@ export function StorefrontProvider({ children }: { children: React.ReactNode }) 
   const lastToastRef = React.useRef<{ message: string; timestamp: number } | null>(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [activeOffers, setActiveOffers] = useState<MilestoneOffer[]>(MILESTONE_COUPONS)
+  const [welcomeBannerOffer, setWelcomeBannerOffer] = useState<any | null>(null)
+
+  const refreshOffers = useCallback(async () => {
+    try {
+      const res = await fetch('/api/offers', { cache: 'no-store' })
+      if (!res.ok) return
+      const data = await res.json()
+      if (data && Array.isArray(data.offers) && data.offers.length > 0) {
+        const mapped: MilestoneOffer[] = data.offers.map((o: any) => ({
+          code: o.code,
+          title: o.title,
+          description: o.description,
+          minSpend: o.min_spend ?? 0,
+          discountPercent: o.discount_value ?? 0,
+          category: o.category,
+          applicableCategories: o.applicable_categories,
+        }))
+        setActiveOffers(mapped)
+      }
+      if (data && data.welcome_offer && data.welcome_offer.is_active && data.welcome_offer.is_highlighted) {
+        setWelcomeBannerOffer(data.welcome_offer)
+      } else {
+        setWelcomeBannerOffer(null)
+      }
+    } catch {
+      // Ignore network errors
+    }
+  }, [])
+
+  useEffect(() => {
+    refreshOffers()
+  }, [refreshOffers])
 
   // Hydrate state from localStorage safely on client mount
   useEffect(() => {
@@ -396,8 +385,8 @@ export function StorefrontProvider({ children }: { children: React.ReactNode }) 
   )
 
   const activeOffer = useMemo(
-    () => MILESTONE_COUPONS.find((c) => c.code.toUpperCase() === appliedCoupon?.toUpperCase()),
-    [appliedCoupon]
+    () => activeOffers.find((c) => c.code.toUpperCase() === appliedCoupon?.toUpperCase()),
+    [activeOffers, appliedCoupon]
   )
 
   const discountAmount = useMemo(() => {
@@ -441,20 +430,24 @@ export function StorefrontProvider({ children }: { children: React.ReactNode }) 
     return Math.round(((compareSubtotal - cartTotal) / compareSubtotal) * 100)
   }, [compareSubtotal, cartTotal])
 
-  // Auto-validate coupon when cart items or subtotal change
+  // Auto-validate coupon when cart items, subtotal, or active offers change
   useEffect(() => {
     if (!appliedCoupon) return
-    const found = MILESTONE_COUPONS.find(
+    const found = activeOffers.find(
       (c) => c.code.toUpperCase() === appliedCoupon.toUpperCase()
     )
     if (!found) {
       setAppliedCoupon(null)
+      showToast(
+        'warning',
+        `Coupon "${appliedCoupon}" is no longer active or valid on storefront.`
+      )
       return
     }
 
     const norm = (s?: string) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '')
 
-    if (found.applicableCategories && found.applicableCategories.length > 0) {
+    if (found.applicableCategories && found.applicableCategories.length > 0 && !found.applicableCategories.includes('*')) {
       const targets = found.applicableCategories.map(norm)
       const matchingItems = cartItems.filter((item) => {
         const cat = norm(item.category)
@@ -492,7 +485,7 @@ export function StorefrontProvider({ children }: { children: React.ReactNode }) 
         )
       }
     }
-  }, [cartItems, cartSubtotal, appliedCoupon, showToast])
+  }, [activeOffers, cartItems, cartSubtotal, appliedCoupon, showToast])
 
   // Cart Handlers
   const addToCart = useCallback(
@@ -590,16 +583,16 @@ export function StorefrontProvider({ children }: { children: React.ReactNode }) 
   const applyCoupon = useCallback(
     (code: string): boolean => {
       const cleanCode = code.trim().toUpperCase()
-      const found = MILESTONE_COUPONS.find((c) => c.code === cleanCode)
+      const found = activeOffers.find((c) => c.code === cleanCode)
       if (!found) {
-        showToast('error', `Coupon "${cleanCode}" is invalid or expired.`, { title: 'Invalid Voucher' })
+        showToast('error', `Coupon "${cleanCode}" is invalid, inactive, or expired.`, { title: 'Invalid Voucher' })
         return false
       }
 
       const norm = (s?: string) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '')
 
       // Category-Aware Verification
-      if (found.applicableCategories && found.applicableCategories.length > 0) {
+      if (found.applicableCategories && found.applicableCategories.length > 0 && !found.applicableCategories.includes('*')) {
         const targets = found.applicableCategories.map(norm)
         const matchingItems = cartItems.filter((item) => {
           const cat = norm(item.category)
@@ -654,7 +647,7 @@ export function StorefrontProvider({ children }: { children: React.ReactNode }) 
       )
       return true
     },
-    [cartItems, cartSubtotal, showToast]
+    [activeOffers, cartItems, cartSubtotal, showToast]
   )
 
   const removeCoupon = useCallback(() => {
@@ -752,6 +745,9 @@ export function StorefrontProvider({ children }: { children: React.ReactNode }) 
       isMobileMenuOpen,
       openMobileMenu,
       closeMobileMenu,
+      activeOffers,
+      welcomeBannerOffer,
+      refreshOffers,
     }),
     [
       cartItems,
@@ -785,6 +781,9 @@ export function StorefrontProvider({ children }: { children: React.ReactNode }) 
       isMobileMenuOpen,
       openMobileMenu,
       closeMobileMenu,
+      activeOffers,
+      welcomeBannerOffer,
+      refreshOffers,
     ]
   )
 
@@ -807,6 +806,9 @@ const DEFAULT_CONTEXT_FALLBACK: StorefrontContextValue = {
   wishlistIds: [],
   toasts: [],
   activeToast: null,
+  activeOffers: MILESTONE_COUPONS,
+  welcomeBannerOffer: null,
+  refreshOffers: async () => {},
   addToCart: () => {},
   removeFromCart: () => {},
   updateCartQuantity: () => {},
@@ -852,6 +854,9 @@ export function useCart() {
     updateCartQuantity,
     clearCart,
     showToast,
+    activeOffers,
+    welcomeBannerOffer,
+    refreshOffers,
   } = useStorefront()
 
   return {
@@ -874,6 +879,9 @@ export function useCart() {
     updateCartQuantity,
     clearCart,
     showToast,
+    activeOffers,
+    welcomeBannerOffer,
+    refreshOffers,
   }
 }
 

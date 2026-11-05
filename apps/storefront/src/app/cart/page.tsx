@@ -49,10 +49,25 @@ export default function CartPage(): React.ReactElement {
     updateCartQuantity,
     removeFromCart,
     showToast,
+    activeOffers,
   } = useCart()
 
   const [isOffersModalOpen, setIsOffersModalOpen] = useState(false)
   const [isTaxModalOpen, setIsTaxModalOpen] = useState(false)
+
+  const rawActiveOffers = React.useMemo(() => {
+    return activeOffers.map((o) => ({
+      id: o.code,
+      code: o.code,
+      title: o.title,
+      description: o.description,
+      discount_value: o.discountPercent,
+      min_spend: o.minSpend,
+      category: o.category,
+      applicable_categories: o.applicableCategories,
+      is_active: true,
+    }))
+  }, [activeOffers])
 
   const handleBack = () => {
     if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -113,6 +128,7 @@ export default function CartPage(): React.ReactElement {
                 <FreeShippingProgressBar
                   subtotal={cartSubtotal}
                   appliedCoupon={appliedCoupon}
+                  offers={rawActiveOffers}
                   onOpenOffers={() => setIsOffersModalOpen(true)}
                   onApplyCoupon={(code) => applyCoupon(code)}
                   onShowNotice={(msg) => showToast('info', msg)}
@@ -144,6 +160,7 @@ export default function CartPage(): React.ReactElement {
                   onRemoveCoupon={removeCoupon}
                   onOpenOffersModal={() => setIsOffersModalOpen(true)}
                   subtotal={cartSubtotal}
+                  availableOffers={activeOffers}
                 />
 
                 <CartPincodeBox />
@@ -170,6 +187,7 @@ export default function CartPage(): React.ReactElement {
                 <FreeShippingProgressBar
                   subtotal={cartSubtotal}
                   appliedCoupon={appliedCoupon}
+                  offers={rawActiveOffers}
                   onOpenOffers={() => setIsOffersModalOpen(true)}
                   onApplyCoupon={(code) => applyCoupon(code)}
                   onShowNotice={(msg) => showToast('info', msg)}
@@ -201,6 +219,7 @@ export default function CartPage(): React.ReactElement {
                   onRemoveCoupon={removeCoupon}
                   onOpenOffersModal={() => setIsOffersModalOpen(true)}
                   subtotal={cartSubtotal}
+                  availableOffers={activeOffers}
                 />
 
                 <CartPincodeBox />
@@ -226,6 +245,7 @@ export default function CartPage(): React.ReactElement {
               <FreeShippingProgressBar
                 subtotal={cartSubtotal}
                 appliedCoupon={appliedCoupon}
+                offers={rawActiveOffers}
                 onOpenOffers={() => setIsOffersModalOpen(true)}
                 onApplyCoupon={(code) => applyCoupon(code)}
                 onShowNotice={(msg) => showToast('info', msg)}
@@ -257,6 +277,7 @@ export default function CartPage(): React.ReactElement {
                 onRemoveCoupon={removeCoupon}
                 onOpenOffersModal={() => setIsOffersModalOpen(true)}
                 subtotal={cartSubtotal}
+                availableOffers={activeOffers}
               />
 
               {/* 5. Express Delivery & Pincode Strip */}
@@ -286,6 +307,7 @@ export default function CartPage(): React.ReactElement {
         onClose={() => setIsOffersModalOpen(false)}
         subtotal={cartSubtotal}
         appliedCoupon={appliedCoupon}
+        offers={rawActiveOffers}
         onApplyCoupon={(code) => {
           applyCoupon(code)
           setIsOffersModalOpen(false)

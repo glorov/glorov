@@ -77,58 +77,6 @@ export async function POST(req: NextRequest) {
         badge: string
       }
     > = {
-      HEIRLOOM20: {
-        title: 'Desi Heirloom Seed Fest',
-        percent: 20,
-        minSpend: 499,
-        categories: ['seeds'],
-        badge: '20% OFF',
-      },
-      SEEDS20: {
-        title: '20% OFF Seeds',
-        percent: 20,
-        minSpend: 599,
-        categories: ['seeds'],
-        badge: '20% OFF',
-      },
-      PLANTS15: {
-        title: 'Urban Green Oasis',
-        percent: 15,
-        minSpend: 699,
-        categories: ['live-plants', 'plants'],
-        badge: '15% OFF',
-      },
-      PLANTERS10: {
-        title: 'Artisan Ceramic Planters',
-        percent: 10,
-        minSpend: 799,
-        categories: ['planters', 'pots'],
-        badge: '10% OFF',
-      },
-      WINTER20: {
-        title: 'Winter Sowing & Planting Fest',
-        percent: 20,
-        minSpend: 2299,
-        badge: '20% OFF',
-      },
-      THUNDER15: {
-        title: 'Monsoon Thunder Sale',
-        percent: 15,
-        minSpend: 1599,
-        badge: '15% OFF',
-      },
-      FIRST10: {
-        title: 'Special Welcome Offer',
-        percent: 10,
-        minSpend: 499,
-        badge: '10% OFF',
-      },
-      GLOROV10: {
-        title: 'Special Welcome Offer',
-        percent: 10,
-        minSpend: 499,
-        badge: '10% OFF',
-      },
       DIWALI10: {
         title: '10% OFF Festive Deal',
         percent: 10,

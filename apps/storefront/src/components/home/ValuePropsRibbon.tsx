@@ -136,23 +136,27 @@ function BotanicalTagIcon({ size = 18 }: { size?: number }) {
  * Streamlined, clean, and perfectly proportioned across all devices.
  */
 export function GlorovOfferBanner({
-  code = 'FIRST10',
-  tag = 'WELCOME OFFER',
-  description = 'Flat 10% Off on your first order',
-  bgColor = '#EAF4EE',
-  textColor = '#1B3B2B',
-  accentColor = '#1E3D2F',
+  offer,
 }: {
-  code?: string
-  tag?: string
-  description?: string
-  bgColor?: string
-  textColor?: string
-  accentColor?: string
+  offer?: any
 }) {
   const { showToast } = useToast()
-  const { applyCoupon, cartCount } = useCart()
+  const { applyCoupon, cartCount, welcomeBannerOffer } = useCart()
   const [isCopied, setIsCopied] = useState(false)
+
+  // Only render when an offer is active and explicitly set as the banner
+  const activeBanner = offer !== undefined ? offer : welcomeBannerOffer
+
+  if (!activeBanner || !activeBanner.is_active || !activeBanner.is_highlighted) {
+    return null
+  }
+
+  const code = activeBanner.code || ''
+  const tag = activeBanner.tag || 'SPECIAL WELCOME OFFER'
+  const description = activeBanner.description || 'Special promotional discount'
+  const bgColor = activeBanner.bg_color || '#EAF4EE'
+  const textColor = activeBanner.text_color || '#1B3B2B'
+  const accentColor = activeBanner.accent_color || '#1E3D2F'
 
   const handleCopy = () => {
     navigator.clipboard?.writeText(code)

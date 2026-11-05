@@ -16,43 +16,39 @@ export interface AvailableOffersModalProps {
   offers?: RawOfferLike[]
 }
 
-const DEFAULT_CURATED_OFFERS: RawOfferLike[] = [
+const DEFAULT_ACTIVE_FALLBACK_OFFERS: RawOfferLike[] = [
   {
-    code: 'GLOROV10',
-    title: 'Special Welcome Offer',
-    description: 'Flat 10% off your entire botanical order on orders above ₹499',
+    code: 'DIWALI10',
+    title: '10% OFF',
+    description: '10% OFF On orders above ₹999',
     discount_badge: '10% OFF',
     discount_value: 10,
-    min_spend: 499,
-    category: 'welcome',
+    min_spend: 999,
+    category: 'sitewide',
+    applicable_categories: ['*'],
+    is_active: true,
   },
   {
-    code: 'THUNDER15',
-    title: '15% Botanical Savings',
-    description: 'Flat 15% discount across indoor plants, potting blends, and seeds',
+    code: 'DIWALI15',
+    title: '15% OFF',
+    description: '15% OFF On orders above ₹1,599',
     discount_badge: '15% OFF',
     discount_value: 15,
     min_spend: 1599,
     category: 'sitewide',
+    applicable_categories: ['*'],
+    is_active: true,
   },
   {
-    code: 'WINTER20',
-    title: '20% Winter Planting Fest',
-    description: 'Flat 20% discount on cold-hardy winter seeds, blooms, and greenery',
+    code: 'DIWALI20',
+    title: '20% OFF',
+    description: '20% OFF On orders above ₹2,299',
     discount_badge: '20% OFF',
     discount_value: 20,
     min_spend: 2299,
     category: 'sitewide',
-  },
-  {
-    code: 'HEIRLOOM20',
-    title: 'Desi Heirloom Seed Fest',
-    description: 'Extra 20% savings on pure desi seeds (0% GST collection)',
-    discount_badge: '20% OFF',
-    discount_value: 20,
-    min_spend: 499,
-    category: 'seeds',
-    applicable_categories: ['seeds'],
+    applicable_categories: ['*'],
+    is_active: true,
   },
 ]
 
@@ -71,7 +67,7 @@ export const AvailableOffersModal: React.FC<AvailableOffersModalProps> = ({
   offers: initialOffers,
 }) => {
   const [modalOffers, setModalOffers] = useState<RawOfferLike[]>(
-    initialOffers && initialOffers.length > 0 ? initialOffers : DEFAULT_CURATED_OFFERS
+    initialOffers && initialOffers.length > 0 ? initialOffers : DEFAULT_ACTIVE_FALLBACK_OFFERS
   )
 
   useEffect(() => {
@@ -85,12 +81,13 @@ export const AvailableOffersModal: React.FC<AvailableOffersModalProps> = ({
     fetch('/api/offers')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (!isMounted || !data || !Array.isArray(data.offers) || data.offers.length === 0) return
-        setModalOffers(data.offers)
+        if (isMounted && data && Array.isArray(data.offers)) {
+          // Strictly only include active offers
+          const activeOnly = data.offers.filter((o: any) => o.is_active !== false)
+          setModalOffers(activeOnly)
+        }
       })
-      .catch(() => {
-        // Fallback to defaults on error
-      })
+      .catch(() => {})
 
     return () => {
       isMounted = false

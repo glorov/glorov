@@ -49,8 +49,8 @@ export const MOCK_ANNOUNCEMENTS: AnnouncementItem[] = [
   },
   {
     id: 'ann-5',
-    text: 'Use code GLOROV10 at checkout for an extra 10% off your botanical order',
-    highlightText: 'USE CODE GLOROV10',
+    text: 'Use code DIWALI10 at checkout for an extra 10% off your botanical order',
+    highlightText: 'USE CODE DIWALI10',
     badgeColor: '#2D6A4F',
     badgeTextColor: '#FFFFFF',
     icon: 'percent',

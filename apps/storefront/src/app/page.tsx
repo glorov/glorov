@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const [banners, products] = await Promise.all([
     getStoreBanners(),
-    getAllStoreProducts(50),
+    getAllStoreProducts(100),
   ])
   // JSON-LD Structured Data for Botanical Organization & E-Commerce WebSite
   const jsonLd = {

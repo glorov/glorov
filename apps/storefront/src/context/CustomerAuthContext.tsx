@@ -28,7 +28,7 @@ export interface CustomerAuthContextValue {
   markNotificationAsRead: (id: string) => void
 }
 
-const CustomerAuthContext = createContext<CustomerAuthContextValue | undefined>(undefined)
+export const CustomerAuthContext = createContext<CustomerAuthContextValue | undefined>(undefined)
 
 export const DEMO_ACCOUNT_USER: CustomerUser = {
   id: 'cust_demo_01',

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { PageContainer } from '../layout/PageContainer'
 import { ProductCard } from '../product/ProductCard'
@@ -35,11 +35,11 @@ export interface FeaturedProductsSectionProps {
 
 /**
  * FeaturedProductsSection
- * Fetches and displays 16 botanical products at a time with category filter tabs.
+ * Displays 16 botanical products at a time with instant category filter tabs.
  * Mirrors Flutter `GlorovFeaturedProducts`:
  * - Curated selection of 16 hand-picked items (Seeds, Live Plants, Flowering, Planters)
- * - Dynamic live fetch from /api/products?limit=16 with instant local catalog hydration
- * - Interactive filter tabs: All Featured, Live Plants, Heirloom Seeds
+ * - Zero double-fetch: hydrates synchronously from initialProducts passed from the server
+ * - Instant zero-latency filter tabs: All Featured (16), Live Plants (16), Heirloom Seeds (16)
  * - Botanical specimen counter chip with direct catalog navigation
  */
 export function FeaturedProductsSection({
@@ -48,65 +48,46 @@ export function FeaturedProductsSection({
   limit = 16,
 }: FeaturedProductsSectionProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'plants' | 'seeds'>('all')
-  const [remoteProducts, setRemoteProducts] = useState<GlorovProductItem[] | null>(null)
-  const productSource = initialProducts && initialProducts.length > 0 ? initialProducts : MOCK_PRODUCTS
 
-  // Dynamic fetch 16 products at a time from API
-  useEffect(() => {
-    let isMounted = true
-    async function fetchProducts() {
-      try {
-        const res = await fetch(`/api/products?limit=${limit}&category=${activeTab}`)
-        if (res.ok) {
-          const data = await res.json()
-          if (isMounted && Array.isArray(data.products) && data.products.length > 0) {
-            setRemoteProducts(data.products)
-          }
-        }
-      } catch {
-        // Fall back gracefully to productSource
-      }
-    }
+  // Source of truth: Server-preloaded initialProducts or local botanical catalog
+  const productSource = useMemo(() => {
+    return initialProducts && initialProducts.length > 0 ? initialProducts : MOCK_PRODUCTS
+  }, [initialProducts])
 
-    fetchProducts()
-    return () => {
-      isMounted = false
-    }
-  }, [activeTab, limit])
-
+  // Instant synchronous filtering matching Flutter _getCuratedProducts()
   const filteredProducts = useMemo(() => {
-    // If remote products were successfully fetched for this tab, use them (up to limit)
-    if (remoteProducts && remoteProducts.length > 0) {
-      return remoteProducts.slice(0, limit)
+    if (activeTab === 'plants') {
+      const plants = productSource.filter(
+        (product) =>
+          product.category.toLowerCase().includes('plant') ||
+          product.productType === 'plants'
+      )
+      return plants.slice(0, limit)
     }
 
-    // Instant local catalog resolution
-    if (activeTab === 'all') {
-      const curated = CURATED_FEATURED_SLUGS.map((slug) =>
-        productSource.find((p) => p.slug === slug)
-      ).filter(Boolean) as GlorovProductItem[]
-      return curated.length >= limit ? curated.slice(0, limit) : productSource.slice(0, limit)
-    }
-    if (activeTab === 'plants') {
-      return productSource
-        .filter(
-          (product) =>
-            product.category.toLowerCase().includes('plant') ||
-            product.productType === 'plants'
-        )
-        .slice(0, limit)
-    }
     if (activeTab === 'seeds') {
-      return productSource
-        .filter(
-          (product) =>
-            product.category.toLowerCase().includes('seed') ||
-            product.productType === 'seeds'
-        )
-        .slice(0, limit)
+      const seeds = productSource.filter(
+        (product) =>
+          product.category.toLowerCase().includes('seed') ||
+          product.productType === 'seeds'
+      )
+      return seeds.slice(0, limit)
     }
-    return productSource.slice(0, limit)
-  }, [activeTab, remoteProducts, productSource, limit])
+
+    // Default 'all': Curated botanical showcase prioritizing the 16 featured slugs
+    const curated = CURATED_FEATURED_SLUGS.map((slug) =>
+      productSource.find((p) => p.slug === slug)
+    ).filter(Boolean) as GlorovProductItem[]
+
+    if (curated.length >= limit) {
+      return curated.slice(0, limit)
+    }
+
+    // Fill remainder from productSource if fewer than 16 curated matches
+    const curatedIds = new Set(curated.map((p) => p.id))
+    const remainder = productSource.filter((p) => !curatedIds.has(p.id))
+    return [...curated, ...remainder].slice(0, limit)
+  }, [activeTab, productSource, limit])
 
   return (
     <section className={cn('w-full bg-[#F9FAF8] py-8 sm:py-12 border-t border-[#E5E7EB]', className)}>
@@ -137,10 +118,7 @@ export function FeaturedProductsSection({
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-6 sm:mb-8 select-none">
           <button
             type="button"
-            onClick={() => {
-              setActiveTab('all')
-              setRemoteProducts(null)
-            }}
+            onClick={() => setActiveTab('all')}
             className={cn(
               'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all border shrink-0',
               activeTab === 'all'
@@ -157,10 +135,7 @@ export function FeaturedProductsSection({
           </button>
           <button
             type="button"
-            onClick={() => {
-              setActiveTab('plants')
-              setRemoteProducts(null)
-            }}
+            onClick={() => setActiveTab('plants')}
             className={cn(
               'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all border shrink-0',
               activeTab === 'plants'
@@ -177,10 +152,7 @@ export function FeaturedProductsSection({
           </button>
           <button
             type="button"
-            onClick={() => {
-              setActiveTab('seeds')
-              setRemoteProducts(null)
-            }}
+            onClick={() => setActiveTab('seeds')}
             className={cn(
               'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all border shrink-0',
               activeTab === 'seeds'

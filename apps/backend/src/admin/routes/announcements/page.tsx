@@ -12,6 +12,7 @@ import {
   Table,
   Toaster,
   toast,
+  usePrompt,
 } from "@medusajs/ui";
 
 export interface AnnouncementItem {
@@ -215,6 +216,7 @@ const SparkleIcon = () => (
 );
 
 export const AnnouncementsAdminPage = () => {
+  const prompt = usePrompt();
   const [configData, setConfigData] = useState<AnnouncementBarConfig>({
     is_enabled: true,
     speed_seconds: 30,
@@ -327,7 +329,13 @@ export const AnnouncementsAdminPage = () => {
   };
 
   const handleDeleteItem = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this announcement item?")) return;
+    const userConfirmed = await prompt({
+      title: "Delete Announcement",
+      description: "Are you sure you want to delete this announcement item?",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+    });
+    if (!userConfirmed) return;
     try {
       const res = await adminFetch(`/admin/announcements/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(res.error || "Failed to delete");

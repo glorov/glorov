@@ -65,20 +65,31 @@ describe('Cart — CouponVoucherCard', () => {
     const onApply = vi.fn().mockReturnValue(true)
     const onRemove = vi.fn()
 
+    const testOffers = [
+      {
+        code: 'DIWALI10',
+        title: '10% OFF',
+        description: '10% OFF On orders above ₹499',
+        discountPercent: 10,
+        minSpend: 499,
+      },
+    ]
+
     render(
       <CouponVoucherCard
         appliedCoupon={null}
         onApplyCoupon={onApply}
         onRemoveCoupon={onRemove}
         subtotal={500}
+        availableOffers={testOffers}
       />
     )
 
-    expect(screen.getByText(/GLOROV10/i)).toBeDefined()
+    expect(screen.getByText(/DIWALI10/i)).toBeDefined()
 
     const applyBtn = screen.getByRole('button', { name: /^APPLY$/i })
     fireEvent.click(applyBtn)
-    expect(onApply).toHaveBeenCalledWith('GLOROV10')
+    expect(onApply).toHaveBeenCalledWith('DIWALI10')
   })
 
   it('renders applied voucher with remove button', () => {
@@ -87,14 +98,14 @@ describe('Cart — CouponVoucherCard', () => {
 
     render(
       <CouponVoucherCard
-        appliedCoupon="GLOROV10"
+        appliedCoupon="DIWALI10"
         onApplyCoupon={onApply}
         onRemoveCoupon={onRemove}
         subtotal={500}
       />
     )
 
-    expect(screen.getAllByText('GLOROV10').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('DIWALI10').length).toBeGreaterThan(0)
     expect(screen.getByText('Remove')).toBeDefined()
 
     const removeBtn = screen.getByText('Remove')
@@ -105,7 +116,7 @@ describe('Cart — CouponVoucherCard', () => {
   it('does not recommend a lower coupon as BETTER when a 20% offer is active', () => {
     render(
       <CouponVoucherCard
-        appliedCoupon="WINTER20"
+        appliedCoupon="DIWALI20"
         onApplyCoupon={vi.fn()}
         onRemoveCoupon={vi.fn()}
         subtotal={869}
@@ -117,7 +128,7 @@ describe('Cart — CouponVoucherCard', () => {
     expect(screen.queryByText(/10% OFF Special Unlocked/i)).toBeNull()
   })
 
-  it('enforces that 20% milestone coupons require ₹2,299 spend and 15% require ₹1,599', () => {
+  it('enforces active milestone coupon thresholds and excludes inactive coupons', () => {
     import('../../src/context/StorefrontContext').then(({ MILESTONE_COUPONS }) => {
       const winter20 = MILESTONE_COUPONS.find((c) => c.code === 'WINTER20')
       const diwali20 = MILESTONE_COUPONS.find((c) => c.code === 'DIWALI20')
@@ -125,11 +136,14 @@ describe('Cart — CouponVoucherCard', () => {
       const diwali15 = MILESTONE_COUPONS.find((c) => c.code === 'DIWALI15')
       const diwali10 = MILESTONE_COUPONS.find((c) => c.code === 'DIWALI10')
 
-      expect(winter20?.minSpend).toBe(2299)
+      // Active configured coupons
       expect(diwali20?.minSpend).toBe(2299)
-      expect(thunder15?.minSpend).toBe(1599)
       expect(diwali15?.minSpend).toBe(1599)
       expect(diwali10?.minSpend).toBe(999)
+
+      // Inactive coupons must not be present in storefront active milestone tiers
+      expect(winter20).toBeUndefined()
+      expect(thunder15).toBeUndefined()
     })
   })
 })

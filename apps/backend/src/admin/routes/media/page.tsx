@@ -11,6 +11,7 @@ import {
   Toaster,
   toast,
   Copy,
+  usePrompt,
 } from "@medusajs/ui";
 
 export interface MediaAsset {
@@ -67,6 +68,7 @@ const TrashIcon = () => (
 );
 
 export const MediaAdminPage = () => {
+  const prompt = usePrompt();
   const [mediaList, setMediaList] = useState<MediaAsset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFolder, setSelectedFolder] = useState<string>("glorov");
@@ -177,7 +179,13 @@ export const MediaAdminPage = () => {
   };
 
   const handleDelete = async (publicId: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${publicId}" from Cloudinary?`)) {
+    const userConfirmed = await prompt({
+      title: "Delete Cloudinary Asset",
+      description: `Are you sure you want to delete "${publicId}" from Cloudinary?`,
+      confirmText: "Delete Asset",
+      cancelText: "Cancel",
+    });
+    if (!userConfirmed) {
       return;
     }
 

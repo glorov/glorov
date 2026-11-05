@@ -12,6 +12,7 @@ import {
   Table,
   Toaster,
   toast,
+  usePrompt,
 } from "@medusajs/ui";
 import { TrustBadgeIconKey } from "../../../modules/trust-badge/types";
 
@@ -137,6 +138,7 @@ const TrustRibbonIcon = () => (
 );
 
 const TrustBadgesAdminPage = () => {
+  const prompt = usePrompt();
   const [badges, setBadges] = useState<TrustBadgeItem[]>([]);
   const [settings, setSettings] = useState<TrustSectionSettings | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -216,7 +218,13 @@ const TrustBadgesAdminPage = () => {
 
   // Delete
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this trust badge?")) return;
+    const userConfirmed = await prompt({
+      title: "Delete Trust Badge",
+      description: "Are you sure you want to delete this trust badge?",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+    });
+    if (!userConfirmed) return;
     try {
       const res = await adminFetch<any>(`/admin/trust-badges/${id}`, { method: "DELETE" });
       if (res.ok) {
@@ -291,7 +299,13 @@ const TrustBadgesAdminPage = () => {
 
   // Reset Defaults
   const handleResetDefaults = async () => {
-    if (!confirm("Reset all trust badges and green theme settings to botanical defaults?")) return;
+    const userConfirmed = await prompt({
+      title: "Reset Trust Badges",
+      description: "Reset all trust badges and green theme settings to botanical defaults?",
+      confirmText: "Reset Defaults",
+      cancelText: "Cancel",
+    });
+    if (!userConfirmed) return;
     try {
       const res = await adminFetch<any>("/admin/trust-badges/seed", { method: "POST" });
       if (res.ok) {

@@ -5,6 +5,25 @@ import { transformMedusaProduct } from '../../../lib/api/products'
 
 export const dynamic = 'force-dynamic'
 
+const CURATED_FEATURED_SLUGS = [
+  'brinjal-banarshi-giant-seeds',
+  'chinese-cabbage-seeds',
+  'green-onion-seeds-leek',
+  'drumstick-seeds-moringa',
+  'watermelon-seeds',
+  'white-cucumber-seeds-khira',
+  'petunia-mix-seeds',
+  'dahlia-seeds',
+  'green-chilli-seeds',
+  'anthurium-red-plant',
+  'marigold-african-double-seeds',
+  'money-plant-golden',
+  'peace-lily-plant',
+  'jade-plant-mini',
+  'cosmos-mix-seeds',
+  'aglaonema-pink-beauty-plant',
+]
+
 /**
  * GET /api/products
  * Fetches products from Medusa backend with automatic fallback to rich GLOROV botanical catalog.
@@ -81,6 +100,14 @@ export async function GET(request: NextRequest) {
         p.category.toLowerCase().includes('soil') ||
         p.productType === 'care'
     )
+  } else {
+    // When category is 'all', order curated featured items first
+    const curated = CURATED_FEATURED_SLUGS.map((slug) =>
+      MOCK_PRODUCTS.find((p) => p.slug === slug)
+    ).filter(Boolean) as typeof MOCK_PRODUCTS
+    const curatedSlugsSet = new Set(CURATED_FEATURED_SLUGS)
+    const remaining = MOCK_PRODUCTS.filter((p) => !curatedSlugsSet.has(p.slug))
+    filtered = [...curated, ...remaining]
   }
 
   const paged = filtered.slice(offset, offset + limit)

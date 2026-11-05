@@ -10,6 +10,7 @@ export interface CouponVoucherCardProps {
   onRemoveCoupon: () => void
   onOpenOffersModal?: () => void
   subtotal: number
+  availableOffers?: typeof MILESTONE_COUPONS
 }
 
 /**
@@ -26,13 +27,14 @@ export const CouponVoucherCard: React.FC<CouponVoucherCardProps> = ({
   onRemoveCoupon,
   onOpenOffersModal,
   subtotal,
+  availableOffers = MILESTONE_COUPONS,
 }) => {
-  // Find highest eligible milestone offer
-  const eligibleOffers = MILESTONE_COUPONS.filter((o) => subtotal >= o.minSpend)
+  // Find highest eligible milestone offer among active offers
+  const eligibleOffers = availableOffers.filter((o) => subtotal >= o.minSpend)
   const bestApplicable = eligibleOffers.length > 0 ? eligibleOffers[eligibleOffers.length - 1] : null
 
   // Active applied coupon object
-  const appliedOfferObj = MILESTONE_COUPONS.find(
+  const appliedOfferObj = availableOffers.find(
     (c) => c.code.toUpperCase() === (appliedCoupon || '').toUpperCase()
   )
 
@@ -50,7 +52,7 @@ export const CouponVoucherCard: React.FC<CouponVoucherCardProps> = ({
   // Check if a higher offer is unlocked while a lower one is active
   const higherUnlockedOffer =
     appliedCoupon &&
-    MILESTONE_COUPONS.slice()
+    availableOffers.slice()
       .reverse()
       .find((o) => subtotal >= o.minSpend && o.discountPercent > currentDiscountPercent)
 

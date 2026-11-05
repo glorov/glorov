@@ -45,7 +45,7 @@ export const CheckoutOrderSummary: React.FC<CheckoutOrderSummaryProps> = ({
       showToast('success', `Coupon ${trimmed} applied!`, { title: 'Offer Activated' })
       setCouponInput('')
     } else {
-      showToast('error', `Invalid coupon "${trimmed}". Try SEEDS20 or GLOROV10.`, {
+      showToast('error', `Invalid or inactive coupon "${trimmed}".`, {
         title: 'Coupon Error',
       })
     }

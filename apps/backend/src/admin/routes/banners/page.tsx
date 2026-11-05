@@ -12,6 +12,7 @@ import {
   Table,
   Toaster,
   toast,
+  usePrompt,
 } from "@medusajs/ui";
 
 export interface Banner {
@@ -60,6 +61,7 @@ const CarouselIcon = () => (
 );
 
 const BannersAdminPage = () => {
+  const prompt = usePrompt();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [editingBanner, setEditingBanner] = useState<Partial<Banner> | null>(null);
@@ -112,7 +114,13 @@ const BannersAdminPage = () => {
 
   // Handle delete
   const handleDelete = async (id: string, title: string) => {
-    if (!window.confirm(`Are you sure you want to delete carousel slide "${title}"?`)) {
+    const userConfirmed = await prompt({
+      title: "Delete Carousel Slide",
+      description: `Are you sure you want to delete carousel slide "${title}"?`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+    });
+    if (!userConfirmed) {
       return;
     }
     try {
@@ -130,7 +138,13 @@ const BannersAdminPage = () => {
 
   // Re-seed default banners
   const handleSeedDefaults = async () => {
-    if (!window.confirm("Reset and re-seed the 4 default botanical hero carousel slides?")) {
+    const userConfirmed = await prompt({
+      title: "Restore Default Carousel Slides",
+      description: "Reset and re-seed the 4 default botanical hero carousel slides?",
+      confirmText: "Restore Defaults",
+      cancelText: "Cancel",
+    });
+    if (!userConfirmed) {
       return;
     }
     try {

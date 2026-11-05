@@ -3,14 +3,19 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useCustomerAuth } from '../../../context/CustomerAuthContext'
+import { useToast } from '../../../context/StorefrontContext'
+import { Modal } from '../../../components/ui/Modal'
 import { AddressCard } from '../../../components/account/AddressCard'
 import { AddressModal } from '../../../components/account/AddressModal'
 import type { CustomerAddress } from '../../../types/account'
 
 export default function AddressesPage() {
   const { customer, addresses, addAddress, updateAddress, deleteAddress } = useCustomerAuth()
+  const { showToast } = useToast()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingAddress, setEditingAddress] = useState<CustomerAddress | null>(null)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   if (!customer) {
     return (
@@ -63,11 +68,11 @@ export default function AddressesPage() {
     }
   }
 
-  const handleDeleteAddress = async (id: string) => {
-    if (confirm('Are you sure you want to remove this delivery address?')) {
-      await deleteAddress(id)
-    }
+  const handleDeleteAddress = (id: string) => {
+    setDeleteTargetId(id)
   }
+
+  const targetAddress = addresses.find((a) => a.id === deleteTargetId)
 
   return (
     <div className="space-y-6">
@@ -134,6 +139,64 @@ export default function AddressesPage() {
           initialData={editingAddress}
         />
       )}
+
+      {/* Themed Confirmation Modal for Address Removal */}
+      <Modal
+        isOpen={!!deleteTargetId}
+        onClose={() => setDeleteTargetId(null)}
+        title="Remove Delivery Address"
+        maxWidth="sm"
+      >
+        <div className="space-y-4 text-left">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-rose-50/70 border border-rose-200/60 text-xs">
+            <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-semibold text-stone-900">
+                Remove {targetAddress?.name || 'this address'}?
+              </p>
+              <p className="text-[11px] text-stone-500">
+                {targetAddress?.fullName} &bull; {targetAddress?.city}, {targetAddress?.state}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-xs text-stone-600 leading-relaxed">
+            Are you sure you want to remove this delivery location? Any future plant and seed orders shipped here will require re-entering these details.
+          </p>
+
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-stone-100">
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={() => setDeleteTargetId(null)}
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-100 transition"
+            >
+              Keep Address
+            </button>
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={async () => {
+                if (!deleteTargetId) return
+                setIsDeleting(true)
+                await deleteAddress(deleteTargetId)
+                setIsDeleting(false)
+                setDeleteTargetId(null)
+                showToast('info', 'Delivery address removed successfully.', {
+                  title: 'Address Removed',
+                })
+              }}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white transition flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            >
+              {isDeleting ? 'Removing...' : 'Delete Address'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

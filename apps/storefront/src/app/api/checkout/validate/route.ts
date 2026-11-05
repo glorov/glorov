@@ -148,14 +148,6 @@ export async function POST(req: NextRequest) {
       const cleanCode = body.couponCode.trim().toUpperCase()
 
       const COUPONS: Record<string, { percent: number; minSpend: number; categories?: string[]; title: string }> = {
-        HEIRLOOM20: { percent: 20, minSpend: 499, categories: ['seeds'], title: 'Desi Heirloom Seed Fest' },
-        SEEDS20: { percent: 20, minSpend: 599, categories: ['seeds'], title: '20% OFF Seeds' },
-        PLANTS15: { percent: 15, minSpend: 699, categories: ['live plants', 'live-plants', 'plants'], title: 'Urban Green Oasis' },
-        PLANTERS10: { percent: 10, minSpend: 799, categories: ['planters', 'planters & pots', 'pots'], title: 'Artisan Ceramic Planters' },
-        WINTER20: { percent: 20, minSpend: 2299, title: 'Winter Sowing & Planting Fest' },
-        THUNDER15: { percent: 15, minSpend: 1599, title: '15% OFF' },
-        FIRST10: { percent: 10, minSpend: 499, title: 'Special Welcome Offer' },
-        GLOROV10: { percent: 10, minSpend: 499, title: 'Special Welcome Offer' },
         DIWALI10: { percent: 10, minSpend: 999, title: '10% OFF' },
         DIWALI15: { percent: 15, minSpend: 1599, title: '15% OFF' },
         DIWALI20: { percent: 20, minSpend: 2299, title: '20% OFF' },

@@ -4,6 +4,8 @@ import React, { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCustomerAuth } from '../../../context/CustomerAuthContext'
+import { useToast } from '../../../context/StorefrontContext'
+import { Modal } from '../../../components/ui/Modal'
 
 function LoginForm() {
   const router = useRouter()
@@ -11,11 +13,35 @@ function LoginForm() {
   const redirectPath = searchParams ? (searchParams.get('redirect') || '/account') : '/account'
 
   const { login, isLoading, authError } = useCustomerAuth()
+  const { showToast } = useToast()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
+
+  // Forgot password modal state
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [isResetSending, setIsResetSending] = useState(false)
+
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!resetEmail.trim() || !resetEmail.includes('@')) {
+      showToast('warning', 'Please provide a valid registered email address.', {
+        title: 'Valid Email Required',
+      })
+      return
+    }
+
+    setIsResetSending(true)
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    setIsResetSending(false)
+    setIsForgotPasswordOpen(false)
+    showToast('success', `Password recovery link dispatched to ${resetEmail.trim()}. Check your inbox!`, {
+      title: 'Reset Link Dispatched',
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,16 +125,16 @@ function LoginForm() {
             <label className="block text-xs font-bold text-stone-700" htmlFor="login-password">
               Password
             </label>
-            <a
-              href="#forgot-password"
-              onClick={(e) => {
-                e.preventDefault()
-                alert('Password reset link has been dispatched to your email address.')
+            <button
+              type="button"
+              onClick={() => {
+                setResetEmail(email.trim())
+                setIsForgotPasswordOpen(true)
               }}
-              className="text-[11px] font-semibold text-brand-primary hover:underline"
+              className="text-[11px] font-semibold text-brand-primary hover:underline cursor-pointer"
             >
               Forgot Password?
-            </a>
+            </button>
           </div>
           <div className="relative">
             <input
@@ -183,6 +209,60 @@ function LoginForm() {
           Create a Patron Account
         </Link>
       </div>
+
+      {/* Botanical Themed Forgot Password Modal */}
+      <Modal
+        isOpen={isForgotPasswordOpen}
+        onClose={() => setIsForgotPasswordOpen(false)}
+        title="Reset Your Password"
+        maxWidth="sm"
+      >
+        <form onSubmit={handleForgotPasswordSubmit} className="space-y-4 text-left">
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/60">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-brand-primary flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+            </div>
+            <p className="text-xs text-emerald-950 font-medium leading-relaxed">
+              Enter your registered patron email to receive a secure password recovery dispatch.
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="reset-email" className="block text-xs font-bold text-stone-700 mb-1">
+              Patron Email Address
+            </label>
+            <input
+              id="reset-email"
+              type="email"
+              required
+              autoFocus
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              placeholder="patron@domain.com"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-stone-900 text-xs focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-stone-100">
+            <button
+              type="button"
+              onClick={() => setIsForgotPasswordOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-100 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isResetSending}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-primary hover:bg-emerald-700 text-white transition flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            >
+              {isResetSending ? 'Sending Dispatch...' : 'Send Recovery Link'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

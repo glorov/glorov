@@ -16,21 +16,22 @@ describe("Promotional Offers Operations & Service Invariants", () => {
   });
 
   describe("1. Default Offers Seeding & Structure", () => {
-    it("seeds default botanical promotional offers with welcome offer highlighted", async () => {
+    it("seeds configured botanical promotional offers with correct active/inactive status", async () => {
       const offers = await OfferService.listOffers(false);
-      expect(offers.length).toBe(5);
+      expect(offers.length).toBe(7);
 
-      // Welcome offer invariant check (matches user's screenshot exactly)
-      const welcome = offers.find((o) => o.code === "GLOROV10");
-      expect(welcome).toBeDefined();
-      expect(welcome?.tag).toBe("SPECIAL WELCOME OFFER");
-      expect(welcome?.description).toBe(
-        "Flat 10% Off on your first order of heirloom seeds, indoor plants & glazed planters."
-      );
-      expect(welcome?.discount_badge).toBe("10% OFF");
-      expect(welcome?.discount_value).toBe(10);
-      expect(welcome?.is_active).toBe(true);
-      expect(welcome?.icon).toBe("card_giftcard");
+      const diwali10 = offers.find((o) => o.code === "DIWALI10");
+      expect(diwali10).toBeDefined();
+      expect(diwali10?.tag).toBe("FESTIVE BOTANICAL OFFER");
+      expect(diwali10?.discount_badge).toBe("10% OFF");
+      expect(diwali10?.discount_value).toBe(10);
+      expect(diwali10?.is_active).toBe(true);
+      expect(diwali10?.icon).toBe("percent");
+
+      const winter20 = offers.find((o) => o.code === "WINTER20");
+      expect(winter20).toBeDefined();
+      expect(winter20?.is_active).toBe(false);
+      expect(winter20?.is_highlighted).toBe(false);
     });
 
     it("orders offers strictly ascending by display_order", async () => {
@@ -41,20 +42,14 @@ describe("Promotional Offers Operations & Service Invariants", () => {
     });
 
     it("filters inactive offers when activeOnly is requested", async () => {
-      const all = await OfferService.listOffers(false);
-      await OfferService.updateOffer(all[0].id, { is_active: false });
-
       const activeOnly = await OfferService.listOffers(true);
-      expect(activeOnly.length).toBe(4);
-      expect(activeOnly.some((o) => o.id === all[0].id)).toBe(false);
+      expect(activeOnly.length).toBe(3); // DIWALI10, DIWALI15, DIWALI20
+      expect(activeOnly.every((o) => o.is_active)).toBe(true);
     });
 
-    it("retrieves the active highlighted welcome offer correctly", async () => {
+    it("returns null if no active offer is explicitly highlighted", async () => {
       const highlighted = await OfferService.getHighlightedOffer();
-      expect(highlighted).not.toBeNull();
-      expect(highlighted?.code).toBe("GLOROV10");
-      expect(highlighted?.is_highlighted).toBe(true);
-      expect(highlighted?.is_active).toBe(true);
+      expect(highlighted).toBeNull();
     });
   });
 
@@ -76,14 +71,15 @@ describe("Promotional Offers Operations & Service Invariants", () => {
       expect(created.code).toBe("FESTIVE25");
       expect(created.title).toBe("Diwali Botanical Festival");
       expect(created.tag).toBe("FESTIVE LIGHT & LEAF");
-      expect(created.display_order).toBe(6);
+      expect(created.display_order).toBe(8);
       expect(created.is_active).toBe(true);
       expect(created.created_at).toBeDefined();
     });
 
     it("enforces single highlighted offer when new offer is marked highlighted", async () => {
+      await OfferService.updateOffer("offer_diwali_10", { is_highlighted: true });
       const previousHighlighted = await OfferService.getHighlightedOffer();
-      expect(previousHighlighted?.code).toBe("GLOROV10");
+      expect(previousHighlighted?.code).toBe("DIWALI10");
 
       const newHeroOffer = await OfferService.createOffer({
         code: "EXCLUSIVE50",
@@ -101,12 +97,12 @@ describe("Promotional Offers Operations & Service Invariants", () => {
       expect(currentHighlighted?.code).toBe("EXCLUSIVE50");
 
       // Verify previously highlighted offer was unmarked
-      const oldOffer = await OfferService.getOfferById("offer_welcome_glorov10");
+      const oldOffer = await OfferService.getOfferById("offer_diwali_10");
       expect(oldOffer?.is_highlighted).toBe(false);
     });
 
     it("updates existing offer fields and persists changes", async () => {
-      const updated = await OfferService.updateOffer("offer_welcome_glorov10", {
+      const updated = await OfferService.updateOffer("offer_diwali_10", {
         description: "Special promotion: get 15% discount on all seeds and live plants.",
         discount_badge: "15% OFF",
         discount_value: 15,
@@ -117,7 +113,7 @@ describe("Promotional Offers Operations & Service Invariants", () => {
       expect(updated?.discount_badge).toBe("15% OFF");
       expect(updated?.discount_value).toBe(15);
 
-      const fetched = await OfferService.getOfferById("offer_welcome_glorov10");
+      const fetched = await OfferService.getOfferById("offer_diwali_10");
       expect(fetched?.discount_badge).toBe("15% OFF");
     });
 
@@ -126,7 +122,7 @@ describe("Promotional Offers Operations & Service Invariants", () => {
       expect(success).toBe(true);
 
       const offers = await OfferService.listOffers(false);
-      expect(offers.length).toBe(4);
+      expect(offers.length).toBe(6);
       expect(offers.some((o) => o.id === "offer_seeds_heirloom20")).toBe(false);
 
       const deleted = await OfferService.getOfferById("offer_seeds_heirloom20");
@@ -155,10 +151,24 @@ describe("Promotional Offers Operations & Service Invariants", () => {
       expect(highlighted).toBeNull();
     });
 
-    it("falls back to first active offer if no active offer is explicitly highlighted", async () => {
-      await OfferService.updateOffer("offer_welcome_glorov10", { is_highlighted: false });
+    it("clears is_highlighted when an active highlighted offer is deactivated", async () => {
+      await OfferService.updateOffer("offer_diwali_10", { is_highlighted: true, is_active: true });
+      expect((await OfferService.getHighlightedOffer())?.code).toBe("DIWALI10");
+
+      await OfferService.updateOffer("offer_diwali_10", { is_active: false });
+      const updated = await OfferService.getOfferById("offer_diwali_10");
+      expect(updated?.is_active).toBe(false);
+      expect(updated?.is_highlighted).toBe(false);
+
       const highlighted = await OfferService.getHighlightedOffer();
-      expect(highlighted).not.toBeNull();
+      expect(highlighted).toBeNull();
+    });
+
+    it("rejects coupon validation when the offer is inactive in database", async () => {
+      // WINTER20 is inactive (is_active: false)
+      const res = await OfferService.validateCoupon("WINTER20", 3000);
+      expect(res.valid).toBe(false);
+      expect(res.error).toMatch(/invalid|inactive|expired/i);
     });
   });
 

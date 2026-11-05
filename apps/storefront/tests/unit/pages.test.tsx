@@ -2,7 +2,7 @@ import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { HeroBannerSlider } from '../../src/components/home/HeroBannerSlider'
-import { ValuePropsRibbon } from '../../src/components/home/ValuePropsRibbon'
+import { ValuePropsRibbon, GlorovOfferBanner } from '../../src/components/home/ValuePropsRibbon'
 import { CategoryDiscoveryGrid } from '../../src/components/home/CategoryDiscoveryGrid'
 import { FeaturedProductsSection } from '../../src/components/home/FeaturedProductsSection'
 import { BotanicalEditorialShowcase } from '../../src/components/home/BotanicalEditorialShowcase'
@@ -35,18 +35,39 @@ describe('Homepage — HeroBannerSlider', () => {
 })
 
 describe('Homepage — ValuePropsRibbon', () => {
-  it('renders welcome coupon offer and 4 trust guarantee pillars', () => {
+  it('renders 4 trust guarantee pillars without banner when none is active and highlighted', () => {
     render(
       <StorefrontProvider>
         <ValuePropsRibbon />
       </StorefrontProvider>
     )
 
-    expect(screen.getAllByText(/FIRST10/i).length).toBeGreaterThanOrEqual(1)
+    expect(screen.queryByText(/FIRST10/i)).toBeNull()
     expect(screen.getByText('90-Day Pre-Fertilised Soil')).toBeDefined()
     expect(screen.getByText('Arrives Healthy Guaranteed')).toBeDefined()
     expect(screen.getByText('Free Plant Replacement')).toBeDefined()
     expect(screen.getByText('Lifetime Botanical Support')).toBeDefined()
+  })
+
+  it('renders active highlighted banner when an offer is set as featured banner', () => {
+    const featuredOffer = {
+      id: 'off-diwali10',
+      code: 'DIWALI10',
+      title: '10% OFF',
+      tag: 'FESTIVE BOTANICAL OFFER',
+      description: '10% OFF On orders above ₹999',
+      is_active: true,
+      is_highlighted: true,
+    }
+
+    render(
+      <StorefrontProvider>
+        <GlorovOfferBanner offer={featuredOffer} />
+      </StorefrontProvider>
+    )
+
+    expect(screen.getByText(/DIWALI10/i)).toBeDefined()
+    expect(screen.getByText(/FESTIVE BOTANICAL OFFER/i)).toBeDefined()
   })
 })
 

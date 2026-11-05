@@ -53,6 +53,8 @@ jobs:
           echo "🔨 Compiling Medusa v2 backend and admin dashboard..."
           pnpm --filter @glorov/types build || true
           pnpm --filter @glorov/backend build
+          # Ensure <base href="/" /> is present in compiled admin index.html files
+          find apps/backend/.medusa -name "index.html" -exec sed -i 's|<head>|<head><base href="/" />|g' {} + || true
 
       - name: 8. Build Next.js Storefront (Standalone)
         env:
@@ -132,7 +134,7 @@ jobs:
 
           echo "2. Checking Admin Dashboard (https://admin.glorov.tech)..."
           curl -f -s -I "https://admin.glorov.tech" | head -n 10
-          curl -f -s -I "https://admin.glorov.tech/app/" | head -n 10
+          curl -f -s -L -I "https://admin.glorov.tech/app" | head -n 10
 
           echo "3. Checking Backend Health (https://api.glorov.tech/health)..."
           curl -f -s -I "https://api.glorov.tech/health" | head -n 10

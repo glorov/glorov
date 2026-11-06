@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useState, useMemo, useEffect } from 'react'
+import React, { useRef, useState, useMemo, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { GlorovImage } from '../ui/GlorovImage'
 import { GlorovCustomIcons } from '../common/GlorovIcons'
@@ -36,6 +36,8 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
   const [justAddedId, setJustAddedId] = useState<string | null>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
+  const canScrollLeftRef = useRef(false)
+  const canScrollRightRef = useRef(true)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Track items in cart for smart exclusion & quantity indicators
@@ -186,25 +188,45 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
     }
   }, [pool, cartItemMap, activeTab, cartContext])
 
-  // Scroll bounds checker
-  const updateScrollBounds = () => {
+  // Scroll bounds checker with rAF and threshold deduplication
+  const updateScrollBounds = useCallback(() => {
     if (!scrollRef.current) return
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
-    setCanScrollLeft(scrollLeft > 10)
-    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10)
-  }
+    const nextLeft = scrollLeft > 10
+    const nextRight = scrollLeft + clientWidth < scrollWidth - 10
+    if (nextLeft !== canScrollLeftRef.current) {
+      canScrollLeftRef.current = nextLeft
+      setCanScrollLeft(nextLeft)
+    }
+    if (nextRight !== canScrollRightRef.current) {
+      canScrollRightRef.current = nextRight
+      setCanScrollRight(nextRight)
+    }
+  }, [])
 
   useEffect(() => {
     updateScrollBounds()
     const el = scrollRef.current
     if (!el) return
-    el.addEventListener('scroll', updateScrollBounds, { passive: true })
-    window.addEventListener('resize', updateScrollBounds)
-    return () => {
-      el.removeEventListener('scroll', updateScrollBounds)
-      window.removeEventListener('resize', updateScrollBounds)
+
+    let ticking = false
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(() => {
+          updateScrollBounds()
+          ticking = false
+        })
+      }
     }
-  }, [recommendedItems])
+
+    el.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+    return () => {
+      el.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [recommendedItems, updateScrollBounds])
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return

@@ -51,9 +51,6 @@ export function ScrollRevealSection({
         delay,
         ease: [0.22, 1, 0.36, 1], // Smooth exponential cubic-bezier
       }}
-      style={{
-        willChange: isInView ? 'auto' : 'transform, opacity',
-      }}
       className={cn('w-full', className)}
     >
       {children}

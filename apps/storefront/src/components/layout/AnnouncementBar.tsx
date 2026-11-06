@@ -351,7 +351,7 @@ export function AnnouncementBar({
       aria-label="Store Announcements"
       style={{ backgroundColor: bgColor }}
       className={cn(
-        'group w-full overflow-hidden relative z-40 transition-[max-height,opacity,transform] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] will-change-[max-height,opacity,transform] cursor-default select-none pointer-events-none',
+        'group w-full overflow-hidden relative z-40 transition-[max-height,opacity,transform] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] cursor-default select-none pointer-events-none',
         showAnnouncement
           ? 'max-h-[34px] opacity-100 translate-y-0 border-b border-black/15'
           : 'max-h-0 opacity-0 -translate-y-full border-b-0 pointer-events-none',
@@ -384,7 +384,7 @@ export function AnnouncementBar({
           }}
         >
           {/* Render duplicate sets for continuous infinite seamless loop */}
-          <div className="flex items-center glorov-marquee-track">
+          <div className="flex items-center shrink-0">
             {displayItems.map((item, idx) => (
               <SingleAnnouncement
                 key={`track1-${item.id}-${idx}`}
@@ -394,7 +394,7 @@ export function AnnouncementBar({
               />
             ))}
           </div>
-          <div className="flex items-center glorov-marquee-track" aria-hidden="true">
+          <div className="flex items-center shrink-0" aria-hidden="true">
             {displayItems.map((item, idx) => (
               <SingleAnnouncement
                 key={`track2-${item.id}-${idx}`}

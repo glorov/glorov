@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useWishlist } from '../../context/StorefrontContext'
 import { cn } from '../../lib/utils/cn'
 
@@ -37,6 +37,7 @@ export const MobileStickyPurchaseBar: React.FC<MobileStickyPurchaseBarProps> = (
   variantName,
 }) => {
   const [isVisible, setIsVisible] = useState(false)
+  const isVisibleRef = useRef(false)
   const { isInWishlist, toggleWishlist } = useWishlist()
   const isSaved = productId ? isInWishlist(productId) : false
 
@@ -44,42 +45,44 @@ export const MobileStickyPurchaseBar: React.FC<MobileStickyPurchaseBarProps> = (
   const originalPrice = discountPrice && discountPrice > price ? discountPrice : null
 
   useEffect(() => {
-    const handleScroll = () => {
-      // In Flutter: threshold is 350px or when scrolled past in-page add-to-cart button
+    let ticking = false
+
+    const updateVisibility = () => {
       const scrollEl = typeof document !== 'undefined' ? document.getElementById('glorov-page-scroll') : null
       const scrollY = scrollEl ? scrollEl.scrollTop : (typeof window !== 'undefined' ? window.scrollY : 0)
-      setIsVisible(scrollY > 350)
+      const nextVisible = scrollY > 350
+      if (nextVisible !== isVisibleRef.current) {
+        isVisibleRef.current = nextVisible
+        setIsVisible(nextVisible)
+      }
+    }
+
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(() => {
+          updateVisibility()
+          ticking = false
+        })
+      }
     }
 
     const scrollEl = typeof document !== 'undefined' ? document.getElementById('glorov-page-scroll') : null
     if (scrollEl) {
-      scrollEl.addEventListener('scroll', handleScroll, { passive: true })
+      scrollEl.addEventListener('scroll', onScroll, { passive: true })
     }
     if (typeof window !== 'undefined') {
-      window.addEventListener('scroll', handleScroll, { passive: true })
+      window.addEventListener('scroll', onScroll, { passive: true })
     }
 
-    const handleCapture = (e: Event) => {
-      const target = e.target as HTMLElement | null
-      if (target && target.id === 'glorov-page-scroll') {
-        handleScroll()
-      }
-    }
-    if (typeof document !== 'undefined') {
-      document.addEventListener('scroll', handleCapture, { capture: true, passive: true })
-    }
-
-    handleScroll()
+    updateVisibility()
 
     return () => {
       if (scrollEl) {
-        scrollEl.removeEventListener('scroll', handleScroll)
+        scrollEl.removeEventListener('scroll', onScroll)
       }
       if (typeof window !== 'undefined') {
-        window.removeEventListener('scroll', handleScroll)
-      }
-      if (typeof document !== 'undefined') {
-        document.removeEventListener('scroll', handleCapture, { capture: true })
+        window.removeEventListener('scroll', onScroll)
       }
     }
   }, [])

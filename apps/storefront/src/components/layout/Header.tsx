@@ -109,7 +109,7 @@ function SearchRotatingPlaceholder({
           <span
             key={`prev-${prevIndex}`}
             className={cn(
-              'absolute inset-0 flex items-center font-semibold text-[#6B7280] truncate leading-none will-change-transform will-change-opacity animate-hint-out',
+              'absolute inset-0 flex items-center font-semibold text-[#6B7280] truncate leading-none animate-hint-out',
               isDesktop ? 'text-[13.5px]' : 'text-[12.5px]'
             )}
           >
@@ -119,7 +119,7 @@ function SearchRotatingPlaceholder({
         <span
           key={`curr-${currentIndex}`}
           className={cn(
-            'absolute inset-0 flex items-center font-semibold text-[#6B7280] truncate leading-none will-change-transform will-change-opacity',
+            'absolute inset-0 flex items-center font-semibold text-[#6B7280] truncate leading-none',
             isDesktop ? 'text-[13.5px]' : 'text-[12.5px]',
             prevIndex !== null ? 'animate-hint-in' : ''
           )}

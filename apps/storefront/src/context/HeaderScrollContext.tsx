@@ -38,10 +38,53 @@ export function HeaderScrollProvider({ children }: { children: React.ReactNode }
   const [isAtTop, setIsAtTop] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState('')
 
+  const isTopNavVisibleRef = useRef(true)
+  const isBottomNavVisibleRef = useRef(false)
+  const showIconsRef = useRef(true)
+  const showAnnouncementRef = useRef(true)
+  const isAtTopRef = useRef(true)
+
   const lastPixelsRef = useRef(0)
   const accumulatedDeltaRef = useRef(0)
 
+  const setNavState = useCallback(
+    (
+      nextTopNav: boolean,
+      nextBottomNav: boolean,
+      nextAnnouncement: boolean,
+      nextIcons: boolean,
+      nextAtTop: boolean
+    ) => {
+      if (nextTopNav !== isTopNavVisibleRef.current) {
+        isTopNavVisibleRef.current = nextTopNav
+        setIsTopNavVisible(nextTopNav)
+      }
+      if (nextBottomNav !== isBottomNavVisibleRef.current) {
+        isBottomNavVisibleRef.current = nextBottomNav
+        setIsBottomNavVisible(nextBottomNav)
+      }
+      if (nextAnnouncement !== showAnnouncementRef.current) {
+        showAnnouncementRef.current = nextAnnouncement
+        setShowAnnouncement(nextAnnouncement)
+      }
+      if (nextIcons !== showIconsRef.current) {
+        showIconsRef.current = nextIcons
+        setShowIcons(nextIcons)
+      }
+      if (nextAtTop !== isAtTopRef.current) {
+        isAtTopRef.current = nextAtTop
+        setIsAtTop(nextAtTop)
+      }
+    },
+    []
+  )
+
   const reset = useCallback(() => {
+    isTopNavVisibleRef.current = true
+    isBottomNavVisibleRef.current = false
+    showIconsRef.current = true
+    showAnnouncementRef.current = true
+    isAtTopRef.current = true
     setIsTopNavVisible(true)
     setIsBottomNavVisible(false)
     setShowIcons(true)
@@ -52,6 +95,8 @@ export function HeaderScrollProvider({ children }: { children: React.ReactNode }
   }, [])
 
   useEffect(() => {
+    let ticking = false
+
     const handleScroll = () => {
       const scrollEl = typeof document !== 'undefined' ? document.getElementById('glorov-page-scroll') : null
       const pixels =
@@ -62,9 +107,25 @@ export function HeaderScrollProvider({ children }: { children: React.ReactNode }
             : scrollEl && scrollEl.scrollTop > 0
               ? scrollEl.scrollTop
               : 0
-      const doc = typeof document !== 'undefined' ? document.documentElement : null
 
       // 1. Zone 1: Maximum Top of the page (pixels <= 34):
+      if (pixels <= TOP_THRESHOLD) {
+        accumulatedDeltaRef.current = 0
+        setNavState(true, false, true, true, true)
+        lastPixelsRef.current = pixels
+        return
+      }
+
+      // 2. Zone 2: Initial Page Scroll / "No-Hide Zone" (34px < pixels <= 180px):
+      if (pixels <= STICKY_ACTIVATION_THRESHOLD) {
+        accumulatedDeltaRef.current = 0
+        setNavState(true, false, false, false, false)
+        lastPixelsRef.current = pixels
+        return
+      }
+
+      // 3. Zone 3: Bottom of Page / Footer Zone (within 240px of bottom):
+      const doc = typeof document !== 'undefined' ? document.documentElement : null
       const maxScroll =
         doc && typeof window !== 'undefined'
           ? Math.max(0, doc.scrollHeight - window.innerHeight)
@@ -72,49 +133,14 @@ export function HeaderScrollProvider({ children }: { children: React.ReactNode }
             ? Math.max(0, scrollEl.scrollHeight - scrollEl.clientHeight)
             : 0
 
-      // 1. Zone 1: Maximum Top of the page (pixels <= 12):
-      // Full header open with announcement bar and centered category icons.
-      // Mobile bottom navigation is hidden so top hero stays clean.
-      if (pixels <= TOP_THRESHOLD) {
-        accumulatedDeltaRef.current = 0
-        setIsTopNavVisible(true)
-        setShowAnnouncement(true)
-        setShowIcons(true)
-        setIsBottomNavVisible(false)
-        setIsAtTop(true)
-        lastPixelsRef.current = pixels
-        return
-      }
-
-      setIsAtTop(false)
-
-      // 2. Zone 2: Initial Page Scroll / "No-Hide Zone" (12px < pixels <= 180px):
-      // Header remains sticky & VISIBLE at top.
-      // Announcement bar and category icons tuck away into sleek compact mode.
-      // Header DOES NOT hide prematurely on initial scroll down.
-      // Mobile bottom nav remains hidden so hero section stays clean.
-      if (pixels <= STICKY_ACTIVATION_THRESHOLD) {
-        accumulatedDeltaRef.current = 0
-        setIsTopNavVisible(true)
-        setShowAnnouncement(false)
-        setShowIcons(false)
-        setIsBottomNavVisible(false)
-        lastPixelsRef.current = pixels
-        return
-      }
-
-      // 3. Zone 3: Bottom of Page / Footer Zone (within 240px of bottom):
-      // Mobile bottom nav MUST remain docked and visible near the footer.
       if (maxScroll > STICKY_ACTIVATION_THRESHOLD && pixels >= maxScroll - BOTTOM_THRESHOLD) {
         accumulatedDeltaRef.current = 0
-        setIsBottomNavVisible(true)
+        setNavState(isTopNavVisibleRef.current, true, false, false, false)
         lastPixelsRef.current = pixels
         return
       }
 
       // 4. Zone 4: Content Browsing / Dynamic Sticky (pixels > 180px):
-      // When scrolling down past tolerance -> header slides up, mobile bottom nav slides up into view.
-      // When scrolling up past tolerance -> header slides down in compact mode, mobile bottom nav hides.
       const effectiveDelta = pixels - lastPixelsRef.current
 
       if (
@@ -128,10 +154,7 @@ export function HeaderScrollProvider({ children }: { children: React.ReactNode }
 
       // Scrolling DOWN past tolerance (14px)
       if (accumulatedDeltaRef.current > DOWN_TOLERANCE) {
-        setIsTopNavVisible(false)
-        setIsBottomNavVisible(true)
-        setShowAnnouncement(false)
-        setShowIcons(false)
+        setNavState(false, true, false, false, false)
         accumulatedDeltaRef.current = 0
         lastPixelsRef.current = pixels
         return
@@ -139,10 +162,7 @@ export function HeaderScrollProvider({ children }: { children: React.ReactNode }
 
       // Scrolling UP past tolerance (8px)
       if (accumulatedDeltaRef.current < -UP_TOLERANCE) {
-        setIsTopNavVisible(true)
-        setIsBottomNavVisible(false)
-        setShowAnnouncement(false)
-        setShowIcons(false)
+        setNavState(true, false, false, false, false)
         accumulatedDeltaRef.current = 0
         lastPixelsRef.current = pixels
         return
@@ -151,19 +171,22 @@ export function HeaderScrollProvider({ children }: { children: React.ReactNode }
       lastPixelsRef.current = pixels
     }
 
-    const scrollEl = typeof document !== 'undefined' ? document.getElementById('glorov-page-scroll') : null
-    if (scrollEl) {
-      scrollEl.addEventListener('scroll', handleScroll, { passive: true })
-    }
-    if (typeof window !== 'undefined') {
-      window.addEventListener('scroll', handleScroll, { passive: true })
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(() => {
+          handleScroll()
+          ticking = false
+        })
+      }
     }
 
-    const handleCapture = () => {
-      handleScroll()
+    const scrollEl = typeof document !== 'undefined' ? document.getElementById('glorov-page-scroll') : null
+    if (scrollEl) {
+      scrollEl.addEventListener('scroll', onScroll, { passive: true })
     }
-    if (typeof document !== 'undefined') {
-      document.addEventListener('scroll', handleCapture, { capture: true, passive: true })
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', onScroll, { passive: true })
     }
 
     // Run once synchronously on mount to establish initial state
@@ -171,16 +194,13 @@ export function HeaderScrollProvider({ children }: { children: React.ReactNode }
 
     return () => {
       if (scrollEl) {
-        scrollEl.removeEventListener('scroll', handleScroll)
+        scrollEl.removeEventListener('scroll', onScroll)
       }
       if (typeof window !== 'undefined') {
-        window.removeEventListener('scroll', handleScroll)
-      }
-      if (typeof document !== 'undefined') {
-        document.removeEventListener('scroll', handleCapture, { capture: true })
+        window.removeEventListener('scroll', onScroll)
       }
     }
-  }, [])
+  }, [setNavState])
 
   const value = useMemo(
     () => ({

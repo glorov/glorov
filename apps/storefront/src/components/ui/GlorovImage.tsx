@@ -146,7 +146,7 @@ export function GlorovImage({
             <div
               aria-hidden="true"
               className={cn(
-                'absolute inset-0 z-[1] overflow-hidden pointer-events-none transition-opacity duration-700 ease-out',
+                'absolute inset-0 z-[1] overflow-hidden pointer-events-none transition-opacity duration-500 ease-out',
                 isLowResLoaded ? 'opacity-100' : 'opacity-0'
               )}
             >
@@ -161,7 +161,7 @@ export function GlorovImage({
                 unoptimized
                 onLoad={handleLowResLoad}
                 className={cn(
-                  'w-full h-full filter blur-[8px] scale-[1.06] transform-gpu',
+                  'w-full h-full scale-[1.02]',
                   className?.includes('object-contain') ? 'object-contain' : 'object-cover',
                   className
                 )}
@@ -169,7 +169,7 @@ export function GlorovImage({
             </div>
           )}
 
-          {/* 4. Tier 2: Full High-Quality Image (Slowly cross-fades into view once streaming completes) */}
+          {/* 4. Tier 2: Full High-Quality Image (Smoothly cross-fades into view once loaded) */}
           <Image
             ref={imgRef}
             src={src}
@@ -182,10 +182,8 @@ export function GlorovImage({
             onLoad={handleHighResLoad}
             onError={handleError}
             className={cn(
-              'relative z-[2] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] transform-gpu',
-              !isHighResLoaded
-                ? 'opacity-0 scale-[1.01] blur-[1px]'
-                : 'opacity-100 scale-100 blur-0',
+              'relative z-[2] transition-opacity duration-500 ease-out',
+              !isHighResLoaded ? 'opacity-0' : 'opacity-100',
               className
             )}
             {...rest}

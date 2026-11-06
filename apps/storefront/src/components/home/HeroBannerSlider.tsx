@@ -112,7 +112,6 @@ export function HeroBannerSlider({
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
-  const [progress, setProgress] = useState(0)
 
   // Drag tracking refs with 2-axis gesture disambiguation
   const startXRef = useRef<number>(0)
@@ -131,7 +130,6 @@ export function HeroBannerSlider({
     if (slidesCount <= 1) return
     setIsTransitioning(true)
     setDisplayIndex((prev) => prev + 1)
-    setProgress(0)
   }, [slidesCount])
 
   // Smoothly advance backward to the left
@@ -139,7 +137,6 @@ export function HeroBannerSlider({
     if (slidesCount <= 1) return
     setIsTransitioning(true)
     setDisplayIndex((prev) => prev - 1)
-    setProgress(0)
   }, [slidesCount])
 
   // Direct dot jump navigation
@@ -148,7 +145,6 @@ export function HeroBannerSlider({
       if (slidesCount <= 1) return
       setIsTransitioning(true)
       setDisplayIndex(targetRealIndex + 1)
-      setProgress(0)
     },
     [slidesCount]
   )
@@ -179,25 +175,16 @@ export function HeroBannerSlider({
     }
   }, [isTransitioning])
 
-  // Auto-play timer with continuous progress countdown bar (always scrolls right)
+  // Auto-play timer: advances slide smoothly every autoPlayIntervalMs.
+  // Progress bar is driven by GPU CSS keyframes without 50ms JS state churn.
   useEffect(() => {
     if (isPaused || isDragging || slidesCount <= 1) return
 
-    const tickInterval = 50 // Update every 50ms for buttery smooth bar animation
-    const step = tickInterval / autoPlayIntervalMs
+    const timer = setInterval(() => {
+      handleNext()
+    }, autoPlayIntervalMs)
 
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        const next = prev + step
-        if (next >= 1) {
-          handleNext()
-          return 0
-        }
-        return next
-      })
-    }, tickInterval)
-
-    return () => clearInterval(interval)
+    return () => clearInterval(timer)
   }, [isPaused, isDragging, slidesCount, autoPlayIntervalMs, handleNext])
 
   // Gesture disambiguation threshold: minimum movement before deciding direction
@@ -475,9 +462,11 @@ export function HeroBannerSlider({
                     >
                       {isActive && (
                         <div
-                          className="h-full bg-white transition-[width] duration-75 ease-linear rounded-[4px]"
+                          key={`hero-progress-${displayIndex}`}
+                          className="h-full w-full bg-white origin-left rounded-[4px]"
                           style={{
-                            width: `${Math.min(100, Math.max(0, progress * 100))}%`,
+                            animation: `heroProgressBar ${autoPlayIntervalMs}ms linear forwards`,
+                            animationPlayState: isPaused || isDragging ? 'paused' : 'running',
                           }}
                         />
                       )}

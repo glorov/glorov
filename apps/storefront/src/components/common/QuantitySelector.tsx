@@ -58,10 +58,10 @@ export function QuantitySelector({
   // Container styling across sizes
   const containerClasses: Record<QuantitySelectorSize, string> = {
     sm: isCartStyle
-      ? 'h-[26px] bg-[#F4F9F6] border-[1.1px] border-[#0A4C36] rounded-full px-1 text-[#0A4C36] shadow-2xs'
+      ? 'h-[26px] bg-[#F4F9F6] border-[1.1px] border-[#0A4C36] rounded-full px-1 text-[#0A4C36]'
       : 'h-7 sm:h-8 px-1 bg-white border border-[#D1D5DB] rounded-md text-[#111827]',
-    md: 'h-10 px-1.5 bg-white border border-[#D1D5DB] rounded-[8px] text-[#111827] shadow-2xs',
-    lg: 'h-11 sm:h-12 px-2 bg-white border border-[#D1D5DB] rounded-lg sm:rounded-[10px] text-[#111827] shadow-2xs',
+    md: 'h-10 px-1.5 bg-white border border-[#D1D5DB] rounded-[8px] text-[#111827]',
+    lg: 'h-11 sm:h-12 px-2 bg-white border border-[#D1D5DB] rounded-lg sm:rounded-[10px] text-[#111827]',
   }
 
   // Button sizing across scales

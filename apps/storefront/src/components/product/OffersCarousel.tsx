@@ -87,7 +87,7 @@ export const OffersCarousel: React.FC<OffersCarouselProps> = ({
             <div
               key={offer.id}
               onClick={() => handleCopy(offer.code)}
-              className="w-[220px] flex-shrink-0 p-2.5 rounded-lg bg-[#FFFBEB] border border-[#FDE68A] hover:border-[#F59E0B] transition-all cursor-pointer shadow-xs active:scale-98 select-none"
+              className="w-[220px] flex-shrink-0 p-2.5 rounded-lg bg-[#FFFBEB] border border-[#FDE68A] hover:border-[#F59E0B] transition-colors cursor-pointer active:scale-98 select-none"
               title="Click to copy coupon code"
             >
               <div className="text-xs font-bold text-[#92400E] truncate">

@@ -20,7 +20,7 @@ export const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
   const isFreeEligible = subtotal >= FREE_SHIPPING_THRESHOLD
 
   return (
-    <div className="w-full p-4 sm:p-6 rounded-[18px] bg-white border border-[#E5ECE8] shadow-[0_1.5px_6px_rgba(0,0,0,0.03)] flex flex-col gap-4">
+    <div className="w-full p-4 sm:p-6 rounded-[18px] bg-white border border-[#E5ECE8] flex flex-col gap-4">
       {/* Step Header */}
       <div className="flex items-center gap-2 pb-3 border-b border-[#F0F4F2]">
         <div className="w-7 h-7 rounded-full bg-[#EBF5F0] flex items-center justify-center text-[#0A4C36] flex-shrink-0">
@@ -51,7 +51,7 @@ export const ShippingMethodSelector: React.FC<ShippingMethodSelectorProps> = ({
               onClick={() => onSelectOption(opt)}
               className={`flex items-start justify-between p-3.5 sm:p-4 rounded-[14px] border text-left transition-all ${
                 isSelected
-                  ? 'border-[#0A4C36] bg-[#F2FAF5] ring-2 ring-[#0A4C36]/15 shadow-xs'
+                  ? 'border-[#0A4C36] bg-[#F2FAF5] ring-2 ring-[#0A4C36]/15'
                   : 'border-[#E5ECE8] hover:border-[#CBD5E1] bg-white'
               }`}
             >

@@ -71,7 +71,8 @@ const NAV_LINKS = [
 export const AccountNavSidebar: React.FC<AccountNavSidebarProps> = ({ className = '' }) => {
   const pathname = usePathname()
   const router = useRouter()
-  const { customer, logout } = useCustomerAuth()
+  const { customer, logout, notifications } = useCustomerAuth()
+  const unreadNotifs = notifications ? notifications.filter((n) => !n.isRead).length : 0
 
   const handleSignOut = (): void => {
     logout()
@@ -87,7 +88,7 @@ export const AccountNavSidebar: React.FC<AccountNavSidebarProps> = ({ className 
   return (
     <aside className={`w-full flex flex-col gap-3 sm:gap-4 ${className}`}>
       {/* Customer Header Card */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-white border border-stone-200/90 shadow-xs flex items-center gap-3.5">
+      <div className="p-4 sm:p-5 rounded-3xl bg-white border border-stone-200/90 flex items-center gap-3.5">
         <GlorovAccountIcon user={customer} size={48} showBadge={!isGuest} />
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-bold text-stone-900 truncate">{displayName}</h2>
@@ -112,7 +113,7 @@ export const AccountNavSidebar: React.FC<AccountNavSidebarProps> = ({ className 
       {/* Mobile Horizontal Pill Navigation / Desktop Vertical Navigation */}
       <nav
         aria-label="Account navigation"
-        className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible gap-1.5 sm:gap-2 pb-1 lg:pb-0 no-scrollbar p-1 lg:p-3 lg:rounded-3xl lg:bg-white lg:border lg:border-stone-200/90 lg:shadow-xs"
+        className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible gap-1.5 sm:gap-2 pb-1 lg:pb-0 no-scrollbar p-1 lg:p-3 lg:rounded-3xl lg:bg-white lg:border lg:border-stone-200/90"
       >
         {NAV_LINKS.map((link) => {
           const isActive = pathname === link.href
@@ -120,14 +121,23 @@ export const AccountNavSidebar: React.FC<AccountNavSidebarProps> = ({ className 
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-2 px-3.5 py-2 lg:py-2.5 rounded-full lg:rounded-xl text-xs font-semibold whitespace-nowrap transition-all shadow-xs ${
+              className={`flex items-center gap-2 px-3.5 py-2 lg:py-2.5 rounded-full lg:rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
                 isActive
                   ? 'bg-[#0F281E] text-white'
                   : 'bg-white lg:bg-transparent border border-stone-200 lg:border-transparent text-stone-700 hover:bg-stone-50 hover:text-stone-900'
               }`}
             >
               <span className={isActive ? 'text-white' : 'text-stone-500'}>{link.icon}</span>
-              <span>{link.label}</span>
+              <span className="flex-1">{link.label}</span>
+              {link.href === '/account/notifications' && unreadNotifs > 0 && (
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold leading-none ${
+                    isActive ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-800'
+                  }`}
+                >
+                  {unreadNotifs}
+                </span>
+              )}
             </Link>
           )
         })}

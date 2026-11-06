@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import { useCustomerAuth } from '../../../context/CustomerAuthContext'
 import { useToast } from '../../../context/StorefrontContext'
@@ -57,15 +58,17 @@ function ForgotPasswordForm() {
   }
 
   return (
-    <div className="w-full max-w-[420px] mx-auto bg-white rounded-3xl border border-stone-200/90 shadow-xl shadow-stone-900/5 overflow-hidden">
+    <div className="w-full max-w-[420px] mx-auto bg-white rounded-3xl border border-stone-200/90 overflow-hidden">
       {/* Header */}
       <div className="px-5 pt-6 pb-4 text-center bg-gradient-to-b from-[#F2F7F4] to-[#F9FAF8] border-b border-stone-100">
         <Link href="/" className="inline-block transition-transform hover:scale-[1.02] mb-2.5">
-          <img
+          <Image
             src="/logo/glorov-logo.svg"
             alt="GLOROV"
-            className="h-7 sm:h-8 w-auto object-contain mx-auto"
+            width={128}
             height={32}
+            className="h-7 sm:h-8 w-auto object-contain mx-auto"
+            priority
           />
         </Link>
 
@@ -111,7 +114,7 @@ function ForgotPasswordForm() {
         {isSuccess ? (
           /* Success Confirmation View (Matches Flutter _buildSuccessView) */
           <div className="space-y-4 text-center py-2">
-            <div className="w-14 h-14 rounded-full bg-emerald-100 text-[#0A4C36] flex items-center justify-center mx-auto border border-emerald-200 shadow-xs">
+            <div className="w-14 h-14 rounded-full bg-emerald-100 text-[#0A4C36] flex items-center justify-center mx-auto border border-emerald-200">
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
@@ -124,7 +127,7 @@ function ForgotPasswordForm() {
             <div className="pt-2 flex flex-col gap-2.5">
               <Link
                 href={`/auth/reset-password?email=${encodeURIComponent(email.trim())}`}
-                className="w-full h-11 rounded-xl font-bold text-xs sm:text-sm bg-[#081C15] hover:bg-[#0A4C36] text-white flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition cursor-pointer"
+                className="w-full h-11 rounded-xl font-bold text-xs sm:text-sm bg-[#081C15] hover:bg-[#0A4C36] text-white flex items-center justify-center gap-2 transition cursor-pointer"
               >
                 <span>Set New Password Now</span>
                 <ArrowRightSvg className="w-4 h-4" />
@@ -169,8 +172,8 @@ function ForgotPasswordForm() {
               disabled={!isEmailValid || isLoading}
               className={`w-full h-11 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 pt-0.5 mt-2 ${
                 isEmailValid && !isLoading
-                  ? 'bg-[#081C15] hover:bg-[#0A4C36] active:bg-[#04281B] text-white shadow-md hover:shadow-lg cursor-pointer active:scale-[0.99]'
-                  : 'bg-stone-200 text-stone-400 cursor-not-allowed border border-stone-200/80 shadow-none'
+                  ? 'bg-[#081C15] hover:bg-[#0A4C36] active:bg-[#04281B] text-white cursor-pointer active:scale-[0.99]'
+                  : 'bg-stone-200 text-stone-400 cursor-not-allowed border border-stone-200/80'
               }`}
             >
               {isLoading ? (

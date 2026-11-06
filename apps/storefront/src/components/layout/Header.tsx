@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -12,25 +12,25 @@ import { GlorovAccountIcon } from '../common/GlorovAccountIcon'
 import { cn } from '../../lib/utils/cn'
 
 const DESKTOP_SEARCH_KEYWORDS = [
-  'plants, seeds, fertilizers & pots',
+  'heirloom seeds & living plants',
   'Desi Heirloom & Hybrid Seeds',
   'Air Purifying Live Houseplants',
-  'Artisan Ceramic & Clay Planters',
-  'Organic Plant Food & Vermicompost',
-  'Fresh Kitchen Herbs & Mint',
-  'Seasonal Flower Seeds & Bulbs',
-  'Garden Tools & Pruning Shears',
+  'Organic Kitchen Herbs & Mint',
+  'Seasonal Flower Seeds & Blooms',
+  'Desi Vegetable Seed Packets',
+  'Exotic Succulents & Tabletop Plants',
+  'Rare Aroids & Indoor Foliage',
 ]
 
 const MOBILE_SEARCH_KEYWORDS = [
-  'plants, seeds, pots',
+  'seeds & living plants',
   'Heirloom Seeds',
   'Indoor Plants',
-  'Ceramic Pots',
-  'Organic Fertilizer',
   'Kitchen Herbs',
   'Flower Seeds',
-  'Garden Tools',
+  'Vegetable Seeds',
+  'Flowering Plants',
+  'Rare Succulents',
 ]
 
 interface NavCategory {
@@ -133,12 +133,10 @@ function SearchRotatingPlaceholder({
 
 const CATEGORIES: NavCategory[] = [
   { id: 'cat-seeds', label: 'Seeds', route: '/categories/seeds', categoryFilter: 'Seeds', iconKey: 'seeds' },
-  { id: 'cat-live-plants', label: 'Live Plants', route: '/categories/live-plants', categoryFilter: 'Live Plants', iconKey: 'livePlants' },
-  { id: 'cat-planters', label: 'Planters', route: '/categories/planters', categoryFilter: 'Planters & Pots', iconKey: 'planters' },
-  { id: 'cat-plant-care', label: 'Plant Care', route: '/categories/plant-care', categoryFilter: 'Plant Care & Soil', iconKey: 'plantCare' },
-  { id: 'cat-flowering', label: 'Flowering', route: '/categories/flowering', categoryFilter: 'Flowering Plants', iconKey: 'flowering' },
-  { id: 'cat-herbs', label: 'Herbs', route: '/categories/herbs', categoryFilter: 'Fruit & Herb Seeds', iconKey: 'herbs' },
-  { id: 'cat-vegetables', label: 'Vegetables', route: '/categories/vegetables', categoryFilter: 'Vegetable Seeds', iconKey: 'vegetables' },
+  { id: 'cat-vegetables', label: 'Vegetables', route: '/categories/vegetables', categoryFilter: 'Vegetables', iconKey: 'vegetables' },
+  { id: 'cat-live-plants', label: 'Living Plants', route: '/categories/live-plants', categoryFilter: 'Living Plants', iconKey: 'livePlants' },
+  { id: 'cat-flowers', label: 'Flowers', route: '/categories/flowers', categoryFilter: 'Flowers', iconKey: 'flowers' },
+  { id: 'cat-herbs', label: 'Herbs', route: '/categories/herbs', categoryFilter: 'Herbs', iconKey: 'herbs' },
   { id: 'cat-offers', label: 'Offers', route: '/offers', categoryFilter: 'Offers', iconKey: 'offers' },
 ]
 
@@ -171,25 +169,94 @@ export function Header({ currentCategory, className }: HeaderProps) {
 
   const wishlistCount = wishlistIds.length
 
-  // Strictly prevent vertical scrolling on the category navigation strip
+  const categoryNavRef = useRef<HTMLElement>(null)
+  const [leftFadeOpacity, setLeftFadeOpacity] = useState(0)
+  const [rightFadeOpacity, setRightFadeOpacity] = useState(0)
+  const isDraggingRef = useRef(false)
+  const startXRef = useRef(0)
+  const scrollLeftRef = useRef(0)
+  const hasDraggedRef = useRef(false)
+
+  // Dynamically compute left/right edge fade opacities based on horizontal scroll offset
+  const updateCategoryFades = useCallback(() => {
+    const el = categoryNavRef.current
+    if (!el) return
+    const { scrollLeft, scrollWidth, clientWidth } = el
+    const maxScroll = scrollWidth - clientWidth
+    const FADE_DISTANCE = 32
+
+    if (maxScroll <= 1) {
+      setLeftFadeOpacity(0)
+      setRightFadeOpacity(0)
+      return
+    }
+
+    // Left fade smoothly increases from 0 (transparent) to 1 (full white) as you scroll right
+    const leftRatio = Math.min(1, Math.max(0, scrollLeft / FADE_DISTANCE))
+    setLeftFadeOpacity(leftRatio)
+
+    // Right fade smoothly decreases from 1 (full white) to 0 (transparent) as you reach the right end
+    const remainingRight = maxScroll - scrollLeft
+    const rightRatio = Math.min(1, Math.max(0, remainingRight / FADE_DISTANCE))
+    setRightFadeOpacity(rightRatio)
+  }, [])
+
+  // Sync fades on mount, resize, category changes, and icon collapse/expand
+  useEffect(() => {
+    updateCategoryFades()
+    window.addEventListener('resize', updateCategoryFades, { passive: true })
+    return () => window.removeEventListener('resize', updateCategoryFades)
+  }, [updateCategoryFades, pathname, showIcons])
+
+  // Strictly prevent vertical scrolling on the category navigation strip & update horizontal fades
   const handleCategoryScroll = useCallback((e: React.UIEvent<HTMLElement>) => {
     if (e.currentTarget.scrollTop !== 0) {
       e.currentTarget.scrollTop = 0
     }
-  }, [])
+    updateCategoryFades()
+  }, [updateCategoryFades])
 
   // Map vertical mouse wheel gestures over category bar to page scroll (Y-scroll pass-through)
   const handleCategoryWheel = useCallback((e: React.WheelEvent<HTMLElement>) => {
     if (Math.abs(e.deltaY) >= Math.abs(e.deltaX) && e.deltaY !== 0) {
       const pageScroll = document.getElementById('glorov-page-scroll') || document.documentElement || document.body
-      pageScroll.scrollTop += e.deltaY
+      if (pageScroll) {
+        pageScroll.scrollTop += e.deltaY
+      }
     }
+  }, [])
+
+  // Mouse drag support for smooth category panning on desktop/trackpads
+  const handleCategoryMouseDown = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    const el = categoryNavRef.current
+    if (!el) return
+    isDraggingRef.current = true
+    startXRef.current = e.pageX - el.offsetLeft
+    scrollLeftRef.current = el.scrollLeft
+    hasDraggedRef.current = false
+  }, [])
+
+  const handleCategoryMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    if (!isDraggingRef.current) return
+    const el = categoryNavRef.current
+    if (!el) return
+    const x = e.pageX - el.offsetLeft
+    const walk = (x - startXRef.current) * 1.3
+    if (Math.abs(walk) > 4) {
+      hasDraggedRef.current = true
+    }
+    el.scrollLeft = scrollLeftRef.current - walk
+    updateCategoryFades()
+  }, [updateCategoryFades])
+
+  const handleCategoryMouseUpOrLeave = useCallback(() => {
+    isDraggingRef.current = false
   }, [])
 
   return (
     <header
       className={cn(
-        'w-full bg-white border-b border-[#E5E7EB] shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-[box-shadow,border-color] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)]',
+        'w-full bg-white border-b border-[#E5E7EB]',
         className
       )}
     >
@@ -281,7 +348,7 @@ export function Header({ currentCategory, className }: HeaderProps) {
             >
               <GlorovCustomIcons.heart size={22} />
               {wishlistCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#52B788] text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                <span className="absolute top-1 right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#52B788] text-white text-[10px] font-bold flex items-center justify-center">
                   {wishlistCount}
                 </span>
               )}
@@ -296,7 +363,7 @@ export function Header({ currentCategory, className }: HeaderProps) {
             >
               <GlorovCustomIcons.cart size={22} />
               {cartCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#1B4332] text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                <span className="absolute top-1 right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#1B4332] text-white text-[10px] font-bold flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
@@ -364,7 +431,7 @@ export function Header({ currentCategory, className }: HeaderProps) {
           >
             <GlorovCustomIcons.cart size={21} />
             {cartCount > 0 && (
-              <span className="absolute top-0 right-0 min-w-[16px] h-[16px] px-1 rounded-full bg-[#1B4332] text-white text-[9.5px] font-bold flex items-center justify-center shadow-sm">
+              <span className="absolute top-0 right-0 min-w-[16px] h-[16px] px-1 rounded-full bg-[#1B4332] text-white text-[9.5px] font-bold flex items-center justify-center">
                 {cartCount}
               </span>
             )}
@@ -376,32 +443,63 @@ export function Header({ currentCategory, className }: HeaderProps) {
       <div className="h-[1px] w-full bg-[#F3F4F6]" />
 
       {/* 3. Category Navigation Strip (Centered on Tablet & Desktop, Free-Scrolling on Mobile) */}
-      <nav
-        aria-label="Product Categories"
-        onScroll={handleCategoryScroll}
-        onWheel={handleCategoryWheel}
-        className={cn(
-          'w-full bg-white overflow-x-auto overflow-y-hidden touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden transition-[height] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] select-none overscroll-x-contain overscroll-y-none',
-          showIcons ? 'h-[62px]' : 'h-[38px]'
-        )}
-      >
-        <div className="max-w-[1360px] mx-auto h-full flex items-center justify-start sm:justify-center px-2 sm:px-3 lg:px-4 gap-1 sm:gap-2 lg:gap-3 min-w-full overflow-y-hidden">
-          {CATEGORIES.map((cat) => {
-            const IconComponent = CategoryIcons[cat.iconKey]
-            const isHome = pathname === '/' || pathname === '/home' || pathname === ''
-            const isActive =
-              !isHome &&
-              (selectedCategory === cat.label ||
-                pathname === cat.route ||
-                (currentCategory && currentCategory.toLowerCase() === cat.categoryFilter.toLowerCase()))
+      <div className="relative w-full bg-white overflow-hidden">
+        {/* Left Edge Gradient Fade: Smoothly increases from transparent to full white as you scroll right */}
+        <div
+          aria-hidden="true"
+          className="absolute left-0 top-0 bottom-0 w-8 sm:w-10 z-10 pointer-events-none bg-gradient-to-r from-white via-white/80 to-transparent transition-opacity duration-150 ease-out"
+          style={{ opacity: leftFadeOpacity }}
+        />
 
-            return (
-              <Link
-                key={cat.id}
-                href={cat.route}
-                onClick={() => setSelectedCategory(cat.label)}
-                className="group relative flex flex-col items-center justify-center px-2 sm:px-2 md:px-2 lg:px-4 py-0.5 rounded-[14px] transition-all duration-200 select-none active:scale-95 shrink-0"
-              >
+        {/* Right Edge Gradient Fade: Smoothly decreases from full white to transparent near the right end */}
+        <div
+          aria-hidden="true"
+          className="absolute right-0 top-0 bottom-0 w-8 sm:w-10 z-10 pointer-events-none bg-gradient-to-l from-white via-white/80 to-transparent transition-opacity duration-150 ease-out"
+          style={{ opacity: rightFadeOpacity }}
+        />
+
+        <nav
+          ref={categoryNavRef}
+          aria-label="Product Categories"
+          onScroll={handleCategoryScroll}
+          onWheel={handleCategoryWheel}
+          onMouseDown={handleCategoryMouseDown}
+          onMouseMove={handleCategoryMouseMove}
+          onMouseUp={handleCategoryMouseUpOrLeave}
+          onMouseLeave={handleCategoryMouseUpOrLeave}
+          className={cn(
+            'w-full bg-white overflow-x-auto overflow-y-hidden touch-pan-x no-scrollbar scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0 transition-[height] duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] select-none overscroll-x-contain overscroll-y-none cursor-grab active:cursor-grabbing',
+            showIcons ? 'h-[62px]' : 'h-[38px]'
+          )}
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          <div className="w-max min-w-full max-w-[1360px] mx-auto h-full flex items-center justify-start sm:justify-center px-3 sm:px-3 lg:px-4 gap-1.5 sm:gap-2 lg:gap-3">
+            {CATEGORIES.map((cat) => {
+              const IconComponent = CategoryIcons[cat.iconKey]
+              const isHome = pathname === '/' || pathname === '/home' || pathname === ''
+              const isActive =
+                !isHome &&
+                (selectedCategory === cat.label ||
+                  pathname === cat.route ||
+                  (currentCategory && currentCategory.toLowerCase() === cat.categoryFilter.toLowerCase()))
+
+              return (
+                <Link
+                  key={cat.id}
+                  href={cat.route}
+                  onClick={(e) => {
+                    if (hasDraggedRef.current) {
+                      e.preventDefault()
+                      return
+                    }
+                    setSelectedCategory(cat.label)
+                  }}
+                  className="group relative flex flex-col items-center justify-center px-3 sm:px-2 md:px-2 lg:px-4 py-0.5 rounded-[14px] transition-all duration-200 select-none active:scale-95 shrink-0"
+                >
                 {/* Icon Mode (Smoothly collapses without unmounting) */}
                 <div
                   className={cn(
@@ -460,6 +558,7 @@ export function Header({ currentCategory, className }: HeaderProps) {
           })}
         </div>
       </nav>
-    </header>
+    </div>
+  </header>
   )
 }

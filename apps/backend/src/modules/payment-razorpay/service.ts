@@ -51,11 +51,11 @@ export class RazorpayPaymentProviderService extends AbstractPaymentProvider<Razo
 
   private convertToPaise(amount: unknown): number {
     if (amount && typeof amount === 'object' && 'numeric' in amount) {
-      return Number((amount as { numeric: number }).numeric)
+      return Math.round(Number((amount as { numeric: number }).numeric))
     }
     if (amount && typeof amount === 'object' && 'raw' in amount) {
       const rawVal = (amount as { raw: { value: string } }).raw.value
-      return Number(rawVal)
+      return Math.round(Number(rawVal))
     }
     const num = Number(amount)
     if (isNaN(num) || num <= 0) {
@@ -202,10 +202,19 @@ export class RazorpayPaymentProviderService extends AbstractPaymentProvider<Razo
       }
     }
 
+    const rawAmount = sessionData.amount ?? (input as any).amount
+    if (rawAmount === undefined || rawAmount === null) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        'Cannot capture Razorpay payment: payment amount is required'
+      )
+    }
+    const amountInPaise = this.convertToPaise(rawAmount)
+
     try {
       const res = await this.client.capturePayment(
         paymentId,
-        this.convertToPaise(sessionData.amount as number || 9800),
+        amountInPaise,
         'INR'
       )
       return {
@@ -216,15 +225,23 @@ export class RazorpayPaymentProviderService extends AbstractPaymentProvider<Razo
           captured_at: new Date().toISOString(),
         },
       }
-    } catch {
-      // If already captured by auto-capture, treat as success
-      return {
-        data: {
-          ...sessionData,
-          status: 'captured',
-          captured_at: new Date().toISOString(),
-        },
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Unknown error'
+      // If error indicates payment is already captured, accept as success
+      if (typeof msg === 'string' && msg.toLowerCase().includes('already been captured')) {
+        return {
+          data: {
+            ...sessionData,
+            status: 'captured',
+            captured_at: new Date().toISOString(),
+          },
+        }
       }
+      this.logger?.error?.(`Razorpay capturePayment error: ${msg}`)
+      throw new MedusaError(
+        MedusaError.Types.UNEXPECTED_STATE,
+        `Razorpay payment capture failed: ${msg}`
+      )
     }
   }
 
@@ -238,6 +255,19 @@ export class RazorpayPaymentProviderService extends AbstractPaymentProvider<Razo
     const paymentId = sessionData.razorpay_payment_id as string | undefined
     const refundAmount = this.convertToPaise(input.amount)
 
+    // Idempotency guard: Return existing refund details if already refunded
+    if (sessionData.refund_id || sessionData.status === 'refunded') {
+      this.logger?.info?.(
+        `Refund already recorded for payment ${paymentId || 'N/A'} (refund_id: ${sessionData.refund_id}). Skipping duplicate refund.`
+      )
+      return {
+        data: {
+          ...sessionData,
+          status: 'refunded',
+        },
+      }
+    }
+
     if (!paymentId) {
       return {
         data: {
@@ -246,6 +276,28 @@ export class RazorpayPaymentProviderService extends AbstractPaymentProvider<Razo
           status: 'refunded',
           refunded_at: new Date().toISOString(),
         },
+      }
+    }
+
+    // Verify remote payment status on Razorpay for idempotency
+    if (!this.client.isMockMode()) {
+      try {
+        const payment = await this.client.retrievePayment(paymentId)
+        if (payment && payment.amount_refunded && payment.amount_refunded >= refundAmount) {
+          this.logger?.info?.(
+            `Payment ${paymentId} already refunded on Razorpay (${payment.amount_refunded} paise). Returning idempotent success.`
+          )
+          return {
+            data: {
+              ...sessionData,
+              refunded_amount: payment.amount_refunded,
+              status: 'refunded',
+              refunded_at: new Date().toISOString(),
+            },
+          }
+        }
+      } catch {
+        // Proceed with refund creation
       }
     }
 

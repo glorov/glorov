@@ -1,16 +1,26 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import type { PaymentMethodType, PaymentOption } from '../../types/checkout'
 import { GlorovCustomIcons } from '../common/GlorovIcons'
+import { isCodAmountEligible } from '../../lib/constants'
 
 export interface PaymentMethodSelectorProps {
   selectedMethod: PaymentMethodType
   onSelectMethod: (method: PaymentMethodType) => void
   totalAmount?: number
+  totalAmountPaise?: number
 }
 
 export const PAYMENT_OPTIONS: PaymentOption[] = [
+  {
+    id: 'razorpay',
+    providerId: 'pp_razorpay_razorpay',
+    title: 'Razorpay Online (UPI, Cards & NetBanking)',
+    subtitle: 'Pay securely via Google Pay, PhonePe, Paytm, Cards & NetBanking.',
+    icon: 'razorpay',
+    isAvailable: true,
+  },
   {
     id: 'cod',
     providerId: 'pp_cod_cod',
@@ -21,7 +31,7 @@ export const PAYMENT_OPTIONS: PaymentOption[] = [
   },
   {
     id: 'upi',
-    providerId: 'pp_upi_instant',
+    providerId: 'pp_razorpay_razorpay',
     title: 'UPI Instant Transfer',
     subtitle: 'Pay seamlessly via Google Pay, PhonePe, Paytm, or BHIM.',
     icon: 'upi',
@@ -29,9 +39,9 @@ export const PAYMENT_OPTIONS: PaymentOption[] = [
   },
   {
     id: 'card',
-    providerId: 'pp_card_simulated',
-    title: 'Credit / Debit Card (Simulated)',
-    subtitle: 'Demonstration card preview (Visa, MasterCard, RuPay).',
+    providerId: 'pp_razorpay_razorpay',
+    title: 'Credit / Debit Card',
+    subtitle: 'Visa, MasterCard, RuPay, and American Express.',
     icon: 'card',
     isAvailable: true,
   },
@@ -41,16 +51,15 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   selectedMethod,
   onSelectMethod,
   totalAmount = 0,
+  totalAmountPaise,
 }) => {
-  const [upiId, setUpiId] = useState<string>('priya@okhdfcbank')
-  const [cardNumber, setCardNumber] = useState<string>('4242 •••• •••• 4242')
-  const [cardExpiry, setCardExpiry] = useState<string>('12/28')
-  const [cardCvv, setCardCvv] = useState<string>('888')
-
-  const isCodRestricted = totalAmount > 5000
+  // Standardize comparison strictly in paise minor units against COD_MAX_AMOUNT_PAISE (500,000 paise / ₹5,000)
+  const isCodRestricted = typeof totalAmountPaise === 'number'
+    ? !isCodAmountEligible(totalAmountPaise, 'paise')
+    : !isCodAmountEligible(totalAmount, 'rupees')
 
   return (
-    <div className="w-full p-4 sm:p-6 rounded-[18px] bg-white border border-[#E5ECE8] shadow-[0_1.5px_6px_rgba(0,0,0,0.03)] flex flex-col gap-4">
+    <div className="w-full p-4 sm:p-6 rounded-[18px] bg-white border border-[#E5ECE8] flex flex-col gap-4">
       {/* Step Header */}
       <div className="flex items-center gap-2 pb-3 border-b border-[#F0F4F2]">
         <div className="w-7 h-7 rounded-full bg-[#EBF5F0] flex items-center justify-center text-[#0A4C36] flex-shrink-0">
@@ -58,19 +67,19 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
         </div>
         <div>
           <h2 className="text-[13.5px] font-bold text-[#111827] uppercase tracking-wider">
-            3. Payment Method (Demonstration)
+            3. Payment Method
           </h2>
           <p className="text-[11px] text-[#6B7280]">
-            Secure checkout simulation with zero financial risk
+            RBI-compliant payment processing via Razorpay & verified Cash on Delivery
           </p>
         </div>
       </div>
 
-      {/* Flutter Mint Badge Notice */}
+      {/* Mint Badge Notice */}
       <div className="p-3 rounded-[12px] bg-[#D8F3DC] border border-[#B7E4C7] flex items-start gap-2.5 text-[#0A4C36]">
-        <GlorovCustomIcons.info size={16} className="text-[#0A4C36] flex-shrink-0 mt-0.5" />
+        <GlorovCustomIcons.shieldCheck size={16} className="text-[#0A4C36] flex-shrink-0 mt-0.5" />
         <div className="text-[11.5px] font-semibold leading-relaxed">
-          <span className="font-extrabold">Simulated Demonstration:</span> No real money, payment gateway credentials, or OTP verification required.
+          <span className="font-extrabold">100% Encrypted Payment:</span> All online payments are verified with RBI-regulated gateways. COD is available for orders up to ₹5,000.
         </div>
       </div>
 
@@ -87,7 +96,7 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
                 isOptionRestricted
                   ? 'border-[#FCA5A5] bg-[#FEF2F2] opacity-75'
                   : isSelected
-                  ? 'border-[#0A4C36] bg-[#F2FAF5] ring-2 ring-[#0A4C36]/15 shadow-xs'
+                  ? 'border-[#0A4C36] bg-[#F2FAF5] ring-2 ring-[#0A4C36]/15'
                   : 'border-[#E5ECE8] hover:border-[#CBD5E1] bg-white'
               }`}
             >
@@ -129,6 +138,12 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
 
                     {/* Method Icon / Pill */}
                     <div className="flex items-center gap-1.5">
+                      {opt.id === 'razorpay' && (
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-[#0A4C36] bg-[#ECFDF5] border border-[#A7F3D0] px-2 py-0.5 rounded-full">
+                          <GlorovCustomIcons.shieldCheck size={11} className="text-[#047857]" />
+                          <span>UPI • Cards • NetBanking</span>
+                        </div>
+                      )}
                       {opt.id === 'cod' && (
                         isOptionRestricted ? (
                           <span className="flex items-center gap-1 text-[10px] font-extrabold text-[#991B1B] bg-[#FEE2E2] border border-[#FCA5A5] px-2 py-0.5 rounded-full">
@@ -165,73 +180,28 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
 
               {/* Collapsible Details when Selected */}
               {isSelected && opt.id === 'upi' && (
-                <div className="px-4 pb-4 pt-1 border-t border-[#DDECE4] flex flex-col gap-2">
-                  <label className="text-[11px] font-bold text-[#374151]">
-                    Simulated UPI ID / VPA:
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={upiId}
-                      onChange={(e) => setUpiId(e.target.value)}
-                      placeholder="username@okhdfcbank"
-                      className="flex-1 px-3 py-1.5 rounded-[8px] border border-[#D1D5DB] bg-white text-[12px] font-mono text-[#111827] focus:outline-none focus:border-[#0A4C36]"
-                    />
-                    <span className="px-2.5 py-1.5 rounded-[8px] bg-[#0A4C36] text-white text-[11px] font-bold flex items-center gap-1">
-                      <GlorovCustomIcons.check size={12} />
-                      <span>Verified</span>
-                    </span>
-                  </div>
-                  <p className="text-[10.5px] text-[#059669] flex items-center gap-1">
-                    <GlorovCustomIcons.check size={11} />
-                    <span>Instant demo authentication enabled. No OTP requested.</span>
+                <div className="px-4 pb-3.5 pt-1 border-t border-[#DDECE4]">
+                  <p className="text-[11px] text-[#059669] font-medium flex items-center gap-1.5">
+                    <GlorovCustomIcons.shieldCheck size={12} className="text-[#059669]" />
+                    <span>Clicking &ldquo;Place Order&rdquo; will launch Razorpay UPI where you can approve with Google Pay, PhonePe, Paytm, or BHIM.</span>
                   </p>
                 </div>
               )}
 
               {isSelected && opt.id === 'card' && (
-                <div className="px-4 pb-4 pt-1 border-t border-[#DDECE4] flex flex-col gap-2.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <div className="sm:col-span-2">
-                      <label className="block text-[11px] font-bold text-[#374151] mb-1">
-                        Card Number (Demo)
-                      </label>
-                      <input
-                        type="text"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
-                        className="w-full px-3 py-1.5 rounded-[8px] border border-[#D1D5DB] bg-white text-[12px] font-mono text-[#111827] focus:outline-none focus:border-[#0A4C36]"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      <div>
-                        <label className="block text-[11px] font-bold text-[#374151] mb-1">
-                          Expiry
-                        </label>
-                        <input
-                          type="text"
-                          value={cardExpiry}
-                          onChange={(e) => setCardExpiry(e.target.value)}
-                          className="w-full px-2 py-1.5 rounded-[8px] border border-[#D1D5DB] bg-white text-[12px] font-mono text-center text-[#111827] focus:outline-none focus:border-[#0A4C36]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-[#374151] mb-1">
-                          CVV
-                        </label>
-                        <input
-                          type="password"
-                          maxLength={3}
-                          value={cardCvv}
-                          onChange={(e) => setCardCvv(e.target.value)}
-                          className="w-full px-2 py-1.5 rounded-[8px] border border-[#D1D5DB] bg-white text-[12px] font-mono text-center text-[#111827] focus:outline-none focus:border-[#0A4C36]"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-[10.5px] text-[#059669] flex items-center gap-1">
-                    <GlorovCustomIcons.shieldCheck size={12} />
-                    <span>256-Bit SSL sandbox encryption. Test card pre-approved.</span>
+                <div className="px-4 pb-3.5 pt-1 border-t border-[#DDECE4]">
+                  <p className="text-[11px] text-[#059669] font-medium flex items-center gap-1.5">
+                    <GlorovCustomIcons.shieldCheck size={12} className="text-[#059669]" />
+                    <span>Clicking &ldquo;Place Order&rdquo; will open the 256-bit SSL encrypted Razorpay card gateway with bank OTP authentication.</span>
+                  </p>
+                </div>
+              )}
+
+              {isSelected && opt.id === 'razorpay' && (
+                <div className="px-4 pb-3.5 pt-1 border-t border-[#DDECE4]">
+                  <p className="text-[11px] text-[#059669] font-medium flex items-center gap-1.5">
+                    <GlorovCustomIcons.shieldCheck size={12} className="text-[#059669]" />
+                    <span>Instant RBI-compliant checkout via official Razorpay modal. Google Pay, PhonePe, Paytm, all Cards, and NetBanking supported.</span>
                   </p>
                 </div>
               )}

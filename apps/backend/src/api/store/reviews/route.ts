@@ -39,6 +39,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 /**
  * POST /store/reviews
  * Submits a new customer review for a botanical product.
+ * Requires authenticated customer session or bearer JWT.
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   try {

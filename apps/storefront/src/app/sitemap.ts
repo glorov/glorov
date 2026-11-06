@@ -1,8 +1,9 @@
 import { MetadataRoute } from 'next'
-import { MOCK_PRODUCTS, CATEGORY_NAV_ITEMS } from '../lib/mock-data'
+import { CATEGORY_NAV_ITEMS } from '../lib/mock-data'
 import { BASE_URL } from '../lib/constants'
+import { getAllProductHandles } from '../lib/api/products'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const currentDate = new Date().toISOString()
 
   // Core static routes
@@ -59,9 +60,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.85,
   }))
 
-  // Product routes (PDPs)
-  const productRoutes: MetadataRoute.Sitemap = MOCK_PRODUCTS.map((prod) => ({
-    url: `${BASE_URL}/products/${prod.slug}`,
+  // Product routes (PDPs) fetched from real catalog
+  const handles = await getAllProductHandles()
+  const productRoutes: MetadataRoute.Sitemap = handles.map((slug) => ({
+    url: `${BASE_URL}/products/${slug}`,
     lastModified: currentDate,
     changeFrequency: 'daily',
     priority: 0.95,

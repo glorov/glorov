@@ -51,10 +51,10 @@ npx medusa db:migrate --skip-search --execute-safe-links || {
   echo "⚠️ Migrations returned non-zero. Continuing if schema is already up-to-date..."
 }
 
-# Restart PM2 process glorov-backend without touching other processes (e.g. elsesourav-web)
-echo "🔄 Reloading PM2 glorov-backend..."
+# Reload PM2 process glorov-backend without touching other processes (e.g. elsesourav-web)
+echo "🔄 Reloading PM2 glorov-backend (zero-downtime)..."
 if pm2 describe glorov-backend > /dev/null 2>&1; then
-  pm2 restart glorov-backend --update-env
+  pm2 reload glorov-backend --update-env
 else
   PORT=9000 pm2 start "npx medusa start" --name glorov-backend --node-args="--max-old-space-size=256"
 fi

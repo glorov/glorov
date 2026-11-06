@@ -173,12 +173,12 @@ function StorefrontShell({ children }: { children: React.ReactNode }) {
  */
 export function StorefrontLayout({ children }: StorefrontLayoutProps) {
   return (
-    <StorefrontProvider>
-      <CustomerAuthProvider>
+    <CustomerAuthProvider>
+      <StorefrontProvider>
         <HeaderScrollProvider>
           <StorefrontShell>{children}</StorefrontShell>
         </HeaderScrollProvider>
-      </CustomerAuthProvider>
-    </StorefrontProvider>
+      </StorefrontProvider>
+    </CustomerAuthProvider>
   )
 }

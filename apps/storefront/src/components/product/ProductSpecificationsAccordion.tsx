@@ -91,7 +91,7 @@ export const ProductSpecificationsAccordion: React.FC<ProductSpecificationsAccor
         onClick={toggle}
         aria-expanded={open}
         aria-controls={bodyId}
-        className="w-full px-5 sm:px-6 py-3.5 rounded-full bg-[#16382C] text-white flex items-center justify-between shadow-xs hover:bg-[#122F25] transition-all select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#52B788]/60 active:scale-[0.99]"
+        className="w-full px-5 sm:px-6 py-3.5 rounded-full bg-[#16382C] text-white flex items-center justify-between hover:bg-[#122F25] transition-colors select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#52B788]/60 active:scale-[0.99]"
       >
         {/* Left Side: 3 Horizontal Menu Bars + Title */}
         <div className="flex items-center gap-3">
@@ -154,7 +154,7 @@ export const ProductSpecificationsAccordion: React.FC<ProductSpecificationsAccor
           initial={false}
           animate={{ y: open ? 0 : -8 }}
           transition={reduced ? INSTANT : DISCLOSE}
-          className="mt-3 p-4 sm:p-6 rounded-[24px] bg-[#FAFDF9] border border-[#E2EAE5] shadow-[0_2px_12px_rgba(22,56,44,0.03)] divide-y divide-[#EDF3EF]"
+          className="mt-3 p-4 sm:p-6 rounded-[24px] bg-[#FAFDF9] border border-[#E2EAE5] divide-y divide-[#EDF3EF]"
         >
           {specRows.map((row, idx) => (
             <div

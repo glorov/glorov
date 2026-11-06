@@ -1,20 +1,41 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useWishlist } from '../../../context/StorefrontContext'
-import { MOCK_PRODUCTS } from '../../../lib/mock-data'
 import { ProductCard } from '../../../components/product/ProductCard'
+import type { GlorovProductItem } from '../../../types/storefront'
 
 export default function WishlistPage() {
   const { wishlistIds, toggleWishlist } = useWishlist()
+  const [products, setProducts] = useState<GlorovProductItem[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    let active = true
+    fetch('/api/products?limit=100')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active) return
+        if (data && Array.isArray(data.products)) {
+          setProducts(data.products)
+        }
+        setIsLoading(false)
+      })
+      .catch(() => {
+        if (active) setIsLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
 
   // Find products corresponding to wishlistIds
-  const wishlistProducts = MOCK_PRODUCTS.filter((p) => wishlistIds.includes(p.id))
+  const wishlistProducts = products.filter((p) => wishlistIds.includes(p.id))
 
   const handleSeedWishlist = () => {
     // Add first 3 products to wishlist
-    MOCK_PRODUCTS.slice(0, 3).forEach((p) => {
+    products.slice(0, 3).forEach((p) => {
       if (!wishlistIds.includes(p.id)) {
         toggleWishlist(p.id)
       }
@@ -24,7 +45,7 @@ export default function WishlistPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-white border border-stone-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-5 sm:p-6 rounded-3xl bg-white border border-stone-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-lg sm:text-xl font-bold text-stone-900 font-serif">Botanical Wishlist</h1>
@@ -51,7 +72,11 @@ export default function WishlistPage() {
       </div>
 
       {/* Wishlist Grid */}
-      {wishlistProducts.length === 0 ? (
+      {isLoading ? (
+        <div className="p-12 rounded-3xl bg-white border border-stone-200/90 text-center space-y-4">
+          <p className="text-xs text-stone-400 animate-pulse">Loading your botanical wishlist...</p>
+        </div>
+      ) : wishlistProducts.length === 0 ? (
         <div className="p-12 rounded-3xl bg-white border border-stone-200/90 text-center space-y-4">
           <div className="w-14 h-14 mx-auto rounded-3xl bg-rose-50 text-rose-500 flex items-center justify-center">
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">

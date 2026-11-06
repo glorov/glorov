@@ -100,7 +100,7 @@ export const GlorovPolicyLayout: React.FC<GlorovPolicyLayoutProps> = ({
               <Link
                 key={tab.id}
                 href={tab.href}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all shadow-xs ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
                   isActive
                     ? 'bg-[#0F281E] text-white'
                     : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 hover:text-stone-900'
@@ -114,7 +114,7 @@ export const GlorovPolicyLayout: React.FC<GlorovPolicyLayoutProps> = ({
         </div>
 
         {/* Main Document Card */}
-        <article className="bg-white rounded-3xl border border-stone-200/90 p-5 sm:p-8 md:p-10 shadow-xs space-y-6 sm:space-y-8">
+        <article className="bg-white rounded-3xl border border-stone-200/90 p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-8">
           {/* Header Section */}
           <div className="border-b border-stone-100 pb-5 sm:pb-6 space-y-3">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E8F5E9] border border-[#B7E4C7] text-[#1B4332] font-bold text-xs uppercase tracking-wider">

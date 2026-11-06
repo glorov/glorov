@@ -8,6 +8,7 @@ import {
   renderShipmentCreatedTemplate,
   renderDeliveryCompletedTemplate,
   renderTrackingUpdatedTemplate,
+  renderRtoNotificationTemplate,
 } from '../modules/notification-email/templates'
 import { formatINR } from '../modules/notification-email/utils/format-currency'
 
@@ -333,6 +334,34 @@ describe('GLOROV Notification Email Templates', () => {
       expect(generic.subject).toBe('Seasonal Care Tips for Winter Garden')
       expect(generic.html).toContain('protecting tropical live plants')
       expect(generic.text).toContain('protecting tropical live plants')
+    })
+
+    it('should render RTO notification template via registry and directly', () => {
+      const direct = renderRtoNotificationTemplate({
+        display_id: 1042,
+        order_id: 'order_test_rto',
+        awb: 'SR99887766',
+        reason: 'Customer refused parcel',
+        customer_name: 'Ananya Deshmukh',
+        customer_email: 'ananya@example.com',
+        order_total: 9900,
+        is_prepaid: true,
+      })
+
+      expect(direct.subject).toContain('RTO ALERT')
+      expect(direct.subject).toContain('#1042')
+      expect(direct.subject).toContain('SR99887766')
+      expect(direct.html).toContain('Return to Origin')
+      expect(direct.html).toContain('Botanical Triage')
+      expect(direct.html).toContain('Ananya Deshmukh')
+      expect(direct.text).toContain('Customer refused parcel')
+
+      const viaRegistry = renderTemplate('rto-notification', {
+        display_id: 1043,
+        awb: 'SR11223344',
+      })
+      expect(viaRegistry.subject).toContain('#1043')
+      expect(viaRegistry.html).toContain('SR11223344')
     })
   })
 })

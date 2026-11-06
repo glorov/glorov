@@ -16,7 +16,7 @@ export default function AccountOverviewPage() {
     return (
       <div className="space-y-5 sm:space-y-6">
         {/* Welcome Card matching Flutter _buildGuestOverview */}
-        <div className="p-5 sm:p-7 rounded-3xl bg-white border border-stone-200/90 shadow-xs space-y-5">
+        <div className="p-5 sm:p-7 rounded-3xl bg-white border border-stone-200/90 space-y-5">
           <div className="flex items-center gap-4">
             <div className="w-13 h-13 rounded-full bg-[#E8F5E9] border-1.5 border-[#86EFAC] flex items-center justify-center flex-shrink-0 text-[#1B4332]">
               <GlorovCustomIcons.guestUser size={26} />
@@ -34,7 +34,7 @@ export default function AccountOverviewPage() {
           <div className="pt-4 border-t border-stone-100 flex items-center gap-3 flex-wrap">
             <Link
               href="/auth/login"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-bold hover:bg-[#163829] transition shadow-xs"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-bold hover:bg-[#163829] transition"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -51,7 +51,7 @@ export default function AccountOverviewPage() {
         </div>
 
         {/* Quick Guest Support & Services Tiles matching Flutter */}
-        <div className="p-4 sm:p-6 rounded-3xl bg-white border border-stone-200/90 shadow-xs divide-y divide-stone-100">
+        <div className="p-4 sm:p-6 rounded-3xl bg-white border border-stone-200/90 divide-y divide-stone-100">
           <Link
             href="/policies/shipping"
             className="flex items-center gap-3.5 py-3.5 hover:text-[#1B4332] transition group"
@@ -131,9 +131,9 @@ export default function AccountOverviewPage() {
   return (
     <div className="space-y-5 sm:space-y-6">
       {/* Welcome Banner with Rich Botanical Forest Dark Gradient */}
-      <div className="p-5 sm:p-7 rounded-3xl bg-gradient-to-br from-[#081C15] via-[#0A4C36] to-[#1B4332] text-white shadow-sm relative overflow-hidden">
+      <div className="p-5 sm:p-7 rounded-3xl bg-gradient-to-br from-[#081C15] via-[#0A4C36] to-[#1B4332] text-white relative overflow-hidden">
         <div className="relative z-10 max-w-xl">
-          <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-xs text-white border border-white/20">
+          <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/20 text-white border border-white/25">
             Botanical Patron Dashboard
           </span>
           <h1 className="text-xl sm:text-2xl font-black mt-2.5 font-serif text-white tracking-tight">
@@ -152,7 +152,7 @@ export default function AccountOverviewPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <Link
           href="/account/orders"
-          className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs text-center hover:border-[#1B4332] transition group"
+          className="p-4 rounded-2xl bg-white border border-stone-200/90 text-center hover:border-[#1B4332] transition group"
         >
           <div className="w-8 h-8 mx-auto rounded-full bg-emerald-50 text-[#1B4332] flex items-center justify-center mb-1.5">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +165,7 @@ export default function AccountOverviewPage() {
 
         <Link
           href="/account/orders"
-          className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs text-center hover:border-amber-600 transition group"
+          className="p-4 rounded-2xl bg-white border border-stone-200/90 text-center hover:border-amber-600 transition group"
         >
           <div className="w-8 h-8 mx-auto rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-1.5">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,7 +178,7 @@ export default function AccountOverviewPage() {
 
         <Link
           href="/account/addresses"
-          className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs text-center hover:border-[#1B4332] transition group"
+          className="p-4 rounded-2xl bg-white border border-stone-200/90 text-center hover:border-[#1B4332] transition group"
         >
           <div className="w-8 h-8 mx-auto rounded-full bg-emerald-50 text-[#1B4332] flex items-center justify-center mb-1.5">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,7 +192,7 @@ export default function AccountOverviewPage() {
 
         <Link
           href="/account/wishlist"
-          className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs text-center hover:border-rose-600 transition group"
+          className="p-4 rounded-2xl bg-white border border-stone-200/90 text-center hover:border-rose-600 transition group"
         >
           <div className="w-8 h-8 mx-auto rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mb-1.5">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,7 +230,7 @@ export default function AccountOverviewPage() {
             <p className="text-xs text-stone-500">No orders placed yet.</p>
             <Link
               href="/categories"
-              className="mt-3 inline-block px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-bold hover:bg-[#163829] transition shadow-xs"
+              className="mt-3 inline-block px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-bold hover:bg-[#163829] transition"
             >
               Start Gardening
             </Link>
@@ -241,7 +241,7 @@ export default function AccountOverviewPage() {
       {/* Default Address & Account Highlights */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Default Shipping Address */}
-        <div className="p-4 sm:p-5 rounded-3xl bg-white border border-stone-200/90 shadow-xs flex flex-col justify-between">
+        <div className="p-4 sm:p-5 rounded-3xl bg-white border border-stone-200/90 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-bold text-xs uppercase tracking-wider text-stone-800">
@@ -281,7 +281,7 @@ export default function AccountOverviewPage() {
         </div>
 
         {/* Botanical Care & Support Card */}
-        <div className="p-4 sm:p-5 rounded-3xl bg-white border border-stone-200/90 shadow-xs flex flex-col justify-between">
+        <div className="p-4 sm:p-5 rounded-3xl bg-white border border-stone-200/90 flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-xs uppercase tracking-wider text-stone-800 mb-2">
               Botanical Concierge & Perks

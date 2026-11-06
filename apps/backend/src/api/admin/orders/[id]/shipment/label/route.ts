@@ -63,10 +63,15 @@ export const GET = async (
       targetFulfillment.data?.awb_code ||
       'UNKNOWN'
 
-    let labelUrl =
+    // GLOROV-SHIP-002: Do not generate fake mock S3/Shiprocket URLs that will 404.
+    let labelUrl: string | null =
       targetFulfillment.labels?.[0]?.label_url ||
-      targetFulfillment.data?.label_url ||
-      (awb && awb !== 'UNKNOWN' ? `https://shiprocket.co/mock-label/${awb}.pdf` : null)
+      (targetFulfillment.data?.label_url as string) ||
+      null
+
+    if (typeof labelUrl === 'string' && (labelUrl.includes('mock-label') || labelUrl.trim() === '')) {
+      labelUrl = null
+    }
 
     // If label URL is missing, attempt on-demand retrieval from Shiprocket
     const shipmentId = targetFulfillment.data?.shiprocket_shipment_id
@@ -81,7 +86,17 @@ export const GET = async (
     }
 
     if (!labelUrl) {
-      labelUrl = `https://shiprocket.co/mock-label/${awb}.pdf`
+      res.status(200).json({
+        success: true,
+        order_id: order.id,
+        fulfillment_id: targetFulfillment.id,
+        awb,
+        courier_name: targetFulfillment.data?.courier_name || 'Delhivery Air Botanical Express',
+        label_url: null,
+        label_status: 'unavailable',
+        message: 'Label not available — generate from Shiprocket dashboard',
+      })
+      return
     }
 
     res.status(200).json({
@@ -92,6 +107,7 @@ export const GET = async (
       courier_name: targetFulfillment.data?.courier_name || 'Delhivery Air Botanical Express',
       label_url: labelUrl,
       label_status: 'ready',
+      message: 'Shipping label ready',
     })
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : 'Error retrieving shipping label'

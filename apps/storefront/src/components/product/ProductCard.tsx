@@ -66,10 +66,7 @@ export function ProductCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        'group relative flex flex-col bg-white rounded-[12px] sm:rounded-[16px] lg:rounded-[20px] border border-[#E5E7EB] overflow-hidden transition-all duration-200 select-none',
-        isHovered
-          ? 'border-[#1B4332]/35 shadow-[0_6px_16px_rgba(0,0,0,0.08)]'
-          : 'shadow-[0_1px_3px_rgba(0,0,0,0.04)]',
+        'group relative flex flex-col bg-white rounded-[12px] sm:rounded-[16px] lg:rounded-[20px] border border-[#E5E7EB] hover:border-[#1B4332]/50 overflow-hidden transition-colors duration-200 select-none',
         className
       )}
     >
@@ -97,7 +94,7 @@ export function ProductCard({
         {/* Top-Left Promotional Badge (Dark Navy with Gold Bolt matching Flutter) */}
         {primaryBadge && (
           <div className="absolute top-0 left-0 z-10 pointer-events-none">
-            <span className="inline-flex items-center gap-[3px] bg-[#0C2340] text-white text-[9.5px] font-extrabold tracking-[0.4px] uppercase px-2 py-[3.5px] rounded-tl-[inherit] rounded-tr-[8px] rounded-br-[8px] rounded-bl-0 shadow-[0_1px_4px_rgba(0,0,0,0.18)] select-none">
+            <span className="inline-flex items-center gap-[3px] bg-[#0C2340] text-white text-[9.5px] font-extrabold tracking-[0.4px] uppercase px-2 py-[3.5px] rounded-tl-[inherit] rounded-tr-[8px] rounded-br-[8px] rounded-bl-0 select-none">
               <svg width={11} height={11} className="w-[11px] h-[11px] text-[#F9C74F] shrink-0" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"
@@ -123,7 +120,7 @@ export function ProductCard({
 
         {/* Bottom-Left Translucent Frosted Glass Rating Pill (matching Flutter) */}
         <div className="absolute bottom-1.5 left-1.5 z-10 pointer-events-none">
-          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-[5px] bg-white/85 backdrop-blur-md border border-white/90 shadow-2xs text-[11px] leading-none">
+          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-[5px] bg-white/95 border border-stone-200/90 text-[11px] leading-none">
             {product.reviewCount === 0 ? (
               <span className="inline-flex items-center gap-0.5 text-[#16A34A] font-bold">
                 <svg className="w-3 h-3 text-[#16A34A] fill-current" viewBox="0 0 24 24">

@@ -1,5 +1,5 @@
 import { MEDUSA_BACKEND_URL, MEDUSA_PUBLISHABLE_KEY } from '../constants'
-import { MOCK_PRODUCTS } from '../mock-data'
+import { MOCK_PRODUCTS } from '../mock-products'
 import type { GlorovProductItem, ProductVariantItem, ProductType } from '../../types/storefront'
 
 /**
@@ -110,32 +110,19 @@ export function transformMedusaProduct(raw: MedusaProductRaw): GlorovProductItem
   if (meta.discount_price) {
     const rawDisc = Number(meta.discount_price)
     const disc = rawDisc > 500 ? Math.round(rawDisc / 100) : rawDisc
-    originalMrp = sellingPrice
-    sellingPrice = disc
+    if (sellingPrice > disc) {
+      originalMrp = sellingPrice
+      sellingPrice = disc
+    }
   } else if (meta.mrp || meta.original_price || meta.compare_at_price) {
     const rawMrp = Number(meta.mrp || meta.original_price || meta.compare_at_price)
-    originalMrp = rawMrp > 500 ? Math.round(rawMrp / 100) : rawMrp
-  }
-
-  // Enrich from reference catalog if available
-  if (mockMatch) {
-    if (mockMatch.price && mockMatch.discountPrice && mockMatch.price > mockMatch.discountPrice) {
-      originalMrp = mockMatch.price
-      sellingPrice = mockMatch.discountPrice
+    const parsedMrp = rawMrp > 500 ? Math.round(rawMrp / 100) : rawMrp
+    if (parsedMrp > sellingPrice) {
+      originalMrp = parsedMrp
     }
   }
 
-  // Generate realistic botanical MRP if not set or invalid
-  if (!originalMrp || originalMrp <= sellingPrice) {
-    if (sellingPrice < 150) {
-      originalMrp = Math.round((sellingPrice * 1.46) / 5) * 5 // e.g. 99 -> 145, 119 -> 175
-    } else if (sellingPrice < 500) {
-      originalMrp = Math.round((sellingPrice * 1.35) / 10) * 10
-    } else {
-      originalMrp = Math.round((sellingPrice * 1.25) / 50) * 50
-    }
-  }
-
+  // Authentic discount only when compare-at price exists (GLOROV-UI-001)
   const discountPercent =
     originalMrp && originalMrp > sellingPrice
       ? Math.round(((originalMrp - sellingPrice) / originalMrp) * 100)
@@ -150,12 +137,15 @@ export function transformMedusaProduct(raw: MedusaProductRaw): GlorovProductItem
         const amt = v.prices[0].amount
         vSelling = amt > 500 ? Math.round(amt / 100) : amt
       }
-      const vMrp = Math.round(vSelling * (originalMrp / sellingPrice))
+      const vMrp =
+        originalMrp && originalMrp > sellingPrice
+          ? Math.round(vSelling * (originalMrp / sellingPrice))
+          : undefined
       variants.push({
         id: v.id,
         name: v.title || 'Standard Pack',
-        price: vMrp,
-        discountPrice: vSelling < vMrp ? vSelling : undefined,
+        price: vMrp || vSelling,
+        discountPrice: vMrp ? vSelling : undefined,
         inStock: true,
       })
     }
@@ -188,8 +178,8 @@ export function transformMedusaProduct(raw: MedusaProductRaw): GlorovProductItem
     category,
     subcategory: raw.collection?.title || (mockMatch?.subcategory || category),
     productType,
-    price: originalMrp,
-    discountPrice: sellingPrice,
+    price: originalMrp && originalMrp > sellingPrice ? originalMrp : sellingPrice,
+    discountPrice: originalMrp && originalMrp > sellingPrice ? sellingPrice : undefined,
     discountPercent,
     rating,
     reviewCount,
@@ -200,7 +190,13 @@ export function transformMedusaProduct(raw: MedusaProductRaw): GlorovProductItem
     badges,
     tags: raw.tags?.map((t) => t.value) || (mockMatch?.tags || ['botanical', productType]),
     variants: variants.length > 0 ? variants : (mockMatch?.variants || [
-      { id: `var-${raw.id}-1`, name: 'Standard Pack', price: originalMrp, discountPrice: sellingPrice, inStock: true }
+      {
+        id: `var-${raw.id}-1`,
+        name: 'Standard Pack',
+        price: originalMrp && originalMrp > sellingPrice ? originalMrp : sellingPrice,
+        discountPrice: originalMrp && originalMrp > sellingPrice ? sellingPrice : undefined,
+        inStock: true,
+      }
     ]),
     botanicalSpecs: {
       germinationPeriod: (meta.germination_period as string) || '5 — 8 Days',
@@ -404,19 +400,56 @@ export async function getProductsByCategory(slug: string): Promise<GlorovProduct
     const pType = p.productType
 
     if (cleanSlug === 'seeds') return catLower.includes('seed') || pType === 'seeds'
-    if (cleanSlug === 'live-plants' || cleanSlug === 'plants') return catLower.includes('plant') || pType === 'plants'
-    if (cleanSlug === 'planters' || cleanSlug === 'planters-pots') return catLower.includes('planter') || catLower.includes('pot') || pType === 'planters'
-    if (cleanSlug === 'plant-care' || cleanSlug === 'plant-care-soil' || cleanSlug === 'care') return catLower.includes('care') || catLower.includes('soil') || pType === 'care'
-    if (cleanSlug === 'flowering' || cleanSlug === 'flowering-plants') return subcatLower.includes('flower') || catLower.includes('flower') || p.badges?.includes('FLOWERING')
-    if (cleanSlug === 'vegetables' || cleanSlug === 'vegetable-seeds') return subcatLower.includes('vegetable') || catLower.includes('vegetable')
-    if (cleanSlug === 'herbs' || cleanSlug === 'herb-seeds') return subcatLower.includes('herb') || catLower.includes('herb') || p.tags?.includes('spicy')
-    if (cleanSlug === 'indoor-plants') return subcatLower.includes('indoor') || catLower.includes('indoor')
-    if (cleanSlug === 'air-purifying-plants') return subcatLower.includes('air') || catLower.includes('air')
-    if (cleanSlug === 'succulents-bonsai') return subcatLower.includes('succulent') || catLower.includes('succulent') || subcatLower.includes('bonsai')
-    if (cleanSlug === 'ceramic-planters') return subcatLower.includes('ceramic') || catLower.includes('ceramic')
-    if (cleanSlug === 'terracotta-pots') return subcatLower.includes('terracotta') || catLower.includes('terracotta')
-    if (cleanSlug === 'potting-mix-fertilizers') return subcatLower.includes('potting') || subcatLower.includes('fertilizer') || catLower.includes('soil')
-    if (cleanSlug === 'gardening-tools') return subcatLower.includes('tool') || catLower.includes('tool')
+    if (cleanSlug === 'vegetables' || cleanSlug === 'vegetable-seeds') {
+      return (
+        subcatLower.includes('vegetable') ||
+        (p.slug.includes('seeds') &&
+          (p.slug.includes('brinjal') ||
+            p.slug.includes('cabbage') ||
+            p.slug.includes('onion') ||
+            p.slug.includes('moringa') ||
+            p.slug.includes('chilli') ||
+            p.slug.includes('cucumber') ||
+            p.slug.includes('watermelon') ||
+            p.slug.includes('tomato')))
+      )
+    }
+    if (cleanSlug === 'live-plants' || cleanSlug === 'plants') {
+      return catLower.includes('plant') || pType === 'plants'
+    }
+    if (cleanSlug === 'flowers' || cleanSlug === 'flowering' || cleanSlug === 'flowering-plants') {
+      return (
+        subcatLower.includes('flower') ||
+        catLower.includes('flower') ||
+        p.badges?.includes('FLOWERING') ||
+        p.slug.includes('petunia') ||
+        p.slug.includes('dahlia') ||
+        p.slug.includes('marigold') ||
+        p.slug.includes('cosmos') ||
+        p.slug.includes('chrysanthemum') ||
+        p.slug.includes('portulaca') ||
+        p.slug.includes('anthurium') ||
+        p.slug.includes('peace-lily') ||
+        p.slug.includes('bird-of-paradise')
+      )
+    }
+    if (cleanSlug === 'herbs' || cleanSlug === 'herb-seeds') {
+      return (
+        subcatLower.includes('herb') ||
+        p.tags?.includes('herb') ||
+        p.tags?.includes('spicy') ||
+        p.slug.includes('basil') ||
+        p.slug.includes('tulsi') ||
+        p.slug.includes('arugula') ||
+        p.slug.includes('parsley') ||
+        p.slug.includes('oregano') ||
+        p.slug.includes('thyme') ||
+        p.slug.includes('mint')
+      )
+    }
+    if (cleanSlug === 'indoor-plants') return subcatLower.includes('indoor')
+    if (cleanSlug === 'air-purifying-plants') return subcatLower.includes('air')
+    if (cleanSlug === 'succulents-bonsai') return subcatLower.includes('succulent') || subcatLower.includes('bonsai')
     if (cleanSlug === 'offers') return p.discountPrice !== undefined && p.discountPrice < p.price
 
     return catLower === cleanSlug || subcatLower === cleanSlug || catLower.includes(cleanSlug) || subcatLower.includes(cleanSlug)

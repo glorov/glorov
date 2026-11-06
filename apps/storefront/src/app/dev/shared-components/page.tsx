@@ -11,7 +11,7 @@ import { QuantitySelector } from '../../../components/common/QuantitySelector'
 import { Pagination } from '../../../components/common/Pagination'
 import { Button } from '../../../components/ui/Button'
 import { useToast, useCart, useWishlist, useStorefront } from '../../../context/StorefrontContext'
-import { MOCK_PRODUCTS } from '../../../lib/mock-data'
+import { MOCK_PRODUCTS } from '../../../lib/mock-products'
 
 export default function SharedComponentsShowcasePage() {
   const { showToast } = useToast()
@@ -65,7 +65,7 @@ export default function SharedComponentsShowcasePage() {
         </div>
 
         {/* Live Reactive State Summary */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-4 rounded-glorov-md border border-[#E5E7EB] shadow-sm text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-4 rounded-glorov-md border border-[#E5E7EB] text-xs">
           <div>
             <span className="text-[#6B7280] block">Cart Item Count</span>
             <strong className="text-base text-[#1B4332] font-extrabold">{cartCount} items</strong>
@@ -126,7 +126,7 @@ export default function SharedComponentsShowcasePage() {
       {/* 3. Product Sub-Components Catalog */}
       <PageContainer className="space-y-8">
         {/* Pricing & Badging */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-5 rounded-glorov-md border border-[#E5E7EB] shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-5 rounded-glorov-md border border-[#E5E7EB]">
           {/* Price Component Variants */}
           <div className="space-y-3">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1B4332]">
@@ -171,7 +171,7 @@ export default function SharedComponentsShowcasePage() {
         </div>
 
         {/* Product Badges Catalog */}
-        <div className="bg-white p-5 rounded-glorov-md border border-[#E5E7EB] shadow-sm space-y-3">
+        <div className="bg-white p-5 rounded-glorov-md border border-[#E5E7EB] space-y-3">
           <h3 className="text-sm font-bold uppercase tracking-wider text-[#1B4332]">
             5. Domain Badges & Indicators
           </h3>
@@ -187,7 +187,7 @@ export default function SharedComponentsShowcasePage() {
         </div>
 
         {/* Stepper & Pagination */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-5 rounded-glorov-md border border-[#E5E7EB] shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-5 rounded-glorov-md border border-[#E5E7EB]">
           {/* Quantity Selector */}
           <div className="space-y-3">
             <h3 className="text-sm font-bold uppercase tracking-wider text-[#1B4332]">
@@ -223,7 +223,7 @@ export default function SharedComponentsShowcasePage() {
         </div>
 
         {/* Botanical Toast Triggers */}
-        <div className="bg-white p-5 rounded-glorov-md border border-[#E5E7EB] shadow-sm space-y-3">
+        <div className="bg-white p-5 rounded-glorov-md border border-[#E5E7EB] space-y-3">
           <h3 className="text-sm font-bold uppercase tracking-wider text-[#1B4332]">
             8. Botanical Toast Notifications
           </h3>

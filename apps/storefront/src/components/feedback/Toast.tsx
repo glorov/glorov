@@ -114,8 +114,7 @@ function ToastItem({ toast }: { toast: ToastMessage }) {
       className={cn(
         'inline-flex items-center min-w-0 pointer-events-auto',
         'px-[14px] py-[8px] rounded-[24px]',
-        'shadow-[0_4px_16px_rgba(0,0,0,0.20)]',
-        'border border-white/10 select-none backdrop-blur-md',
+        'border border-white/20 select-none',
         config.bg,
         // Spring slide-down + scale entrance, smooth slide-up exit
         isRendered

@@ -34,11 +34,12 @@ export const CartOrderSummary: React.FC<CartOrderSummaryProps> = ({
   checkoutHref = '/checkout',
   itemCount,
 }) => {
-  const comparePrice = compareSubtotal > total ? compareSubtotal : Math.round(total * 1.35)
-  const discountPercent = overallDiscountPercent > 0 ? overallDiscountPercent : 31
+  const hasDiscount = compareSubtotal > total && overallDiscountPercent > 0
+  const comparePrice = hasDiscount ? compareSubtotal : 0
+  const discountPercent = hasDiscount ? overallDiscountPercent : 0
 
   return (
-    <div className="w-full p-5 rounded-[20px] bg-white border border-[#E5ECE8] shadow-[0_3px_10px_rgba(0,0,0,0.024)] flex flex-col">
+    <div className="w-full p-5 rounded-[20px] bg-white border border-[#E5ECE8] flex flex-col">
       {/* Header */}
       <div className="flex items-center gap-1.5 pb-3.5">
         <GlorovCustomIcons.receipt size={16} className="text-[#0A4C36]" />
@@ -94,14 +95,16 @@ export const CartOrderSummary: React.FC<CartOrderSummaryProps> = ({
           <div className="text-[14px] font-bold text-[#111827]">
             Total Payable
           </div>
-          <div className="flex items-center gap-1 mt-0.5">
-            <span className="text-[12px] text-[#9CA3AF] line-through">
-              ₹{Math.round(comparePrice)}
-            </span>
-            <span className="text-[11px] font-bold text-[#008C4B]">
-              ({discountPercent}% OFF)
-            </span>
-          </div>
+          {hasDiscount && (
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className="text-[12px] text-[#9CA3AF] line-through">
+                ₹{Math.round(comparePrice)}
+              </span>
+              <span className="text-[11px] font-bold text-[#008C4B]">
+                ({discountPercent}% OFF)
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="text-[22px] font-black text-[#0A4C36] leading-none">
@@ -113,7 +116,7 @@ export const CartOrderSummary: React.FC<CartOrderSummaryProps> = ({
       <div className="mt-4.5">
         <Link
           href={checkoutHref}
-          className="w-full h-[48px] rounded-full bg-[#0A4C36] hover:bg-[#135841] text-white flex items-center justify-center gap-1.5 shadow-[0_2px_8px_rgba(10,76,54,0.2)] transition-all active:scale-[0.98]"
+          className="w-full h-[48px] rounded-full bg-[#0A4C36] hover:bg-[#135841] text-white flex items-center justify-center gap-1.5 transition-colors active:scale-[0.98]"
         >
           <span className="text-[13px] font-extrabold tracking-[0.5px]">
             PROCEED TO CHECKOUT

@@ -174,7 +174,7 @@ export function MobileMenuDrawer() {
               <Link
                 href="/auth/login"
                 onClick={closeMobileMenu}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-brand-primary text-white font-bold text-xs shadow-xs"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-brand-primary text-white font-bold text-xs"
               >
                 <GlorovAccountIcon user={null} size={18} />
                 <span>Sign In / Register</span>

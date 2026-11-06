@@ -200,13 +200,13 @@ export function CollapsibleBanner({
         <div
           role="region"
           aria-labelledby={titleId}
-          className={`rounded-xl border border-stone-200/90 bg-white shadow-[0_1px_3px_rgba(27,67,50,0.05),0_4px_12px_-6px_rgba(27,67,50,0.08)] dark:border-white/[0.16] dark:bg-[#12241C] ${className}`}
+          className={`rounded-xl border border-stone-200/90 bg-white dark:border-white/[0.16] dark:bg-[#12241C] ${className}`}
         >
           <div className="flex items-center gap-2.5 p-3">
             {/* Themed Icon Glyph Container */}
             <span
               aria-hidden="true"
-              className="grid size-[28px] shrink-0 place-items-center rounded-lg bg-[#E8F5E9] text-[#1B4332] shadow-[inset_0_1px_2px_rgba(27,67,50,0.08)] dark:bg-[#1B3629] dark:text-[#74C69D]"
+              className="grid size-[28px] shrink-0 place-items-center rounded-lg bg-[#E8F5E9] text-[#1B4332] dark:bg-[#1B3629] dark:text-[#74C69D]"
             >
               {icon ?? NOTICE_GLYPH}
             </span>

@@ -9,6 +9,7 @@ import React, {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 import {
   AnimatePresence,
   animate,
@@ -867,11 +868,14 @@ function Stage({
                       : "border-white/30 opacity-60 hover:opacity-100 hover:border-white/60"
                   }`}
                 >
-                  <img
+                  <Image
                     src={getOptimizedImageUrl(img, { width: 96, height: 96, crop: 'fill', quality: 'auto' })}
                     alt={`Thumbnail ${idx + 1}`}
+                    width={48}
+                    height={48}
                     className="size-full object-cover select-none pointer-events-none"
                     draggable={false}
+                    unoptimized
                   />
                 </button>
               );

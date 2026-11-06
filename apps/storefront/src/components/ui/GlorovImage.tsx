@@ -51,7 +51,7 @@ export function GlorovImage({
   const [hasError, setHasError] = useState(false)
   const imgRef = useRef<HTMLImageElement | null>(null)
 
-  const rawSrc = typeof src === 'string' ? src : (src as any)?.src || ''
+  const rawSrc = typeof src === 'string' ? src : typeof src === 'object' && src !== null && 'src' in src ? (src as { src: string }).src : ''
   const isSvg = rawSrc.endsWith('.svg') || rawSrc.includes('.svg?')
   const shouldProgressive = progressive && !isSvg && Boolean(rawSrc)
 
@@ -161,7 +161,8 @@ export function GlorovImage({
                 unoptimized
                 onLoad={handleLowResLoad}
                 className={cn(
-                  'w-full h-full object-cover filter blur-[8px] scale-[1.06] transform-gpu',
+                  'w-full h-full filter blur-[8px] scale-[1.06] transform-gpu',
+                  className?.includes('object-contain') ? 'object-contain' : 'object-cover',
                   className
                 )}
               />

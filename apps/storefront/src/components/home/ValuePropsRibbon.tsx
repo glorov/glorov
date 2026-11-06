@@ -131,6 +131,18 @@ function BotanicalTagIcon({ size = 18 }: { size?: number }) {
   )
 }
 
+export interface DynamicOfferBannerData {
+  code?: string
+  tag?: string
+  description?: string
+  bg_color?: string
+  text_color?: string
+  accent_color?: string
+  is_active?: boolean
+  is_highlighted?: boolean
+  [key: string]: unknown
+}
+
 /**
  * GLOROV Dynamic Offer Banner component
  * Streamlined, clean, and perfectly proportioned across all devices.
@@ -138,14 +150,14 @@ function BotanicalTagIcon({ size = 18 }: { size?: number }) {
 export function GlorovOfferBanner({
   offer,
 }: {
-  offer?: any
+  offer?: DynamicOfferBannerData | null
 }) {
   const { showToast } = useToast()
   const { applyCoupon, cartCount, welcomeBannerOffer } = useCart()
   const [isCopied, setIsCopied] = useState(false)
 
   // Only render when an offer is active and explicitly set as the banner
-  const activeBanner = offer !== undefined ? offer : welcomeBannerOffer
+  const activeBanner = (offer !== undefined ? offer : welcomeBannerOffer) as DynamicOfferBannerData | null
 
   if (!activeBanner || !activeBanner.is_active || !activeBanner.is_highlighted) {
     return null
@@ -181,7 +193,7 @@ export function GlorovOfferBanner({
         borderColor: isCopied ? accentColor : `${accentColor}40`,
       }}
       className={cn(
-        'w-full transition-all duration-200 border shadow-none hover:shadow-[0_4px_12px_rgba(27,94,32,0.08)]',
+        'w-full transition-colors duration-200 border',
         'rounded-[10px] sm:rounded-xl',
         'px-2.5 py-1.5 sm:px-5 sm:py-2.5'
       )}
@@ -190,7 +202,7 @@ export function GlorovOfferBanner({
         {/* Left Circular Accent Badge */}
         <div
           style={{ backgroundColor: accentColor }}
-          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm text-white"
+          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 text-white"
         >
           <span className="sm:hidden">
             <BotanicalTagIcon size={14} />
@@ -291,14 +303,14 @@ export function ValuePropsRibbon({ className }: { className?: string }) {
         <div
           role="region"
           aria-label="GLOROV botanical trust guarantees and policies"
-          className="w-full bg-[#2D6A4F] text-white rounded-xl sm:rounded-2xl shadow-[0_6px_18px_rgba(45,106,79,0.18)] px-2.5 py-3 sm:px-5 sm:py-3.5 md:px-6 md:py-4.5"
+          className="w-full bg-[#2D6A4F] text-white rounded-xl sm:rounded-2xl px-2.5 py-3 sm:px-5 sm:py-3.5 md:px-6 md:py-4.5"
         >
           <div className="flex items-center justify-between w-full">
             {MOCK_TRUST_BADGES.map((badge, idx) => {
               const itemContent = (
                 <div className="flex-1 min-w-0 flex flex-col items-center justify-center text-center px-0.5 sm:px-1.5 md:px-2 group">
                   {/* Circular White Badge */}
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full bg-white shadow-[0_2px_6px_rgba(0,0,0,0.08)] flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full bg-white flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
                     <span className="text-[#2D6A4F] flex items-center justify-center">
                       <span className="sm:hidden">
                         <TrustIcon icon={badge.icon} size={16} />

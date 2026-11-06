@@ -218,10 +218,10 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
 
   return (
     <div className="w-full flex flex-col gap-3">
-      {/* 1. Primary Image Frame with Drag / Swipe Infinite Carousel Track */}
+      {/* 1. Primary Image Frame with 3:4 Aspect Ratio and Automatic Boundary Containment */}
       <div
         ref={primaryImageRef}
-        className="relative aspect-square max-h-[500px] w-full rounded-2xl overflow-hidden bg-[#F9FAF8] border border-[#E5E7EB] shadow-[0_4px_10px_rgba(0,0,0,0.04)] group select-none touch-pan-y"
+        className="relative aspect-[3/4] max-h-[580px] sm:max-h-[620px] w-full rounded-2xl overflow-hidden bg-[#F8FAF7] border border-[#E5E7EB] group select-none touch-pan-y flex items-center justify-center"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -243,7 +243,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
           {extendedImages.map((img, idx) => (
             <div
               key={`slide-${img}-${idx}`}
-              className="relative min-w-full w-full h-full flex-shrink-0"
+              className="relative min-w-full w-full h-full flex-shrink-0 flex items-center justify-center p-2 sm:p-3"
               onClick={() => {
                 // If practically no drag occurred, treat as click to zoom
                 if (Math.abs(dragDeltaRef.current) < 5) {
@@ -258,8 +258,8 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
                 draggable={false}
                 priority={idx === 1}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 620px"
-                className="object-cover object-center pointer-events-none select-none"
-                containerClassName="w-full h-full"
+                className="object-contain object-center pointer-events-none select-none max-w-full max-h-full"
+                containerClassName="w-full h-full bg-transparent flex items-center justify-center"
                 fallbackTitle={title}
               />
             </div>
@@ -269,7 +269,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
         {/* Top-Left Docked Promotional Badge */}
         {primaryBadge && (
           <div className="absolute top-0 left-0 z-10 pointer-events-none">
-            <div className="bg-[#0c2340] text-white px-3 py-1.5 rounded-tl-2xl rounded-br-xl rounded-tr-xl flex items-center gap-1 shadow-sm">
+            <div className="bg-[#0c2340] text-white px-3 py-1.5 rounded-tl-2xl rounded-br-xl rounded-tr-xl flex items-center gap-1">
               <svg width={14} height={14} className="w-3.5 h-3.5 text-[#FACC15] fill-current shrink-0" viewBox="0 0 24 24">
                 <path d="M13 2L3 14h7v8l11-14h-8l0-6z" />
               </svg>
@@ -280,7 +280,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
           </div>
         )}
 
-        {/* Top-Right Floating Zoom Button with enhanced transparency and viewfinder corners */}
+        {/* Top-Right Floating Zoom Button: Clean solid lightweight */}
         <button
           type="button"
           onPointerDown={(e) => e.stopPropagation()}
@@ -291,15 +291,15 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
             e.stopPropagation()
             setIsZoomModalOpen(true)
           }}
-          className="absolute top-2.5 right-2.5 z-20 w-9 h-9 rounded-full bg-white/70 hover:bg-white/85 backdrop-blur-md border border-white/60 text-[#1B4332] shadow-sm active:scale-90 transition flex items-center justify-center cursor-pointer"
+          className="absolute top-2.5 right-2.5 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white border border-stone-200 text-[#1B4332] active:scale-90 transition flex items-center justify-center cursor-pointer"
           aria-label="Zoom image"
         >
-          <svg width={17} height={17} className="w-[17px] h-[17px] shrink-0 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width={15} height={15} className="w-[15px] h-[15px] shrink-0 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.4} d="M4 8V5a1 1 0 011-1h3m8 0h3a1 1 0 011 1v3M4 16v3a1 1 0 001 1h3m8 0h3a1 1 0 001-1v-3" />
           </svg>
         </button>
 
-        {/* Previous / Next Arrow Controls: Comfortably sized, semi-transparent frosted buttons */}
+        {/* Previous / Next Arrow Controls */}
         {totalImages > 1 && (
           <>
             <button
@@ -313,11 +313,11 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
                 e.stopPropagation()
                 handlePrev()
               }}
-              className="absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/75 hover:bg-white/95 backdrop-blur-md border border-white/70 text-[#1B4332] shadow-[0_2px_10px_rgba(0,0,0,0.14)] transition-all hover:scale-105 active:scale-90 cursor-pointer flex items-center justify-center"
+              className="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white border border-stone-200 text-[#1B4332] transition-colors hover:scale-105 active:scale-90 cursor-pointer flex items-center justify-center"
               aria-label="Previous product image"
             >
-              <svg width={20} height={20} className="w-[18px] h-[18px] sm:w-5 sm:h-5 shrink-0 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.6} d="M15 19l-7-7 7-7" />
+              <svg width={16} height={16} className="w-4 h-4 shrink-0 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
@@ -331,21 +331,14 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
                 e.stopPropagation()
                 handleNext()
               }}
-              className="absolute right-3 sm:right-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/75 hover:bg-white/95 backdrop-blur-md border border-white/70 text-[#1B4332] shadow-[0_2px_10px_rgba(0,0,0,0.14)] transition-all hover:scale-105 active:scale-90 cursor-pointer flex items-center justify-center"
+              className="absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/80 hover:bg-white border border-stone-200 text-[#1B4332] transition-colors hover:scale-105 active:scale-90 cursor-pointer flex items-center justify-center"
               aria-label="Next product image"
             >
-              <svg width={20} height={20} className="w-[18px] h-[18px] sm:w-5 sm:h-5 shrink-0 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.6} d="M9 5l7 7-7 7" />
+              <svg width={16} height={16} className="w-4 h-4 shrink-0 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </>
-        )}
-
-        {/* Counter Badge */}
-        {totalImages > 1 && (
-          <div className="absolute top-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-[11px] font-medium pointer-events-none z-10">
-            {activeRealIndex + 1} / {totalImages}
-          </div>
         )}
       </div>
 
@@ -385,10 +378,11 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
                 onClick={() => handleGoTo(idx)}
                 className={`relative flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-[10px] overflow-hidden border-2 transition-all cursor-pointer ${
                   isSelected
-                    ? 'border-[#1B4332] shadow-[0_2px_8px_rgba(27,67,50,0.22)] scale-102'
+                    ? 'border-[#1B4332] scale-102'
                     : 'border-[#E5E7EB] opacity-75 hover:opacity-100 hover:border-[#9CA3AF]'
                 }`}
                 aria-label={`View image ${idx + 1} of ${totalImages}`}
+                aria-current={isSelected ? 'true' : undefined}
               >
                 <GlorovImage
                   src={getOptimizedImageUrl(img, { width: 128, height: 128, crop: 'fill', quality: 'auto' })}

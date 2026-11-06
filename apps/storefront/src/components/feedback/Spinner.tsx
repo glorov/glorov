@@ -50,7 +50,7 @@ export function Spinner({
         className={cn('inline-flex items-center justify-center relative', boxSize, className)}
       >
         {/* Ambient Ring Track with G Logo Forest Green */}
-        <div className="absolute inset-0 rounded-full border-2 border-[#02411a]/15 shadow-sm" />
+        <div className="absolute inset-0 rounded-full border-2 border-[#02411a]/15" />
 
         {/* Dynamic Rotating Spinner Ring using G SVG Logo Colors */}
         <svg

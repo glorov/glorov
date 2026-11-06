@@ -6,7 +6,7 @@ import { MILESTONE_COUPONS } from '../../context/StorefrontContext'
 
 export interface CouponVoucherCardProps {
   appliedCoupon: string | null
-  onApplyCoupon: (code: string) => boolean | void
+  onApplyCoupon: (code: string) => boolean | void | Promise<boolean | void>
   onRemoveCoupon: () => void
   onOpenOffersModal?: () => void
   subtotal: number
@@ -62,7 +62,7 @@ export const CouponVoucherCard: React.FC<CouponVoucherCardProps> = ({
       : `${appliedCoupon} Active`
 
     return (
-      <div className="w-full p-3.5 rounded-[18px] bg-[#F2FAF5] border-[1.2px] border-[#B7E4C7] shadow-[0_2px_6px_rgba(10,76,54,0.024)] transition-all">
+      <div className="w-full p-3.5 rounded-[18px] bg-[#F2FAF5] border-[1.2px] border-[#B7E4C7] transition-colors">
         <div className="flex items-center gap-2.5">
           {/* Discount Circle Icon */}
           <div className="w-7 h-7 rounded-full bg-[#0A4C36] flex items-center justify-center text-white flex-shrink-0">
@@ -112,7 +112,7 @@ export const CouponVoucherCard: React.FC<CouponVoucherCardProps> = ({
             <button
               type="button"
               onClick={() => onApplyCoupon(higherUnlockedOffer.code)}
-              className="px-2.5 py-1.5 rounded-[8px] bg-[#0A4C36] text-white text-[11px] font-extrabold shadow-[0_1px_4px_rgba(10,76,54,0.16)] hover:bg-[#135841] transition-all active:scale-95 whitespace-nowrap"
+              className="px-2.5 py-1.5 rounded-[8px] bg-[#0A4C36] text-white text-[11px] font-extrabold hover:bg-[#135841] transition-colors active:scale-95 whitespace-nowrap"
             >
               APPLY {higherUnlockedOffer.title}
             </button>
@@ -147,7 +147,7 @@ export const CouponVoucherCard: React.FC<CouponVoucherCardProps> = ({
 
   return (
     <div
-      className={`w-full p-3.5 rounded-[18px] bg-white border shadow-[0_2px_6px_rgba(0,0,0,0.024)] transition-all ${
+      className={`w-full p-3.5 rounded-[18px] bg-white border transition-colors ${
         bestApplicable ? 'border-[1.2px] border-[#B7E4C7]' : 'border border-[#E5ECE8]'
       }`}
     >

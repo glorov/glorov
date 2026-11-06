@@ -178,7 +178,7 @@ describe('Checkout — CheckoutAddressForm', () => {
     const phoneInput = screen.getByPlaceholderText(/9876543210/i)
     const emailInput = screen.getByPlaceholderText(/name@example.com/i)
     const addressInput = screen.getByPlaceholderText(/Flat 402/i)
-    const pincodeInput = screen.getByPlaceholderText(/411001/i)
+    const pincodeInput = screen.getByLabelText(/PIN Code/i)
 
     fireEvent.change(nameInput, { target: { value: 'Rohit Verma' } })
     fireEvent.change(phoneInput, { target: { value: '9876543210' } })

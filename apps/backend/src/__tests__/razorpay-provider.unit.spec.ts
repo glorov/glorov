@@ -182,6 +182,32 @@ describe('Razorpay Payment Provider Unit Tests', () => {
       expect(res.data?.captured_at).toBeDefined()
     })
 
+    it('throws error in capturePayment when amount is missing (GLOROV-PAY-003)', async () => {
+      await expect(
+        service.capturePayment({
+          data: {
+            razorpay_order_id: 'order_123',
+            razorpay_payment_id: 'pay_123',
+          },
+        } as any)
+      ).rejects.toThrow(/payment amount is required/i)
+    })
+
+    it('re-throws error in capturePayment when gateway fails (GLOROV-PAY-002)', async () => {
+      const client = service.getClient()
+      jest.spyOn(client, 'capturePayment').mockRejectedValueOnce(new Error('Gateway capture network error'))
+
+      await expect(
+        service.capturePayment({
+          data: {
+            razorpay_order_id: 'order_123',
+            razorpay_payment_id: 'pay_123',
+            amount: 5000,
+          },
+        } as any)
+      ).rejects.toThrow(/Razorpay payment capture failed/i)
+    })
+
     it('processes refunds with amount', async () => {
       const res = await service.refundPayment({
         data: {
@@ -194,6 +220,22 @@ describe('Razorpay Payment Provider Unit Tests', () => {
 
       expect(res.data?.status).toBe('refunded')
       expect(res.data?.refund_id).toMatch(/^rfnd_mock_/)
+    })
+
+    it('returns existing refund data idempotently if already refunded (GLOROV-PAY-004)', async () => {
+      const res = await service.refundPayment({
+        data: {
+          razorpay_order_id: 'order_123',
+          razorpay_payment_id: 'pay_123',
+          refund_id: 'rfnd_existing_123',
+          status: 'refunded',
+          amount: 9800,
+        },
+        amount: 4900,
+      } as any)
+
+      expect(res.data?.status).toBe('refunded')
+      expect(res.data?.refund_id).toBe('rfnd_existing_123')
     })
 
     it('returns correct payment status based on session state', async () => {

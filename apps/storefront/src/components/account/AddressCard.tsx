@@ -7,15 +7,17 @@ export interface AddressCardProps {
   address: CustomerAddress
   onEdit: (address: CustomerAddress) => void
   onDelete: (id: string) => void
+  onSetDefault?: (id: string) => void
 }
 
 export const AddressCard: React.FC<AddressCardProps> = ({
   address,
   onEdit,
   onDelete,
+  onSetDefault,
 }) => {
   return (
-    <div className="p-4 rounded-2xl bg-white border border-stone-200/90 shadow-xs flex flex-col justify-between gap-3 text-xs">
+    <div className="p-4 rounded-2xl bg-white border border-stone-200/90 flex flex-col justify-between gap-3 text-xs">
       <div>
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <span className="font-bold text-stone-900 text-xs truncate">{address.name}</span>
@@ -36,6 +38,15 @@ export const AddressCard: React.FC<AddressCardProps> = ({
       </div>
 
       <div className="pt-3 border-t border-stone-100 flex items-center justify-end gap-2">
+        {!address.isDefault && onSetDefault && (
+          <button
+            type="button"
+            onClick={() => onSetDefault(address.id)}
+            className="px-3 py-1 rounded-lg text-xs font-semibold text-emerald-700 hover:bg-emerald-50 transition"
+          >
+            Set as Default
+          </button>
+        )}
         <button
           type="button"
           onClick={() => onEdit(address)}

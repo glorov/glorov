@@ -45,9 +45,9 @@ export const BotanicalLifecycleTabs: React.FC = () => {
               key={stage.name}
               type="button"
               onClick={() => setSelectedIndex(idx)}
-              className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 ${
+              className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors active:scale-95 ${
                 isSelected
-                  ? 'bg-[#1B4332] text-white shadow-xs'
+                  ? 'bg-[#1B4332] text-white'
                   : 'bg-[#F3F4F6] text-[#4B5563] hover:bg-[#E5E7EB]'
               }`}
             >
@@ -68,10 +68,10 @@ export const BotanicalLifecycleTabs: React.FC = () => {
         </p>
 
         <div className="mt-3 flex items-center gap-2 flex-wrap">
-          <span className="px-3 py-1 rounded-full bg-white border border-[#D1D5DB] text-[11px] font-bold text-[#1E293B] shadow-2xs flex items-center gap-1">
+          <span className="px-3 py-1 rounded-full bg-white border border-[#D1D5DB] text-[11px] font-bold text-[#1E293B] flex items-center gap-1">
             🌱 Non-GMO Certified
           </span>
-          <span className="px-3 py-1 rounded-full bg-white border border-[#D1D5DB] text-[11px] font-bold text-[#1E293B] shadow-2xs flex items-center gap-1">
+          <span className="px-3 py-1 rounded-full bg-white border border-[#D1D5DB] text-[11px] font-bold text-[#1E293B] flex items-center gap-1">
             🇮🇳 Made in India
           </span>
         </div>

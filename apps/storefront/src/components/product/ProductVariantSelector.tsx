@@ -71,9 +71,9 @@ export const ProductVariantSelector: React.FC<ProductVariantSelectorProps> = ({
               aria-checked={isSelected}
               disabled={!isAvailable}
               onClick={() => onSelectVariant(v)}
-              className={`relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-left transition-all active:scale-95 ${
+              className={`relative inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-left transition-colors active:scale-95 ${
                 isSelected
-                  ? 'bg-[#E8F5E9] border-[#1B4332] border-[1.6px] text-[#1B4332] shadow-sm'
+                  ? 'bg-[#E8F5E9] border-[#1B4332] border-[1.6px] text-[#1B4332]'
                   : 'bg-white border-[#D1D5DB] border text-[#374151] hover:border-[#9CA3AF]'
               } ${!isAvailable ? 'opacity-40 cursor-not-allowed bg-stone-50' : 'cursor-pointer'}`}
             >

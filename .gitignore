@@ -40,6 +40,8 @@ scratch/
 screenshots/
 
 coverage/
+playwright-report/
+test-results/
 
 # Database backups
 backups/

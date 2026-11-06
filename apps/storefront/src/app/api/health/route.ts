@@ -15,6 +15,8 @@ export async function GET() {
 
   const isHealthy = backendResult.success
 
+  const mem = process.memoryUsage()
+
   return NextResponse.json(
     {
       status: isHealthy ? 'healthy' : 'degraded',
@@ -23,6 +25,11 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       uptime_seconds: process.uptime(),
       latency_ms: Date.now() - startTime,
+      memory: {
+        heap_used_mb: Math.round(mem.heapUsed / 1024 / 1024),
+        heap_total_mb: Math.round(mem.heapTotal / 1024 / 1024),
+        rss_mb: Math.round(mem.rss / 1024 / 1024),
+      },
       upstream_backend: {
         connected: isHealthy,
         status: backendResult.status,

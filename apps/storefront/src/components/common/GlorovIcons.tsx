@@ -6,179 +6,179 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 /**
- * Botanical Category SVGs from Flutter `GlorovCategorySvgIcons`
+ * Named TSX Icon Components for GLOROV Botanical Categories
+ */
+export const GlorovSeedIcon = ({ size = 21, className = '', ...props }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.9"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width={size}
+    height={size}
+    className={className}
+    {...props}
+  >
+    <path d="M12 21C12 21 6 16.5 6 11.5C6 8 8.7 5 12 5C15.3 5 18 8 18 11.5C18 16.5 12 21 12 21Z" />
+    <path d="M12 9V17" />
+    <path d="M12 11.5C13.8 9.8 16.2 9.5 17 10" />
+    <path d="M12 13.5C10.2 12 7.8 12.2 7 13" />
+  </svg>
+)
+
+export const GlorovVegetableIcon = ({ size = 21, className = '', ...props }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.9"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width={size}
+    height={size}
+    className={className}
+    {...props}
+  >
+    <path d="M8.5 9.5C7.2 11 6.8 13.5 8 16L12 22L16 16C17.2 13.5 16.8 11 15.5 9.5C14.2 8 9.8 8 8.5 9.5Z" />
+    <path d="M9.5 12.5H13" />
+    <path d="M11 15.5H14.5" />
+    <path d="M12 8V2" />
+    <path d="M12 5C10.5 3.5 8.5 3.5 8 4" />
+    <path d="M12 5C13.5 3.5 15.5 3.5 16 4" />
+  </svg>
+)
+
+export const GlorovLivePlantIcon = ({ size = 21, className = '', ...props }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.9"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width={size}
+    height={size}
+    className={className}
+    {...props}
+  >
+    <path d="M6 14.5H18L16.8 21H7.2L6 14.5Z" />
+    <path d="M5 14.5H19" />
+    <path d="M12 14.5V8" />
+    <path d="M12 10.5C9.5 7.5 6 8 5.5 8.5C5.5 11.5 9 12 12 10.5Z" />
+    <path d="M12 9C14.5 6 18 6.5 18.5 7C18.5 10 15 10.5 12 9Z" />
+    <path d="M12 8C11 6 11.5 4 12 3C12.5 4 13 6 12 8Z" />
+  </svg>
+)
+
+export const GlorovFlowerIcon = ({ size = 21, className = '', ...props }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.9"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width={size}
+    height={size}
+    className={className}
+    {...props}
+  >
+    <circle cx="12" cy="12" r="2.8" />
+    <circle cx="12" cy="5.8" r="2.5" />
+    <circle cx="17.4" cy="8.9" r="2.5" />
+    <circle cx="17.4" cy="15.1" r="2.5" />
+    <circle cx="12" cy="18.2" r="2.5" />
+    <circle cx="6.6" cy="15.1" r="2.5" />
+    <circle cx="6.6" cy="8.9" r="2.5" />
+  </svg>
+)
+
+export const GlorovHerbIcon = ({ size = 21, className = '', ...props }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.9"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width={size}
+    height={size}
+    className={className}
+    {...props}
+  >
+    <path d="M12 21V9" />
+    <path d="M12 12C9 9 9 4 12 3C15 4 15 9 12 12Z" />
+    <path d="M12 15C8.5 14 6 16 6 18.5C8.5 18.5 11 17 12 15Z" />
+    <path d="M12 14C15.5 13 18 15 18 17.5C15.5 17.5 13 16 12 14Z" />
+    <path d="M7 21H17" />
+  </svg>
+)
+
+export const GlorovOfferIcon = ({ size = 21, className = '', ...props }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.9"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width={size}
+    height={size}
+    className={className}
+    {...props}
+  >
+    <path d="M3.5 7C3.5 5.6 4.6 4.5 6 4.5H18C19.4 4.5 20.5 5.6 20.5 7V10C19.4 10 18.5 10.9 18.5 12C18.5 13.1 19.4 14 20.5 14V17C20.5 18.4 19.4 19.5 18 19.5H6C4.6 19.5 3.5 18.4 3.5 17V14C4.6 14 5.5 13.1 5.5 12C5.5 10.9 4.6 10 3.5 10V7Z" />
+    <line x1="14.5" y1="9" x2="9.5" y2="15" />
+    <circle cx="10" cy="9.5" r="1.2" fill="currentColor" />
+    <circle cx="14" cy="14.5" r="1.2" fill="currentColor" />
+  </svg>
+)
+
+export const GlorovAllIcon = ({ size = 21, className = '', ...props }: IconProps) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.9"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width={size}
+    height={size}
+    className={className}
+    {...props}
+  >
+    <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
+    <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
+    <rect x="3.5" y="13.5" width="7" height="7" rx="2" />
+    <rect x="13.5" y="13.5" width="7" height="7" rx="2" />
+  </svg>
+)
+
+/**
+ * Botanical Category SVGs registry matching GLOROV categories
  */
 export const CategoryIcons = {
-  seeds: ({ size = 21, className = '', ...props }: IconProps) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.9"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width={size}
-      height={size}
-      className={className}
-      {...props}
-    >
-      <path d="M12 21C12 21 6 16.5 6 11.5C6 8 8.686 5 12 5C15.314 5 18 8 18 11.5C18 16.5 12 21 12 21Z" />
-      <path d="M12 9V17" />
-      <path d="M12 11.5C13.8 9.8 16.2 9.5 17 10" />
-      <path d="M12 13.5C10.2 12 7.8 12.2 7 13" />
-    </svg>
-  ),
-
-  livePlants: ({ size = 21, className = '', ...props }: IconProps) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.9"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width={size}
-      height={size}
-      className={className}
-      {...props}
-    >
-      <path d="M7 16H17L15.8 21.5H8.2L7 16Z" />
-      <path d="M6 16H18" />
-      <path d="M12 16V9" />
-      <path d="M12 11C9.5 7.5 5.5 8 5 8.5C5 12 9 12.5 12 11Z" />
-      <path d="M12 9.5C14.5 6 18.5 6.5 19 7C19 10.5 15 11 12 9.5Z" />
-    </svg>
-  ),
-
-  planters: ({ size = 21, className = '', ...props }: IconProps) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.9"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width={size}
-      height={size}
-      className={className}
-      {...props}
-    >
-      <rect x="5" y="4" width="14" height="4.5" rx="1.5" />
-      <path d="M6.8 8.5L8.2 18.5H15.8L17.2 8.5" />
-      <line x1="12" y1="11.5" x2="12" y2="15.5" />
-      <path d="M6 21H18" />
-    </svg>
-  ),
-
-  plantCare: ({ size = 21, className = '', ...props }: IconProps) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.9"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width={size}
-      height={size}
-      className={className}
-      {...props}
-    >
-      <path d="M12 3C12 3 5.5 10.5 5.5 15.5C5.5 19.1 8.4 22 12 22C15.6 22 18.5 19.1 18.5 15.5C18.5 10.5 12 3 12 3Z" />
-      <path d="M12 11.5C13.5 13 14 15 13.5 17C12.5 17.5 10.8 17 9.8 15.5C9.2 14.5 9.8 12.8 12 11.5Z" />
-    </svg>
-  ),
-
-  flowering: ({ size = 21, className = '', ...props }: IconProps) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.9"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width={size}
-      height={size}
-      className={className}
-      {...props}
-    >
-      <circle cx="12" cy="12" r="2.8" />
-      <circle cx="12" cy="5.8" r="2.5" />
-      <circle cx="17.4" cy="8.9" r="2.5" />
-      <circle cx="17.4" cy="15.1" r="2.5" />
-      <circle cx="12" cy="18.2" r="2.5" />
-      <circle cx="6.6" cy="15.1" r="2.5" />
-      <circle cx="6.6" cy="8.9" r="2.5" />
-    </svg>
-  ),
-
-  herbs: ({ size = 21, className = '', ...props }: IconProps) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.9"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width={size}
-      height={size}
-      className={className}
-      {...props}
-    >
-      <path d="M4 20H20" />
-      <path d="M12 20C12 13 9 7 4 5C6 11 8.5 16 12 20Z" />
-      <path d="M12 20C12 12 15 7 20 5C18 11 15.5 16 12 20Z" />
-      <path d="M12 20V10" />
-    </svg>
-  ),
-
-  vegetables: ({ size = 21, className = '', ...props }: IconProps) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.9"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width={size}
-      height={size}
-      className={className}
-      {...props}
-    >
-      <circle cx="6.5" cy="17.5" r="3.5" />
-      <circle cx="18" cy="18" r="2" />
-      <path d="M6.5 14V8.5H10.5L12.5 12.5H18V16" />
-      <path d="M10 17.5H16" />
-      <path d="M10.5 8.5V5.5H12" />
-      <path d="M14.5 12.5V9.5H17.5V12.5" />
-    </svg>
-  ),
-
-  offers: ({ size = 21, className = '', ...props }: IconProps) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width={size}
-      height={size}
-      className={className}
-      {...props}
-    >
-      <line x1="19" y1="5" x2="5" y2="19" />
-      <circle cx="7.5" cy="7.5" r="2.5" />
-      <circle cx="16.5" cy="16.5" r="2.5" />
-    </svg>
-  ),
+  seeds: GlorovSeedIcon,
+  vegetables: GlorovVegetableIcon,
+  livePlants: GlorovLivePlantIcon,
+  flowers: GlorovFlowerIcon,
+  flowering: GlorovFlowerIcon,
+  herbs: GlorovHerbIcon,
+  offers: GlorovOfferIcon,
+  all: GlorovAllIcon,
+  forYou: GlorovAllIcon,
+  // Graceful aliases
+  planters: GlorovLivePlantIcon,
+  plantCare: GlorovHerbIcon,
 }
 
 /**
@@ -820,6 +820,27 @@ export const GlorovCustomIcons = {
       <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
       <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
       <line x1="12" y1="22.08" x2="12" y2="12" />
+    </svg>
+  ),
+
+  refresh: ({ size = 16, className = '', ...props }: IconProps) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      width={size}
+      height={size}
+      className={className}
+      {...props}
+    >
+      <path d="M21 2v6h-6" />
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+      <path d="M3 22v-6h6" />
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
     </svg>
   ),
 }

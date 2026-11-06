@@ -32,8 +32,9 @@ export const TaxBreakdownModal: React.FC<TaxBreakdownModalProps> = ({
 }) => {
   if (!isOpen) return null
 
-  const comparePrice = compareSubtotal > total ? compareSubtotal : Math.round(total * 1.35)
-  const totalSavings = Math.max(0, comparePrice - total)
+  const hasCompareSavings = compareSubtotal > subtotal
+  const comparePrice = hasCompareSavings ? compareSubtotal : subtotal
+  const totalSavings = (hasCompareSavings ? compareSubtotal - subtotal : 0) + discountAmount
 
   return (
     <div
@@ -71,12 +72,14 @@ export const TaxBreakdownModal: React.FC<TaxBreakdownModalProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-[#6B7280]">
-            <span>Original Catalog Value</span>
-            <span className="text-[13px] font-bold text-[#111827]">
-              ₹{Math.round(comparePrice)}
-            </span>
-          </div>
+          {hasCompareSavings && (
+            <div className="flex items-center justify-between text-[#6B7280]">
+              <span>Original Catalog Value</span>
+              <span className="text-[13px] font-bold text-[#111827]">
+                ₹{Math.round(comparePrice)}
+              </span>
+            </div>
+          )}
 
           {discountAmount > 0 && (
             <div className="flex items-center justify-between text-[#6B7280]">

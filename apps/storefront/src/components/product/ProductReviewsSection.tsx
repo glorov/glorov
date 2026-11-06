@@ -40,7 +40,7 @@ export const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
   const averageRating = summary?.averageRating ?? 4.8
 
   return (
-    <section id="reviews" className="w-full my-8 p-6 rounded-2xl bg-white border border-stone-200 shadow-xs">
+    <section id="reviews" className="w-full my-8 p-6 rounded-2xl bg-white border border-stone-200">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-stone-100 gap-4">
         <div>
           <h2 className="text-lg font-bold text-stone-900 tracking-tight">

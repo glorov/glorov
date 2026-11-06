@@ -65,7 +65,7 @@ export function BotanicalLoadingState({
         {/* Ambient Ring Track in G Logo Forest Green */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 rounded-full border-[2.5px] border-[#02411a]/15 shadow-[0_0_14px_rgba(113,177,9,0.12)]"
+          className="absolute inset-0 rounded-full border-[2.5px] border-[#02411a]/15"
         />
 
         {/* Dynamic Rotating Spinner Ring using G SVG Logo Colors (#02411a & #71b109 & #95d507) */}
@@ -98,7 +98,7 @@ export function BotanicalLoadingState({
         <div className="relative z-10 flex items-center justify-center animate-[glrGBreathe_2s_ease-in-out_infinite]">
           <GlorovGSymbol
             size={logoSize}
-            className="drop-shadow-[0_2px_4px_rgba(2,65,26,0.15)] pointer-events-none select-none"
+            className="pointer-events-none select-none"
           />
         </div>
       </div>
@@ -128,11 +128,9 @@ export function BotanicalLoadingState({
           0%,
           100% {
             transform: scale(1);
-            filter: drop-shadow(0 2px 4px rgba(2, 65, 26, 0.15));
           }
           50% {
             transform: scale(1.06);
-            filter: drop-shadow(0 3px 8px rgba(113, 177, 9, 0.35));
           }
         }
         @keyframes glrGlowPulse {

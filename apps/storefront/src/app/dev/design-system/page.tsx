@@ -55,51 +55,51 @@ export default function DesignSystemShowcasePage() {
           1. Botanical Color Tokens
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          <div className="bg-forest-deep text-white p-3 rounded-md shadow-card">
+          <div className="bg-forest-deep text-white p-3 rounded-md border border-white/10">
             <span className="text-label-sm font-semibold block">forest-deep</span>
             <span className="text-body-sm opacity-80">#1B4332</span>
           </div>
-          <div className="bg-forest-medium text-white p-3 rounded-md shadow-card">
+          <div className="bg-forest-medium text-white p-3 rounded-md border border-white/10">
             <span className="text-label-sm font-semibold block">forest-medium</span>
             <span className="text-body-sm opacity-80">#2D6A4F</span>
           </div>
-          <div className="bg-sage text-white p-3 rounded-md shadow-card">
+          <div className="bg-sage text-white p-3 rounded-md border border-white/10">
             <span className="text-label-sm font-semibold block">sage</span>
             <span className="text-body-sm opacity-80">#52B788</span>
           </div>
-          <div className="bg-mint-badge text-forest-deep border border-mint p-3 rounded-md shadow-card">
+          <div className="bg-mint-badge text-forest-deep border border-mint p-3 rounded-md">
             <span className="text-label-sm font-semibold block">mint-badge</span>
             <span className="text-body-sm opacity-80">#D8F3DC</span>
           </div>
-          <div className="bg-mint-surface text-forest-deep border border-mint p-3 rounded-md shadow-card">
+          <div className="bg-mint-surface text-forest-deep border border-mint p-3 rounded-md">
             <span className="text-label-sm font-semibold block">mint-surface</span>
             <span className="text-body-sm opacity-80">#E8F5E9</span>
           </div>
-          <div className="bg-tag-dark-blue text-white p-3 rounded-md shadow-card">
+          <div className="bg-tag-dark-blue text-white p-3 rounded-md border border-white/10">
             <span className="text-label-sm font-semibold block">tag-dark-blue</span>
             <span className="text-body-sm opacity-80">#0C2340</span>
           </div>
-          <div className="bg-earth-gold text-white p-3 rounded-md shadow-card">
+          <div className="bg-earth-gold text-white p-3 rounded-md border border-white/10">
             <span className="text-label-sm font-semibold block">earth-gold</span>
             <span className="text-body-sm opacity-80">#DDA15E</span>
           </div>
-          <div className="bg-terracotta text-white p-3 rounded-md shadow-card">
+          <div className="bg-terracotta text-white p-3 rounded-md border border-white/10">
             <span className="text-label-sm font-semibold block">terracotta</span>
             <span className="text-body-sm opacity-80">#BC6C25</span>
           </div>
-          <div className="bg-surface-cream text-text-primary border border-border-subtle p-3 rounded-md shadow-card">
+          <div className="bg-surface-cream text-text-primary border border-border-subtle p-3 rounded-md">
             <span className="text-label-sm font-semibold block">surface-cream</span>
             <span className="text-body-sm text-text-muted">#F9FAF8</span>
           </div>
-          <div className="bg-surface-pure text-text-primary border border-border-subtle p-3 rounded-md shadow-card">
+          <div className="bg-surface-pure text-text-primary border border-border-subtle p-3 rounded-md">
             <span className="text-label-sm font-semibold block">surface-pure</span>
             <span className="text-body-sm text-text-muted">#FFFFFF</span>
           </div>
-          <div className="bg-brand-success text-white p-3 rounded-md shadow-card">
+          <div className="bg-brand-success text-white p-3 rounded-md border border-white/10">
             <span className="text-label-sm font-semibold block">brand-success</span>
             <span className="text-body-sm opacity-80">#10B981</span>
           </div>
-          <div className="bg-brand-error text-white p-3 rounded-md shadow-card">
+          <div className="bg-brand-error text-white p-3 rounded-md border border-white/10">
             <span className="text-label-sm font-semibold block">brand-error</span>
             <span className="text-body-sm opacity-80">#EF4444</span>
           </div>

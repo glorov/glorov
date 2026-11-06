@@ -525,7 +525,7 @@ describe('GLOROV End-to-End Commerce and Business Lifecycle Integration Tests', 
         ],
       }
 
-      const res = await fetch(`${BACKEND_URL}/api/hooks/shiprocket`, {
+      const res = await fetch(`${BACKEND_URL}/hooks/shiprocket`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

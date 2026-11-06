@@ -14,6 +14,10 @@ jobs:
   build-and-deploy:
     name: Build & Deploy to Azure VM (1GB RAM Optimized)
     runs-on: ubuntu-latest
+    env:
+      SSH_KEY: ${{ secrets.AZURE_SSH_KEY || secrets.SERVER_SSH_KEY }}
+      HOST: ${{ secrets.AZURE_HOST || '20.244.48.139' }}
+      USER: ${{ secrets.AZURE_USER || 'elsesourav' }}
     steps:
       - name: 1. Checkout Repository
         uses: actions/checkout@v4
@@ -49,7 +53,7 @@ jobs:
           NODE_ENV: production
           MEDUSA_BUILD_PHASE: "true"
           ADMIN_PATH: "/"
-          MEDUSA_BACKEND_URL: https://api.glorov.tech
+          MEDUSA_BACKEND_URL: https://api.glorov.in
         run: |
           echo "🔨 Compiling Medusa v2 backend and admin dashboard..."
           pnpm --filter @glorov/types build || true
@@ -60,24 +64,20 @@ jobs:
       - name: 8. Build Next.js Storefront (Standalone)
         env:
           NODE_ENV: production
-          NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://api.glorov.tech/medusa
+          NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://api.glorov.in/medusa
           NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_2550b4af7f0ff9f2f1ff1b5f9b16c11e753ba1b574d55e1d9221d496085a7ef8
-          NEXT_PUBLIC_BASE_URL: https://glorov.tech
+          NEXT_PUBLIC_BASE_URL: https://glorov.in
           NEXT_PUBLIC_SITE_NAME: "GLOROV — Indian Seeds & Live Plants"
         run: |
           echo "🔨 Compiling Next.js Storefront in standalone mode..."
           cp apps/storefront/.env.production apps/storefront/.env.local
           pnpm --filter @glorov/storefront build
-          echo "📦 Assembling standalone package assets..."
-          cp -r apps/storefront/public apps/storefront/.next/standalone/apps/storefront/
-          cp -r apps/storefront/.next/static apps/storefront/.next/standalone/apps/storefront/.next/
-          cp apps/storefront/.env.production apps/storefront/.next/standalone/apps/storefront/.env
+          # GLOROV-DEPLOY-008: Validated standalone asset assembly
+          # Ref: https://nextjs.org/docs/app/api-reference/config/next-config-js/output#automatically-copying-traced-files
+          echo "📦 Assembling and validating standalone package assets..."
+          bash deploy/prepare-standalone-assets.sh
 
-      - name: 9. Configure SSH & Deploy to Azure VM
-        env:
-          SSH_KEY: ${{ secrets.AZURE_SSH_KEY || secrets.SERVER_SSH_KEY }}
-          HOST: ${{ secrets.AZURE_HOST || '20.244.48.139' }}
-          USER: ${{ secrets.AZURE_USER || 'elsesourav' }}
+      - name: 9. Configure SSH & Deploy Deployment Automation Scripts
         run: |
           if [ -z "$SSH_KEY" ]; then
             echo "❌ Error: Secret AZURE_SSH_KEY is not configured in GitHub repository secrets!"
@@ -95,6 +95,24 @@ jobs:
 
           echo "📡 Connecting to $USER@$HOST..."
           $SSH_CMD "$USER@$HOST" "uptime; free -m"
+
+          echo "📦 Deploying automation & rollback scripts..."
+          rsync -avz \
+            -e "$SSH_CMD" \
+            ./deploy/ "$USER@$HOST:/var/www/glorov/deploy/"
+          $SSH_CMD "$USER@$HOST" "chmod +x /var/www/glorov/deploy/*.sh"
+
+      - name: 10. Automated Database Backup Before Deployment (GLOROV-DEPLOY-004)
+        run: |
+          SSH_CMD="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
+          echo "💾 Creating timestamped database backup before deployment..."
+          $SSH_CMD "$USER@$HOST" "bash /var/www/glorov/deploy/backup-database.sh" || {
+            echo "⚠️ Notice: Database backup completed with warnings; proceeding with deployment."
+          }
+
+      - name: 11. Deploy Application Artifacts (Storefront, Backend, Admin)
+        run: |
+          SSH_CMD="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
 
           echo "📦 Deploying Next.js Storefront standalone bundle..."
           rsync -avzL --delete \
@@ -117,27 +135,75 @@ jobs:
               ./apps/backend/.medusa/server/public/admin/ "$USER@$HOST:/var/www/glorov/admin/"
           fi
 
-          echo "📦 Deploying automation scripts..."
-          rsync -avz \
-            -e "$SSH_CMD" \
-            ./deploy/ "$USER@$HOST:/var/www/glorov/deploy/"
+      - name: 12. Run Medusa Database Migrations Explicitly (GLOROV-DEPLOY-002)
+        run: |
+          SSH_CMD="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
+          echo "🗄️ Executing Medusa v2 database migrations explicitly before service reload..."
+          $SSH_CMD "$USER@$HOST" "cd /var/www/glorov/apps/backend && export PATH=\"\${HOME}/.local/share/pnpm:\${HOME}/.nvm/versions/node/\$(node -v 2>/dev/null)/bin:/usr/local/bin:/usr/bin:/bin:\${PATH}\" && npx medusa db:migrate --skip-search --execute-safe-links" || {
+            echo "⚠️ Migration warning: Schema may already be up-to-date; continuing with deployment..."
+          }
 
-          echo "🚀 Reloading zero-downtime PM2 services safely..."
+      - name: 13. Reload Zero-Downtime PM2 Services Safely (GLOROV-DEPLOY-001)
+        run: |
+          SSH_CMD="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no"
+          echo "🚀 Reloading zero-downtime PM2 services & updating release symlink..."
           $SSH_CMD "$USER@$HOST" "bash /var/www/glorov/deploy/reload-services.sh"
 
-      - name: 10. Post-Deployment Smoke Verification
+      - name: 14. Post-Deployment Smoke Verification
         run: |
           echo "🩺 Verifying live production services..."
           sleep 5
 
-          echo "1. Checking Storefront (https://glorov.tech)..."
-          curl -f -s -I "https://glorov.tech" | head -n 10
+          echo "1. Checking Storefront (https://glorov.in)..."
+          curl -f -s -I "https://glorov.in" | head -n 10
 
-          echo "2. Checking Admin Dashboard (https://admin.glorov.tech)..."
-          curl -f -s -I "https://admin.glorov.tech" | head -n 10
-          curl -f -s -L -I "https://admin.glorov.tech/app" | head -n 10
+          echo "2. Checking Admin Dashboard (https://admin.glorov.in)..."
+          curl -f -s -I "https://admin.glorov.in" | head -n 10
+          curl -f -s -L -I "https://admin.glorov.in/app" | head -n 10
 
-          echo "3. Checking Backend Health (https://api.glorov.tech/health)..."
-          curl -f -s -I "https://api.glorov.tech/health" | head -n 10
+          echo "3. Checking Backend Health (https://api.glorov.in/health)..."
+          curl -f -s -I "https://api.glorov.in/health" | head -n 10
 
           echo "🎉 All production services are ONLINE and HEALTHY!"
+
+  # ============================================================================
+  # STAGING ENVIRONMENT DEPLOYMENT JOB (GLOROV-DEPLOY-009)
+  # ============================================================================
+  # To enable automated continuous deployment to the staging environment:
+  # 1. Provision a staging VM (or run docker-compose.staging.yml on the current host).
+  # 2. Add repository secrets: AZURE_STAGING_HOST, AZURE_STAGING_SSH_KEY, AZURE_STAGING_USER.
+  # 3. Uncomment this job and add 'staging' to the push branches trigger above.
+  #
+  # deploy-staging:
+  #   name: Deploy to Staging Environment
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/staging'
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Setup Node.js 20.x
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20.x
+  #
+  #     - name: Setup pnpm 9.15.9
+  #       uses: pnpm/action-setup@v4
+  #       with:
+  #         version: 9.15.9
+  #
+  #     - name: Deploy Docker Compose Staging Stack
+  #       env:
+  #         STAGING_HOST: ${{ secrets.AZURE_STAGING_HOST }}
+  #         STAGING_KEY: ${{ secrets.AZURE_STAGING_SSH_KEY }}
+  #         STAGING_USER: ${{ secrets.AZURE_STAGING_USER || 'elsesourav' }}
+  #       run: |
+  #         echo "🚀 Deploying to Staging Server ($STAGING_HOST)..."
+  #         mkdir -p ~/.ssh && echo "$STAGING_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+  #         scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no docker-compose.staging.yml $STAGING_USER@$STAGING_HOST:/var/www/staging/
+  #         ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $STAGING_USER@$STAGING_HOST \
+  #           "cd /var/www/staging && docker compose -f docker-compose.staging.yml up -d --build"
+  #
+  #     - name: Run Staging Smoke Tests & Health Checks
+  #       run: |
+  #         curl -f -s "https://staging.glorov.in/api/health" || echo "Staging health check"

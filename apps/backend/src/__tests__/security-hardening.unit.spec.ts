@@ -111,6 +111,37 @@ describe("Application Security & Hardening Invariant Unit Tests", () => {
       }).toThrow(/Port 6543/);
     });
 
+    it("throws MedusaError in production when Cloudinary credentials are missing or insecure", () => {
+      // Missing Cloudinary credentials
+      expect(() => {
+        validateProductionConfig({
+          NODE_ENV: "production",
+          DATABASE_URL: "postgresql://postgres:pass@localhost:5432/db",
+          REDIS_URL: "redis://localhost:6379",
+          JWT_SECRET: "a-very-secure-production-jwt-secret-string-32-chars",
+          COOKIE_SECRET: "a-very-secure-production-cookie-secret-string-32-chars",
+          STORE_CORS: "https://glorov.in",
+          ADMIN_CORS: "https://admin.glorov.in",
+        });
+      }).toThrow(/CLOUDINARY_API_SECRET/);
+
+      // Leaked / hardcoded Cloudinary secret
+      expect(() => {
+        validateProductionConfig({
+          NODE_ENV: "production",
+          DATABASE_URL: "postgresql://postgres:pass@localhost:5432/db",
+          REDIS_URL: "redis://localhost:6379",
+          JWT_SECRET: "a-very-secure-production-jwt-secret-string-32-chars",
+          COOKIE_SECRET: "a-very-secure-production-cookie-secret-string-32-chars",
+          STORE_CORS: "https://glorov.in",
+          ADMIN_CORS: "https://admin.glorov.in",
+          CLOUDINARY_CLOUD_NAME: "glorov-prod-media",
+          CLOUDINARY_API_KEY: "prod_key_12345",
+          CLOUDINARY_API_SECRET: "0FkMyyEi9taeWd2f8nEN55zqOUM",
+        });
+      }).toThrow(/Insecure, leaked or placeholder CLOUDINARY_API_SECRET/);
+    });
+
     it("passes cleanly in production when all security requirements are satisfied", () => {
       expect(() => {
         validateProductionConfig({
@@ -121,6 +152,9 @@ describe("Application Security & Hardening Invariant Unit Tests", () => {
           COOKIE_SECRET: "a-very-secure-production-cookie-secret-string-32-chars",
           STORE_CORS: "https://glorov.in,https://www.glorov.in",
           ADMIN_CORS: "https://admin.glorov.in",
+          CLOUDINARY_CLOUD_NAME: "glorov-prod-media",
+          CLOUDINARY_API_KEY: "prod_cloudinary_key_12345",
+          CLOUDINARY_API_SECRET: "prod_cloudinary_secret_secure_value_67890",
         });
       }).not.toThrow();
     });

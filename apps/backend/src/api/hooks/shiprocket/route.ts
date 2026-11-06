@@ -74,7 +74,7 @@ function normalizeShiprocketStatus(payload: ShiprocketWebhookPayload): {
 }
 
 /**
- * POST /api/hooks/shiprocket
+ * POST /hooks/shiprocket
  * Inbound webhook receiver for Shiprocket tracking status updates, AWB progress,
  * and delivery exceptions (NDR / RTO).
  */
@@ -137,47 +137,19 @@ export const POST = async (
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
 
   try {
-    // 3. Locate Target Order and Target Fulfillment in Medusa Database
+    // 3. Locate Target Order and Target Fulfillment in Medusa Database efficiently
     let targetOrder: any = null
     let targetFulfillment: any = null
-
-    // 3a. Search fulfillment directly by AWB, Shiprocket Order ID, or Shipment ID
-    const { data: fulfillments } = await query.graph({
-      entity: 'fulfillment',
-      fields: [
-        'id',
-        'data',
-        'labels.*',
-        'items.*',
-        'shipped_at',
-        'delivered_at',
-        'canceled_at',
-      ],
-    })
-
     const srOrderId = payload.sr_order_id ? String(payload.sr_order_id) : undefined
     const shipmentId = (payload as any).shipment_id ? String((payload as any).shipment_id) : undefined
 
-    targetFulfillment = fulfillments.find((f: any) => {
-      const matchesAwb =
-        awb &&
-        (f.data?.awb_code === awb ||
-          f.labels?.some((l: any) => l.tracking_number === awb))
-      const matchesSrOrder =
-        (orderId && String(f.data?.shiprocket_order_id) === orderId) ||
-        (srOrderId && String(f.data?.shiprocket_order_id) === srOrderId)
-      const matchesShipment =
-        shipmentId && String(f.data?.shiprocket_shipment_id) === shipmentId
-
-      return matchesAwb || matchesSrOrder || matchesShipment
-    })
-
-    // 3b. Locate target order by direct ID or via found fulfillment
+    // 3a. Direct order lookup using indexed ID filter if orderId is provided
     if (orderId) {
       const { data: orders } = await query.graph({
         entity: 'order',
         fields: [
           'id',
+          'display_id',
           'status',
           'fulfillment_status',
           'items.id',
@@ -188,38 +160,139 @@ export const POST = async (
         ],
         filters: { id: orderId },
       })
-      targetOrder = orders?.[0]
+      targetOrder = orders?.[0] || null
     }
 
-    // 3c. If order was not found directly, locate order owning the target fulfillment
-    if (!targetOrder && targetFulfillment) {
-      const { data: orders } = await query.graph({
-        entity: 'order',
-        fields: [
-          'id',
-          'status',
-          'fulfillment_status',
-          'items.id',
-          'items.quantity',
-          'fulfillments.*',
-          'fulfillments.items.*',
-          'fulfillments.labels.*',
-        ],
-      })
-      targetOrder = orders.find((ord: any) =>
-        ord.fulfillments?.some((f: any) => f.id === targetFulfillment.id)
-      )
-    } else if (targetOrder && !targetFulfillment && targetOrder.fulfillments?.length > 0) {
-      // If targetOrder was found directly, match specific fulfillment by AWB if available
-      if (awb) {
+    // 3b. If order is resolved directly, match target fulfillment from order.fulfillments
+    if (targetOrder && targetOrder.fulfillments?.length > 0) {
+      if (awb || srOrderId || shipmentId) {
         targetFulfillment =
           targetOrder.fulfillments.find((f: any) => {
-            const matchesData = f.data?.awb_code === awb
-            const matchesLabel = f.labels?.some((l: any) => l.tracking_number === awb)
-            return matchesData || matchesLabel
+            const matchesAwb =
+              awb &&
+              (f.data?.awb_code === awb ||
+                f.labels?.some((l: any) => l.tracking_number === awb))
+            const matchesSrOrder =
+              (orderId && String(f.data?.shiprocket_order_id) === orderId) ||
+              (srOrderId && String(f.data?.shiprocket_order_id) === srOrderId)
+            const matchesShipment =
+              shipmentId && String(f.data?.shiprocket_shipment_id) === shipmentId
+
+            return matchesAwb || matchesSrOrder || matchesShipment
           }) || targetOrder.fulfillments[0]
       } else {
         targetFulfillment = targetOrder.fulfillments[0]
+      }
+    }
+
+    // 3c. If fulfillment not resolved yet, search fulfillment using indexed AWB filter or bounded pagination
+    if (!targetFulfillment) {
+      let matchedFulfillments: any[] = []
+
+      if (awb) {
+        try {
+          const res = await query.graph({
+            entity: 'fulfillment',
+            fields: [
+              'id',
+              'data',
+              'labels.*',
+              'items.*',
+              'shipped_at',
+              'delivered_at',
+              'canceled_at',
+            ],
+            filters: {
+              labels: {
+                tracking_number: awb,
+              },
+            } as any,
+          })
+          matchedFulfillments = res.data || []
+        } catch {
+          // If relation filter is not supported by backend driver, continue
+        }
+      }
+
+      // If not found by tracking_number relation filter, query with strictly bounded pagination (limit 50)
+      if (!matchedFulfillments.length) {
+        const { data: fulfillments } = await query.graph({
+          entity: 'fulfillment',
+          fields: [
+            'id',
+            'data',
+            'labels.*',
+            'items.*',
+            'shipped_at',
+            'delivered_at',
+            'canceled_at',
+          ],
+          pagination: {
+            take: 50,
+          },
+        })
+        matchedFulfillments = fulfillments || []
+      }
+
+      targetFulfillment = matchedFulfillments.find((f: any) => {
+        const matchesAwb =
+          awb &&
+          (f.data?.awb_code === awb ||
+            f.labels?.some((l: any) => l.tracking_number === awb))
+        const matchesSrOrder =
+          (orderId && String(f.data?.shiprocket_order_id) === orderId) ||
+          (srOrderId && String(f.data?.shiprocket_order_id) === srOrderId)
+        const matchesShipment =
+          shipmentId && String(f.data?.shiprocket_shipment_id) === shipmentId
+
+        return matchesAwb || matchesSrOrder || matchesShipment
+      })
+    }
+
+    // 3d. If targetOrder not resolved yet but targetFulfillment is found, locate owning order
+    if (!targetOrder && targetFulfillment) {
+      try {
+        const { data: orders } = await query.graph({
+          entity: 'order',
+          fields: [
+            'id',
+            'display_id',
+            'status',
+            'fulfillment_status',
+            'items.id',
+            'items.quantity',
+            'fulfillments.*',
+            'fulfillments.items.*',
+            'fulfillments.labels.*',
+          ],
+          filters: {
+            fulfillments: { id: targetFulfillment.id },
+          } as any,
+        })
+        targetOrder = orders?.[0] || null
+      } catch {
+        // Fallback with strictly bounded pagination
+        const { data: orders } = await query.graph({
+          entity: 'order',
+          fields: [
+            'id',
+            'display_id',
+            'status',
+            'fulfillment_status',
+            'items.id',
+            'items.quantity',
+            'fulfillments.*',
+            'fulfillments.items.*',
+            'fulfillments.labels.*',
+          ],
+          pagination: {
+            take: 50,
+          },
+        })
+        targetOrder =
+          orders?.find((ord: any) =>
+            ord.fulfillments?.some((f: any) => f.id === targetFulfillment.id)
+          ) || null
       }
     }
 
@@ -297,10 +370,37 @@ export const POST = async (
           }
         }
       } else if (normalized === 'RTO') {
-        actionTaken = 'rto_exception_logged'
+        actionTaken = 'rto_processed'
         logger.warn(
-          `⚠️ Shiprocket RTO reported for Order ${targetOrder.id}, AWB ${awb}. Requires seller botanical inventory inspection.`
+          `⚠️ Shiprocket RTO reported for Order ${targetOrder.id}, AWB ${awb || 'N/A'}. Requires seller botanical inventory inspection.`
         )
+        try {
+          const eventBus = req.scope.resolve(Modules.EVENT_BUS)
+          await eventBus.emit({
+            name: 'fulfillment.rto',
+            data: {
+              order_id: targetOrder.id,
+              fulfillment_id: targetFulfillment.id,
+              awb:
+                awb ||
+                targetFulfillment.data?.awb_code ||
+                targetFulfillment.labels?.[0]?.tracking_number ||
+                null,
+              raw_status: rawStatus,
+              reason:
+                (payload as any).activity ||
+                payload.current_status ||
+                (payload as any).reason ||
+                'Return to Origin',
+              timestamp: new Date().toISOString(),
+            },
+          })
+          logger.info(
+            `Dispatched fulfillment.rto event for Order ${targetOrder.id} (AWB: ${awb || 'N/A'})`
+          )
+        } catch (emitErr: any) {
+          logger.warn(`Could not emit fulfillment.rto event: ${emitErr?.message || emitErr}`)
+        }
       } else if (normalized === 'OUT_FOR_DELIVERY') {
         actionTaken = 'out_for_delivery_logged'
       }

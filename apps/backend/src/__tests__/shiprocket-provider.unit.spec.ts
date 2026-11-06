@@ -472,5 +472,212 @@ describe('Shiprocket Fulfillment Provider Unit Tests', () => {
       // Canonical express rate is ₹99 (9900 paise) or calculated live paise
       expect(expressPrice.calculated_amount).toBeGreaterThanOrEqual(4900)
     })
+
+    it('22. GLOROV-SHIP-004: Rejects fulfillment if delivery address phone number is missing or invalid', async () => {
+      // Missing phone
+      await expect(
+        service.createFulfillment(
+          {},
+          [{ title: 'Seeds', quantity: 1, unit_price: 4900 } as any],
+          {
+            id: 'ord_no_phone',
+            shipping_address: {
+              postal_code: '411001',
+              phone: '',
+            },
+          } as any,
+          { data: {} } as any
+        )
+      ).rejects.toThrow(/valid 10-digit mobile number/)
+
+      // Phone with fewer than 10 digits
+      await expect(
+        service.createFulfillment(
+          {},
+          [{ title: 'Seeds', quantity: 1, unit_price: 4900 } as any],
+          {
+            id: 'ord_short_phone',
+            shipping_address: {
+              postal_code: '411001',
+              phone: '98765',
+            },
+          } as any,
+          { data: {} } as any
+        )
+      ).rejects.toThrow(/valid 10-digit mobile number/)
+    })
+
+    it('23. GLOROV-SHIP-001: Throws error when AWB assignment fails instead of generating a fake SR AWB', async () => {
+      // Mock createAdhocOrder to return an order without an awb_code
+      const createSpy = jest.spyOn(service.client, 'createAdhocOrder').mockResolvedValueOnce({
+        order_id: 1234567,
+        shipment_id: 7654321,
+        status: 'NEW',
+        status_code: 1,
+        onboarding_completed_now: 0,
+        awb_code: undefined as any,
+        courier_name: 'Delhivery',
+      })
+
+      // Mock assignAwb to fail / return no AWB code
+      const assignSpy = jest.spyOn(service.client, 'assignAwb').mockResolvedValueOnce({
+        awb_assign_status: 0,
+        message: 'No couriers available or wallet balance depleted',
+      })
+
+      await expect(
+        service.createFulfillment(
+          {},
+          [{ title: 'Seeds', quantity: 1, unit_price: 4900 } as any],
+          {
+            id: 'ord_awb_fail',
+            shipping_address: {
+              postal_code: '411001',
+              phone: '9876543210',
+            },
+          } as any,
+          { data: {} } as any
+        )
+      ).rejects.toThrow(/live AWB assignment failed/)
+
+      createSpy.mockRestore()
+      assignSpy.mockRestore()
+    })
+
+    it('24. GLOROV-SHIP-005: Reads package dimensions from item metadata / product attributes and calculates totals', () => {
+      // Default single item fallback
+      const defaultDims = service.calculatePackageDimensions([{ quantity: 1 }])
+      expect(defaultDims).toEqual({
+        length: 15,
+        breadth: 12,
+        height: 8,
+        weight: 0.5,
+      })
+
+      // Item with custom metadata (e.g., large planter pot)
+      const customItemDims = service.calculatePackageDimensions([
+        {
+          quantity: 1,
+          metadata: {
+            length: 30,
+            breadth: 25,
+            height: 20,
+            weight_grams: 1500, // 1.5 kg
+          },
+        },
+      ])
+      expect(customItemDims.length).toBe(30)
+      expect(customItemDims.breadth).toBe(25)
+      expect(customItemDims.height).toBe(20)
+      expect(customItemDims.weight).toBe(1.5)
+
+      // Multi-item order: dimensions combine max length/breadth and stack height & sum weight
+      const multiItemDims = service.calculatePackageDimensions([
+        {
+          quantity: 2,
+          metadata: {
+            length: 20,
+            breadth: 15,
+            height: 5,
+            weight_grams: 300, // 0.3 kg * 2 = 0.6 kg
+          },
+        },
+        {
+          quantity: 1,
+          metadata: {
+            length: 25,
+            breadth: 18,
+            height: 10,
+            weight_grams: 800, // 0.8 kg
+          },
+        },
+      ])
+      expect(multiItemDims.length).toBe(25) // max(20, 25)
+      expect(multiItemDims.breadth).toBe(18) // max(15, 18)
+      expect(multiItemDims.height).toBe(20) // 5*2 + 10 = 20
+      expect(multiItemDims.weight).toBe(1.4) // 0.6 + 0.8 = 1.4
+    })
+
+    it('25. GLOROV-SHIP-005: Honors explicit package dimensions override from fulfillment data', () => {
+      const explicitDims = service.calculatePackageDimensions(
+        [{ quantity: 1 }],
+        undefined,
+        {
+          length: 40,
+          breadth: 35,
+          height: 30,
+          weight: 5.2,
+        }
+      )
+      expect(explicitDims).toEqual({
+        length: 40,
+        breadth: 35,
+        height: 30,
+        weight: 5.2,
+      })
+    })
+
+    it('26. GLOROV-PERF-007: Evicts oldest 200 entries when serviceability cache reaches 1000 without dropping entire cache', async () => {
+      ShiprocketClient.clearServiceabilityCache()
+      const client = new ShiprocketClient({ mock_mode: true, pickup_pincode: '411001' })
+
+      // Seed 1,000 unique cache entries
+      for (let i = 1; i <= 1000; i++) {
+        const pin = String(100000 + i)
+        await client.checkServiceability({
+          deliveryPostcode: pin,
+          weightKg: 0.5,
+        })
+      }
+      expect(ShiprocketClient.getServiceabilityCacheSize()).toBe(1000)
+
+      // Add the 1,001st entry -> Triggers LRU eviction of oldest 200 entries
+      await client.checkServiceability({
+        deliveryPostcode: '299999',
+        weightKg: 0.5,
+      })
+
+      // Cache size should be 1000 - 200 + 1 = 801 entries (NOT 1 or 0 from complete clear)
+      expect(ShiprocketClient.getServiceabilityCacheSize()).toBe(801)
+      ShiprocketClient.clearServiceabilityCache()
+    })
+
+    it('27. GLOROV-SHIP-002: Does not generate fake mock S3/Shiprocket label URLs when label generation fails', async () => {
+      const service = new ShiprocketFulfillmentService()
+      const client = (service as any).client
+      jest.spyOn(client, 'generateLabel').mockRejectedValueOnce(new Error('Shiprocket label API down'))
+
+      const result = await service.createFulfillment(
+        {
+          provider_id: 'shiprocket-standard',
+          data: {},
+        },
+        [
+          {
+            title: 'Holy Basil Tulsi Seeds',
+            quantity: 1,
+            unit_price: 19900,
+          },
+        ],
+        {
+          id: 'ord_label_fallback_test',
+          shipping_address: {
+            first_name: 'Aarav',
+            last_name: 'Sharma',
+            address_1: '101 Lotus Garden Road',
+            city: 'Bengaluru',
+            province: 'Karnataka',
+            postal_code: '560001',
+            country_code: 'in',
+            phone: '9876543210',
+          },
+        },
+        {}
+      )
+
+      expect(result.data.label_url).toBe('')
+      expect(result.labels[0].label_url).toBe('')
+      expect(result.data.label_url).not.toContain('mock-label')
+    })
   })
 })

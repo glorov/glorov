@@ -35,7 +35,7 @@ export function ProductBadge({
       return (
         <span
           className={cn(
-            'inline-flex items-center gap-1 bg-[#0C2340] text-white text-[9.5px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded-br-lg shadow-sm select-none',
+            'inline-flex items-center gap-1 bg-[#0C2340] text-white text-[9.5px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded-br-lg select-none',
             className
           )}
         >

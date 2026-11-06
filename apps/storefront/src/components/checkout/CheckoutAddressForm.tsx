@@ -2,34 +2,22 @@
 
 import React, { useState, useEffect } from 'react'
 import type { DeliveryAddress } from '../../types/checkout'
+import type { CustomerAddress } from '../../types/account'
 import { GlorovCustomIcons } from '../common/GlorovIcons'
+import {
+  INDIAN_STATES,
+  isValidPinCode,
+  isValidIndianPhone,
+  isValidIndianState,
+} from '../../lib/validation/address'
 
 export interface CheckoutAddressFormProps {
   initialAddress: DeliveryAddress | null
   onChange: (address: DeliveryAddress, isValid: boolean) => void
+  savedAddresses?: CustomerAddress[]
+  customerEmail?: string
+  onSaveNewAddress?: (address: Omit<CustomerAddress, 'id'>) => Promise<boolean>
 }
-
-const INDIAN_STATES = [
-  'Andhra Pradesh',
-  'Assam',
-  'Bihar',
-  'Delhi',
-  'Goa',
-  'Gujarat',
-  'Haryana',
-  'Himachal Pradesh',
-  'Karnataka',
-  'Kerala',
-  'Madhya Pradesh',
-  'Maharashtra',
-  'Punjab',
-  'Rajasthan',
-  'Tamil Nadu',
-  'Telangana',
-  'Uttar Pradesh',
-  'Uttarakhand',
-  'West Bengal',
-]
 
 const DEMO_ADDRESS_PRESETS: Array<{ label: string; address: DeliveryAddress }> = [
   {
@@ -64,13 +52,49 @@ const DEMO_ADDRESS_PRESETS: Array<{ label: string; address: DeliveryAddress }> =
   },
 ]
 
+function customerAddressToDeliveryAddress(
+  addr: CustomerAddress,
+  email: string = ''
+): DeliveryAddress {
+  return {
+    fullName: addr.fullName,
+    phoneNumber: addr.phoneNumber,
+    email: email,
+    addressLine1: addr.addressLine1,
+    addressLine2: addr.addressLine2,
+    city: addr.city,
+    state: addr.state,
+    pincode: addr.pincode,
+    countryCode: addr.countryCode || 'in',
+  }
+}
+
 export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
   initialAddress,
   onChange,
+  savedAddresses = [],
+  customerEmail = '',
+  onSaveNewAddress,
 }) => {
-  const [address, setAddress] = useState<DeliveryAddress>(
-    initialAddress || DEMO_ADDRESS_PRESETS[0].address
+  const hasSavedAddresses = savedAddresses.length > 0
+
+  // Find default or first address if available
+  const defaultSavedAddress =
+    savedAddresses.find((a) => a.isDefault) || savedAddresses[0] || null
+
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
+    defaultSavedAddress ? defaultSavedAddress.id : null
   )
+  const [isEnteringNew, setIsEnteringNew] = useState<boolean>(!hasSavedAddresses)
+  const [saveToAccount, setSaveToAccount] = useState<boolean>(false)
+
+  const [address, setAddress] = useState<DeliveryAddress>(() => {
+    if (initialAddress) return initialAddress
+    if (defaultSavedAddress) {
+      return customerAddressToDeliveryAddress(defaultSavedAddress, customerEmail)
+    }
+    return DEMO_ADDRESS_PRESETS[0].address
+  })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isServiceable, setIsServiceable] = useState<boolean>(true)
@@ -78,12 +102,12 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
   const validate = (current: DeliveryAddress): boolean => {
     const errs: Record<string, string> = {}
 
-    if (!current.fullName.trim() || current.fullName.trim().length < 3) {
-      errs.fullName = 'Enter recipient full name (min 3 chars)'
+    if (!current.fullName.trim() || current.fullName.trim().length < 2) {
+      errs.fullName = 'Enter recipient full name (min 2 chars)'
     }
 
     const cleanPhone = current.phoneNumber.trim().replace(/\D/g, '')
-    if (cleanPhone.length !== 10) {
+    if (!cleanPhone || !isValidIndianPhone(cleanPhone)) {
       errs.phoneNumber = 'Must be a 10-digit Indian mobile number'
     }
 
@@ -92,21 +116,25 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
     }
 
     if (!current.addressLine1.trim() || current.addressLine1.trim().length < 5) {
-      errs.addressLine1 = 'Enter house/flat no. and street address'
+      errs.addressLine1 = 'Enter house/flat no. and street address (min 5 chars)'
     }
 
-    if (!current.city.trim()) {
+    if (!current.city.trim() || current.city.trim().length < 2) {
       errs.city = 'Enter city or district'
     }
 
+    if (!current.state || !isValidIndianState(current.state)) {
+      errs.state = 'Select a valid Indian State or Union Territory'
+    }
+
     const cleanPin = current.pincode.trim().replace(/\D/g, '')
-    if (cleanPin.length !== 6) {
-      errs.pincode = 'Must be 6 digits'
+    if (!cleanPin || !isValidPinCode(cleanPin)) {
+      errs.pincode = 'Must be a valid 6-digit PIN (cannot start with 0)'
     }
 
     setErrors(errs)
     const valid = Object.keys(errs).length === 0
-    setIsServiceable(cleanPin.length === 6)
+    setIsServiceable(isValidPinCode(cleanPin))
     return valid
   }
 
@@ -117,20 +145,56 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
     onChange(next, valid)
   }
 
+  const handleSelectSavedAddress = (saved: CustomerAddress) => {
+    setSelectedAddressId(saved.id)
+    setIsEnteringNew(false)
+    const next = customerAddressToDeliveryAddress(
+      saved,
+      address.email || customerEmail
+    )
+    setAddress(next)
+    const valid = validate(next)
+    onChange(next, valid)
+  }
+
+  const handleSwitchToNewAddress = () => {
+    setSelectedAddressId(null)
+    setIsEnteringNew(true)
+    const newEmptyAddr: DeliveryAddress = {
+      fullName: '',
+      phoneNumber: '',
+      email: customerEmail || address.email || '',
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      state: 'Karnataka',
+      pincode: '',
+      countryCode: 'in',
+    }
+    setAddress(newEmptyAddr)
+    const valid = validate(newEmptyAddr)
+    onChange(newEmptyAddr, valid)
+  }
+
   const applyPreset = (preset: DeliveryAddress): void => {
     setAddress(preset)
     const valid = validate(preset)
     onChange(preset, valid)
   }
 
+  // Synchronize on mount or when savedAddresses initially load
   useEffect(() => {
-    const valid = validate(address)
-    onChange(address, valid)
+    if (hasSavedAddresses && !initialAddress && defaultSavedAddress && !selectedAddressId) {
+      handleSelectSavedAddress(defaultSavedAddress)
+    } else {
+      const valid = validate(address)
+      onChange(address, valid)
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="w-full p-4 sm:p-6 rounded-[18px] bg-white border border-[#E5ECE8] shadow-[0_1.5px_6px_rgba(0,0,0,0.03)] flex flex-col gap-4">
-      {/* Header with Quick Preset Selectors */}
+    <div className="w-full p-4 sm:p-6 rounded-[18px] bg-white border border-[#E5ECE8] flex flex-col gap-4">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-[#F0F4F2]">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-[#EBF5F0] flex items-center justify-center text-[#0A4C36] flex-shrink-0">
@@ -146,160 +210,304 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
           </div>
         </div>
 
-        {/* Saved Presets */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[10.5px] font-semibold text-[#6B7280] hidden sm:inline">Presets:</span>
-          {DEMO_ADDRESS_PRESETS.map((preset) => (
+        {/* Guest Demo Presets (only shown when not selecting from saved addresses) */}
+        {!hasSavedAddresses && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10.5px] font-semibold text-[#6B7280] hidden sm:inline">Presets:</span>
+            {DEMO_ADDRESS_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                onClick={() => applyPreset(preset.address)}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border ${
+                  address.pincode === preset.address.pincode
+                    ? 'bg-[#0A4C36] text-white border-[#0A4C36]'
+                    : 'bg-[#F9FAF8] text-[#4B5563] border-[#E5ECE8] hover:border-[#0A4C36]'
+                }`}
+              >
+                {preset.label.split(' ')[0]}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Step 1.A: Saved Address Selection Step (for authenticated customers with Medusa addresses) */}
+      {hasSavedAddresses && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide">
+              Select Delivery Location
+            </span>
             <button
-              key={preset.label}
               type="button"
-              onClick={() => applyPreset(preset.address)}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border ${
-                address.pincode === preset.address.pincode
-                  ? 'bg-[#0A4C36] text-white border-[#0A4C36]'
-                  : 'bg-[#F9FAF8] text-[#4B5563] border-[#E5ECE8] hover:border-[#0A4C36]'
-              }`}
+              onClick={isEnteringNew ? () => defaultSavedAddress && handleSelectSavedAddress(defaultSavedAddress) : handleSwitchToNewAddress}
+              className="text-xs font-bold text-brand-primary hover:underline flex items-center gap-1"
             >
-              {preset.label.split(' ')[0]}
+              {isEnteringNew ? '← Choose Saved Address' : '+ Deliver to a New Address'}
             </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Form Fields: Ergonomic Responsive Grid matching Flutter */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
-        {/* Full Name */}
-        <div>
-          <label className="block text-[12px] font-bold text-[#374151] mb-1">
-            Full Name <span className="text-rose-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={address.fullName}
-            onChange={(e) => handleChange('fullName', e.target.value)}
-            placeholder="Recipient full name"
-            className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#D1D5DB] focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] transition-colors"
-          />
-          {errors.fullName && <p className="mt-1 text-[11px] text-rose-500">{errors.fullName}</p>}
-        </div>
-
-        {/* Mobile Phone */}
-        <div>
-          <label className="block text-[12px] font-bold text-[#374151] mb-1">
-            10-Digit Mobile Phone <span className="text-rose-500">*</span>
-          </label>
-          <div className="relative flex items-center">
-            <span className="absolute left-3 text-[#6B7280] font-semibold select-none text-[12px]">+91</span>
-            <input
-              type="tel"
-              maxLength={10}
-              value={address.phoneNumber}
-              onChange={(e) => handleChange('phoneNumber', e.target.value.replace(/\D/g, ''))}
-              placeholder="9876543210"
-              className="w-full pl-11 pr-3.5 py-2.5 rounded-[10px] border border-[#D1D5DB] focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] font-mono transition-colors"
-            />
           </div>
-          {errors.phoneNumber && <p className="mt-1 text-[11px] text-rose-500">{errors.phoneNumber}</p>}
-        </div>
 
-        {/* Email */}
-        <div className="sm:col-span-2">
-          <label className="block text-[12px] font-bold text-[#374151] mb-1">
-            Email for Order Receipt & Updates <span className="text-rose-500">*</span>
-          </label>
-          <input
-            type="email"
-            value={address.email}
-            onChange={(e) => handleChange('email', e.target.value)}
-            placeholder="name@example.com"
-            className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#D1D5DB] focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] transition-colors"
-          />
-          {errors.email && <p className="mt-1 text-[11px] text-rose-500">{errors.email}</p>}
-        </div>
+          {!isEnteringNew && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {savedAddresses.map((saved) => {
+                const isSelected = selectedAddressId === saved.id
+                return (
+                  <div
+                    key={saved.id}
+                    onClick={() => handleSelectSavedAddress(saved)}
+                    role="radio"
+                    aria-checked={isSelected}
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between gap-2 text-xs ${
+                      isSelected
+                        ? 'border-[#0A4C36] bg-[#E8F5E9]/30 ring-1 ring-[#0A4C36]'
+                        : 'border-stone-200 hover:border-stone-400 bg-white'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="selectedAddress"
+                            checked={isSelected}
+                            onChange={() => handleSelectSavedAddress(saved)}
+                            className="text-[#0A4C36] focus:ring-[#0A4C36]"
+                          />
+                          <span className="font-bold text-stone-900">{saved.name}</span>
+                        </div>
+                        {saved.isDefault && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-900">
+                            Default
+                          </span>
+                        )}
+                      </div>
+                      <p className="font-semibold text-stone-800">{saved.fullName}</p>
+                      <p className="text-stone-600 leading-snug">{saved.addressLine1}</p>
+                      {saved.addressLine2 && <p className="text-stone-500">{saved.addressLine2}</p>}
+                      <p className="text-stone-700 mt-0.5">
+                        {saved.city}, {saved.state} — <span className="font-mono font-semibold">{saved.pincode}</span>
+                      </p>
+                      <p className="text-stone-500 mt-0.5">Phone: +91 {saved.phoneNumber}</p>
+                    </div>
 
-        {/* Street Address */}
-        <div className="sm:col-span-2">
-          <label className="block text-[12px] font-bold text-[#374151] mb-1">
-            Flat, House No., Building, Street <span className="text-rose-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={address.addressLine1}
-            onChange={(e) => handleChange('addressLine1', e.target.value)}
-            placeholder="Flat 402, Green Meadows, Orchid Lane"
-            className="w-full px-3.5 py-2.5 rounded-[10px] border border-[#D1D5DB] focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] transition-colors"
-          />
-          {errors.addressLine1 && <p className="mt-1 text-[11px] text-rose-500">{errors.addressLine1}</p>}
+                    {isSelected && (
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-[#0A4C36] pt-1">
+                        <GlorovCustomIcons.check size={13} />
+                        <span>Deliver to this address</span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
+      )}
 
-        {/* PIN Code & City (Compact Row on Mobile) */}
-        <div className="grid grid-cols-2 gap-2 sm:col-span-1">
-          <div>
-            <label className="block text-[12px] font-bold text-[#374151] mb-1">
-              PIN Code <span className="text-rose-500">*</span>
+      {/* Step 1.B: Address Input Form (shown for guest or when entering new address) */}
+      {(!hasSavedAddresses || isEnteringNew) && (
+        <div className="flex flex-col gap-3.5 pt-1">
+          {hasSavedAddresses && (
+            <div className="p-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-600 flex items-center justify-between">
+              <span>Entering a new shipping destination for this order</span>
+              <button
+                type="button"
+                onClick={() => defaultSavedAddress && handleSelectSavedAddress(defaultSavedAddress)}
+                className="text-xs font-bold text-brand-primary hover:underline"
+              >
+                Use Saved Address
+              </button>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+            {/* Full Name */}
+            <div>
+              <label htmlFor="checkout-addr-fullname" className="block text-[12px] font-bold text-[#374151] mb-1">
+                Full Name <span className="text-rose-500">*</span>
+              </label>
+              <input
+                id="checkout-addr-fullname"
+                type="text"
+                value={address.fullName}
+                onChange={(e) => handleChange('fullName', e.target.value)}
+                placeholder="Recipient full name"
+                className={`w-full px-3.5 py-2.5 rounded-[10px] border ${
+                  errors.fullName ? 'border-rose-500' : 'border-[#D1D5DB]'
+                } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] transition-colors`}
+              />
+              {errors.fullName && <p className="mt-1 text-[11px] text-rose-500">{errors.fullName}</p>}
+            </div>
+
+            {/* Mobile Phone */}
+            <div>
+              <label htmlFor="checkout-addr-phone" className="block text-[12px] font-bold text-[#374151] mb-1">
+                10-Digit Mobile Phone <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative flex items-center">
+                <span className="absolute left-3 text-[#6B7280] font-semibold select-none text-[12px]">+91</span>
+                <input
+                  id="checkout-addr-phone"
+                  type="tel"
+                  maxLength={10}
+                  value={address.phoneNumber}
+                  onChange={(e) => handleChange('phoneNumber', e.target.value.replace(/\D/g, ''))}
+                  placeholder="9876543210"
+                  className={`w-full pl-11 pr-3.5 py-2.5 rounded-[10px] border ${
+                    errors.phoneNumber ? 'border-rose-500' : 'border-[#D1D5DB]'
+                  } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] font-mono transition-colors`}
+                />
+              </div>
+              {errors.phoneNumber && <p className="mt-1 text-[11px] text-rose-500">{errors.phoneNumber}</p>}
+            </div>
+
+            {/* Email */}
+            <div className="sm:col-span-2">
+              <label htmlFor="checkout-addr-email" className="block text-[12px] font-bold text-[#374151] mb-1">
+                Email for Order Receipt & Updates <span className="text-rose-500">*</span>
+              </label>
+              <input
+                id="checkout-addr-email"
+                type="email"
+                value={address.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                placeholder="name@example.com"
+                className={`w-full px-3.5 py-2.5 rounded-[10px] border ${
+                  errors.email ? 'border-rose-500' : 'border-[#D1D5DB]'
+                } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] transition-colors`}
+              />
+              {errors.email && <p className="mt-1 text-[11px] text-rose-500">{errors.email}</p>}
+            </div>
+
+            {/* Street Address */}
+            <div className="sm:col-span-2">
+              <label htmlFor="checkout-addr-line1" className="block text-[12px] font-bold text-[#374151] mb-1">
+                Flat, House No., Building, Street <span className="text-rose-500">*</span>
+              </label>
+              <input
+                id="checkout-addr-line1"
+                type="text"
+                value={address.addressLine1}
+                onChange={(e) => handleChange('addressLine1', e.target.value)}
+                placeholder="Flat 402, Green Meadows, Orchid Lane"
+                className={`w-full px-3.5 py-2.5 rounded-[10px] border ${
+                  errors.addressLine1 ? 'border-rose-500' : 'border-[#D1D5DB]'
+                } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] transition-colors`}
+              />
+              {errors.addressLine1 && <p className="mt-1 text-[11px] text-rose-500">{errors.addressLine1}</p>}
+            </div>
+
+            {/* PIN Code & City */}
+            <div className="grid grid-cols-2 gap-2 sm:col-span-1">
+              <div>
+                <label htmlFor="checkout-addr-pincode" className="block text-[12px] font-bold text-[#374151] mb-1">
+                  PIN Code <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  id="checkout-addr-pincode"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={address.pincode}
+                  onChange={(e) => handleChange('pincode', e.target.value.replace(/\D/g, ''))}
+                  placeholder="560001"
+                  className={`w-full px-3 py-2.5 rounded-[10px] border ${
+                    errors.pincode ? 'border-rose-500' : 'border-[#D1D5DB]'
+                  } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] font-mono transition-colors`}
+                />
+                {errors.pincode && <p className="mt-1 text-[11px] text-rose-500">{errors.pincode}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="checkout-addr-city" className="block text-[12px] font-bold text-[#374151] mb-1">
+                  City <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  id="checkout-addr-city"
+                  type="text"
+                  value={address.city}
+                  onChange={(e) => handleChange('city', e.target.value)}
+                  placeholder="Bengaluru"
+                  className={`w-full px-3 py-2.5 rounded-[10px] border ${
+                    errors.city ? 'border-rose-500' : 'border-[#D1D5DB]'
+                  } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] transition-colors`}
+                />
+                {errors.city && <p className="mt-1 text-[11px] text-rose-500">{errors.city}</p>}
+              </div>
+            </div>
+
+            {/* State & Landmark */}
+            <div className="grid grid-cols-2 gap-2 sm:col-span-1">
+              <div>
+                <label htmlFor="checkout-addr-state" className="block text-[12px] font-bold text-[#374151] mb-1">
+                  State <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  id="checkout-addr-state"
+                  value={address.state}
+                  onChange={(e) => handleChange('state', e.target.value)}
+                  className={`w-full px-2.5 py-2.5 rounded-[10px] border ${
+                    errors.state ? 'border-rose-500' : 'border-[#D1D5DB]'
+                  } bg-white focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[12.5px] text-[#111827] cursor-pointer`}
+                >
+                  {INDIAN_STATES.map((st) => (
+                    <option key={st} value={st}>
+                      {st}
+                    </option>
+                  ))}
+                </select>
+                {errors.state && <p className="mt-1 text-[11px] text-rose-500">{errors.state}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="checkout-addr-landmark" className="block text-[12px] font-bold text-[#374151] mb-1">
+                  Landmark <span className="text-[#9CA3AF] text-[10px] font-normal">(Optional)</span>
+                </label>
+                <input
+                  id="checkout-addr-landmark"
+                  type="text"
+                  value={address.landmark || ''}
+                  onChange={(e) => handleChange('landmark', e.target.value)}
+                  placeholder="Near Garden"
+                  className="w-full px-3 py-2.5 rounded-[10px] border border-[#D1D5DB] focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[12.5px] text-[#111827] transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Option to save new address to account for authenticated patrons */}
+          {customerEmail && onSaveNewAddress && (
+            <label className="flex items-center gap-2 mt-1 cursor-pointer select-none text-xs text-stone-700">
+              <input
+                type="checkbox"
+                checked={saveToAccount}
+                onChange={(e) => {
+                  setSaveToAccount(e.target.checked)
+                  if (e.target.checked && validate(address)) {
+                    onSaveNewAddress({
+                      name: 'Home',
+                      fullName: address.fullName,
+                      phoneNumber: address.phoneNumber,
+                      addressLine1: address.addressLine1,
+                      addressLine2: address.addressLine2,
+                      city: address.city,
+                      state: address.state,
+                      pincode: address.pincode,
+                      countryCode: 'in',
+                      isDefault: false,
+                    }).catch(() => {})
+                  }
+                }}
+                className="rounded text-[#0A4C36] focus:ring-[#0A4C36]"
+              />
+              <span>Save this address to my GLOROV account for future orders</span>
             </label>
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={6}
-              value={address.pincode}
-              onChange={(e) => handleChange('pincode', e.target.value.replace(/\D/g, ''))}
-              placeholder="411001"
-              className="w-full px-3 py-2.5 rounded-[10px] border border-[#D1D5DB] focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] font-mono transition-colors"
-            />
-            {errors.pincode && <p className="mt-1 text-[11px] text-rose-500">{errors.pincode}</p>}
-          </div>
-
-          <div>
-            <label className="block text-[12px] font-bold text-[#374151] mb-1">
-              City <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={address.city}
-              onChange={(e) => handleChange('city', e.target.value)}
-              placeholder="Pune"
-              className="w-full px-3 py-2.5 rounded-[10px] border border-[#D1D5DB] focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] transition-colors"
-            />
-            {errors.city && <p className="mt-1 text-[11px] text-rose-500">{errors.city}</p>}
-          </div>
+          )}
         </div>
+      )}
 
-        {/* State & Landmark (Compact Row on Mobile) */}
-        <div className="grid grid-cols-2 gap-2 sm:col-span-1">
-          <div>
-            <label className="block text-[12px] font-bold text-[#374151] mb-1">
-              State <span className="text-rose-500">*</span>
-            </label>
-            <select
-              value={address.state}
-              onChange={(e) => handleChange('state', e.target.value)}
-              className="w-full px-2.5 py-2.5 rounded-[10px] border border-[#D1D5DB] bg-white focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[12.5px] text-[#111827] cursor-pointer"
-            >
-              {INDIAN_STATES.map((st) => (
-                <option key={st} value={st}>
-                  {st}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[12px] font-bold text-[#374151] mb-1">
-              Landmark <span className="text-[#9CA3AF] text-[10px] font-normal">(Optional)</span>
-            </label>
-            <input
-              type="text"
-              value={address.landmark || ''}
-              onChange={(e) => handleChange('landmark', e.target.value)}
-              placeholder="Near Garden"
-              className="w-full px-3 py-2.5 rounded-[10px] border border-[#D1D5DB] focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[12.5px] text-[#111827] transition-colors"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Pincode Serviceability Live Badge matching Flutter `GlorovDeliveryAvailabilityAlert` */}
+      {/* Pincode Serviceability Live Badge */}
       {isServiceable && address.pincode.length === 6 && (
         <div className="mt-1 px-3 py-2 rounded-[10px] bg-[#E8F5E9] border border-[#A7F3D0] flex items-center gap-2 text-[#047857]">
           <GlorovCustomIcons.check size={14} className="text-[#059669] flex-shrink-0" />

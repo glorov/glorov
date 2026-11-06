@@ -27,13 +27,10 @@ interface CategoryPageProps {
 export async function generateStaticParams() {
   return [
     { slug: 'seeds' },
-    { slug: 'live-plants' },
-    { slug: 'planters' },
-    { slug: 'plant-care' },
-    { slug: 'flowering' },
     { slug: 'vegetables' },
+    { slug: 'live-plants' },
+    { slug: 'flowers' },
     { slug: 'herbs' },
-    { slug: 'offers' },
   ]
 }
 
@@ -108,6 +105,12 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   if (slug === 'offers') {
     redirect('/offers')
   }
+  if (slug === 'flowering') {
+    redirect('/categories/flowers')
+  }
+  if (slug === 'planters' || slug === 'plant-care' || slug === 'planters-pots' || slug === 'plant-care-soil') {
+    redirect('/categories')
+  }
   const query = await searchParams
 
   const categoryDetail = MOCK_CATEGORY_DETAILS.find((c) => c.slug === slug)
@@ -141,7 +144,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const categoryDescription =
     categoryDetail?.description ??
     botanicalMatchDesc ??
-    `Handpicked botanical cultivars, accessories, and organic gardening essentials curated by GLOROV.`
+    `Handpicked botanical cultivars, pure heirloom seeds, and live nursery house plants curated by GLOROV.`
 
   const activeSubcat = query.subcat ?? 'All'
   const currentSort = query.sort ?? 'recommended'
@@ -152,9 +155,17 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   // Fetch live products for category from Medusa backend (with fallback to mock data)
   let products = await getProductsByCategory(slug)
 
-  // Subcategory filter
+  // Subcategory filter with clean isolation
   if (activeSubcat !== 'All' && !activeSubcat.startsWith('All ')) {
-    products = products.filter((p) => p.subcategory === activeSubcat)
+    products = products.filter((p) => {
+      const subLower = (p.subcategory || '').toLowerCase()
+      const activeLower = activeSubcat.toLowerCase()
+      return (
+        subLower === activeLower ||
+        subLower.includes(activeLower) ||
+        activeLower.includes(subLower)
+      )
+    })
   }
 
   // In-stock filter
@@ -179,7 +190,14 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     currentPage * itemsPerPage
   )
 
-  const subcategories = categoryDetail?.subcategories ?? ['All', 'Vegetable Seeds', 'Flower Seeds', 'Indoor Plants']
+  const matchedBotanicalCategory = GLOROV_BOTANICAL_CATEGORIES.find(
+    (c) => c.handle === slug
+  )
+  const subcategories =
+    categoryDetail?.subcategories ??
+    (matchedBotanicalCategory
+      ? ['All', ...matchedBotanicalCategory.subCategories.map((s) => s.title)]
+      : ['All'])
 
   return (
     <div className="w-full bg-[#F9FAF8] pb-16">
@@ -216,7 +234,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
       <PageContainer className="py-6 sm:py-8 space-y-6">
         {/* 3. Filter Bar & Controls */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-glorov-md bg-white border border-[#E5E7EB] shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-glorov-md bg-white border border-[#E5E7EB]">
           {/* Subcategory Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none no-scrollbar py-1">
             {subcategories.map((subcat) => {
@@ -232,7 +250,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                   href={targetUrl}
                   className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
                     isSelected
-                      ? 'bg-[#1B4332] text-white shadow-sm'
+                      ? 'bg-[#1B4332] text-white'
                       : 'bg-[#F3F4F1] text-[#4B5563] hover:text-[#111827]'
                   }`}
                 >

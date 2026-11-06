@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { GlorovCustomIcons } from '../common/GlorovIcons'
 import { GlorovImage } from '../ui/GlorovImage'
-import { MOCK_PRODUCTS } from '../../lib/mock-data'
 import { useCart } from '../../context/StorefrontContext'
+import type { GlorovProductItem } from '../../types/storefront'
 
 /**
  * GLOROV Empty Botanical Cart State
@@ -17,7 +17,23 @@ import { useCart } from '../../context/StorefrontContext'
 export const CartEmptyState: React.FC = () => {
   const { addToCart, showToast } = useCart()
   const [justAddedId, setJustAddedId] = useState<string | null>(null)
-  const suggested = MOCK_PRODUCTS.slice(0, 4)
+  const [suggested, setSuggested] = useState<GlorovProductItem[]>([])
+
+  useEffect(() => {
+    let active = true
+    fetch('/api/products?limit=4')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active) return
+        if (data && Array.isArray(data.products)) {
+          setSuggested(data.products.slice(0, 4))
+        }
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [])
 
   const handleAddToCart = (e: React.MouseEvent, prod: (typeof suggested)[0]) => {
     e.preventDefault()
@@ -37,7 +53,7 @@ export const CartEmptyState: React.FC = () => {
       <div className="pt-4" />
 
       {/* 84px Circular Avatar with bespoke filled cart icon */}
-      <div className="w-[84px] h-[84px] rounded-full bg-[#EAF5EE] flex items-center justify-center text-[#0A4C36] shadow-xs">
+      <div className="w-[84px] h-[84px] rounded-full bg-[#EAF5EE] flex items-center justify-center text-[#0A4C36]">
         <GlorovCustomIcons.cart size={40} isFilled className="text-[#0A4C36]" />
       </div>
 
@@ -53,7 +69,7 @@ export const CartEmptyState: React.FC = () => {
       <div className="mt-6">
         <Link
           href="/categories/seeds"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0A4C36] hover:bg-[#135841] text-white text-[13px] font-extrabold tracking-[0.6px] shadow-sm transition-all active:scale-95"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0A4C36] hover:bg-[#135841] text-white text-[13px] font-extrabold tracking-[0.6px] transition-colors active:scale-95"
         >
           <GlorovCustomIcons.spa size={18} />
           <span>EXPLORE CATALOG</span>
@@ -108,7 +124,7 @@ export const CartEmptyState: React.FC = () => {
             return (
               <div
                 key={prod.id}
-                className="rounded-[20px] bg-white border border-[#E5ECE8] shadow-[0_2px_8px_rgba(0,0,0,0.035)] overflow-hidden flex flex-col justify-between transition-all duration-200 hover:border-[#0A4C36]/35 hover:shadow-[0_12px_24px_rgba(10,76,54,0.12)] hover:-translate-y-1 group relative"
+                className="rounded-[20px] bg-white border border-[#E5ECE8] overflow-hidden flex flex-col justify-between transition-colors duration-200 hover:border-[#0A4C36]/50 group relative"
               >
                 {/* Media with Overlays */}
                 <div className="relative w-full aspect-square bg-[#F4F7F4] overflow-hidden shrink-0 rounded-t-[20px]">
@@ -127,7 +143,7 @@ export const CartEmptyState: React.FC = () => {
                   {/* Top-Left Signature Flush Docked Tag with Golden Lightning Bolt */}
                   {badgeText && (
                     <div className="absolute top-0 left-0 z-10 pointer-events-none">
-                      <span className="inline-flex items-center gap-[3px] bg-[#0C2340] text-white text-[9px] font-extrabold tracking-[0.4px] uppercase px-2 py-[3.5px] rounded-tl-[20px] rounded-tr-[7px] rounded-br-[7px] rounded-bl-0 shadow-[0_1px_4px_rgba(0,0,0,0.22)] select-none leading-none">
+                      <span className="inline-flex items-center gap-[3px] bg-[#0C2340] text-white text-[9px] font-extrabold tracking-[0.4px] uppercase px-2 py-[3.5px] rounded-tl-[20px] rounded-tr-[7px] rounded-br-[7px] rounded-bl-0 select-none leading-none">
                         <svg
                           width={10}
                           height={10}
@@ -147,8 +163,8 @@ export const CartEmptyState: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Bottom-Left Solid Frosted Glass Rating Badge */}
-                  <div className="absolute left-2 bottom-2 px-1.5 py-0.5 rounded-[6px] bg-white/92 backdrop-blur-md border border-white/90 shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center gap-1 text-[#0F172A] leading-none select-none z-10">
+                  {/* Bottom-Left Solid Rating Badge */}
+                  <div className="absolute left-2 bottom-2 px-1.5 py-0.5 rounded-[6px] bg-white border border-stone-200 flex items-center gap-1 text-[#0F172A] leading-none select-none z-10">
                     <span className="text-[11px] font-extrabold text-[#0F172A]">{prod.rating.toFixed(1)}</span>
                     <GlorovCustomIcons.star size={11} className="text-[#16A34A] fill-current" />
                     <span className="text-[#CBD5E1] text-[9.5px]">|</span>
@@ -197,7 +213,7 @@ export const CartEmptyState: React.FC = () => {
                       onClick={(e) => handleAddToCart(e, prod)}
                       aria-label={`Add ${prod.title} to cart`}
                       title="Add to cart"
-                      className={`w-[34px] h-[34px] rounded-full flex items-center justify-center shrink-0 shadow-[0_2px_6px_rgba(10,76,54,0.18)] cursor-pointer active:scale-90 hover:scale-105 transition-all ${
+                      className={`w-[34px] h-[34px] rounded-full flex items-center justify-center shrink-0 cursor-pointer active:scale-90 hover:scale-105 transition-colors ${
                         isJustAdded
                           ? 'bg-[#15803D] text-white scale-105 ring-2 ring-emerald-200'
                           : 'bg-[#0A4C36] hover:bg-[#135841] text-white'

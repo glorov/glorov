@@ -88,7 +88,7 @@ export const MobileStickyPurchaseBar: React.FC<MobileStickyPurchaseBarProps> = (
     <aside
       aria-label="Quick buy dock"
       className={cn(
-        'md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/98 backdrop-blur-md border-t border-[#E5E7EB] px-4 py-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] pb-[max(0.625rem,env(safe-area-inset-bottom))] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] will-change-transform',
+        'md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E5E7EB] px-4 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] will-change-transform',
         isVisible
           ? 'translate-y-0 opacity-100 pointer-events-auto'
           : 'translate-y-full opacity-0 pointer-events-none'
@@ -150,7 +150,7 @@ export const MobileStickyPurchaseBar: React.FC<MobileStickyPurchaseBarProps> = (
           type="button"
           disabled={!inStock || isAdding}
           onClick={onAddToCart}
-          className="flex-1 py-3 px-4 rounded-[10px] bg-[#1B4332] text-white font-extrabold text-[13.5px] tracking-wide uppercase hover:bg-[#2D6A4F] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none shadow-sm cursor-pointer"
+          className="flex-1 py-3 px-4 rounded-[10px] bg-[#1B4332] text-white font-extrabold text-[13.5px] tracking-wide uppercase hover:bg-[#2D6A4F] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
         >
           {isAdding ? 'ADDING...' : inStock ? 'ADD TO CART' : 'OUT OF STOCK'}
         </button>

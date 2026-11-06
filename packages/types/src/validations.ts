@@ -281,5 +281,30 @@ export const returnInventoryTriageSchema = z.object({
 
 export type ReturnInventoryTriageInput = z.infer<typeof returnInventoryTriageSchema>;
 
+/**
+ * Cash on Delivery (COD) threshold limits.
+ * Medusa core represents INR in minor units (paise).
+ * ₹5,000 max limit = 500,000 paise.
+ */
+export const COD_MAX_AMOUNT_PAISE = 500000;
+export const COD_MAX_AMOUNT_RUPEES = 5000;
+
+/**
+ * Checks if an amount is eligible for Cash on Delivery.
+ * Enforces strict comparison in paise minor units against COD_MAX_AMOUNT_PAISE (500,000 paise).
+ *
+ * @param amount Amount in paise (integer) or rupees (if unit is specified as 'rupees')
+ * @param unit 'paise' (default, Medusa minor units) or 'rupees'
+ */
+export function isCodAmountEligible(
+  amount: number,
+  unit: 'paise' | 'rupees' = 'paise'
+): boolean {
+  if (amount <= 0 || isNaN(amount)) return false;
+  const amountInPaise = unit === 'rupees' ? Math.round(amount * 100) : Math.round(amount);
+  return amountInPaise <= COD_MAX_AMOUNT_PAISE;
+}
+
+
 
 

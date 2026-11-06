@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import React from 'react'
+import Script from 'next/script'
 import '../styles/globals.css'
 import { StorefrontLayout } from '../components/layout/StorefrontLayout'
 import { BotanicalSplashScreen } from '../components/layout/BotanicalSplashScreen'
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
     template: `%s | GLOROV`,
   },
   description:
-    'Shop authentic premium vegetable & flower seeds with guaranteed germination, live indoor & outdoor plants, handcrafted ceramic planters, and organic gardening supplies from GLOROV. Fast delivery across India.',
+    'Shop authentic premium vegetable & flower seeds with guaranteed germination, live indoor & outdoor plants, and aromatic kitchen herbs from GLOROV. Fast delivery across India.',
   keywords: [
     'GLOROV',
     'seeds',
@@ -21,9 +22,8 @@ export const metadata: Metadata = {
     'flower seeds',
     'indoor plants',
     'live plants',
-    'ceramic pots',
-    'planters',
-    'potting mix',
+    'kitchen herbs',
+    'flowering plants',
     'organic gardening',
     'garden store India',
     'heirloom seeds',
@@ -184,6 +184,12 @@ export default function RootLayout({
 
         {/* Botanical Splash Screen Dismissal Provider */}
         <BotanicalSplashScreen />
+
+        {/* Razorpay Web Checkout SDK */}
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
 
         <StorefrontLayout>{children}</StorefrontLayout>
       </body>

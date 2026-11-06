@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { MEDUSA_BACKEND_URL, MEDUSA_PUBLISHABLE_KEY } from '../../../lib/constants'
-import { MOCK_PRODUCTS } from '../../../lib/mock-data'
+import { MOCK_PRODUCTS } from '../../../lib/mock-products'
 import { transformMedusaProduct } from '../../../lib/api/products'
 
 export const dynamic = 'force-dynamic'

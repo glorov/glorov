@@ -83,7 +83,7 @@ export function AddToCartButton({
         disabled={isAdding}
         aria-label={product ? `Add ${product.title} to cart` : 'Add to cart'}
         className={cn(
-          'flex items-center justify-center w-9 h-9 min-w-[36px] rounded-full text-white transition-all shadow-sm active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]',
+          'flex items-center justify-center w-9 h-9 min-w-[36px] rounded-full text-white transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]',
           isSuccess ? 'bg-[#16A34A]' : 'bg-[#1B4332] hover:bg-[#2D6A4F]',
           isAdding && 'opacity-70 cursor-wait',
           className
@@ -116,7 +116,7 @@ export function AddToCartButton({
       disabled={isAdding}
       aria-label={product ? `Add ${product.title} to cart` : 'Add to cart'}
       className={cn(
-        'inline-flex items-center justify-center gap-1.5 text-white font-bold tracking-wide transition-all shadow-sm active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] min-h-[36px] cursor-pointer',
+        'inline-flex items-center justify-center gap-1.5 text-white font-bold tracking-wide transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] min-h-[36px] cursor-pointer',
         sizeClasses,
         isSuccess ? 'bg-[#16A34A]' : 'bg-[#1B4332] hover:bg-[#2D6A4F]',
         (variant === 'full' || fullWidth) && 'w-full',

@@ -32,6 +32,14 @@ type InjectedDependencies = {
   logger?: Logger
 }
 
+/**
+ * Maximum threshold for Cash on Delivery in India.
+ * Standardized in minor units (paise) matching Medusa v2 currency storage:
+ * ₹5,000 = 500,000 paise.
+ */
+export const COD_MAX_AMOUNT_PAISE = 500000
+export const COD_MAX_AMOUNT_RUPEES = 5000
+
 export class CodPaymentProviderService extends AbstractPaymentProvider<CodModuleOptions> {
   public static identifier = 'cod'
 
@@ -43,7 +51,7 @@ export class CodPaymentProviderService extends AbstractPaymentProvider<CodModule
     super(container, options || {})
     this.logger = container.logger
     // Default maximum COD order limit: ₹5,000 (500,000 paise)
-    this.maxAmountPaise = options?.max_amount ?? 500000
+    this.maxAmountPaise = options?.max_amount ?? COD_MAX_AMOUNT_PAISE
     this.restrictedPincodes = new Set(options?.restricted_pincodes ?? [
       '744101', '744102', '744103', '744201', '744301', '744302', // Andaman & Nicobar
       '682555', '682556', '682557', '682558', '682559', // Lakshadweep
@@ -52,11 +60,11 @@ export class CodPaymentProviderService extends AbstractPaymentProvider<CodModule
 
   private convertToPaise(amount: unknown): number {
     if (amount && typeof amount === 'object' && 'numeric' in amount) {
-      return Number((amount as { numeric: number }).numeric)
+      return Math.round(Number((amount as { numeric: number }).numeric))
     }
     if (amount && typeof amount === 'object' && 'raw' in amount) {
       const rawVal = (amount as { raw: { value: string } }).raw.value
-      return Number(rawVal)
+      return Math.round(Number(rawVal))
     }
     const num = Number(amount)
     if (isNaN(num) || num <= 0) {

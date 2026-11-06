@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { GlorovImage } from '../../components/ui/GlorovImage'
 import { useCart, useCheckout, useToast } from '../../context/StorefrontContext'
+import { useCustomerAuth } from '../../context/CustomerAuthContext'
 import { PageContainer } from '../../components/layout/PageContainer'
 import { CheckoutAddressForm } from '../../components/checkout/CheckoutAddressForm'
 import { ShippingMethodSelector } from '../../components/checkout/ShippingMethodSelector'
@@ -12,22 +13,38 @@ import { PaymentMethodSelector } from '../../components/checkout/PaymentMethodSe
 import { CheckoutOrderSummary } from '../../components/checkout/CheckoutOrderSummary'
 import { GlorovCustomIcons } from '../../components/common/GlorovIcons'
 import { formatINR } from '../../components/product/ProductPrice'
+import { useRazorpay } from '../../lib/hooks/useRazorpay'
+import {
+  RazorpayPaymentErrorAlert,
+  RazorpayProcessingOverlay,
+} from '../../components/checkout/RazorpayPaymentModal'
+import {
+  createMedusaCart,
+  setMedusaShippingMethod,
+  initMedusaPaymentSession,
+  completeMedusaCart,
+  transformMedusaOrderToReceipt,
+} from '../../lib/api/checkout'
+import { reportError } from '../../lib/error-reporter'
+import { isCodAmountEligible } from '../../lib/constants'
 import type { CartItem } from '../../types/cart'
 import type { DeliveryAddress, PaymentMethodType } from '../../types/checkout'
 
 /**
  * GLOROV Checkout & Payment Page
- * 100% matched with Flutter `GlorovCheckoutScreen`:
- * - Breadcrumbs with Back button, separator, and botanical trail
- * - 1. Delivery Address form with real-time Indian PIN serviceability check
- * - 2. Delivery Speed & Packaging with Eco vs Live Plant Express
- * - 3. Demonstration Payment Selector (COD, UPI Instant, Card Preview)
- * - 4. Review Items in Bag with thumbnail, variant, and modify bag link
- * - Sticky Order Summary with coupon code input and signature Forest Green confirmation CTA
+ * Connected directly to Medusa v2 Cart completion flow:
+ * 1. POST /store/carts — creates real cart with botanical items & customer delivery address
+ * 2. POST /store/carts/:id/shipping-methods — selects authoritative shipping option
+ * 3. POST /store/payment-collections + /payment-sessions — initializes Razorpay or COD provider
+ * 4. For Razorpay: opens Razorpay modal, verifies cryptographic signature via /store/payment/razorpay/verify
+ * 5. For COD: validates <= ₹5,000 threshold and authorizes cash settlement
+ * 6. POST /store/carts/:id/complete — finalizes order in PostgreSQL and deducts real inventory
+ * 7. Redirects to order confirmation with real Medusa order ID
  */
 export default function CheckoutPage(): React.ReactElement {
   const router = useRouter()
   const { showToast } = useToast()
+  const { token: customerAuthToken, customer, addresses, addAddress } = useCustomerAuth()
   const {
     cartItems,
     cartSubtotal,
@@ -49,13 +66,22 @@ export default function CheckoutPage(): React.ReactElement {
   const [checkoutErrors, setCheckoutErrors] = useState<string[]>([])
   const [validationWarnings, setValidationWarnings] = useState<string[]>([])
 
-  // Automatically switch away from COD if cart total exceeds the ₹5,000 security threshold
+  const {
+    openRazorpayCheckout,
+    isLoading: isRazorpayLoading,
+    error: razorpayError,
+    paymentFailed: razorpayPaymentFailed,
+    isCancelled: isRazorpayCancelled,
+    resetState: resetRazorpayState,
+  } = useRazorpay()
+
+  // Automatically switch away from COD if cart total exceeds the ₹5,000 security threshold (strictly compared in paise)
   React.useEffect(() => {
-    if (cartTotal > 5000 && selectedPayment === 'cod') {
-      setSelectedPayment('upi')
+    if (!isCodAmountEligible(cartTotal, 'rupees') && selectedPayment === 'cod') {
+      setSelectedPayment('razorpay')
       showToast(
         'info',
-        'Cash on Delivery is limited to orders up to ₹5,000. Switched to UPI Instant Transfer.',
+        'Cash on Delivery is limited to orders up to ₹5,000. Switched to Razorpay Online Payment.',
         { title: 'Payment Method Adjusted' }
       )
     }
@@ -86,59 +112,143 @@ export default function CheckoutPage(): React.ReactElement {
 
     setIsSubmitting(true)
     setCheckoutErrors([])
+    setValidationWarnings([])
+    resetRazorpayState()
 
     try {
-      const payload = {
-        items: cartItems.map((it) => ({
-          productId: it.productId,
-          variantId: it.variantId,
-          title: it.title,
-          category: it.category,
-          quantity: it.quantity,
-          clientPrice: it.price,
-        })),
+      // 1. Create real Medusa cart with line items, address, and coupon
+      const medusaCart = await createMedusaCart({
+        items: cartItems,
+        address,
         couponCode: appliedCoupon,
-        shippingOptionId: selectedShippingOption.id,
-        paymentMethod: selectedPayment,
-        deliveryAddress: address,
-        clientGrandTotal: cartTotal,
-      }
-
-      const res = await fetch('/api/checkout/place-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        authToken: customerAuthToken,
       })
 
-      const data = await res.json().catch(() => ({}))
+      // 2. Shipping Step (Step 3a): POST /store/carts/:id/shipping-methods
+      await setMedusaShippingMethod(
+        medusaCart.id,
+        selectedShippingOption.isExpress,
+        customerAuthToken
+      )
 
-      if (!res.ok || !data.success) {
-        const errList = data.errors || [data.error || 'Failed to complete order. Please check inputs.']
-        setCheckoutErrors(errList)
-        showToast('error', errList[0], { title: 'Order Verification Failed' })
+      // 3. Payment Step (Step 3b): Initialize payment session via Medusa payment API
+      const isCod = selectedPayment === 'cod'
+      const providerId = isCod ? 'pp_cod_cod' : 'pp_razorpay_razorpay'
+
+      const paymentSessionResult = await initMedusaPaymentSession(
+        medusaCart.id,
+        providerId,
+        customerAuthToken
+      )
+
+      // 4. Branch A: COD Flow (Step 3d & 3e)
+      if (isCod) {
+        if (!isCodAmountEligible(cartTotal, 'rupees')) {
+          throw new Error('Cash on Delivery is restricted to orders up to ₹5,000. Please choose Razorpay for higher value orders.')
+        }
+
+        // Finalize order via POST /store/carts/:id/complete
+        const completeData = await completeMedusaCart(medusaCart.id, customerAuthToken)
+        const confirmedOrder = transformMedusaOrderToReceipt(completeData.order, {
+          customerName: address.fullName,
+          shippingAddress: address,
+          shippingMethodName: selectedShippingOption.name,
+          paymentMethodTitle: 'Cash on Delivery (COD)',
+          items: cartItems,
+          subtotal: cartSubtotal,
+          discountAmount,
+          shippingAmount,
+          totalAmount: cartTotal,
+        })
+
+        setLatestOrder(confirmedOrder)
+        clearCart()
         setIsSubmitting(false)
+
+        showToast('success', `Order ${confirmedOrder.displayId} placed successfully via COD!`, {
+          title: 'Order Confirmed',
+          duration: 4000,
+        })
+
+        router.push(`/order/confirmation?id=${confirmedOrder.id}`)
         return
       }
 
-      if (data.warnings && data.warnings.length > 0) {
-        setValidationWarnings(data.warnings)
-      }
+      // 4. Branch B: Razorpay Flow (Step 3c & 3e)
+      await openRazorpayCheckout({
+        cartId: medusaCart.id,
+        sessionData: paymentSessionResult.session,
+        amount: cartTotal,
+        customer: {
+          name: address.fullName,
+          email: address.email,
+          contact: address.phoneNumber,
+        },
+        onSuccess: ({ order }) => {
+          const confirmedOrder = transformMedusaOrderToReceipt(order, {
+            customerName: address.fullName,
+            shippingAddress: address,
+            shippingMethodName: selectedShippingOption.name,
+            paymentMethodTitle: 'Razorpay Online (UPI, Cards & NetBanking)',
+            items: cartItems,
+            subtotal: cartSubtotal,
+            discountAmount,
+            shippingAmount,
+            totalAmount: cartTotal,
+          })
 
-      setLatestOrder(data.order)
-      clearCart()
-      setIsSubmitting(false)
+          setLatestOrder(confirmedOrder)
+          clearCart()
+          setIsSubmitting(false)
 
-      showToast('success', `Order ${data.order.displayId} placed successfully!`, {
-        title: 'Order Confirmed',
-        duration: 4000,
+          showToast('success', `Payment verified! Order ${confirmedOrder.displayId} confirmed.`, {
+            title: 'Order Confirmed',
+            duration: 4000,
+          })
+
+          router.push(`/order/confirmation?id=${confirmedOrder.id}`)
+        },
+        onFailure: (err) => {
+          setIsSubmitting(false)
+          setCheckoutErrors([err.message])
+          showToast('error', err.message, { title: 'Payment Incomplete' })
+          reportError(err, {
+            page: '/checkout',
+            action: 'razorpay-verification-failure',
+            paymentMethod: 'razorpay',
+          })
+        },
+        onDismiss: () => {
+          setIsSubmitting(false)
+          showToast('info', 'Payment was cancelled. You can retry anytime.', {
+            title: 'Payment Dismissed',
+          })
+        },
+        onPaymentFailed: (err) => {
+          setIsSubmitting(false)
+          setCheckoutErrors([err.description || 'Payment was declined by payment gateway.'])
+          showToast('error', err.description || 'Payment Failed', { title: 'Payment Failed' })
+          reportError(new Error(err.description || 'Payment declined by gateway'), {
+            page: '/checkout',
+            action: 'razorpay-payment-failed',
+            extra: {
+              code: err.code,
+              reason: err.reason,
+              order_id: err.metadata?.order_id,
+            },
+          })
+        },
       })
-
-      router.push(`/order/confirmation?id=${data.order.id}`)
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Network error placing order'
+      const msg = err instanceof Error ? err.message : 'An error occurred while placing your order.'
       setCheckoutErrors([msg])
-      showToast('error', msg, { title: 'Network Error' })
+      showToast('error', msg, { title: 'Order Placement Error' })
       setIsSubmitting(false)
+      reportError(err, {
+        page: '/checkout',
+        action: 'place-order-failure',
+        paymentMethod: selectedPayment,
+      })
     }
   }
 
@@ -176,7 +286,7 @@ export default function CheckoutPage(): React.ReactElement {
 
       <PageContainer className="pt-5 sm:pt-7">
         {cartItems.length === 0 ? (
-          <div className="p-10 sm:p-14 text-center rounded-[20px] bg-white border border-[#E5ECE8] shadow-[0_2px_8px_rgba(0,0,0,0.04)] max-w-md mx-auto my-8">
+          <div className="p-10 sm:p-14 text-center rounded-[20px] bg-white border border-[#E5ECE8] max-w-md mx-auto my-8">
             <div className="w-14 h-14 rounded-full bg-[#EBF5F0] text-[#0A4C36] flex items-center justify-center mx-auto mb-4">
               <GlorovCustomIcons.spa size={28} />
             </div>
@@ -188,7 +298,7 @@ export default function CheckoutPage(): React.ReactElement {
             </p>
             <Link
               href="/categories/seeds"
-              className="px-7 py-3 rounded-full bg-[#0A4C36] hover:bg-[#135841] text-white font-extrabold text-[12.5px] uppercase tracking-wider inline-flex items-center gap-2 shadow-[0_4px_10px_rgba(10,76,54,0.18)] transition-all"
+              className="px-7 py-3 rounded-full bg-[#0A4C36] hover:bg-[#135841] text-white font-extrabold text-[12.5px] uppercase tracking-wider inline-flex items-center gap-2 transition-all"
             >
               <span>Explore Catalog</span>
               <GlorovCustomIcons.arrowForward size={14} />
@@ -203,27 +313,41 @@ export default function CheckoutPage(): React.ReactElement {
                   Checkout & Payment
                 </h1>
                 <p className="text-[12.5px] text-[#6B7280] mt-0.5">
-                  Complete shipping destination and select demonstration payment to finalize your order
+                  Complete shipping destination and choose payment method to finalize your order
                 </p>
               </div>
               <span className="text-[12px] font-bold text-[#059669] flex items-center gap-1">
                 <GlorovCustomIcons.shieldCheck size={14} />
-                <span>Simulated Secure Order</span>
+                <span>100% Encrypted & Secure</span>
               </span>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
               {/* Left Column: Multi-Step Forms matching Flutter (Flex 13 / 60%) */}
               <div className="lg:col-span-7 flex flex-col gap-6">
+                {/* Razorpay Online Payment Failure / Cancellation Banner */}
+                <RazorpayPaymentErrorAlert
+                  error={razorpayError}
+                  paymentFailed={razorpayPaymentFailed}
+                  isCancelled={isRazorpayCancelled}
+                  onRetry={() => handlePlaceOrder()}
+                  onSwitchToCod={() => {
+                    setSelectedPayment('cod')
+                    resetRazorpayState()
+                  }}
+                  onDismiss={() => resetRazorpayState()}
+                  canSwitchToCod={cartTotal <= 5000}
+                />
+
                 {/* Authoritative Checkout Validation Banner */}
                 {checkoutErrors.length > 0 && (
                   <div
                     role="alert"
-                    className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-[13px] flex flex-col gap-2 shadow-sm"
+                    className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-[13px] flex flex-col gap-2"
                   >
                     <div className="font-bold flex items-center gap-1.5 text-red-900">
                       <GlorovCustomIcons.info size={16} className="text-red-600" />
-                      <span>Order Validation Failed</span>
+                      <span>Order Processing Notice</span>
                     </div>
                     <ul className="list-disc pl-5 space-y-1 text-[12px] text-red-700">
                       {checkoutErrors.map((err, i) => (
@@ -236,11 +360,11 @@ export default function CheckoutPage(): React.ReactElement {
                 {validationWarnings.length > 0 && (
                   <div
                     role="status"
-                    className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[12.5px] flex flex-col gap-1 shadow-sm"
+                    className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[12.5px] flex flex-col gap-1"
                   >
                     <div className="font-bold flex items-center gap-1.5 text-amber-950">
                       <GlorovCustomIcons.info size={15} className="text-amber-700" />
-                      <span>Security & Pricing Notice</span>
+                      <span>Notice</span>
                     </div>
                     <ul className="list-disc pl-5 space-y-0.5 text-[11.5px] text-amber-800">
                       {validationWarnings.map((warn, i) => (
@@ -250,10 +374,13 @@ export default function CheckoutPage(): React.ReactElement {
                   </div>
                 )}
 
-                {/* 1. Address Form */}
+                {/* 1. Address Form with Medusa saved addresses */}
                 <CheckoutAddressForm
                   initialAddress={shippingAddress}
                   onChange={handleAddressChange}
+                  savedAddresses={addresses}
+                  customerEmail={customer?.email}
+                  onSaveNewAddress={addAddress}
                 />
 
                 {/* 2. Shipping Speed */}
@@ -268,10 +395,11 @@ export default function CheckoutPage(): React.ReactElement {
                   selectedMethod={selectedPayment}
                   onSelectMethod={(method) => setSelectedPayment(method)}
                   totalAmount={cartTotal}
+                  totalAmountPaise={Math.round(cartTotal * 100)}
                 />
 
                 {/* 4. Review Items in Bag matching Flutter `_buildOrderItemsReview` */}
-                <div className="w-full p-4 sm:p-6 rounded-[18px] bg-white border border-[#E5ECE8] shadow-[0_1.5px_6px_rgba(0,0,0,0.03)] flex flex-col gap-3">
+                <div className="w-full p-4 sm:p-6 rounded-[18px] bg-white border border-[#E5ECE8] flex flex-col gap-3">
                   <div className="flex items-center justify-between pb-3 border-b border-[#F0F4F2]">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-[#EBF5F0] flex items-center justify-center text-[#0A4C36] flex-shrink-0">
@@ -317,6 +445,9 @@ export default function CheckoutPage(): React.ReactElement {
           </div>
         )}
       </PageContainer>
+
+      {/* Razorpay Processing & Verification Modal Overlay */}
+      <RazorpayProcessingOverlay isOpen={isRazorpayLoading} />
     </div>
   )
 }

@@ -155,9 +155,9 @@ describe('Medusa v2 Shipping, Pincode Serviceability, and Shiprocket Fulfillment
     })
   })
 
-  describe('2. POST /api/hooks/shiprocket Webhook Security & Idempotency', () => {
+  describe('2. POST /hooks/shiprocket Webhook Security & Idempotency', () => {
     it('rejects webhook request with invalid authentication token with 401', async () => {
-      const res = await fetch(`${BACKEND_URL}/api/hooks/shiprocket`, {
+      const res = await fetch(`${BACKEND_URL}/hooks/shiprocket`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ describe('Medusa v2 Shipping, Pincode Serviceability, and Shiprocket Fulfillment
     })
 
     it('rejects empty or non-JSON webhook payload with 400', async () => {
-      const res = await fetch(`${BACKEND_URL}/api/hooks/shiprocket`, {
+      const res = await fetch(`${BACKEND_URL}/hooks/shiprocket`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -188,7 +188,7 @@ describe('Medusa v2 Shipping, Pincode Serviceability, and Shiprocket Fulfillment
     })
 
     it('accepts valid authenticated webhook payload and records tracking event', async () => {
-      const res = await fetch(`${BACKEND_URL}/api/hooks/shiprocket`, {
+      const res = await fetch(`${BACKEND_URL}/hooks/shiprocket`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +225,7 @@ describe('Medusa v2 Shipping, Pincode Serviceability, and Shiprocket Fulfillment
       }
 
       // First call
-      const res1 = await fetch(`${BACKEND_URL}/api/hooks/shiprocket`, {
+      const res1 = await fetch(`${BACKEND_URL}/hooks/shiprocket`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -236,7 +236,7 @@ describe('Medusa v2 Shipping, Pincode Serviceability, and Shiprocket Fulfillment
       expect(res1.status).toBe(200)
 
       // Duplicate second call
-      const res2 = await fetch(`${BACKEND_URL}/api/hooks/shiprocket`, {
+      const res2 = await fetch(`${BACKEND_URL}/hooks/shiprocket`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -399,7 +399,7 @@ describe('Medusa v2 Shipping, Pincode Serviceability, and Shiprocket Fulfillment
 
     it('step 3: Shiprocket webhook reports DELIVERED status and updates order experience', async () => {
       // Webhook payload from Shiprocket notifying delivery
-      const whRes = await fetch(`${BACKEND_URL}/api/hooks/shiprocket`, {
+      const whRes = await fetch(`${BACKEND_URL}/hooks/shiprocket`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -437,7 +437,7 @@ describe('Medusa v2 Shipping, Pincode Serviceability, and Shiprocket Fulfillment
     })
 
     it('step 4: Shiprocket webhook with ONLY awb (no order_id) resolves order and handles duplicate idempotently', async () => {
-      const whRes = await fetch(`${BACKEND_URL}/api/hooks/shiprocket`, {
+      const whRes = await fetch(`${BACKEND_URL}/hooks/shiprocket`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -550,7 +550,7 @@ describe('Medusa v2 Shipping, Pincode Serviceability, and Shiprocket Fulfillment
       expect(awb2).toBeDefined()
 
       // 3. Webhook sends CANCELLED status for awb2
-      const whCancelRes = await fetch(`${BACKEND_URL}/api/hooks/shiprocket`, {
+      const whCancelRes = await fetch(`${BACKEND_URL}/hooks/shiprocket`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

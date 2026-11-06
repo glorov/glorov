@@ -2,6 +2,12 @@
 
 import React, { useState } from 'react'
 import type { CustomerAddress } from '../../types/account'
+import {
+  INDIAN_STATES,
+  isValidPinCode,
+  isValidIndianPhone,
+  isValidIndianState,
+} from '../../lib/validation/address'
 
 export interface AddressModalProps {
   isOpen: boolean
@@ -9,26 +15,6 @@ export interface AddressModalProps {
   onSave: (address: Omit<CustomerAddress, 'id'>) => Promise<boolean>
   initialData?: CustomerAddress | null
 }
-
-const INDIAN_STATES = [
-  'Andhra Pradesh',
-  'Assam',
-  'Bihar',
-  'Delhi',
-  'Goa',
-  'Gujarat',
-  'Haryana',
-  'Karnataka',
-  'Kerala',
-  'Madhya Pradesh',
-  'Maharashtra',
-  'Punjab',
-  'Rajasthan',
-  'Tamil Nadu',
-  'Telangana',
-  'Uttar Pradesh',
-  'West Bengal',
-]
 
 export const AddressModal: React.FC<AddressModalProps> = ({
   isOpen,
@@ -46,28 +32,64 @@ export const AddressModal: React.FC<AddressModalProps> = ({
   const [pincode, setPincode] = useState(initialData?.pincode || '')
   const [isDefault, setIsDefault] = useState(initialData?.isDefault ?? false)
   const [isSaving, setIsSaving] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   if (!isOpen) return null
 
+  const validateForm = (): boolean => {
+    const errs: Record<string, string> = {}
+
+    if (!fullName.trim() || fullName.trim().length < 2) {
+      errs.fullName = 'Full name is required (minimum 2 characters)'
+    }
+
+    const cleanPhone = phoneNumber.trim().replace(/\D/g, '')
+    if (!cleanPhone || !isValidIndianPhone(cleanPhone)) {
+      errs.phoneNumber = 'Must be a valid 10-digit Indian mobile number'
+    }
+
+    if (!addressLine1.trim() || addressLine1.trim().length < 5) {
+      errs.addressLine1 = 'Enter house/flat no., building and street address (min 5 characters)'
+    }
+
+    if (!city.trim() || city.trim().length < 2) {
+      errs.city = 'Enter city or district'
+    }
+
+    if (!state || !isValidIndianState(state)) {
+      errs.state = 'Please select a valid Indian State or Union Territory'
+    }
+
+    const cleanPin = pincode.trim().replace(/\D/g, '')
+    if (!cleanPin || !isValidPinCode(cleanPin)) {
+      errs.pincode = 'Must be a 6-digit Indian PIN code (cannot start with 0)'
+    }
+
+    setErrors(errs)
+    return Object.keys(errs).length === 0
+  }
+
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
-    if (!fullName || !phoneNumber || !addressLine1 || !city || !pincode) return
+    if (!validateForm()) return
 
     setIsSaving(true)
-    await onSave({
-      name,
-      fullName,
-      phoneNumber,
-      addressLine1,
-      addressLine2,
-      city,
+    const success = await onSave({
+      name: name.trim() || 'Home',
+      fullName: fullName.trim(),
+      phoneNumber: phoneNumber.trim().replace(/\D/g, ''),
+      addressLine1: addressLine1.trim(),
+      addressLine2: addressLine2.trim() || undefined,
+      city: city.trim(),
       state,
-      pincode,
+      pincode: pincode.trim().replace(/\D/g, ''),
       countryCode: 'in',
       isDefault,
     })
     setIsSaving(false)
-    onClose()
+    if (success) {
+      onClose()
+    }
   }
 
   return (
@@ -88,6 +110,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-1 text-stone-400 hover:text-stone-700 rounded-lg hover:bg-stone-100"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,7 +121,9 @@ export const AddressModal: React.FC<AddressModalProps> = ({
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3 text-xs">
           <div>
-            <label htmlFor="modal-addr-name" className="block font-semibold text-stone-700 mb-1">Address Label</label>
+            <label htmlFor="modal-addr-name" className="block font-semibold text-stone-700 mb-1">
+              Address Label
+            </label>
             <input
               id="modal-addr-name"
               type="text"
@@ -111,47 +136,76 @@ export const AddressModal: React.FC<AddressModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label htmlFor="modal-addr-fullname" className="block font-semibold text-stone-700 mb-1">Full Name *</label>
+              <label htmlFor="modal-addr-fullname" className="block font-semibold text-stone-700 mb-1">
+                Full Name *
+              </label>
               <input
                 id="modal-addr-fullname"
                 type="text"
                 required
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  setFullName(e.target.value)
+                  if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: '' }))
+                }}
                 placeholder="Full Name"
-                className="w-full px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:border-brand-primary"
+                className={`w-full px-3.5 py-2 rounded-xl border ${
+                  errors.fullName ? 'border-rose-500' : 'border-stone-300'
+                } focus:outline-none focus:border-brand-primary`}
               />
+              {errors.fullName && <p className="mt-1 text-[11px] text-rose-500">{errors.fullName}</p>}
             </div>
             <div>
-              <label htmlFor="modal-addr-phone" className="block font-semibold text-stone-700 mb-1">Mobile Number *</label>
-              <input
-                id="modal-addr-phone"
-                type="tel"
-                required
-                maxLength={10}
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                placeholder="9876543210"
-                className="w-full px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:border-brand-primary font-mono"
-              />
+              <label htmlFor="modal-addr-phone" className="block font-semibold text-stone-700 mb-1">
+                Mobile Number *
+              </label>
+              <div className="relative flex items-center">
+                <span className="absolute left-3 text-stone-400 font-semibold select-none text-[11px]">+91</span>
+                <input
+                  id="modal-addr-phone"
+                  type="tel"
+                  required
+                  maxLength={10}
+                  value={phoneNumber}
+                  onChange={(e) => {
+                    setPhoneNumber(e.target.value.replace(/\D/g, ''))
+                    if (errors.phoneNumber) setErrors((prev) => ({ ...prev, phoneNumber: '' }))
+                  }}
+                  placeholder="9876543210"
+                  className={`w-full pl-10 pr-3.5 py-2 rounded-xl border ${
+                    errors.phoneNumber ? 'border-rose-500' : 'border-stone-300'
+                  } focus:outline-none focus:border-brand-primary font-mono`}
+                />
+              </div>
+              {errors.phoneNumber && <p className="mt-1 text-[11px] text-rose-500">{errors.phoneNumber}</p>}
             </div>
           </div>
 
           <div>
-            <label htmlFor="modal-addr-line1" className="block font-semibold text-stone-700 mb-1">Address Line 1 *</label>
+            <label htmlFor="modal-addr-line1" className="block font-semibold text-stone-700 mb-1">
+              Address Line 1 *
+            </label>
             <input
               id="modal-addr-line1"
               type="text"
               required
               value={addressLine1}
-              onChange={(e) => setAddressLine1(e.target.value)}
+              onChange={(e) => {
+                setAddressLine1(e.target.value)
+                if (errors.addressLine1) setErrors((prev) => ({ ...prev, addressLine1: '' }))
+              }}
               placeholder="Flat, House no., Building, Street"
-              className="w-full px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:border-brand-primary"
+              className={`w-full px-3.5 py-2 rounded-xl border ${
+                errors.addressLine1 ? 'border-rose-500' : 'border-stone-300'
+              } focus:outline-none focus:border-brand-primary`}
             />
+            {errors.addressLine1 && <p className="mt-1 text-[11px] text-rose-500">{errors.addressLine1}</p>}
           </div>
 
           <div>
-            <label htmlFor="modal-addr-line2" className="block font-semibold text-stone-700 mb-1">Address Line 2 (Optional)</label>
+            <label htmlFor="modal-addr-line2" className="block font-semibold text-stone-700 mb-1">
+              Address Line 2 (Optional)
+            </label>
             <input
               id="modal-addr-line2"
               type="text"
@@ -164,24 +218,39 @@ export const AddressModal: React.FC<AddressModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label htmlFor="modal-addr-city" className="block font-semibold text-stone-700 mb-1">City *</label>
+              <label htmlFor="modal-addr-city" className="block font-semibold text-stone-700 mb-1">
+                City *
+              </label>
               <input
                 id="modal-addr-city"
                 type="text"
                 required
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e) => {
+                  setCity(e.target.value)
+                  if (errors.city) setErrors((prev) => ({ ...prev, city: '' }))
+                }}
                 placeholder="Bengaluru"
-                className="w-full px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:border-brand-primary"
+                className={`w-full px-3.5 py-2 rounded-xl border ${
+                  errors.city ? 'border-rose-500' : 'border-stone-300'
+                } focus:outline-none focus:border-brand-primary`}
               />
+              {errors.city && <p className="mt-1 text-[11px] text-rose-500">{errors.city}</p>}
             </div>
             <div>
-              <label htmlFor="modal-addr-state" className="block font-semibold text-stone-700 mb-1">State *</label>
+              <label htmlFor="modal-addr-state" className="block font-semibold text-stone-700 mb-1">
+                State *
+              </label>
               <select
                 id="modal-addr-state"
                 value={state}
-                onChange={(e) => setState(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl border border-stone-300 bg-white focus:outline-none focus:border-brand-primary cursor-pointer"
+                onChange={(e) => {
+                  setState(e.target.value)
+                  if (errors.state) setErrors((prev) => ({ ...prev, state: '' }))
+                }}
+                className={`w-full px-3.5 py-2 rounded-xl border ${
+                  errors.state ? 'border-rose-500' : 'border-stone-300'
+                } bg-white focus:outline-none focus:border-brand-primary cursor-pointer`}
               >
                 {INDIAN_STATES.map((st) => (
                   <option key={st} value={st}>
@@ -189,19 +258,28 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                   </option>
                 ))}
               </select>
+              {errors.state && <p className="mt-1 text-[11px] text-rose-500">{errors.state}</p>}
             </div>
             <div>
-              <label htmlFor="modal-addr-pincode" className="block font-semibold text-stone-700 mb-1">Pincode *</label>
+              <label htmlFor="modal-addr-pincode" className="block font-semibold text-stone-700 mb-1">
+                Pincode *
+              </label>
               <input
                 id="modal-addr-pincode"
                 type="text"
                 required
                 maxLength={6}
                 value={pincode}
-                onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => {
+                  setPincode(e.target.value.replace(/\D/g, ''))
+                  if (errors.pincode) setErrors((prev) => ({ ...prev, pincode: '' }))
+                }}
                 placeholder="560038"
-                className="w-full px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:border-brand-primary font-mono"
+                className={`w-full px-3.5 py-2 rounded-xl border ${
+                  errors.pincode ? 'border-rose-500' : 'border-stone-300'
+                } focus:outline-none focus:border-brand-primary font-mono`}
               />
+              {errors.pincode && <p className="mt-1 text-[11px] text-rose-500">{errors.pincode}</p>}
             </div>
           </div>
 
@@ -226,7 +304,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
             <button
               type="submit"
               disabled={isSaving}
-              className="px-5 py-2 rounded-xl text-xs font-bold bg-brand-primary text-white hover:bg-brand-primary/95 transition shadow-xs"
+              className="px-5 py-2 rounded-xl text-xs font-bold bg-brand-primary text-white hover:bg-brand-primary/95 transition disabled:opacity-50"
             >
               {isSaving ? 'Saving...' : 'Save Address'}
             </button>

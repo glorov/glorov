@@ -60,6 +60,28 @@ export function validateProductionConfig(env: NodeJS.ProcessEnv = process.env): 
     )
   }
 
+  if (!env.CLOUDINARY_CLOUD_NAME) {
+    missing.push("CLOUDINARY_CLOUD_NAME")
+  }
+
+  if (!env.CLOUDINARY_API_KEY) {
+    missing.push("CLOUDINARY_API_KEY")
+  }
+
+  const cloudinarySecret = env.CLOUDINARY_API_SECRET || ""
+  if (!cloudinarySecret) {
+    missing.push("CLOUDINARY_API_SECRET")
+  } else if (
+    cloudinarySecret === "0FkMyyEi9taeWd2f8nEN55zqOUM" ||
+    cloudinarySecret.includes("placeholder") ||
+    cloudinarySecret.includes("replace")
+  ) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "Security Violation: Insecure, leaked or placeholder CLOUDINARY_API_SECRET detected in production."
+    )
+  }
+
   if (missing.length > 0) {
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
@@ -75,7 +97,7 @@ export default defineConfig({
     path: (process.env.ADMIN_PATH as `/${string}`) || (process.env.NODE_ENV === "production" ? "/" : "/app"),
     backendUrl:
       process.env.MEDUSA_BACKEND_URL ||
-      (process.env.NODE_ENV === "production" ? "https://api.glorov.tech" : "http://localhost:9000"),
+      (process.env.NODE_ENV === "production" ? "https://api.glorov.in" : "http://localhost:9000"),
     disable: process.env.MEDUSA_ADMIN_DISABLED === "true",
   },
   projectConfig: {
@@ -100,10 +122,15 @@ export default defineConfig({
       sameSite: (process.env.COOKIE_SAMESITE as any) || "none",
       secure: process.env.COOKIE_SECURE !== "false",
     },
+    // Explicit PostgreSQL connection pool configuration for 1GB single-VM deployment (GLOROV-DB-005):
+    // PostgreSQL max_connections is capped at 50 in docker-compose.prod.yml.
+    // Setting pool min: 2, max: 10 per Medusa instance prevents socket exhaustion
+    // and preserves host memory overhead (~10-15MB per connection buffer on 1GB RAM Azure B1s).
     databaseDriverOptions: {
       pool: {
         min: Number(process.env.DB_POOL_MIN) || 2,
         max: Number(process.env.DB_POOL_MAX) || 10,
+        acquireTimeoutMillis: 30000,
         idleTimeoutMillis: 30000,
       },
       ...(process.env.NODE_ENV === "production" || process.env.DATABASE_URL?.includes("supabase")
@@ -206,10 +233,10 @@ export default defineConfig({
             resolve: "./src/modules/file-cloudinary",
             id: "cloudinary",
             options: {
-              cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "naodmm8w",
-              api_key: process.env.CLOUDINARY_API_KEY || "179253354861549",
-              api_secret: process.env.CLOUDINARY_API_SECRET || "0FkMyyEi9taeWd2f8nEN55zqOUM",
-              folder: "glorov",
+              cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+              api_key: process.env.CLOUDINARY_API_KEY,
+              api_secret: process.env.CLOUDINARY_API_SECRET,
+              folder: process.env.CLOUDINARY_FOLDER || "glorov",
             },
           },
         ],

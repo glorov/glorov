@@ -19,6 +19,7 @@
     "storefront:dev": "pnpm --filter @glorov/storefront dev",
     "storefront:build": "pnpm --filter @glorov/storefront build",
     "storefront:test": "pnpm --filter @glorov/storefront test",
+    "storefront:test:e2e": "pnpm --filter @glorov/storefront test:e2e",
     "storefront:typecheck": "pnpm --filter @glorov/storefront typecheck",
     "storefront:lint": "pnpm --filter @glorov/storefront lint",
     "flutter:test": "cd flutter && flutter test",

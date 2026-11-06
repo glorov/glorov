@@ -3,9 +3,9 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { MOCK_PRODUCTS } from '@/lib/mock-data'
 import { useCart } from '@/context/StorefrontContext'
 import { GlorovProductItem } from '@/types/storefront'
+import { MOCK_PRODUCTS } from '../../lib/mock-products'
 import { ProductCard } from '../product/ProductCard'
 import { GlorovImage } from '../ui/GlorovImage'
 
@@ -28,12 +28,13 @@ const TRENDING_SEARCHES = [
 const CATEGORY_FILTERS = [
   'All',
   'Seeds',
+  'Vegetables',
   'Live Plants',
-  'Planters & Pots',
-  'Plant Care & Soil',
+  'Flowers',
+  'Herbs',
 ]
 
-const RECOVERY_CHIPS = ['Monstera', 'Seeds', 'Houseplants', 'Pots', 'Soil']
+const RECOVERY_CHIPS = ['Monstera', 'Seeds', 'Vegetables', 'Flowers', 'Herbs']
 
 type SortOption = 'relevance' | 'price_asc' | 'price_desc' | 'rating'
 
@@ -80,10 +81,43 @@ function HighlightedText({ text, query }: { text: string; query: string }): Reac
  * 4. Submitted Results View: Results counter header, Sort dropdown, Category filter pills, Responsive 2-4 column product grid
  * 5. No Results Empty State: Circular search-off illustration & recovery suggestion chips
  */
-export const SearchClientView: React.FC = () => {
+export interface SearchClientViewProps {
+  initialProducts?: GlorovProductItem[]
+}
+
+export const SearchClientView: React.FC<SearchClientViewProps> = ({ initialProducts = [] }) => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { addToCart } = useCart()
+
+  const [catalogProducts, setCatalogProducts] = useState<GlorovProductItem[]>(
+    initialProducts && initialProducts.length > 0 ? initialProducts : MOCK_PRODUCTS
+  )
+
+  // Hydrate or fetch catalog products
+  useEffect(() => {
+    if (initialProducts.length > 0) {
+      setCatalogProducts(initialProducts)
+      return
+    }
+    let isCancelled = false
+    async function loadProducts() {
+      try {
+        const res = await fetch('/api/products?limit=100')
+        if (res.ok && !isCancelled) {
+          const data = await res.json()
+          const items = Array.isArray(data.products) ? data.products : []
+          if (items.length > 0) {
+            setCatalogProducts(items)
+          }
+        }
+      } catch {}
+    }
+    loadProducts()
+    return () => {
+      isCancelled = true
+    }
+  }, [initialProducts])
 
   const initialQuery = searchParams ? (searchParams.get('q') || '') : ''
   const initialCategory = searchParams ? (searchParams.get('category') || 'All') : 'All'
@@ -163,7 +197,7 @@ export const SearchClientView: React.FC = () => {
   const { rankedProducts, closestProduct, keywordSuggestions } = useMemo(() => {
     const cleanQ = query.trim().toLowerCase()
 
-    let baseProducts = MOCK_PRODUCTS
+    let baseProducts = catalogProducts
 
     // Apply category filter if not 'All'
     if (selectedCategory !== 'All') {
@@ -275,12 +309,12 @@ export const SearchClientView: React.FC = () => {
       closestProduct: closest,
       keywordSuggestions: Array.from(suggestionSet).slice(0, 5),
     }
-  }, [query, selectedCategory, selectedSort, isSubmitted])
+  }, [query, selectedCategory, selectedSort, isSubmitted, catalogProducts])
 
   // Popular botanical picks for zero-query state (take first 6 products)
   const popularPicks = useMemo(() => {
-    return MOCK_PRODUCTS.slice(0, 6)
-  }, [])
+    return catalogProducts.slice(0, 6)
+  }, [catalogProducts])
 
   // Execute full submitted search
   const executeSubmittedSearch = useCallback(
@@ -407,7 +441,7 @@ export const SearchClientView: React.FC = () => {
                   setQuery(e.target.value)
                   setIsSubmitted(false)
                 }}
-                placeholder="Search plants, seeds, fertilizers, pots..."
+                placeholder="Search plants, seeds, vegetables, flowers..."
                 className="w-full bg-transparent text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none"
                 autoFocus={!initialQuery}
               />
@@ -510,7 +544,7 @@ export const SearchClientView: React.FC = () => {
                     key={trend}
                     type="button"
                     onClick={() => handleSelectSuggestion(trend)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E4E4E7] text-xs font-medium text-[#111827] hover:border-[#1B4332] hover:bg-[#F9FAF8] active:scale-95 transition-all shadow-2xs"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E4E4E7] text-xs font-medium text-[#111827] hover:border-[#1B4332] hover:bg-[#F9FAF8] active:scale-95 transition-colors"
                   >
                     <svg className="w-3.5 h-3.5 text-[#1B4332]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -582,7 +616,7 @@ export const SearchClientView: React.FC = () => {
                     <Link
                       key={product.id}
                       href={`/products/${product.slug}`}
-                      className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-[#E5ECE8] hover:border-[#0A4C36]/40 hover:shadow-xs transition-all group"
+                      className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-[#E5ECE8] hover:border-[#0A4C36] transition-colors group"
                     >
                       {/* Product Thumbnail */}
                       <div className="relative w-[58px] h-[58px] rounded-lg overflow-hidden bg-[#F4F7F4] shrink-0 border border-[#E5ECE8]">
@@ -656,7 +690,7 @@ export const SearchClientView: React.FC = () => {
 
                     <div
                       key="closest_match_card"
-                      className="bg-white rounded-[20px] border border-[#E5ECE8] shadow-[0_4px_16px_rgba(10,76,54,0.06)] hover:border-[#0A4C36]/35 p-3.5 sm:p-4.5 transition-all"
+                      className="bg-white rounded-[20px] border border-[#E5ECE8] hover:border-[#0A4C36] p-3.5 sm:p-4.5 transition-colors"
                     >
                       <div className="flex gap-3.5 sm:gap-4 items-center">
                         {/* High-Res Product Thumbnail with Signature Badge */}
@@ -671,14 +705,14 @@ export const SearchClientView: React.FC = () => {
                             fallbackTitle={closestProduct.title}
                           />
                           {(closestProduct.isBestSeller || (closestProduct.discountPercent && closestProduct.discountPercent >= 20)) && (
-                            <span className="absolute top-0 left-0 bg-[#0C2340] text-white text-[8.5px] font-extrabold uppercase px-1.5 py-0.5 rounded-tl-[16px] rounded-br-[6px] shadow-xs flex items-center gap-0.5 leading-none">
+                            <span className="absolute top-0 left-0 bg-[#0C2340] text-white text-[8.5px] font-extrabold uppercase px-1.5 py-0.5 rounded-tl-[16px] rounded-br-[6px] flex items-center gap-0.5 leading-none">
                               <svg width={9} height={9} className="w-[9px] h-[9px] text-[#F9C74F] shrink-0" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
                               </svg>
                               <span>{closestProduct.isBestSeller ? 'Best Seller' : 'Sale'}</span>
                             </span>
                           )}
-                          <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-[5px] bg-white text-[#0F172A] border border-white shadow-2xs text-[10px] font-extrabold flex items-center gap-0.5 leading-none">
+                          <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-[5px] bg-white text-[#0F172A] border border-stone-200 text-[10px] font-extrabold flex items-center gap-0.5 leading-none">
                             <span>{closestProduct.rating.toFixed(1)}</span>
                             <span className="text-[#16A34A]">★</span>
                           </div>
@@ -750,7 +784,7 @@ export const SearchClientView: React.FC = () => {
                           key="closest_match_add_to_cart_button"
                           type="button"
                           onClick={() => handleAddToCart(closestProduct)}
-                          className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-full bg-[#0A4C36] text-white text-xs font-bold hover:bg-[#135841] transition-colors shadow-2xs active:scale-95 cursor-pointer"
+                          className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-full bg-[#0A4C36] text-white text-xs font-bold hover:bg-[#135841] transition-colors active:scale-95 cursor-pointer"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -836,7 +870,7 @@ export const SearchClientView: React.FC = () => {
                             <Link
                               key={product.id}
                               href={`/products/${product.slug}`}
-                              className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-[#E5ECE8] hover:border-[#0A4C36]/40 hover:shadow-xs transition-all group"
+                              className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-[#E5ECE8] hover:border-[#0A4C36] transition-colors group"
                             >
                               <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-[#F4F7F4] shrink-0 border border-[#E5ECE8]">
                                 <GlorovImage
@@ -892,7 +926,7 @@ export const SearchClientView: React.FC = () => {
                     key="view_all_results_button"
                     type="button"
                     onClick={() => executeSubmittedSearch(query)}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-[#1B4332] hover:bg-[#143224] text-white text-sm font-bold transition-all shadow-sm active:scale-98"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-[#1B4332] hover:bg-[#143224] text-white text-sm font-bold transition-all active:scale-98"
                   >
                     <span>See all {rankedProducts.length} results</span>
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -951,9 +985,9 @@ export const SearchClientView: React.FC = () => {
                           if (cat !== 'All') params.set('category', cat)
                           router.push(`/search?${params.toString()}`)
                         }}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors border ${
                           isSelected
-                            ? 'bg-[#1B4332] text-white border-[#1B4332] shadow-2xs font-bold'
+                            ? 'bg-[#1B4332] text-white border-[#1B4332] font-bold'
                             : 'bg-white text-[#111827] border-[#E4E4E7] hover:border-[#1B4332]/40'
                         }`}
                       >
@@ -1016,7 +1050,7 @@ function NoResultsView({
             key={chip}
             type="button"
             onClick={() => onSelect(chip)}
-            className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#F9FAF8] border border-[#E5E7EB] text-[#111827] hover:border-[#1B4332] hover:bg-white transition-all shadow-2xs"
+            className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#F9FAF8] border border-[#E5E7EB] text-[#111827] hover:border-[#1B4332] hover:bg-white transition-colors"
           >
             {chip}
           </button>

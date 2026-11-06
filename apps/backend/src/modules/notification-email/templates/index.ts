@@ -7,6 +7,7 @@ import { renderRefundProcessedTemplate } from './refund-processed'
 import { renderShipmentCreatedTemplate } from './shipment-created'
 import { renderDeliveryCompletedTemplate } from './delivery-completed'
 import { renderTrackingUpdatedTemplate } from './tracking-updated'
+import { renderRtoNotificationTemplate } from './rto-notification'
 import { renderBaseHtml, renderBaseText } from './base-layout'
 
 export type TemplateRenderer = (data: any) => RenderedTemplate
@@ -66,6 +67,12 @@ const TEMPLATE_REGISTRY: Record<string, TemplateRenderer> = {
   'delivery_created': renderDeliveryCompletedTemplate,
   'delivery.created': renderDeliveryCompletedTemplate,
   'order-delivered': renderDeliveryCompletedTemplate,
+
+  // RTO / Return to Origin
+  'rto-notification': renderRtoNotificationTemplate,
+  'rto_notification': renderRtoNotificationTemplate,
+  'fulfillment-rto': renderRtoNotificationTemplate,
+  'fulfillment.rto': renderRtoNotificationTemplate,
 }
 
 
@@ -112,5 +119,6 @@ export {
   renderShipmentCreatedTemplate,
   renderDeliveryCompletedTemplate,
   renderTrackingUpdatedTemplate,
+  renderRtoNotificationTemplate,
 }
 

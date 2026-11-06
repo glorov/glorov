@@ -23,6 +23,13 @@ glorov.in, www.glorov.in {
         -Server
     }
 
+    # GLOROV-PERF-005: Cache-Control headers for static assets & Next.js chunks
+    @static path /_next/static/*
+    header @static Cache-Control "public, max-age=31536000, immutable"
+
+    @media path /images/* /fonts/* *.ico *.svg *.webp *.avif
+    header @media Cache-Control "public, max-age=86400, stale-while-revalidate=604800"
+
     # Redirect www to apex
     @www host www.glorov.in
     handle @www {
@@ -63,4 +70,13 @@ api.glorov.in {
         header_up X-Forwarded-For {remote_host}
         header_up X-Forwarded-Proto {scheme}
     }
+}
+
+# 3. Domain Aliases (Permanent 301 Redirect from glorov.tech alias to canonical glorov.in)
+glorov.tech, www.glorov.tech {
+    redir https://glorov.in{uri} permanent
+}
+
+api.glorov.tech {
+    redir https://api.glorov.in{uri} permanent
 }

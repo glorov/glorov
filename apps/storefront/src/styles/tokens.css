@@ -77,9 +77,9 @@
   --max-content-width: 1280px;
 
   /* ─── 12. Elevation & Box Shadows ───────────────────────────────────────── */
-  --shadow-header: 0 1px 4px rgba(0, 0, 0, 0.08);
-  --shadow-card:   0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-float:  0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-header: none;
+  --shadow-card:   none;
+  --shadow-float:  0 4px 12px rgba(0, 0, 0, 0.08);
   --shadow-modal:  0 8px 32px rgba(0, 0, 0, 0.16);
 
   /* ─── 13. Z-Index Conventions ───────────────────────────────────────────── */

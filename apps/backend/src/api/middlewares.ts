@@ -35,6 +35,12 @@ const returnRequestRateLimiter = createRateLimiter({
   windowSeconds: 60,
 })
 
+const checkoutRateLimiter = createRateLimiter({
+  action: 'store_checkout',
+  limit: 30,
+  windowSeconds: 60,
+})
+
 /**
  * Validates that an authenticated customer only retrieves their own orders.
  * Prevents horizontal privilege escalation where changing the order ID allows
@@ -176,6 +182,18 @@ export default defineMiddlewares({
       middlewares: [
         authenticate('customer', ['session', 'bearer']),
       ],
+    },
+    {
+      method: ['POST'],
+      matcher: '/store/reviews',
+      middlewares: [
+        authenticate('customer', ['session', 'bearer']),
+      ],
+    },
+    {
+      method: ['GET', 'POST', 'PUT', 'DELETE'],
+      matcher: '/store/checkout*',
+      middlewares: [checkoutRateLimiter],
     },
     {
       method: ['GET'],

@@ -5,6 +5,14 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    include: [
+      'src/__tests__/**/*.{test,spec}.{ts,tsx}',
+      'tests/**/*.{test,spec}.{ts,tsx}',
+    ],
+    exclude: ['**/node_modules/**', '**/e2e/**', '**/.next/**', '**/dist/**'],
+    env: {
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: 'pk_test_mock_publishable_key_for_storefront',
+    },
   },
   resolve: {
     alias: {

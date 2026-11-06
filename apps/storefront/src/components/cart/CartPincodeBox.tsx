@@ -55,7 +55,7 @@ export const CartPincodeBox: React.FC<CartPincodeBoxProps> = ({ onPincodeChange 
   }
 
   return (
-    <div className="w-full px-3.5 py-2.75 rounded-[18px] bg-white border border-[#E5ECE8] shadow-[0_2px_6px_rgba(10,76,54,0.024)] transition-all">
+    <div className="w-full px-3.5 py-2.75 rounded-[18px] bg-white border border-[#E5ECE8] transition-colors">
       <div className="flex items-center gap-2">
         {/* Truck Icon */}
         <div className="w-[26px] h-[26px] rounded-full bg-[#E8F5E9] flex items-center justify-center text-[#0A4C36] flex-shrink-0">

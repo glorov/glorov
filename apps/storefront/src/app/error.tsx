@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react'
 import { PageContainer } from '../components/layout/PageContainer'
 import { Button } from '../components/ui/Button'
+import { reportError } from '../lib/error-reporter'
 
 export interface ErrorPageProps {
   error: Error & { digest?: string }
@@ -14,8 +15,12 @@ export interface ErrorPageProps {
  */
 export default function ErrorBoundary({ error, reset }: ErrorPageProps) {
   useEffect(() => {
-    // Log the error to observability collector safely
-    console.error('Storefront Root Error Boundary caught:', error)
+    // Report unhandled boundary error to Sentry/external reporting with server correlation digest
+    reportError(error, {
+      boundary: 'root-error-boundary',
+      digest: error.digest,
+      page: typeof window !== 'undefined' ? window.location.pathname : undefined,
+    })
   }, [error])
 
   return (

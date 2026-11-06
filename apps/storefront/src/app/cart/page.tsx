@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCart } from '../../context/StorefrontContext'
+import { useCart } from '../../context/CartContext'
 import { GlorovCustomIcons } from '../../components/common/GlorovIcons'
 import { CartItemRow } from '../../components/cart/CartItemRow'
 import { FreeShippingProgressBar } from '../../components/cart/FreeShippingProgressBar'
@@ -16,6 +16,7 @@ import { CartStickyCheckoutBar } from '../../components/cart/CartStickyCheckoutB
 import { CartEmptyState } from '../../components/cart/CartEmptyState'
 import { AvailableOffersModal } from '../../components/cart/AvailableOffersModal'
 import { TaxBreakdownModal } from '../../components/cart/TaxBreakdownModal'
+import { reportError } from '../../lib/error-reporter'
 
 /**
  * GLOROV Botanical Shopping Cart Screen
@@ -50,6 +51,7 @@ export default function CartPage(): React.ReactElement {
     removeFromCart,
     showToast,
     activeOffers,
+    isHydrated,
   } = useCart()
 
   const [isOffersModalOpen, setIsOffersModalOpen] = useState(false)
@@ -74,6 +76,24 @@ export default function CartPage(): React.ReactElement {
       router.back()
     } else {
       router.push('/')
+    }
+  }
+
+  const handleApplyCoupon = async (code: string) => {
+    try {
+      await applyCoupon(code)
+    } catch (err: unknown) {
+      reportError(err, { page: '/cart', action: 'apply-coupon', couponCode: code })
+      showToast('error', 'Unable to apply coupon. Please try again.')
+    }
+  }
+
+  const handleUpdateQuantity = async (itemId: string, newQty: number) => {
+    try {
+      await updateCartQuantity(itemId, newQty)
+    } catch (err: unknown) {
+      reportError(err, { page: '/cart', action: 'update-quantity', itemId, quantity: newQty })
+      showToast('error', 'Unable to update item quantity.')
     }
   }
 
@@ -117,7 +137,12 @@ export default function CartPage(): React.ReactElement {
 
       {/* 2. Main Content */}
       <main className="flex-1 w-full">
-        {cartItems.length === 0 ? (
+        {!isHydrated ? (
+          <div className="w-full max-w-[1280px] mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[400px]">
+            <div className="w-10 h-10 rounded-full border-2 border-[#0A4C36]/20 border-t-[#0A4C36] animate-spin mb-4" />
+            <p className="text-sm font-medium text-stone-500 font-sans">Restoring your botanical bag...</p>
+          </div>
+        ) : cartItems.length === 0 ? (
           <CartEmptyState />
         ) : (
           <div className="w-full max-w-[1280px] mx-auto px-2.5 sm:px-6 py-1.5 sm:py-4">
@@ -130,7 +155,7 @@ export default function CartPage(): React.ReactElement {
                   appliedCoupon={appliedCoupon}
                   offers={rawActiveOffers}
                   onOpenOffers={() => setIsOffersModalOpen(true)}
-                  onApplyCoupon={(code) => applyCoupon(code)}
+                  onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
                   onShowNotice={(msg) => showToast('info', msg)}
                 />
 
@@ -140,7 +165,7 @@ export default function CartPage(): React.ReactElement {
                       key={item.id}
                       item={item}
                       appliedCoupon={appliedCoupon}
-                      onUpdateQuantity={(newQty) => updateCartQuantity(item.id, newQty)}
+                      onUpdateQuantity={(newQty) => { void handleUpdateQuantity(item.id, newQty) }}
                       onRemove={() => removeFromCart(item.id)}
                       onMoveToWishlist={() => moveToWishlist(item.id)}
                     />
@@ -156,7 +181,7 @@ export default function CartPage(): React.ReactElement {
               <div className="flex-[8] min-w-0 flex flex-col gap-3.5 sticky top-4">
                 <CouponVoucherCard
                   appliedCoupon={appliedCoupon}
-                  onApplyCoupon={(code) => applyCoupon(code)}
+                  onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
                   onRemoveCoupon={removeCoupon}
                   onOpenOffersModal={() => setIsOffersModalOpen(true)}
                   subtotal={cartSubtotal}
@@ -189,7 +214,7 @@ export default function CartPage(): React.ReactElement {
                   appliedCoupon={appliedCoupon}
                   offers={rawActiveOffers}
                   onOpenOffers={() => setIsOffersModalOpen(true)}
-                  onApplyCoupon={(code) => applyCoupon(code)}
+                  onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
                   onShowNotice={(msg) => showToast('info', msg)}
                 />
 
@@ -199,7 +224,7 @@ export default function CartPage(): React.ReactElement {
                       key={item.id}
                       item={item}
                       appliedCoupon={appliedCoupon}
-                      onUpdateQuantity={(newQty) => updateCartQuantity(item.id, newQty)}
+                      onUpdateQuantity={(newQty) => { void handleUpdateQuantity(item.id, newQty) }}
                       onRemove={() => removeFromCart(item.id)}
                       onMoveToWishlist={() => moveToWishlist(item.id)}
                     />
@@ -215,7 +240,7 @@ export default function CartPage(): React.ReactElement {
               <div className="flex-[9] min-w-0 flex flex-col gap-3">
                 <CouponVoucherCard
                   appliedCoupon={appliedCoupon}
-                  onApplyCoupon={(code) => applyCoupon(code)}
+                  onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
                   onRemoveCoupon={removeCoupon}
                   onOpenOffersModal={() => setIsOffersModalOpen(true)}
                   subtotal={cartSubtotal}
@@ -247,7 +272,7 @@ export default function CartPage(): React.ReactElement {
                 appliedCoupon={appliedCoupon}
                 offers={rawActiveOffers}
                 onOpenOffers={() => setIsOffersModalOpen(true)}
-                onApplyCoupon={(code) => applyCoupon(code)}
+                onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
                 onShowNotice={(msg) => showToast('info', msg)}
               />
 
@@ -258,7 +283,7 @@ export default function CartPage(): React.ReactElement {
                     key={item.id}
                     item={item}
                     appliedCoupon={appliedCoupon}
-                    onUpdateQuantity={(newQty) => updateCartQuantity(item.id, newQty)}
+                    onUpdateQuantity={(newQty) => { void handleUpdateQuantity(item.id, newQty) }}
                     onRemove={() => removeFromCart(item.id)}
                     onMoveToWishlist={() => moveToWishlist(item.id)}
                   />
@@ -273,7 +298,7 @@ export default function CartPage(): React.ReactElement {
               {/* 4. In-Flow Coupon Voucher Card */}
               <CouponVoucherCard
                 appliedCoupon={appliedCoupon}
-                onApplyCoupon={(code) => applyCoupon(code)}
+                onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
                 onRemoveCoupon={removeCoupon}
                 onOpenOffersModal={() => setIsOffersModalOpen(true)}
                 subtotal={cartSubtotal}

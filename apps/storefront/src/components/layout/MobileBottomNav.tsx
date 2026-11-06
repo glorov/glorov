@@ -105,7 +105,7 @@ export function MobileBottomNav({ className, alwaysVisible = false }: MobileBott
     <nav
       aria-label="Mobile Bottom Navigation"
       className={cn(
-        'cat-desktop:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E5E7EB] shadow-[0_-3px_14px_rgba(0,0,0,0.08)] pb-[env(safe-area-inset-bottom)] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] will-change-transform',
+        'cat-desktop:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E5E7EB] pb-[env(safe-area-inset-bottom)] transition-all duration-300 ease-[cubic-bezier(0.33,1,0.68,1)] will-change-transform',
         isVisible
           ? 'translate-y-0 opacity-100 pointer-events-auto'
           : 'translate-y-[120%] opacity-0 pointer-events-none',
@@ -134,7 +134,7 @@ export function MobileBottomNav({ className, alwaysVisible = false }: MobileBott
                   {item.icon}
                 </div>
                 {item.badge !== undefined && (
-                  <span className="absolute -top-1.5 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#1B4332] text-white text-[9px] font-extrabold flex items-center justify-center shadow-sm">
+                  <span className="absolute -top-1.5 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#1B4332] text-white text-[9px] font-extrabold flex items-center justify-center">
                     {item.badge}
                   </span>
                 )}

@@ -276,10 +276,14 @@ export const POST = async (
         ship.labels?.[0]?.tracking_url ||
         (ship.data?.tracking_url as string) ||
         `https://shiprocket.co/tracking/${existingAwb}`
-      const labelUrl =
+      // GLOROV-SHIP-002: Do not produce mock S3/Shiprocket URL that will 404
+      let labelUrl: string | null =
         ship.labels?.[0]?.label_url ||
         (ship.data?.label_url as string) ||
-        `https://shiprocket.co/mock-label/${existingAwb}.pdf`
+        null
+      if (typeof labelUrl === 'string' && (labelUrl.includes('mock-label') || labelUrl.trim() === '')) {
+        labelUrl = null
+      }
       const courierName =
         (ship.data?.courier_name as string) || 'Delhivery Air Botanical Express'
 
@@ -386,7 +390,11 @@ export const POST = async (
 
     const trackingUrl =
       fulfillment.data?.tracking_url || `https://shiprocket.co/tracking/${trackingAwb}`
-    const labelUrl = fulfillment.data?.label_url || `https://shiprocket.co/mock-label/${trackingAwb}.pdf`
+    // GLOROV-SHIP-002: Return null or real label URL, avoiding fake mock 404 URL
+    let labelUrl: string | null = (fulfillment.data?.label_url as string) || null
+    if (typeof labelUrl === 'string' && (labelUrl.includes('mock-label') || labelUrl.trim() === '')) {
+      labelUrl = null
+    }
     const courierName = fulfillment.data?.courier_name || 'Delhivery Air Botanical Express'
 
     try {
@@ -399,7 +407,7 @@ export const POST = async (
             {
               tracking_number: trackingAwb,
               tracking_url: trackingUrl,
-              label_url: labelUrl,
+              label_url: labelUrl || '',
             },
           ],
         },

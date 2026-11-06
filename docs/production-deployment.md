@@ -82,6 +82,13 @@ Hosting Architecture Cost Comparison (INR / Month)
 
 ### Detailed Evaluation of Practical Options
 
+#### Option 0: Micro Azure VM (Standard_B1s 1GB RAM) — Low-Cost Bootstrap
+- **Specification:** 1 vCPU, 1GB RAM, Ubuntu 22.04 LTS ($7.50/mo ≈ ₹620/mo).
+- **Topology:** Single host running PostgreSQL 16 (384MB limit), Redis 7 (128MB limit with LRU), Medusa v2 (256MB heap), and Next.js 15 Standalone (128MB heap) behind Caddy/Nginx.
+- **Total Memory Allocation:** ~896MB (fits in 1024MB RAM).
+- **Mandatory Configuration:** At least 1GB (recommended 2GB) swap file configured to absorb transient build, migration, and PM2 reload spikes.
+- **Zero-Downtime Reload:** Managed via `pm2 reload` (never `pm2 restart`).
+
 #### Option 1: Bootstrap VPS with Docker Compose (Recommended for Launch)
 - **Provider:** DigitalOcean (Bangalore `blr1` datacenter) or AWS Lightsail (Mumbai `ap-south-1`).
 - **Specification:** 2 vCPUs, 4GB RAM, 80GB NVMe SSD, 4TB Bandwidth ($24/mo ≈ ₹2,000/mo).

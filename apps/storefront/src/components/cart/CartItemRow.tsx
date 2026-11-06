@@ -36,7 +36,7 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({
     : 0
 
   return (
-    <div className="w-full px-2.5 py-2 rounded-[14px] bg-white border border-[#E5ECE8] shadow-[0_1.5px_6px_rgba(0,0,0,0.02)] mb-[7px] transition-all hover:border-[#D0DDD5]">
+    <div className="w-full px-2.5 py-2 rounded-[14px] bg-white border border-[#E5ECE8] mb-[7px] transition-colors hover:border-[#D0DDD5]">
       <div className="flex items-center gap-2.5">
         {/* 56px Square Thumbnail with 10px rounded corners */}
         <div className="relative w-[56px] h-[56px] rounded-[10px] overflow-hidden bg-[#F3F4F6] flex-shrink-0 border border-[#EFEFEF]">

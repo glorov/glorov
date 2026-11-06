@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react'
 import { GlorovImage } from '../ui/GlorovImage'
-import type { CustomerOrder } from '../../types/account'
+import type { CustomerOrder, OrderTrackingInfo } from '../../types/account'
 import { formatINR } from '../product/ProductPrice'
+import { fetchOrderTracking } from '../../lib/api/orders'
 
 export interface OrderTrackingModalProps {
   order: CustomerOrder
@@ -25,6 +26,8 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
   onClose,
 }) => {
   const [copied, setCopied] = useState(false)
+  const [trackingInfo, setTrackingInfo] = useState<OrderTrackingInfo | null>(null)
+  const [isLoadingTracking, setIsLoadingTracking] = useState(false)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -40,18 +43,46 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
     }
   }, [isOpen, onClose])
 
+  // Fetch real-time tracking data from Medusa / Shiprocket
+  useEffect(() => {
+    if (!isOpen || !order.id) return
+
+    let isCancelled = false
+    setIsLoadingTracking(true)
+
+    fetchOrderTracking(order.id, undefined, order.email)
+      .then((res) => {
+        if (!isCancelled && res.success && res.tracking) {
+          setTrackingInfo(res.tracking)
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!isCancelled) setIsLoadingTracking(false)
+      })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [isOpen, order.id, order.email])
+
   if (!isOpen) return null
 
+  const effectiveAwb = trackingInfo?.awb || order.trackingCode
+  const effectiveCarrier = trackingInfo?.courier_name || order.carrierName || 'Shiprocket Botanical Cold-Chain'
+  const effectiveTrackingUrl = trackingInfo?.tracking_url || order.trackingUrl || (effectiveAwb ? `https://shiprocket.co/tracking/${effectiveAwb}` : null)
+  const moistureShield = trackingInfo?.moisture_shield_status || 'Live plant packaged with moisture-retaining sphagnum wrap & breathable air ventilation'
+
   const handleCopyAwb = () => {
-    if (order.trackingCode) {
-      navigator.clipboard.writeText(order.trackingCode)
+    if (effectiveAwb) {
+      navigator.clipboard.writeText(effectiveAwb)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
   }
 
-  // Derive steps based on order status
-  const steps: TimelineStep[] = [
+  // Derive steps based on order status or real tracking scans
+  const defaultSteps: TimelineStep[] = [
     {
       id: 'step_1',
       title: 'Order Confirmed & Verified',
@@ -64,15 +95,12 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
       title: 'Botanical Quality Check & Hydro-Packed',
       subtitle: 'Roots sealed in nutrient moisture wrap for transit protection',
       timestamp: order.status !== 'pending' ? 'Verified Safe' : undefined,
-      status:
-        order.status === 'pending'
-          ? 'current'
-          : 'completed',
+      status: order.status === 'pending' ? 'current' : 'completed',
     },
     {
       id: 'step_3',
       title: 'Cold-Chain Dispatch & In Transit',
-      subtitle: `${order.carrierName || 'Shiprocket Cold-Chain'} courier in transit`,
+      subtitle: `${effectiveCarrier} in transit`,
       timestamp:
         order.status === 'shipped' || order.status === 'delivered'
           ? 'Dispatched'
@@ -94,6 +122,8 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
       status: order.status === 'delivered' ? 'completed' : 'upcoming',
     },
   ]
+
+  const hasRealScans = Array.isArray(trackingInfo?.scans) && trackingInfo.scans.length > 0
 
   return (
     <div
@@ -121,6 +151,9 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
               <span className="font-mono font-bold text-xs sm:text-sm text-stone-900">
                 {order.displayId}
               </span>
+              {isLoadingTracking && (
+                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              )}
             </div>
             <p id="tracking-modal-title" className="text-xs text-stone-500 mt-0.5">
               Botanical Cold-Chain Courier Status
@@ -146,11 +179,11 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
             <div>
               <p className="text-[11px] text-emerald-800 font-medium">Carrier Partner</p>
               <p className="font-bold text-stone-900 text-xs sm:text-sm">
-                {order.carrierName || 'Shiprocket Botanical Cold-Chain'}
+                {effectiveCarrier}
               </p>
-              {order.trackingCode && (
+              {effectiveAwb && (
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="font-mono text-stone-600 text-[11px]">AWB: {order.trackingCode}</span>
+                  <span className="font-mono text-stone-600 text-[11px]">AWB: {effectiveAwb}</span>
                   <button
                     type="button"
                     onClick={handleCopyAwb}
@@ -167,70 +200,104 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
               <p className="font-bold text-stone-900 text-xs sm:text-sm">
                 {order.estimatedDeliveryDate || 'Within 3-5 Days'}
               </p>
+              {effectiveTrackingUrl && (
+                <a
+                  href={effectiveTrackingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold text-brand-primary hover:underline"
+                >
+                  <span>Track on Courier Site</span>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              )}
             </div>
           </div>
 
           {/* Plant Safety Assurance Pill */}
-          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/60 border border-amber-200/60 text-[11px] text-amber-900">
-            <svg className="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50/70 border border-amber-200/70 text-[11px] text-amber-900">
+            <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>Plants packaged with 10-day moisture gel & shock-resistant corrugated casing.</span>
+            <div className="space-y-0.5">
+              <p className="font-bold">Botanical Moisture & Transit Shield</p>
+              <p className="text-amber-800">{moistureShield}</p>
+            </div>
           </div>
 
-          {/* Vertical Timeline */}
+          {/* Vertical Journey Timeline */}
           <div>
             <h4 className="font-bold text-stone-900 mb-3 text-xs sm:text-sm">Consignment Journey</h4>
-            <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-stone-200">
-              {steps.map((step) => {
-                const isCompleted = step.status === 'completed'
-                const isCurrent = step.status === 'current'
 
-                return (
-                  <div key={step.id} className="relative group">
-                    {/* Circle Node */}
-                    <div
-                      className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
-                        isCompleted
-                          ? 'bg-emerald-600 text-white ring-4 ring-emerald-100'
-                          : isCurrent
-                          ? 'bg-brand-primary text-white ring-4 ring-emerald-200 animate-pulse'
-                          : 'bg-stone-200 text-stone-500'
-                      }`}
-                    >
-                      {isCompleted ? (
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                      )}
-                    </div>
-
-                    {/* Step Content */}
-                    <div className="min-w-0">
+            {hasRealScans ? (
+              <div className="relative pl-6 space-y-5 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-emerald-200">
+                {trackingInfo!.scans.map((scan, idx) => (
+                  <div key={idx} className="relative">
+                    <div className="absolute -left-6 top-1 w-4 h-4 rounded-full bg-emerald-600 border-2 border-white ring-2 ring-emerald-100 flex items-center justify-center" />
+                    <div>
                       <div className="flex items-center justify-between gap-2">
-                        <p
-                          className={`font-bold text-xs sm:text-sm ${
-                            isCompleted || isCurrent ? 'text-stone-900' : 'text-stone-400'
-                          }`}
-                        >
-                          {step.title}
-                        </p>
-                        {step.timestamp && (
-                          <span className="text-[10px] text-stone-400 font-mono flex-shrink-0">
-                            {step.timestamp}
-                          </span>
-                        )}
+                        <p className="font-bold text-stone-900 text-xs sm:text-sm">{scan.activity}</p>
+                        <span className="text-[10px] text-stone-400 font-mono flex-shrink-0">
+                          {scan.date}
+                        </span>
                       </div>
-                      <p className={`text-[11px] mt-0.5 ${isCompleted || isCurrent ? 'text-stone-600' : 'text-stone-400'}`}>
-                        {step.subtitle}
-                      </p>
+                      <p className="text-[11px] text-stone-500 mt-0.5">{scan.location}</p>
                     </div>
                   </div>
-                )
-              })}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-stone-200">
+                {defaultSteps.map((step) => {
+                  const isCompleted = step.status === 'completed'
+                  const isCurrent = step.status === 'current'
+
+                  return (
+                    <div key={step.id} className="relative group">
+                      <div
+                        className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
+                          isCompleted
+                            ? 'bg-emerald-600 text-white ring-4 ring-emerald-100'
+                            : isCurrent
+                            ? 'bg-brand-primary text-white ring-4 ring-emerald-200 animate-pulse'
+                            : 'bg-stone-200 text-stone-500'
+                        }`}
+                      >
+                        {isCompleted ? (
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p
+                            className={`font-bold text-xs sm:text-sm ${
+                              isCompleted || isCurrent ? 'text-stone-900' : 'text-stone-400'
+                            }`}
+                          >
+                            {step.title}
+                          </p>
+                          {step.timestamp && (
+                            <span className="text-[10px] text-stone-400 font-mono flex-shrink-0">
+                              {step.timestamp}
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-[11px] mt-0.5 ${isCompleted || isCurrent ? 'text-stone-600' : 'text-stone-400'}`}>
+                          {step.subtitle}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           {/* Package Contents */}
@@ -264,7 +331,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
             </div>
           </div>
 
-          {/* Delivery Address */}
+          {/* Delivery Coordinates */}
           <div className="p-3 rounded-2xl bg-stone-50 border border-stone-200/70 text-[11px]">
             <p className="font-bold text-stone-800 mb-1">Delivering To:</p>
             <p className="text-stone-700 font-semibold">{order.shippingAddress.fullName}</p>
@@ -279,11 +346,24 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3.5 sm:p-4 border-t border-stone-100 bg-stone-50/70 flex justify-end">
+        <div className="p-3.5 sm:p-4 border-t border-stone-100 bg-stone-50/70 flex items-center justify-between">
+          {effectiveTrackingUrl ? (
+            <a
+              href={effectiveTrackingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-2 rounded-xl border border-stone-300 hover:border-brand-primary text-stone-700 hover:text-brand-primary font-bold text-xs transition"
+            >
+              Open Courier Tracking ↗
+            </a>
+          ) : (
+            <span />
+          )}
+
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs transition shadow-xs"
+            className="px-5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs transition"
           >
             Close Tracking
           </button>

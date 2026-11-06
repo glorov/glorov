@@ -33,6 +33,10 @@ export class ShiprocketClient {
     ShiprocketClient.serviceabilityCache.clear()
   }
 
+  public static getServiceabilityCacheSize(): number {
+    return ShiprocketClient.serviceabilityCache.size
+  }
+
   constructor(options?: ShiprocketModuleOptions) {
     this.email = options?.email || process.env.SHIPROCKET_EMAIL
     this.password = options?.password || process.env.SHIPROCKET_PASSWORD
@@ -245,6 +249,9 @@ export class ShiprocketClient {
     if (!params.skipCache) {
       const cached = ShiprocketClient.serviceabilityCache.get(cacheKey)
       if (cached && Date.now() < cached.expiresAt) {
+        // True LRU: refresh insertion order on hit
+        ShiprocketClient.serviceabilityCache.delete(cacheKey)
+        ShiprocketClient.serviceabilityCache.set(cacheKey, cached)
         return cached.result
       }
     }
@@ -253,8 +260,15 @@ export class ShiprocketClient {
       result: PincodeServiceabilityCheckResult,
       ttlMs = 10 * 60 * 1000
     ): PincodeServiceabilityCheckResult => {
-      if (ShiprocketClient.serviceabilityCache.size > 1000) {
-        ShiprocketClient.serviceabilityCache.clear()
+      // LRU Eviction: When cache reaches 1000 entries, evict the oldest 200 entries
+      // rather than clearing all 1000 entries, preventing thundering-herd cache stampedes (GLOROV-PERF-007)
+      if (ShiprocketClient.serviceabilityCache.size >= 1000) {
+        const iterator = ShiprocketClient.serviceabilityCache.keys()
+        for (let i = 0; i < 200; i++) {
+          const next = iterator.next()
+          if (next.done) break
+          ShiprocketClient.serviceabilityCache.delete(next.value)
+        }
       }
       ShiprocketClient.serviceabilityCache.set(cacheKey, {
         result,

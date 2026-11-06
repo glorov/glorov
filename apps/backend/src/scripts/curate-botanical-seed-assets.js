@@ -32,9 +32,9 @@ const MAP_FILE = path.resolve(BACKEND_DIR, 'data/cloudinary-image-map.json');
 const FLUTTER_MOCK_FILE = path.resolve(FLUTTER_DIR, 'lib/models/glorov/glorov_mock_data.dart');
 
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'naodmm8w',
-  api_key: process.env.CLOUDINARY_API_KEY || '179253354861549',
-  api_secret: process.env.CLOUDINARY_API_SECRET || '0FkMyyEi9taeWd2f8nEN55zqOUM',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true,
 });
 

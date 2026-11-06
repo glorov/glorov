@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCustomerAuth } from '../../../context/CustomerAuthContext'
 
@@ -174,15 +175,17 @@ function SignupForm() {
   }
 
   return (
-    <div className="w-full max-w-[440px] mx-auto bg-white rounded-3xl border border-stone-200/90 shadow-xl shadow-stone-900/5 overflow-hidden">
+    <div className="w-full max-w-[440px] mx-auto bg-white rounded-3xl border border-stone-200/90 overflow-hidden">
       {/* Compact Clean Header */}
       <div className="px-5 pt-6 pb-4 text-center bg-gradient-to-b from-[#F2F7F4] to-[#F9FAF8] border-b border-stone-100">
         <Link href="/" className="inline-block transition-transform hover:scale-[1.02] mb-2.5">
-          <img
+          <Image
             src="/logo/glorov-logo.svg"
             alt="GLOROV"
-            className="h-7 sm:h-8 w-auto object-contain mx-auto"
+            width={128}
             height={32}
+            className="h-7 sm:h-8 w-auto object-contain mx-auto"
+            priority
           />
         </Link>
 
@@ -423,8 +426,8 @@ function SignupForm() {
             disabled={!isFormValid || isLoading}
             className={`w-full h-11 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 pt-0.5 mt-2 ${
               isFormValid && !isLoading
-                ? 'bg-[#081C15] hover:bg-[#0A4C36] active:bg-[#04281B] text-white shadow-md hover:shadow-lg cursor-pointer active:scale-[0.99]'
-                : 'bg-stone-200 text-stone-400 cursor-not-allowed border border-stone-200/80 shadow-none'
+                ? 'bg-[#081C15] hover:bg-[#0A4C36] active:bg-[#04281B] text-white cursor-pointer active:scale-[0.99]'
+                : 'bg-stone-200 text-stone-400 cursor-not-allowed border border-stone-200/80'
             }`}
           >
             {isLoading ? (

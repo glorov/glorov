@@ -58,7 +58,7 @@ export function WishlistButton({
       }
       aria-pressed={isSaved}
       className={cn(
-        'flex items-center justify-center rounded-full bg-white/95 hover:bg-white text-gray-700 shadow-sm border border-black/5 transition-transform hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] z-10',
+        'flex items-center justify-center rounded-full bg-white hover:bg-stone-50 text-gray-700 border border-stone-200/80 transition-transform hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] z-10',
         sizeClasses[size],
         isAnimating && 'scale-125 duration-200',
         className

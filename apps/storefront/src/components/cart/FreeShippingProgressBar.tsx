@@ -75,7 +75,7 @@ export const FreeShippingProgressBar: React.FC<FreeShippingProgressBarProps> = (
   return (
     <div
       onClick={onOpenOffers}
-      className={`w-full px-3.5 py-2.25 sm:px-3.5 sm:py-2.25 rounded-[16px] bg-[#F2FAF5] border border-[#C7EBD8] shadow-[0_2px_6px_rgba(10,76,54,0.024)] cursor-pointer select-none transition-all hover:border-[#A3DCBF] ${className}`}
+      className={`w-full px-3.5 py-2.25 sm:px-3.5 sm:py-2.25 rounded-[16px] bg-[#F2FAF5] border border-[#C7EBD8] cursor-pointer select-none transition-colors hover:border-[#A3DCBF] ${className}`}
     >
       {/* Top Row: Dynamic Headline on left, View Offers link on right */}
       <div className="flex items-center justify-between gap-2">
@@ -134,7 +134,7 @@ export const FreeShippingProgressBar: React.FC<FreeShippingProgressBarProps> = (
               title={`${node.title} — ${node.description} (Min Spend: ₹${node.minSpend})`}
             >
               <div
-                className={`w-[25px] h-[25px] rounded-full flex items-center justify-center p-0.5 transition-colors shadow-xs ${
+                className={`w-[25px] h-[25px] rounded-full flex items-center justify-center p-0.5 transition-colors ${
                   node.isApplied
                     ? 'bg-[#0A4C36] text-white border-[1.8px] border-[#0A4C36]'
                     : node.isUpgrade

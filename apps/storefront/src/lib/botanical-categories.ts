@@ -1,8 +1,13 @@
 /**
  * GLOROV Botanical Categories Data Model
  *
- * Strictly matches Flutter's `flutter/lib/models/category_model.dart`
- * Zero unseeded items. Exactly 4 root seeded categories + "For You" curated overview.
+ * Clean botanical categories representing GLOROV's core collections:
+ * - For You (Curated botanical overview)
+ * - Seeds (Desi heirloom vegetable, flower & herb seeds)
+ * - Vegetables (Heirloom vegetable seeds & balcony greens)
+ * - Living Plants (Indoor foliage, air-purifying, flowering & succulents)
+ * - Flowers (Flower seeds & flowering house plants)
+ * - Herbs (Culinary herb seeds & fresh wellness botanicals)
  */
 
 export interface BotanicalSubCategory {
@@ -40,73 +45,52 @@ export const GLOROV_BOTANICAL_CATEGORIES: BotanicalCategoryModel[] = [
     title: 'For You',
     handle: 'for-you',
     badge: 'Curated',
-    count: 66,
+    count: 44,
     description:
-      'Personalized selection of fresh nursery arrivals, high-germination Desi seeds, and artisan pots.',
+      'Personalized selection of fresh nursery arrivals, high-germination Desi seeds, and air-purifying houseplants.',
     image:
       'https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg',
     subCategories: [
       {
         title: 'Vegetable Seeds',
-        handle: 'vegetable-seeds',
+        handle: 'vegetables',
         image:
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg',
-        count: 6,
+        count: 8,
       },
       {
         title: 'Indoor Plants',
-        handle: 'indoor-plants',
+        handle: 'live-plants',
         image:
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793516579/glorov/products/indoor-plants/money-plant-golden-1.jpg',
         count: 6,
       },
       {
         title: 'Flower Seeds',
-        handle: 'flower-seeds',
+        handle: 'flowers',
         image:
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793571743/glorov/products/flower-seeds/marigold-african-double-seeds-1.jpg',
         count: 6,
       },
       {
         title: 'Air-Purifying',
-        handle: 'air-purifying-plants',
+        handle: 'live-plants',
         image:
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793516564/glorov/products/air-purifying-plants/peace-lily-plant-1.jpg',
         count: 6,
       },
       {
         title: 'Herb Seeds',
-        handle: 'herb-seeds',
+        handle: 'herbs',
         image:
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-1.jpg',
         count: 6,
       },
       {
-        title: 'Ceramic Pots',
-        handle: 'ceramic-planters',
-        image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516566/glorov/products/ceramic-planters/diamond-pot-1.jpg',
-        count: 6,
-      },
-      {
         title: 'Flowering Plants',
-        handle: 'flowering-plants',
+        handle: 'flowers',
         image:
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793516572/glorov/products/flowering-plants/peace-lily-plant-1.jpg',
-        count: 6,
-      },
-      {
-        title: 'Terracotta Pots',
-        handle: 'terracotta-pots',
-        image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516586/glorov/products/terracotta-pots/roma-ceramic-pot-1.jpg',
-        count: 6,
-      },
-      {
-        title: 'Potting Mix & Fertilizers',
-        handle: 'potting-mix-fertilizers',
-        image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516582/glorov/products/potting-mix-fertilizers/pot-o-mix-5-kg-potting-mix-1.jpg',
         count: 6,
       },
     ],
@@ -145,32 +129,32 @@ export const GLOROV_BOTANICAL_CATEGORIES: BotanicalCategoryModel[] = [
       },
       {
         title: 'Italian Basil Seeds',
-        handle: 'italian-basil-seeds',
+        handle: 'italian-basil-1000-seeds',
         image:
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-1.jpg',
         tag: 'BUY NOW',
         price: 89.0,
       },
       {
-        title: 'Diamond Ceramic Pot',
-        handle: 'diamond-pot',
+        title: 'Miniature Jade Plant',
+        handle: 'jade-plant-mini',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516566/glorov/products/ceramic-planters/diamond-pot-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516582/glorov/products/succulents-bonsai/jade-plant-mini-1.jpg',
         tag: 'BUY NOW',
-        price: 349.0,
+        price: 199.0,
       },
     ],
   },
 
-  // 2. Seeds
+  // 2. Seeds (Main Root Category)
   {
     id: 'pcat_01M5TXG1A4901RXMESXHDGHWDS',
     title: 'Seeds',
     handle: 'seeds',
-    badge: 'High Germination',
-    count: 18,
+    badge: '98% Germination',
+    count: 20,
     description:
-      'High-germination tested indigenous Desi heirloom vegetable, flowering, and medicinal herb seeds.',
+      'High-germination tested indigenous Desi heirloom vegetable, flowering, and culinary herb seeds.',
     image:
       'https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg',
     subCategories: [
@@ -179,7 +163,7 @@ export const GLOROV_BOTANICAL_CATEGORIES: BotanicalCategoryModel[] = [
         handle: 'vegetable-seeds',
         image:
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg',
-        count: 6,
+        count: 8,
         description:
           'Indigenous high-yield heirloom brinjal, cabbage, moringa, watermelon, and seasonal greens.',
       },
@@ -221,7 +205,7 @@ export const GLOROV_BOTANICAL_CATEGORIES: BotanicalCategoryModel[] = [
       },
       {
         title: 'Italian Basil Seeds',
-        handle: 'italian-basil-seeds',
+        handle: 'italian-basil-1000-seeds',
         image:
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-1.jpg',
         tag: 'BUY NOW',
@@ -246,10 +230,86 @@ export const GLOROV_BOTANICAL_CATEGORIES: BotanicalCategoryModel[] = [
     ],
   },
 
-  // 3. Live Plants
+  // 3. Vegetables
+  {
+    id: 'pcat_vegetables_root',
+    title: 'Vegetables',
+    handle: 'vegetables',
+    badge: 'Desi Heirloom',
+    count: 8,
+    description:
+      'Pure non-GMO indigenous Indian vegetable seeds conditioned for terrace pots, kitchen gardens and grow bags.',
+    image:
+      'https://res.cloudinary.com/naodmm8w/image/upload/v1793571728/glorov/products/vegetable-seeds/chinese-cabbage-seeds-1.jpg',
+    subCategories: [
+      {
+        title: 'Heirloom Seeds',
+        handle: 'vegetable-seeds',
+        image:
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg',
+        count: 8,
+        description:
+          'Traditional open-pollinated Desi vegetable seeds with rich flavor and vigorous natural immunity.',
+      },
+      {
+        title: 'Greens & Salads',
+        handle: 'vegetable-seeds',
+        image:
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571728/glorov/products/vegetable-seeds/chinese-cabbage-seeds-1.jpg',
+        count: 4,
+        description:
+          'Fresh quick-harvest salad greens, leafy Chinese cabbage, and tender spring onions.',
+      },
+      {
+        title: 'Kitchen Classics',
+        handle: 'vegetable-seeds',
+        image:
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571731/glorov/products/vegetable-seeds/green-chilli-seeds-1.jpg',
+        count: 4,
+        description:
+          'Essential Indian culinary staples: pungent green chillies, moringa drumsticks, and juicy tomatoes.',
+      },
+    ],
+    launches: [
+      {
+        title: 'Brinjal Banarasi Giant Seeds',
+        handle: 'brinjal-banarshi-giant-seeds',
+        image:
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg',
+        tag: 'BUY NOW',
+        price: 99.0,
+      },
+      {
+        title: 'Green Chilli Seeds',
+        handle: 'green-chilli-seeds',
+        image:
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571731/glorov/products/vegetable-seeds/green-chilli-seeds-1.jpg',
+        tag: 'SALE IS LIVE',
+        price: 79.0,
+      },
+      {
+        title: 'Drumstick Seeds Moringa',
+        handle: 'drumstick-seeds-moringa',
+        image:
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571730/glorov/products/vegetable-seeds/drumstick-seeds-moringa-1.jpg',
+        tag: 'BUY NOW',
+        price: 89.0,
+      },
+      {
+        title: 'Chinese Cabbage Seeds',
+        handle: 'chinese-cabbage-seeds',
+        image:
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571728/glorov/products/vegetable-seeds/chinese-cabbage-seeds-1.jpg',
+        tag: 'BUY NOW',
+        price: 119.0,
+      },
+    ],
+  },
+
+  // 4. Living Plants
   {
     id: 'pcat_01M5TXG1AEPW6JPNWC2VNGH22D',
-    title: 'Live Plants',
+    title: 'Living Plants',
     handle: 'live-plants',
     badge: 'Nursery Dispatched',
     count: 24,
@@ -283,7 +343,7 @@ export const GLOROV_BOTANICAL_CATEGORIES: BotanicalCategoryModel[] = [
           'https://res.cloudinary.com/naodmm8w/image/upload/v1793516572/glorov/products/flowering-plants/peace-lily-plant-1.jpg',
         count: 6,
         description:
-          'Ornamental blooming plants including Peace Lily, Aglaonema Snow White, and Red Beauty.',
+          'Ornamental blooming plants including Peace Lily, Anthurium Red, and Marigold Flowering.',
       },
       {
         title: 'Succulents & Bonsai',
@@ -331,136 +391,128 @@ export const GLOROV_BOTANICAL_CATEGORIES: BotanicalCategoryModel[] = [
     ],
   },
 
-  // 4. Planters & Pots
+  // 5. Flowers
   {
-    id: 'pcat_01M5TXG1AJDCXR6H9TZY4APJVH',
-    title: 'Planters & Pots',
-    handle: 'planters-pots',
-    badge: 'Artisan Handcrafted',
+    id: 'pcat_flowers_root',
+    title: 'Flowers',
+    handle: 'flowers',
+    badge: 'Seasonal Bloom',
     count: 12,
     description:
-      'Eco-friendly terracotta, ceramic designer pots, and nursery planters with optimal drainage.',
+      'Vibrant seasonal flower seeds and healthy blooming live indoor plants for vibrant patios and living spaces.',
     image:
-      'https://res.cloudinary.com/naodmm8w/image/upload/v1793516566/glorov/products/ceramic-planters/diamond-pot-1.jpg',
+      'https://res.cloudinary.com/naodmm8w/image/upload/v1793571743/glorov/products/flower-seeds/marigold-african-double-seeds-1.jpg',
     subCategories: [
       {
-        title: 'Ceramic Planters',
-        handle: 'ceramic-planters',
+        title: 'Flower Seeds',
+        handle: 'flower-seeds',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516566/glorov/products/ceramic-planters/diamond-pot-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571743/glorov/products/flower-seeds/marigold-african-double-seeds-1.jpg',
         count: 6,
         description:
-          'Premium handcrafted glazed ceramic pots with drainage holes and protective saucers.',
+          'Heirloom marigold, petunia, dahlia, cosmos, and pollinator-friendly flower varieties.',
       },
       {
-        title: 'Terracotta Pots',
-        handle: 'terracotta-pots',
+        title: 'Flowering Plants',
+        handle: 'flowering-plants',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516586/glorov/products/terracotta-pots/roma-ceramic-pot-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516572/glorov/products/flowering-plants/peace-lily-plant-1.jpg',
         count: 6,
         description:
-          'Breathable natural clay terracotta pots ideal for optimal root aeration.',
+          'Nursery-potted live flowering plants including exotic Anthurium Red, Peace Lily, and Blooming Petunia.',
       },
     ],
     launches: [
       {
-        title: 'Diamond Ceramic Pot',
-        handle: 'diamond-pot',
+        title: 'Marigold African Double Seeds',
+        handle: 'marigold-african-double-seeds',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516566/glorov/products/ceramic-planters/diamond-pot-1.jpg',
-        tag: 'BUY NOW',
-        price: 349.0,
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571743/glorov/products/flower-seeds/marigold-african-double-seeds-1.jpg',
+        tag: 'NEW LAUNCH',
+        price: 79.0,
       },
       {
-        title: 'Roma Terracotta Pot',
-        handle: 'roma-ceramic-pot',
+        title: 'Dahlia Seeds',
+        handle: 'dahlia-seeds',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516586/glorov/products/terracotta-pots/roma-ceramic-pot-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571741/glorov/products/flower-seeds/dahlia-seeds-1.jpg',
         tag: 'SALE IS LIVE',
-        price: 299.0,
+        price: 99.0,
       },
       {
-        title: 'Spiro Ceramic Pot',
-        handle: 'spiro-pot',
+        title: 'Anthurium Red Plant',
+        handle: 'anthurium-red-plant',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516568/glorov/products/ceramic-planters/spiro-pot-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516572/glorov/products/flowering-plants/peace-lily-plant-1.jpg',
         tag: 'BUY NOW',
-        price: 379.0,
+        price: 499.0,
       },
       {
-        title: 'Olivia Ivory Handpainted Pot',
-        handle: 'olivia-ivory-handpainted-ceramic-pot',
+        title: 'Petunia Mix Seeds',
+        handle: 'petunia-mix-seeds',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516585/glorov/products/terracotta-pots/olivia-ivory-handpainted-ceramic-pot-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571744/glorov/products/flower-seeds/petunia-mix-seeds-1.jpg',
         tag: 'BUY NOW',
-        price: 399.0,
+        price: 89.0,
       },
     ],
   },
 
-  // 5. Plant Care & Soil
+  // 6. Herbs
   {
-    id: 'pcat_glorov_plant_care_soil',
-    title: 'Plant Care & Soil',
-    handle: 'plant-care-soil',
-    badge: '100% Organic',
-    count: 12,
+    id: 'pcat_herbs_root',
+    title: 'Herbs',
+    handle: 'herbs',
+    badge: 'Aromatic & Pure',
+    count: 6,
     description:
-      'Organic vermicompost, nutrient potting mixes, neem oil repellents, and precision gardening toolkits.',
+      'Kitchen herb seeds and restorative wellness plants for fresh home-cooked flavor and botanical wellness.',
     image:
-      'https://res.cloudinary.com/naodmm8w/image/upload/v1793516582/glorov/products/potting-mix-fertilizers/pot-o-mix-5-kg-potting-mix-1.jpg',
+      'https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-1.jpg',
     subCategories: [
       {
-        title: 'Potting Mix & Fertilizers',
-        handle: 'potting-mix-fertilizers',
+        title: 'Herb Seeds',
+        handle: 'herb-seeds',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516582/glorov/products/potting-mix-fertilizers/pot-o-mix-5-kg-potting-mix-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-1.jpg',
         count: 6,
         description:
-          'Enriched vermicompost, nutrient cocopeat blocks, and cold-pressed neem cake.',
+          'High-germination Italian basil, holy tulsi, rocket arugula, parsley, oregano, and thyme.',
       },
       {
-        title: 'Gardening Tools & Kits',
-        handle: 'gardening-tools',
+        title: 'Medicinal Plants',
+        handle: 'herb-seeds',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516573/glorov/products/gardening-tools/heavy-duty-anvil-pruner-1.jpg',
-        count: 6,
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571750/glorov/products/herb-seeds/tulsi-seeds-holy-basil-1.jpg',
+        count: 3,
         description:
-          'Ergonomic rust-proof trowels, precision bypass pruners, and brass watering cans.',
+          'Ayurvedic holy tulsi, cooling spearmint, and immune-supporting therapeutic botanicals.',
       },
     ],
     launches: [
       {
-        title: 'Pot-O-Mix 5 Kg Potting Mix',
-        handle: 'pot-o-mix-5-kg-potting-mix',
+        title: 'Italian Basil Seeds',
+        handle: 'italian-basil-1000-seeds',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516582/glorov/products/potting-mix-fertilizers/pot-o-mix-5-kg-potting-mix-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-1.jpg',
         tag: 'BUY NOW',
-        price: 349.0,
+        price: 89.0,
       },
       {
-        title: 'Heavy Duty Anvil Pruner',
-        handle: 'heavy-duty-anvil-pruner',
+        title: 'Holy Tulsi Seeds',
+        handle: 'tulsi-seeds-holy-basil',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516573/glorov/products/gardening-tools/heavy-duty-anvil-pruner-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571750/glorov/products/herb-seeds/tulsi-seeds-holy-basil-1.jpg',
         tag: 'BUY NOW',
-        price: 449.0,
+        price: 69.0,
       },
       {
-        title: 'Cocopeat Block 5 Kg',
-        handle: 'cocopeat-block-5-kg',
+        title: 'Rocket Arugula Seeds',
+        handle: 'arugula-seeds-rocket-leaves',
         image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516580/glorov/products/potting-mix-fertilizers/cocopeat-block-5-kg-1.jpg',
+          'https://res.cloudinary.com/naodmm8w/image/upload/v1793571748/glorov/products/herb-seeds/arugula-seeds-rocket-leaves-1.jpg',
         tag: 'SALE IS LIVE',
-        price: 199.0,
-      },
-      {
-        title: 'Garden Rake Long Handle',
-        handle: 'garden-rake-with-long-handle-12-teeth-4-ft',
-        image:
-          'https://res.cloudinary.com/naodmm8w/image/upload/v1793516573/glorov/products/gardening-tools/garden-rake-with-long-handle-12-teeth-4-ft-1.jpg',
-        tag: 'BUY NOW',
-        price: 499.0,
+        price: 79.0,
       },
     ],
   },

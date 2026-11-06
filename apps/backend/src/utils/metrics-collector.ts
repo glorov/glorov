@@ -1,4 +1,5 @@
 import { MonitoringAlertThresholds } from '@glorov/types'
+import { getRedisClient } from './redis-client'
 
 export interface OperationalAlert {
   name: string
@@ -233,7 +234,75 @@ export class MetricsCollector {
     this.latencies = []
     this.startTime = Date.now()
   }
+
+  /**
+   * Flushes current in-memory metrics snapshot to Redis for restart persistence.
+   */
+  public async flushToRedis(): Promise<void> {
+    try {
+      const redis = getRedisClient()
+      if (!redis) return
+
+      const payload = {
+        startTime: this.startTime,
+        requestsTotal: this.requestsTotal,
+        errorsTotal: this.errorsTotal,
+        paymentFailuresTotal: this.paymentFailuresTotal,
+        shipmentFailuresTotal: this.shipmentFailuresTotal,
+        webhookFailuresTotal: this.webhookFailuresTotal,
+        notificationFailuresTotal: this.notificationFailuresTotal,
+        checkoutErrorsTotal: this.checkoutErrorsTotal,
+        statusCodes: this.statusCodes,
+        latencies: this.latencies.slice(-this.maxLatencySamples),
+        flushedAt: new Date().toISOString(),
+      }
+
+      await redis.set('glorov:metrics:snapshot', JSON.stringify(payload), 'EX', 7 * 24 * 60 * 60)
+    } catch {
+      // Non-blocking fallback if Redis connection fails
+    }
+  }
+
+  /**
+   * Restores persisted metrics counters from Redis on startup.
+   */
+  public async loadFromRedis(): Promise<void> {
+    try {
+      const redis = getRedisClient()
+      if (!redis) return
+
+      const raw = await redis.get('glorov:metrics:snapshot')
+      if (!raw) return
+
+      const data = JSON.parse(raw)
+      if (typeof data.requestsTotal === 'number') this.requestsTotal = data.requestsTotal
+      if (typeof data.errorsTotal === 'number') this.errorsTotal = data.errorsTotal
+      if (typeof data.paymentFailuresTotal === 'number') this.paymentFailuresTotal = data.paymentFailuresTotal
+      if (typeof data.shipmentFailuresTotal === 'number') this.shipmentFailuresTotal = data.shipmentFailuresTotal
+      if (typeof data.webhookFailuresTotal === 'number') this.webhookFailuresTotal = data.webhookFailuresTotal
+      if (typeof data.notificationFailuresTotal === 'number') this.notificationFailuresTotal = data.notificationFailuresTotal
+      if (typeof data.checkoutErrorsTotal === 'number') this.checkoutErrorsTotal = data.checkoutErrorsTotal
+      if (data.statusCodes && typeof data.statusCodes === 'object') this.statusCodes = { ...data.statusCodes }
+      if (Array.isArray(data.latencies)) this.latencies = data.latencies.slice(-this.maxLatencySamples)
+      if (typeof data.startTime === 'number' && data.startTime > 0) this.startTime = data.startTime
+    } catch {
+      // Non-blocking fallback if Redis read fails
+    }
+  }
 }
 
 export const metricsCollector = new MetricsCollector()
+
+// On startup in non-test environments, load metrics snapshot from Redis
+if (process.env.NODE_ENV !== 'test') {
+  metricsCollector.loadFromRedis().catch(() => {})
+
+  // Periodically flush metrics snapshot to Redis every 5 minutes
+  if (typeof setInterval !== 'undefined') {
+    setInterval(() => {
+      metricsCollector.flushToRedis().catch(() => {})
+    }, 5 * 60 * 1000).unref?.()
+  }
+}
+
 export { MetricsCollector as OperationalMetrics }

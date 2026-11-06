@@ -12,7 +12,9 @@ import {
 import { StructuredLogger } from '../utils/structured-logger'
 import { OperationalMetrics } from '../utils/metrics-collector'
 import { sendSanitizedError } from '../utils/error-handler'
-import { withBoundedRetry, NonRetryableError, getDeadLetterRecords, clearDeadLetterRecords } from '../utils/async-retry'
+import { withBoundedRetry, NonRetryableError, getDeadLetterRecords, clearDeadLetterRecords, loadDeadLettersFromRedis } from '../utils/async-retry'
+import * as redisClientModule from '../utils/redis-client'
+import * as errorReporterModule from '../utils/error-reporter'
 import { GET as storeHealthHandler } from '../api/store/health/route'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 
@@ -519,6 +521,191 @@ describe('GLOROV Observability, Structured Logging, and Safe Error Handling', ()
       expect(paymentAlert).toBeDefined()
       expect(paymentAlert?.severity).toBe('critical')
       expect(paymentAlert?.message).toContain('Payment failures count (4) exceeded alert threshold (3)')
+    })
+
+    it('persists metrics snapshot to Redis and restores on startup', async () => {
+      const mockStorage: Record<string, string> = {}
+      const mockRedis = {
+        set: jest.fn().mockImplementation((key, val) => {
+          mockStorage[key] = val
+          return Promise.resolve('OK')
+        }),
+        get: jest.fn().mockImplementation((key) => {
+          return Promise.resolve(mockStorage[key] || null)
+        }),
+      }
+
+      redisClientModule.setRedisClientForTesting(mockRedis as any)
+
+      const metrics = new OperationalMetrics()
+      metrics.recordRequest(200, 15)
+      metrics.recordRequest(500, 45)
+      metrics.recordPaymentFailure('test_error')
+
+      await metrics.flushToRedis()
+      expect(mockRedis.set).toHaveBeenCalledWith(
+        'glorov:metrics:snapshot',
+        expect.any(String),
+        'EX',
+        expect.any(Number)
+      )
+
+      // Reset in-memory and restore
+      metrics.reset()
+      expect(metrics.getSnapshot().requests_total).toBe(0)
+
+      await metrics.loadFromRedis()
+      expect(metrics.getSnapshot().requests_total).toBe(2)
+      expect(metrics.getSnapshot().errors_total).toBe(1)
+      expect(metrics.getSnapshot().payment_failures_total).toBe(1)
+
+      redisClientModule.setRedisClientForTesting(null)
+    })
+
+    it('loads dead-letter records from Redis list on startup', async () => {
+      const sampleDlq = {
+        job_id: 'dlq_test_123',
+        subscriber_name: 'test_sub',
+        event_name: 'order.placed',
+        resource_id: 'ord_1',
+        resource_type: 'order',
+        failed_at: new Date().toISOString(),
+        attempts: 3,
+        error_code: 'TEST_ERROR',
+        error_message: 'Failure',
+        correlation_id: 'req_123',
+      }
+
+      const mockRedis = {
+        lrange: jest.fn().mockResolvedValue([JSON.stringify(sampleDlq)]),
+        del: jest.fn().mockResolvedValue(1),
+        rpush: jest.fn().mockResolvedValue(1),
+      }
+
+      redisClientModule.setRedisClientForTesting(mockRedis as any)
+
+      clearDeadLetterRecords()
+      expect(getDeadLetterRecords().length).toBe(0)
+
+      const loaded = await loadDeadLettersFromRedis()
+      expect(loaded.length).toBe(1)
+      expect(getDeadLetterRecords().some((r) => r.job_id === 'dlq_test_123')).toBe(true)
+
+      clearDeadLetterRecords()
+      expect(mockRedis.del).toHaveBeenCalledWith('glorov:dead_letter:records')
+
+      redisClientModule.setRedisClientForTesting(null)
+    })
+  })
+
+  // =========================================================================
+  // 6. External Error Reporting (Sentry Integration)
+  // =========================================================================
+  describe('6. External Error Reporting (Sentry Integration)', () => {
+    let capturedEvents: Array<{
+      type: string
+      error: unknown
+      context?: any
+      deadLetterRecord?: any
+    }> = []
+
+    beforeEach(() => {
+      capturedEvents = []
+      errorReporterModule.setErrorReportingListenerForTesting((event) => {
+        capturedEvents.push(event)
+      })
+    })
+
+    afterEach(() => {
+      errorReporterModule.setErrorReportingListenerForTesting(null)
+    })
+
+    it('reports 5xx internal server errors to Sentry reporter with redacted context', async () => {
+      const mockRes = {
+        statusCode: 0,
+        headers: {} as Record<string, string>,
+        status(code: number) {
+          this.statusCode = code
+          return this
+        },
+        json(body: any) {
+          return this
+        },
+        setHeader(name: string, value: string) {
+          this.headers[name] = value
+          return this
+        },
+      }
+
+      const serverErr = new Error('Database pool connection timeout')
+      sendSanitizedError(mockRes as any, serverErr, 500, {
+        operation: 'checkout.process',
+        customer_email: 'sourav@botanical.in',
+        card_token: 'rzp_tok_secret999',
+      })
+
+      expect(mockRes.statusCode).toBe(500)
+
+      // Allow fire-and-forget Promise to resolve
+      await new Promise((resolve) => setTimeout(resolve, 20))
+
+      expect(capturedEvents.length).toBe(1)
+      expect(capturedEvents[0].type).toBe('backend_error')
+      expect(capturedEvents[0].error).toBe(serverErr)
+      expect(capturedEvents[0].context.statusCode).toBe(500)
+      expect(capturedEvents[0].context.operation).toBe('checkout.process')
+      // Verify PII was redacted
+      expect(capturedEvents[0].context.customer_email).toBe('s***v@b***.in')
+      expect(capturedEvents[0].context.card_token).toBe('[REDACTED]')
+    })
+
+    it('does NOT report 4xx client errors (400, 404, 409) to Sentry', async () => {
+      const mockRes = {
+        statusCode: 0,
+        headers: {} as Record<string, string>,
+        status(code: number) {
+          this.statusCode = code
+          return this
+        },
+        json(body: any) {
+          return this
+        },
+        setHeader(name: string, value: string) {
+          this.headers[name] = value
+          return this
+        },
+      }
+
+      const clientErr = new Error('Invalid delivery postal code')
+      sendSanitizedError(mockRes as any, clientErr, 400)
+
+      expect(mockRes.statusCode).toBe(400)
+
+      await new Promise((resolve) => setTimeout(resolve, 20))
+
+      expect(capturedEvents.length).toBe(0)
+    })
+
+    it('reports dead-letter events to external reporter on retry exhaustion', async () => {
+      const failureOp = async () => {
+        throw new Error('Upstream Shiprocket courier API 500 error')
+      }
+
+      await withBoundedRetry(failureOp, {
+        subscriberName: 'ShiprocketDispatcher',
+        eventName: 'order.placed',
+        resourceId: 'order_dlq_test_1',
+        maxRetries: 2,
+        baseDelayMs: 10,
+      })
+
+      await new Promise((resolve) => setTimeout(resolve, 20))
+
+      expect(capturedEvents.length).toBe(1)
+      expect(capturedEvents[0].type).toBe('dead_letter')
+      expect(capturedEvents[0].deadLetterRecord.subscriber_name).toBe('ShiprocketDispatcher')
+      expect(capturedEvents[0].deadLetterRecord.event_name).toBe('order.placed')
+      expect(capturedEvents[0].deadLetterRecord.resource_id).toBe('order_dlq_test_1')
     })
   })
 })

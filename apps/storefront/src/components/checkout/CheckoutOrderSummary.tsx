@@ -57,7 +57,7 @@ export const CheckoutOrderSummary: React.FC<CheckoutOrderSummaryProps> = ({
   }
 
   return (
-    <div className="w-full p-5 sm:p-6 rounded-[20px] bg-white border border-[#E5ECE8] shadow-[0_4px_16px_rgba(10,76,54,0.06)] flex flex-col gap-4">
+    <div className="w-full p-5 sm:p-6 rounded-[20px] bg-white border border-[#E5ECE8] flex flex-col gap-4">
       {/* Title with Receipt Icon matching Flutter `_buildOrderSummary` */}
       <div className="flex items-center justify-between pb-3 border-b border-[#F0F4F2]">
         <div className="flex items-center gap-2">
@@ -185,7 +185,7 @@ export const CheckoutOrderSummary: React.FC<CheckoutOrderSummaryProps> = ({
         type="button"
         disabled={isSubmitting || !isAddressValid || items.length === 0}
         onClick={onPlaceOrder}
-        className="w-full py-3.5 px-5 rounded-full bg-[#0A4C36] hover:bg-[#135841] text-white font-extrabold text-[13.5px] uppercase tracking-[0.8px] shadow-[0_4px_12px_rgba(10,76,54,0.22)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+        className="w-full py-3.5 px-5 rounded-full bg-[#0A4C36] hover:bg-[#135841] text-white font-extrabold text-[13.5px] uppercase tracking-[0.8px] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
       >
         {isSubmitting ? (
           <>

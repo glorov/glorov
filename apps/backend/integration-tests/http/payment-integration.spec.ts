@@ -138,9 +138,9 @@ describe('Medusa v2 Razorpay & COD Payment Integration Tests', () => {
     })
   })
 
-  describe('3. POST /api/hooks/razorpay Webhook Security & Idempotency', () => {
+  describe('3. POST /hooks/razorpay Webhook Security & Idempotency', () => {
     it('rejects webhooks with 401 when signature header is missing', async () => {
-      const res = await fetch(`${BACKEND_URL}/api/hooks/razorpay`, {
+      const res = await fetch(`${BACKEND_URL}/hooks/razorpay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event: 'payment.captured' }),
@@ -152,7 +152,7 @@ describe('Medusa v2 Razorpay & COD Payment Integration Tests', () => {
     })
 
     it('rejects webhooks with 401 when signature is invalid', async () => {
-      const res = await fetch(`${BACKEND_URL}/api/hooks/razorpay`, {
+      const res = await fetch(`${BACKEND_URL}/hooks/razorpay`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ describe('Medusa v2 Razorpay & COD Payment Integration Tests', () => {
       }
 
       // First webhook delivery
-      const res1 = await fetch(`${BACKEND_URL}/api/hooks/razorpay`, {
+      const res1 = await fetch(`${BACKEND_URL}/hooks/razorpay`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ describe('Medusa v2 Razorpay & COD Payment Integration Tests', () => {
       expect(data1.action_taken).toBe('payment_captured_recorded')
 
       // Second webhook delivery (duplicate replay)
-      const res2 = await fetch(`${BACKEND_URL}/api/hooks/razorpay`, {
+      const res2 = await fetch(`${BACKEND_URL}/hooks/razorpay`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -231,7 +231,7 @@ describe('Medusa v2 Razorpay & COD Payment Integration Tests', () => {
         },
       }
 
-      const res = await fetch(`${BACKEND_URL}/api/hooks/razorpay`, {
+      const res = await fetch(`${BACKEND_URL}/hooks/razorpay`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

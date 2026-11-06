@@ -49,7 +49,7 @@ export const GlorovAccountIcon: React.FC<GlorovAccountIconProps> = ({
       >
         {/* Outer Circle with Botanical Gradient */}
         <div
-          className="w-full h-full rounded-full flex items-center justify-center shadow-sm overflow-hidden"
+          className="w-full h-full rounded-full flex items-center justify-center overflow-hidden"
           style={{
             background: 'linear-gradient(135deg, #0A4C36 0%, #166534 100%)',
             border: '1.4px solid #86EFAC',
@@ -66,7 +66,7 @@ export const GlorovAccountIcon: React.FC<GlorovAccountIconProps> = ({
         {/* Verified Checkmark Badge at bottom-right */}
         {showBadge && (
           <span
-            className="absolute rounded-full flex items-center justify-center shadow-xs"
+            className="absolute rounded-full flex items-center justify-center"
             style={{
               width: `${badgeSize}px`,
               height: `${badgeSize}px`,

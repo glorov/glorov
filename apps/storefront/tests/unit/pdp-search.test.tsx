@@ -8,7 +8,7 @@ import { BotanicalSpecsTable } from '../../src/components/product/BotanicalSpecs
 import { ProductReviewsSection } from '../../src/components/product/ProductReviewsSection'
 import { SearchClientView } from '../../src/components/search/SearchClientView'
 import { StorefrontProvider } from '../../src/context/StorefrontContext'
-import { MOCK_PRODUCTS } from '../../src/lib/mock-data'
+import { MOCK_PRODUCTS } from '../../src/lib/mock-products'
 
 const mockParams = new URLSearchParams('')
 vi.mock('next/navigation', () => ({
@@ -36,7 +36,7 @@ describe('PDP — ProductGallery', () => {
 
     expect(screen.getByText('HEIRLOOM')).toBeDefined()
     expect(screen.getByLabelText(/View image 2 of 3/i)).toBeDefined()
-    expect(screen.getByText(/1 \/ 3/i)).toBeDefined()
+    expect(screen.getByLabelText('Zoom image')).toBeDefined()
   })
 
   it('switches image when next arrow is clicked', () => {
@@ -50,7 +50,7 @@ describe('PDP — ProductGallery', () => {
 
     const nextBtn = screen.getByLabelText('Next product image')
     fireEvent.click(nextBtn)
-    expect(screen.getByText(/2 \/ 3/i)).toBeDefined()
+    expect(screen.getByLabelText(/View image 2 of 3/i).getAttribute('aria-current')).toBe('true')
   })
 
   it('opens and closes zoom preview modal', async () => {
@@ -197,7 +197,7 @@ describe('Search — SearchClientView', () => {
       </StorefrontProvider>
     )
 
-    expect(screen.getByPlaceholderText(/Search plants, seeds, fertilizers, pots\.\.\./i)).toBeDefined()
+    expect(screen.getByPlaceholderText(/Search plants, seeds, vegetables, flowers\.\.\./i)).toBeDefined()
     expect(screen.getByText('Trending Searches')).toBeDefined()
     expect(screen.getByText('Monstera Deliciosa')).toBeDefined()
     expect(screen.getByText('Popular Botanical Picks')).toBeDefined()
@@ -210,7 +210,7 @@ describe('Search — SearchClientView', () => {
       </StorefrontProvider>
     )
 
-    const input = screen.getByPlaceholderText(/Search plants, seeds, fertilizers, pots\.\.\./i)
+    const input = screen.getByPlaceholderText(/Search plants, seeds, vegetables, flowers\.\.\./i)
     fireEvent.change(input, { target: { value: 'Chilli' } })
 
     await waitFor(() => {

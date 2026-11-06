@@ -9,9 +9,9 @@ import { AccountNavSidebar } from '../../components/account/AccountNavSidebar'
 
 export default function AccountLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: {
+  children?: React.ReactNode
+}) {
   const pathname = usePathname()
   const router = useRouter()
   const { isLoading } = useCustomerAuth()

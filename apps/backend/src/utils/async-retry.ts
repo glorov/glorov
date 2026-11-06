@@ -2,6 +2,8 @@ import { ContainerRegistrationKeys, MedusaError, Modules } from '@medusajs/frame
 import { classifyError, extractOrGenerateCorrelationId } from '@glorov/types'
 import { getStructuredLogger } from './structured-logger'
 import { metricsCollector } from './metrics-collector'
+import { reportDeadLetter } from './error-reporter'
+import { getRedisClient } from './redis-client'
 
 export interface AsyncJobOptions {
   subscriberName: string
@@ -50,6 +52,50 @@ export function getDeadLetterRecords(): DeadLetterRecord[] {
 
 export function clearDeadLetterRecords(): void {
   inMemoryDeadLetters.length = 0
+  try {
+    const redis = getRedisClient()
+    if (redis) {
+      void redis.del('glorov:dead_letter:records').catch(() => {})
+    }
+  } catch {
+    // Non-blocking fallback
+  }
+}
+
+/**
+ * Loads dead-letter failure audit records from Redis list on process startup.
+ */
+export async function loadDeadLettersFromRedis(): Promise<DeadLetterRecord[]> {
+  try {
+    const redis = getRedisClient()
+    if (!redis) return []
+
+    const items = await redis.lrange('glorov:dead_letter:records', 0, -1)
+    if (!items || items.length === 0) return []
+
+    const existingIds = new Set(inMemoryDeadLetters.map((r) => r.job_id))
+    const loaded: DeadLetterRecord[] = []
+
+    for (const raw of items) {
+      try {
+        const parsed = JSON.parse(raw) as DeadLetterRecord
+        if (parsed.job_id && !existingIds.has(parsed.job_id)) {
+          inMemoryDeadLetters.push(parsed)
+          existingIds.add(parsed.job_id)
+          loaded.push(parsed)
+        }
+      } catch {
+        // Skip malformed records
+      }
+    }
+    return loaded
+  } catch {
+    return []
+  }
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  void loadDeadLettersFromRedis().catch(() => {})
 }
 
 /**
@@ -185,8 +231,21 @@ export async function withBoundedRetry<T>(
   // Push to in-memory audit store
   inMemoryDeadLetters.push(deadLetterRecord)
 
+  // Push to Redis list for restart durability
+  try {
+    const redis = getRedisClient()
+    if (redis) {
+      void redis.rpush('glorov:dead_letter:records', JSON.stringify(deadLetterRecord)).catch(() => {})
+    }
+  } catch {
+    // Non-blocking fallback
+  }
+
   // Update operational metrics
   metricsCollector.recordNotificationFailure(options.eventName, classified.code)
+
+  // Report dead-letter event to external error reporting (Sentry) — non-blocking fire-and-forget
+  reportDeadLetter(deadLetterRecord, lastError)
 
   // Log high-visibility structured dead letter entry
   logger.error(

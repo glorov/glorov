@@ -39,10 +39,36 @@ describe('Cash on Delivery (COD) Payment Provider Unit Tests', () => {
     expect(res.data?.cash_collected).toBe(false)
   })
 
-  it('3. Rejects COD initiation if order amount exceeds ₹5,000 threshold', async () => {
+  it('3a. Allows COD initiation for ₹4,999 order (499,900 paise)', async () => {
+    const res = await service.initiatePayment({
+      amount: 499900, // ₹4,999 in paise
+      currency_code: 'inr',
+      context: {
+        shipping_address: { postal_code: '411001' },
+      } as any,
+    })
+
+    expect(res.id).toMatch(/^cod_/)
+    expect(res.data?.amount).toBe(499900)
+  })
+
+  it('3b. Allows COD initiation for exact ₹5,000 order limit boundary (500,000 paise)', async () => {
+    const res = await service.initiatePayment({
+      amount: 500000, // ₹5,000 in paise (exact threshold boundary)
+      currency_code: 'inr',
+      context: {
+        shipping_address: { postal_code: '411001' },
+      } as any,
+    })
+
+    expect(res.id).toMatch(/^cod_/)
+    expect(res.data?.amount).toBe(500000)
+  })
+
+  it('3c. Rejects COD initiation for ₹5,001 order (500,100 paise exceeding limit)', async () => {
     await expect(
       service.initiatePayment({
-        amount: 500100, // ₹5,001 (exceeds ₹5,000 limit)
+        amount: 500100, // ₹5,001 (exceeds ₹5,000 limit by 100 paise)
         currency_code: 'inr',
         context: {} as any,
       })

@@ -117,7 +117,7 @@ export function Pagination({
               className={cn(
                 'flex items-center justify-center min-w-[40px] h-10 rounded-glorov-sm text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]',
                 isCurrent
-                  ? 'bg-[#1B4332] text-white shadow-sm'
+                  ? 'bg-[#1B4332] text-white'
                   : 'border border-[#E5E7EB] bg-white text-[#4B5563] hover:bg-[#F3F4F6]'
               )}
             >
@@ -136,7 +136,7 @@ export function Pagination({
             className={cn(
               'flex items-center justify-center min-w-[40px] h-10 rounded-glorov-sm text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]',
               isCurrent
-                ? 'bg-[#1B4332] text-white shadow-sm'
+                ? 'bg-[#1B4332] text-white'
                 : 'border border-[#E5E7EB] bg-white text-[#4B5563] hover:bg-[#F3F4F6]'
             )}
           >

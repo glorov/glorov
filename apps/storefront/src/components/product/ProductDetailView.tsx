@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { GlorovProductItem, ProductVariantItem } from '@/types/storefront'
-import { MOCK_PRODUCTS } from '@/lib/mock-data'
 import { useCart, useToast, useWishlist } from '@/context/StorefrontContext'
 import { ProductGallery } from './ProductGallery'
 import { ProductVariantSelector } from './ProductVariantSelector'
@@ -38,6 +38,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   product,
   relatedProducts = [],
 }) => {
+  const router = useRouter()
   const { addToCart } = useCart()
   const { showToast } = useToast()
   const { isInWishlist, toggleWishlist } = useWishlist()
@@ -91,20 +92,18 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
       title: selectedVariant ? `${product.title} - ${selectedVariant.name}` : product.title,
     }
 
-    setTimeout(() => {
-      addToCart(itemToAdd, quantity)
-      setIsAdding(false)
-      if (navigateToCart && typeof window !== 'undefined') {
-        window.location.href = '/cart'
-      }
-    }, 250)
+    addToCart(itemToAdd, quantity)
+    setIsAdding(false)
+    if (navigateToCart) {
+      router.push('/cart')
+    }
   }
 
   // Fallback related products for frequently bought together & recommendation grid
   const compProducts =
     relatedProducts && relatedProducts.length >= 2
       ? relatedProducts
-      : MOCK_PRODUCTS.filter((p) => p.id !== product.id).slice(0, 2)
+      : (relatedProducts || []).filter((p) => p.id !== product.id).slice(0, 2)
 
   // Handle copy share link matching Flutter _handleShareProduct with Web Share API
   const handleShareProduct = async () => {
@@ -256,7 +255,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           type="button"
           disabled={!isInStock || isAdding}
           onClick={() => handleAddToCart(false)}
-          className="flex-1 h-12 rounded-[10px] bg-[#1B4332] text-white font-bold text-sm tracking-wide shadow-sm hover:bg-[#143427] active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer overflow-hidden"
+          className="flex-1 h-12 rounded-[10px] bg-[#1B4332] text-white font-bold text-sm tracking-wide hover:bg-[#143427] active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer overflow-hidden"
         >
           <svg width={18} height={18} className="w-[18px] h-[18px] text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -269,7 +268,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           type="button"
           disabled={!isInStock || isAdding}
           onClick={() => handleAddToCart(true)}
-          className="flex-[0.8] h-12 rounded-[10px] bg-[#D97706] text-white font-bold text-sm tracking-wide shadow-sm hover:bg-[#B45309] active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer overflow-hidden"
+          className="flex-[0.8] h-12 rounded-[10px] bg-[#D97706] text-white font-bold text-sm tracking-wide hover:bg-[#B45309] active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer overflow-hidden"
         >
           <svg width={18} height={18} className="w-[18px] h-[18px] text-white fill-current shrink-0" viewBox="0 0 24 24">
             <path d="M13 2L3 14h7v8l11-14h-8l0-6z" />
@@ -294,7 +293,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             type="button"
             disabled={!isInStock || isAdding}
             onClick={() => handleAddToCart(false)}
-            className="flex-1 h-11 rounded-lg bg-[#1B4332] text-white font-bold text-xs tracking-wide shadow-sm hover:bg-[#143427] active:scale-[0.98] transition flex items-center justify-center gap-1.5 disabled:opacity-50 overflow-hidden"
+            className="flex-1 h-11 rounded-lg bg-[#1B4332] text-white font-bold text-xs tracking-wide hover:bg-[#143427] active:scale-[0.98] transition flex items-center justify-center gap-1.5 disabled:opacity-50 overflow-hidden"
           >
             <svg width={16} height={16} className="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -307,7 +306,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           type="button"
           disabled={!isInStock || isAdding}
           onClick={() => handleAddToCart(true)}
-          className="w-full h-11 rounded-lg bg-[#D97706] text-white font-bold text-xs tracking-wide shadow-sm hover:bg-[#B45309] active:scale-[0.98] transition flex items-center justify-center gap-1.5 disabled:opacity-50 overflow-hidden"
+          className="w-full h-11 rounded-lg bg-[#D97706] text-white font-bold text-xs tracking-wide hover:bg-[#B45309] active:scale-[0.98] transition flex items-center justify-center gap-1.5 disabled:opacity-50 overflow-hidden"
         >
           <svg width={16} height={16} className="w-4 h-4 text-white fill-current shrink-0" viewBox="0 0 24 24">
             <path d="M13 2L3 14h7v8l11-14h-8l0-6z" />

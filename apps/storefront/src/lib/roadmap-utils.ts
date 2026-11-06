@@ -178,8 +178,8 @@ export function buildDynamicMilestoneRoadmap(
       {
         id: 'offer_diwali_10',
         code: 'DIWALI10',
-        title: '10% OFF',
-        description: 'On orders above ₹999',
+        title: 'Botanical Sprout Discount',
+        description: 'Flat 10% OFF on all seed and plant orders above ₹999',
         discountType: 'percentage',
         discountPercent: 10,
         minSpend: 999,
@@ -191,8 +191,8 @@ export function buildDynamicMilestoneRoadmap(
       {
         id: 'offer_diwali_15',
         code: 'DIWALI15',
-        title: '15% OFF',
-        description: 'On orders above ₹1,599',
+        title: 'Green Foliage Savings',
+        description: 'Save 15% on orders above ₹1,599',
         discountType: 'percentage',
         discountPercent: 15,
         minSpend: 1599,
@@ -204,8 +204,8 @@ export function buildDynamicMilestoneRoadmap(
       {
         id: 'offer_diwali_20',
         code: 'DIWALI20',
-        title: '20% OFF',
-        description: 'On orders above ₹2,299',
+        title: 'Urban Jungle Mega Savings',
+        description: 'Get 20% OFF on orders above ₹2,299',
         discountType: 'percentage',
         discountPercent: 20,
         minSpend: 2299,

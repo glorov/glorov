@@ -15,6 +15,7 @@ import type {
   ShiprocketModuleOptions,
   ShiprocketCreateOrderPayload,
   ShiprocketOrderItem,
+  ShiprocketPackageDimensions,
 } from './types'
 
 type InjectedDependencies = {
@@ -147,6 +148,180 @@ export class ShiprocketFulfillmentService extends AbstractFulfillmentProviderSer
   }
 
   /**
+   * Calculate total package dimensions and weight from fulfillment items,
+   * order line items, variant attributes, and item metadata.
+   * Fallback to standard defaults (15x12x8 cm, 0.5 kg) if not specified.
+   */
+  public calculatePackageDimensions(
+    items?: any[],
+    order?: any,
+    data?: any
+  ): ShiprocketPackageDimensions {
+    // 1. Explicit dimension override in fulfillment data
+    if (data?.length && data?.breadth && data?.height && data?.weight) {
+      return {
+        length: Math.max(1, Number(data.length)),
+        breadth: Math.max(1, Number(data.breadth)),
+        height: Math.max(1, Number(data.height)),
+        weight: Math.max(0.01, Number(data.weight)),
+      }
+    }
+
+    const DEFAULT_LENGTH = 15
+    const DEFAULT_BREADTH = 12
+    const DEFAULT_HEIGHT = 8
+    const DEFAULT_WEIGHT_KG = 0.5
+
+    if (!items || items.length === 0) {
+      return {
+        length: DEFAULT_LENGTH,
+        breadth: DEFAULT_BREADTH,
+        height: DEFAULT_HEIGHT,
+        weight: DEFAULT_WEIGHT_KG,
+      }
+    }
+
+    const extractNum = (...values: any[]): number | undefined => {
+      for (const val of values) {
+        if (typeof val === 'number' && !isNaN(val) && val > 0) return val
+        if (typeof val === 'string' && val.trim() !== '') {
+          const parsed = parseFloat(val)
+          if (!isNaN(parsed) && parsed > 0) return parsed
+        }
+      }
+      return undefined
+    }
+
+    let maxItemLength = 0
+    let maxItemBreadth = 0
+    let totalStackedHeight = 0
+    let totalWeightKg = 0
+    let hasCustomDimension = false
+
+    for (const item of items) {
+      const qty = Math.max(1, Number(item.quantity) || 1)
+      const matchingOrderItem = (order as any)?.items?.find(
+        (oi: any) =>
+          oi.id === (item as any).line_item_id ||
+          oi.id === item.id ||
+          oi.sku === item.sku
+      )
+
+      // Length (cm)
+      const itemLength = extractNum(
+        (item as any).metadata?.length,
+        (item as any).metadata?.dimensions?.length,
+        (item as any).metadata?.package_dimensions?.length,
+        matchingOrderItem?.metadata?.length,
+        matchingOrderItem?.metadata?.dimensions?.length,
+        matchingOrderItem?.metadata?.package_dimensions?.length,
+        (item as any).variant?.length,
+        (item as any).variant?.metadata?.length,
+        matchingOrderItem?.variant?.length,
+        matchingOrderItem?.variant?.metadata?.length,
+        (item as any).product?.length,
+        (item as any).length
+      )
+
+      // Breadth / Width (cm)
+      const itemBreadth = extractNum(
+        (item as any).metadata?.breadth,
+        (item as any).metadata?.width,
+        (item as any).metadata?.dimensions?.breadth,
+        (item as any).metadata?.dimensions?.width,
+        (item as any).metadata?.package_dimensions?.breadth,
+        (item as any).metadata?.package_dimensions?.width,
+        matchingOrderItem?.metadata?.breadth,
+        matchingOrderItem?.metadata?.width,
+        matchingOrderItem?.metadata?.dimensions?.breadth,
+        matchingOrderItem?.metadata?.dimensions?.width,
+        (item as any).variant?.width,
+        (item as any).variant?.metadata?.width,
+        (item as any).variant?.metadata?.breadth,
+        matchingOrderItem?.variant?.width,
+        (item as any).product?.width,
+        (item as any).breadth,
+        (item as any).width
+      )
+
+      // Height (cm)
+      const itemHeight = extractNum(
+        (item as any).metadata?.height,
+        (item as any).metadata?.dimensions?.height,
+        (item as any).metadata?.package_dimensions?.height,
+        matchingOrderItem?.metadata?.height,
+        matchingOrderItem?.metadata?.dimensions?.height,
+        matchingOrderItem?.metadata?.package_dimensions?.height,
+        (item as any).variant?.height,
+        (item as any).variant?.metadata?.height,
+        matchingOrderItem?.variant?.height,
+        (item as any).product?.height,
+        (item as any).height
+      )
+
+      // Weight (kg or grams)
+      const weightGrams = extractNum(
+        (item as any).metadata?.weight_grams,
+        matchingOrderItem?.metadata?.weight_grams,
+        (item as any).variant?.metadata?.weight_grams,
+        matchingOrderItem?.variant?.metadata?.weight_grams
+      )
+
+      const rawWeight = extractNum(
+        (item as any).metadata?.weight,
+        (item as any).metadata?.weight_kg,
+        matchingOrderItem?.metadata?.weight,
+        matchingOrderItem?.metadata?.weight_kg,
+        (item as any).variant?.weight,
+        matchingOrderItem?.variant?.weight,
+        (item as any).product?.weight,
+        (item as any).weight
+      )
+
+      let itemWeightKg: number
+      if (weightGrams !== undefined) {
+        itemWeightKg = weightGrams / 1000
+        hasCustomDimension = true
+      } else if (rawWeight !== undefined) {
+        itemWeightKg = rawWeight > 20 ? rawWeight / 1000 : rawWeight
+        hasCustomDimension = true
+      } else {
+        itemWeightKg = DEFAULT_WEIGHT_KG
+      }
+
+      if (itemLength || itemBreadth || itemHeight) {
+        hasCustomDimension = true
+      }
+
+      const l = itemLength || DEFAULT_LENGTH
+      const b = itemBreadth || DEFAULT_BREADTH
+      const h = itemHeight || DEFAULT_HEIGHT
+
+      maxItemLength = Math.max(maxItemLength, l)
+      maxItemBreadth = Math.max(maxItemBreadth, b)
+      totalStackedHeight += h * qty
+      totalWeightKg += itemWeightKg * qty
+    }
+
+    // If no custom dimension was found and order is just a single item unit, preserve exact defaults
+    if (!hasCustomDimension && items.length === 1 && (Number(items[0]?.quantity) || 1) === 1) {
+      return {
+        length: DEFAULT_LENGTH,
+        breadth: DEFAULT_BREADTH,
+        height: DEFAULT_HEIGHT,
+        weight: DEFAULT_WEIGHT_KG,
+      }
+    }
+
+    return {
+      length: Math.max(DEFAULT_LENGTH, Math.round(maxItemLength * 10) / 10),
+      breadth: Math.max(DEFAULT_BREADTH, Math.round(maxItemBreadth * 10) / 10),
+      height: Math.max(DEFAULT_HEIGHT, Math.round(totalStackedHeight * 10) / 10),
+      weight: Math.max(0.1, Math.round(totalWeightKg * 100) / 100),
+    }
+  }
+
+  /**
    * Create an authorized shipment request in Shiprocket.
    * Includes duplicate-prevention guardrail to ensure non-idempotent shipment
    * creation is never repeated for the same fulfillment.
@@ -199,7 +374,13 @@ export class ShiprocketFulfillmentService extends AbstractFulfillmentProviderSer
     }
 
     const rawDigits = String(shippingAddress.phone || '').replace(/\D/g, '')
-    const cleanPhone = rawDigits.length >= 10 ? rawDigits.slice(-10) : '9876543210'
+    if (!rawDigits || rawDigits.length < 10) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Cannot fulfill shipment: delivery address requires a valid 10-digit mobile number (received "${shippingAddress.phone || ''}")`
+      )
+    }
+    const cleanPhone = rawDigits.slice(-10)
 
     // 3. Format items and calculate order financials
     const orderItems: ShiprocketOrderItem[] = (items || []).map((item, index) => {
@@ -275,6 +456,7 @@ export class ShiprocketFulfillmentService extends AbstractFulfillmentProviderSer
       ) === true
 
     // 5. Construct Shiprocket order payload
+    const packageDimensions = this.calculatePackageDimensions(items, order, data)
     const orderPayload: ShiprocketCreateOrderPayload = {
       order_id: String(order?.id || `ORD-${Date.now()}`),
       order_date: new Date().toISOString().slice(0, 16).replace('T', ' '),
@@ -307,10 +489,10 @@ export class ShiprocketFulfillmentService extends AbstractFulfillmentProviderSer
       shipping_charges: shippingChargesRupees,
       total_discount: totalDiscountRupees,
       sub_total: calculatedSubtotalRupees,
-      length: 15,
-      breadth: 12,
-      height: 8,
-      weight: 0.5,
+      length: packageDimensions.length,
+      breadth: packageDimensions.breadth,
+      height: packageDimensions.height,
+      weight: packageDimensions.weight,
     }
 
     // 6. Execute Order Creation in Shiprocket
@@ -337,16 +519,19 @@ export class ShiprocketFulfillmentService extends AbstractFulfillmentProviderSer
     }
 
     if (!awbCode) {
-      awbCode = `SR${Math.floor(100000000 + Math.random() * 900000000)}`
+      throw new MedusaError(
+        MedusaError.Types.UNEXPECTED_STATE,
+        `Cannot fulfill shipment: live AWB assignment failed for Shiprocket order ${srOrder.order_id} (shipment ID ${srOrder.shipment_id}). Courier assignment requires manual retry.`
+      )
     }
 
-    // 8. Generate Label
+    // 8. Generate Label (GLOROV-SHIP-002: Return empty string if label unavailable, avoiding fake 404 URLs)
     let labelUrl = ''
     try {
       const labelRes = await this.client.generateLabel([srOrder.shipment_id])
       labelUrl = labelRes.label_url || ''
     } catch {
-      labelUrl = `https://shiprocket.co/mock-label/${awbCode}.pdf`
+      labelUrl = ''
     }
 
     // 9. Store tracking and shipment references

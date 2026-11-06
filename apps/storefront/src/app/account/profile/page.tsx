@@ -62,7 +62,7 @@ export default function ProfilePage() {
 
   if (!customer) {
     return (
-      <div className="p-6 sm:p-10 rounded-3xl bg-white border border-stone-200/90 shadow-xs text-center space-y-4">
+      <div className="p-6 sm:p-10 rounded-3xl bg-white border border-stone-200/90 text-center space-y-4">
         <div className="w-14 h-14 mx-auto rounded-full bg-[#E8F5E9] border-1.5 border-[#86EFAC] text-[#1B4332] flex items-center justify-center">
           <GlorovAccountIcon user={null} size={32} />
         </div>
@@ -75,7 +75,7 @@ export default function ProfilePage() {
         <div className="flex items-center justify-center gap-3 pt-2">
           <Link
             href="/auth/login"
-            className="px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-bold hover:bg-[#163829] transition shadow-xs"
+            className="px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-bold hover:bg-[#163829] transition"
           >
             Sign In to GLOROV
           </Link>
@@ -93,7 +93,7 @@ export default function ProfilePage() {
   return (
     <div className="space-y-5 sm:space-y-6">
       {/* Title & Status Bar */}
-      <div className="p-4 sm:p-6 rounded-3xl bg-white border border-stone-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 sm:p-6 rounded-3xl bg-white border border-stone-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 font-serif">Customer Profile</h1>
           <p className="text-xs text-stone-500 mt-1">
@@ -119,7 +119,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Main Profile Card */}
-      <div className="p-4 sm:p-6 rounded-3xl bg-white border border-stone-200/90 shadow-xs">
+      <div className="p-4 sm:p-6 rounded-3xl bg-white border border-stone-200/90">
         {/* User Avatar & Membership Header */}
         <div className="flex items-center gap-4 pb-6 border-b border-stone-100">
           <GlorovAccountIcon user={customer} size={64} showBadge={true} />
@@ -259,7 +259,7 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={isSaving}
-              className="px-6 py-2.5 rounded-xl bg-[#0F281E] hover:bg-[#1B4332] text-white font-bold text-xs transition shadow-xs disabled:opacity-50 flex items-center gap-1.5"
+              className="px-6 py-2.5 rounded-xl bg-[#0F281E] hover:bg-[#1B4332] text-white font-bold text-xs transition disabled:opacity-50 flex items-center gap-1.5"
             >
               {isSaving ? (
                 <>
@@ -280,7 +280,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Security & Password Card */}
-      <div className="p-4 sm:p-6 rounded-3xl bg-white border border-stone-200/90 shadow-xs">
+      <div className="p-4 sm:p-6 rounded-3xl bg-white border border-stone-200/90">
         <h3 className="text-sm font-bold text-stone-900 mb-1 font-serif">Security & Access</h3>
         <p className="text-xs text-stone-500 mb-4">
           Manage your login password and authenticated botanical sessions.

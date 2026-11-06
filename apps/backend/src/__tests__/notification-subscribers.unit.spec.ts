@@ -6,16 +6,26 @@ import paymentRefundedHandler from '../subscribers/payment-refunded'
 import shipmentCreatedHandler from '../subscribers/shipment-created'
 import deliveryCreatedHandler from '../subscribers/delivery-created'
 import trackingUpdatedHandler from '../subscribers/tracking-updated'
+import fulfillmentRtoHandler from '../subscribers/fulfillment-rto'
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
+
+const mockRefundRun = jest.fn().mockResolvedValue({ result: {} })
+jest.mock('@medusajs/medusa/core-flows', () => ({
+  refundPaymentWorkflow: jest.fn(() => ({
+    run: mockRefundRun,
+  })),
+}))
 
 
 describe('GLOROV Customer Notification Subscribers', () => {
   let mockLogger: any
   let mockQuery: any
   let mockNotificationModule: any
+  let mockOrderModule: any
   let mockContainer: any
 
   beforeEach(() => {
+    mockRefundRun.mockClear()
     mockLogger = {
       info: jest.fn(),
       warn: jest.fn(),
@@ -31,11 +41,16 @@ describe('GLOROV Customer Notification Subscribers', () => {
       createNotifications: jest.fn().mockResolvedValue({ id: 'noti_mock_success_01' }),
     }
 
+    mockOrderModule = {
+      updateOrders: jest.fn().mockResolvedValue([]),
+    }
+
     mockContainer = {
       resolve: jest.fn((key: string) => {
         if (key === ContainerRegistrationKeys.LOGGER) return mockLogger
         if (key === ContainerRegistrationKeys.QUERY) return mockQuery
         if (key === Modules.NOTIFICATION) return mockNotificationModule
+        if (key === Modules.ORDER) return mockOrderModule
         return null
       }),
     }
@@ -474,6 +489,170 @@ describe('GLOROV Customer Notification Subscribers', () => {
 
       expect(mockNotificationModule.createNotifications).not.toHaveBeenCalled()
       expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining('no_notification is requested'))
+    })
+  })
+
+  describe('fulfillment.rto Subscriber (GLOROV-SHIP-003)', () => {
+    it('prominently logs RTO, updates order metadata, dispatches admin alert, and auto-refunds prepaid captured orders', async () => {
+      mockQuery.graph.mockResolvedValueOnce({
+        data: [
+          {
+            id: 'order_rto_100',
+            display_id: 1100,
+            email: 'customer@example.com',
+            total: 9800, // ₹98
+            payment_status: 'captured',
+            status: 'pending',
+            shipping_address: { first_name: 'Ananya', last_name: 'Deshmukh' },
+            payment_collections: [
+              {
+                payments: [
+                  {
+                    id: 'pay_rzp_prepaid_01',
+                    provider_id: 'razorpay',
+                    amount: 9800,
+                    captures: [{ amount: 9800 }],
+                    refunds: [],
+                  },
+                ],
+              },
+            ],
+            metadata: { existing_key: 'value' },
+          },
+        ],
+      })
+
+      await fulfillmentRtoHandler({
+        event: {
+          name: 'fulfillment.rto',
+          data: {
+            order_id: 'order_rto_100',
+            fulfillment_id: 'ful_sr_99',
+            awb: 'SR99887766',
+            raw_status: 'RTO_INITIATED',
+            reason: 'Customer uncontactable / repeated delivery attempts failed',
+            timestamp: '2026-11-06T10:00:00.000Z',
+          },
+        },
+        container: mockContainer,
+      } as any)
+
+      // 1. Prominent alert log
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.stringContaining('RETURN TO ORIGIN (RTO) DETECTED for Order order_rto_100')
+      )
+
+      // 2. Order metadata update
+      expect(mockOrderModule.updateOrders).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: 'order_rto_100',
+          metadata: expect.objectContaining({
+            existing_key: 'value',
+            rto_status: 'RECEIVED',
+            rto_awb: 'SR99887766',
+            rto_reason: 'Customer uncontactable / repeated delivery attempts failed',
+            rto_events: expect.arrayContaining([
+              expect.objectContaining({
+                awb: 'SR99887766',
+                raw_status: 'RTO_INITIATED',
+              }),
+            ]),
+          }),
+        }),
+      ])
+
+      // 3. Admin email notification
+      expect(mockNotificationModule.createNotifications).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'admin@glorov.in',
+          channel: 'email',
+          template: 'rto-notification',
+          trigger_type: 'fulfillment.rto',
+          resource_id: 'order_rto_100',
+          data: expect.objectContaining({
+            order_id: 'order_rto_100',
+            display_id: 1100,
+            awb: 'SR99887766',
+            is_prepaid: true,
+            refund_status: 'Initiated',
+          }),
+        })
+      )
+
+      // 4. Automated refund workflow run for prepaid order
+      expect(mockRefundRun).toHaveBeenCalledWith({
+        input: expect.objectContaining({
+          payment_id: 'pay_rzp_prepaid_01',
+          amount: 9800,
+          idempotency_key: expect.stringContaining('rto_refund_order_rto_100'),
+        }),
+      })
+    })
+
+    it('does not trigger gateway refund workflow for COD RTO orders', async () => {
+      mockQuery.graph.mockResolvedValueOnce({
+        data: [
+          {
+            id: 'order_rto_cod',
+            display_id: 1101,
+            email: 'cod_customer@example.com',
+            total: 12900,
+            payment_status: 'awaiting',
+            shipping_address: { first_name: 'Rahul' },
+            payment_collections: [
+              {
+                payments: [
+                  {
+                    id: 'pay_cod_01',
+                    provider_id: 'payment-cod',
+                    amount: 12900,
+                    captures: [],
+                    refunds: [],
+                  },
+                ],
+              },
+            ],
+            metadata: {},
+          },
+        ],
+      })
+
+      await fulfillmentRtoHandler({
+        event: {
+          name: 'fulfillment.rto',
+          data: {
+            order_id: 'order_rto_cod',
+            awb: 'SR11223344',
+            reason: 'Refused delivery',
+          },
+        },
+        container: mockContainer,
+      } as any)
+
+      // No refund run for COD
+      expect(mockRefundRun).not.toHaveBeenCalled()
+
+      // Order metadata still updated
+      expect(mockOrderModule.updateOrders).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: 'order_rto_cod',
+          metadata: expect.objectContaining({
+            rto_status: 'RECEIVED',
+            rto_awb: 'SR11223344',
+          }),
+        }),
+      ])
+
+      // Admin notification dispatched
+      expect(mockNotificationModule.createNotifications).toHaveBeenCalledWith(
+        expect.objectContaining({
+          template: 'rto-notification',
+          data: expect.objectContaining({
+            is_prepaid: false,
+            refund_status: 'COD - No Refund Needed',
+          }),
+        })
+      )
     })
   })
 })

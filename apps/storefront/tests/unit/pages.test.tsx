@@ -7,6 +7,7 @@ import { CategoryDiscoveryGrid } from '../../src/components/home/CategoryDiscove
 import { FeaturedProductsSection } from '../../src/components/home/FeaturedProductsSection'
 import { BotanicalEditorialShowcase } from '../../src/components/home/BotanicalEditorialShowcase'
 import { StorefrontProvider } from '../../src/context/StorefrontContext'
+import { MOCK_PRODUCTS } from '../../src/lib/mock-products'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -72,12 +73,13 @@ describe('Homepage — ValuePropsRibbon', () => {
 })
 
 describe('Homepage — CategoryDiscoveryGrid', () => {
-  it('renders 4 root categories with counts and badges', () => {
+  it('renders core botanical categories with counts and badges', () => {
     render(<CategoryDiscoveryGrid />)
     expect(screen.getAllByText('Seeds').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('Live Plants').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('Planters & Pots').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('Plant Care & Soil').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Vegetables').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Living Plants').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Flowers').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Herbs').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('98% Germination')).toBeDefined()
   })
 })
@@ -86,7 +88,7 @@ describe('Homepage — FeaturedProductsSection', () => {
   it('renders filter tabs and filters product cards', () => {
     render(
       <StorefrontProvider>
-        <FeaturedProductsSection />
+        <FeaturedProductsSection initialProducts={MOCK_PRODUCTS} />
       </StorefrontProvider>
     )
 

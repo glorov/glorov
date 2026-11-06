@@ -8,6 +8,7 @@ import {
 } from '@glorov/types'
 import { getStructuredLogger } from './structured-logger'
 import { metricsCollector } from './metrics-collector'
+import { reportBackendError } from './error-reporter'
 
 export interface ErrorResponseOptions {
   req?: MedusaRequest
@@ -42,7 +43,10 @@ export function sendSanitizedError(
   res.setHeader('x-correlation-id', correlationId)
 
   const classified = classifyError(error)
-  const operation = options.operation || (req ? `${req.method} ${req.url}` : 'operation.unknown')
+  const operation =
+    options.operation ||
+    (options.extraMetadata?.operation as string) ||
+    (req ? `${req.method} ${req.url}` : 'operation.unknown')
 
   // Resolve appropriate HTTP status code
   let statusCode = options.statusCode
@@ -105,6 +109,20 @@ export function sendSanitizedError(
     errorCode: options.errorCode || classified.code,
     ...(options.extraMetadata || {}),
   })
+
+  // Report internal 5xx errors to Sentry / external error reporter (4xx client errors are omitted)
+  if (finalStatusCode >= 500) {
+    reportBackendError(error, {
+      correlationId,
+      operation,
+      statusCode: finalStatusCode,
+      errorCode: options.errorCode || classified.code,
+      ...(options.extraMetadata || {}),
+      extraMetadata: options.extraMetadata,
+      method: req?.method,
+      url: req?.url,
+    })
+  }
 
   const payload = createSanitizedErrorPayload(error, correlationId, userMessage)
   if (options.errorCode) {

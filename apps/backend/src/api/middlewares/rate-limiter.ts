@@ -1,5 +1,5 @@
 import type { MedusaRequest, MedusaResponse, MedusaNextFunction } from '@medusajs/framework/http'
-import { Modules } from '@medusajs/framework/utils'
+import { getRedisClient } from '../../utils/redis-client'
 
 export interface RateLimiterOptions {
   action: string
@@ -12,8 +12,13 @@ interface RateLimitRecord {
   resetTime: number
 }
 
-// In-memory fallback map if distributed cache is temporarily unreachable
+// In-memory fallback map if distributed Redis cache is temporarily unreachable
 const inMemoryStore = new Map<string, RateLimitRecord>()
+
+// Helper for testing to clear in-memory state
+export function clearInMemoryRateLimiter(): void {
+  inMemoryStore.clear()
+}
 
 // Periodic cleanup of stale in-memory entries every 5 minutes
 if (typeof setInterval !== 'undefined') {
@@ -28,8 +33,9 @@ if (typeof setInterval !== 'undefined') {
 }
 
 /**
- * Creates a rate-limiting middleware that uses Medusa's distributed cache (Redis in production)
- * with an in-memory fallback to prevent abuse of expensive or sensitive endpoints.
+ * Creates a rate-limiting middleware that uses shared Redis (via getRedisClient)
+ * with atomic INCR + EXPIRE across all PM2 cluster worker processes,
+ * falling back seamlessly to an in-memory Map when Redis is unreachable.
  */
 export function createRateLimiter(options: {
   action: string
@@ -39,7 +45,7 @@ export function createRateLimiter(options: {
   const { action, limit, windowSeconds } = options
 
   return async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
-    // Resolve client IP
+    // Resolve client IP / identifier
     const forwarded = req.headers['x-forwarded-for']
     const clientIp =
       (typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : undefined) ||
@@ -47,28 +53,47 @@ export function createRateLimiter(options: {
       req.socket?.remoteAddress ||
       '127.0.0.1'
 
-    const cacheKey = `rate_limit:${action}:${clientIp}`
     const now = Date.now()
+    const redis = getRedisClient()
 
-    let record: RateLimitRecord | null = null
-    let cacheService: any = null
+    // 1. Try distributed Redis rate limiting (shared across all PM2 workers)
+    if (redis) {
+      try {
+        const windowIndex = Math.floor(now / (windowSeconds * 1000))
+        const redisKey = `glorov:ratelimit:${action}:${clientIp}:${windowIndex}`
+        const resetTime = (windowIndex + 1) * windowSeconds * 1000
 
-    try {
-      cacheService = req.scope.resolve(Modules.CACHE, { allowUnregistered: true })
-      if (cacheService && typeof cacheService.get === 'function') {
-        record = (await cacheService.get(cacheKey)) as RateLimitRecord | null
+        const count = await redis.incr(redisKey)
+        if (count === 1) {
+          // Set key expiry to ensure cleanup after window elapses
+          await redis.expire(redisKey, windowSeconds * 2)
+        }
+
+        const remaining = Math.max(0, limit - count)
+        const retryAfter = Math.max(1, Math.ceil((resetTime - now) / 1000))
+
+        res.setHeader('X-RateLimit-Limit', String(limit))
+        res.setHeader('X-RateLimit-Remaining', String(remaining))
+        res.setHeader('X-RateLimit-Reset', String(Math.ceil(resetTime / 1000)))
+
+        if (count > limit) {
+          res.setHeader('Retry-After', String(retryAfter))
+          res.status(429).json({
+            message: 'Too many requests. Please slow down and try again later.',
+            retry_after: retryAfter,
+          })
+          return
+        }
+
+        return next()
+      } catch {
+        // If Redis command fails, fall through to in-memory store
       }
-    } catch {
-      cacheService = null
     }
 
-    // Fall back to in-memory store if cache service is unavailable
-    if (!record) {
-      const memoryRecord = inMemoryStore.get(cacheKey)
-      if (memoryRecord && now < memoryRecord.resetTime) {
-        record = memoryRecord
-      }
-    }
+    // 2. In-memory fallback store (when Redis is disabled or unreachable)
+    const cacheKey = `rate_limit:${action}:${clientIp}`
+    let record = inMemoryStore.get(cacheKey)
 
     if (!record || now >= record.resetTime) {
       // First request in new window
@@ -79,14 +104,6 @@ export function createRateLimiter(options: {
 
       inMemoryStore.set(cacheKey, newRecord)
 
-      if (cacheService && typeof cacheService.set === 'function') {
-        try {
-          await cacheService.set(cacheKey, newRecord, windowSeconds)
-        } catch {
-          // Non-blocking fallback
-        }
-      }
-
       res.setHeader('X-RateLimit-Limit', String(limit))
       res.setHeader('X-RateLimit-Remaining', String(Math.max(0, limit - 1)))
       res.setHeader('X-RateLimit-Reset', String(Math.ceil(newRecord.resetTime / 1000)))
@@ -94,26 +111,18 @@ export function createRateLimiter(options: {
       return next()
     }
 
-    // Increment request count
+    // Increment request count in memory
     record.count += 1
     inMemoryStore.set(cacheKey, record)
 
-    if (cacheService && typeof cacheService.set === 'function') {
-      try {
-        const remainingTtl = Math.max(1, Math.ceil((record.resetTime - now) / 1000))
-        await cacheService.set(cacheKey, record, remainingTtl)
-      } catch {
-        // Non-blocking fallback
-      }
-    }
-
     const remaining = Math.max(0, limit - record.count)
+    const retryAfter = Math.max(1, Math.ceil((record.resetTime - now) / 1000))
+
     res.setHeader('X-RateLimit-Limit', String(limit))
     res.setHeader('X-RateLimit-Remaining', String(remaining))
     res.setHeader('X-RateLimit-Reset', String(Math.ceil(record.resetTime / 1000)))
 
     if (record.count > limit) {
-      const retryAfter = Math.max(1, Math.ceil((record.resetTime - now) / 1000))
       res.setHeader('Retry-After', String(retryAfter))
       res.status(429).json({
         message: 'Too many requests. Please slow down and try again later.',
@@ -125,3 +134,4 @@ export function createRateLimiter(options: {
     return next()
   }
 }
+

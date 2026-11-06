@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCustomerAuth } from '../../../context/CustomerAuthContext'
 import { useToast } from '../../../context/StorefrontContext'
@@ -146,15 +147,17 @@ function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-[420px] mx-auto bg-white rounded-3xl border border-stone-200/90 shadow-xl shadow-stone-900/5 overflow-hidden">
+    <div className="w-full max-w-[420px] mx-auto bg-white rounded-3xl border border-stone-200/90 overflow-hidden">
       {/* Compact Clean Header */}
       <div className="px-5 pt-6 pb-4 text-center bg-gradient-to-b from-[#F2F7F4] to-[#F9FAF8] border-b border-stone-100">
         <Link href="/" className="inline-block transition-transform hover:scale-[1.02] mb-2.5">
-          <img
+          <Image
             src="/logo/glorov-logo.svg"
             alt="GLOROV"
-            className="h-7 sm:h-8 w-auto object-contain mx-auto"
+            width={128}
             height={32}
+            className="h-7 sm:h-8 w-auto object-contain mx-auto"
+            priority
           />
         </Link>
 
@@ -182,8 +185,8 @@ function LoginForm() {
       <div className="p-5 sm:p-6">
         {/* Registration Success Banner */}
         {registeredParam && (
-          <div className="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/90 text-[#081C15] text-xs flex items-start gap-2.5 shadow-xs">
-            <div className="w-6 h-6 rounded-lg bg-[#0A4C36] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+          <div className="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/90 text-[#081C15] text-xs flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-lg bg-[#0A4C36] text-white flex items-center justify-center shrink-0 mt-0.5">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
@@ -199,8 +202,8 @@ function LoginForm() {
 
         {/* Password Reset Success Banner */}
         {resetParam && (
-          <div className="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/90 text-[#081C15] text-xs flex items-start gap-2.5 shadow-xs">
-            <div className="w-6 h-6 rounded-lg bg-[#0A4C36] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+          <div className="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200/90 text-[#081C15] text-xs flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-lg bg-[#0A4C36] text-white flex items-center justify-center shrink-0 mt-0.5">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
@@ -308,10 +311,10 @@ function LoginForm() {
           <button
             type="submit"
             disabled={!isFormValid || isLoading}
-            className={`w-full h-11 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 pt-0.5 mt-2 ${
+            className={`w-full h-11 rounded-xl font-bold text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 pt-0.5 mt-2 ${
               isFormValid && !isLoading
-                ? 'bg-[#081C15] hover:bg-[#0A4C36] active:bg-[#04281B] text-white shadow-md hover:shadow-lg cursor-pointer active:scale-[0.99]'
-                : 'bg-stone-200 text-stone-400 cursor-not-allowed border border-stone-200/80 shadow-none'
+                ? 'bg-[#081C15] hover:bg-[#0A4C36] active:bg-[#04281B] text-white cursor-pointer active:scale-[0.99]'
+                : 'bg-stone-200 text-stone-400 cursor-not-allowed border border-stone-200/80'
             }`}
           >
             {isLoading ? (
@@ -361,7 +364,7 @@ function LoginForm() {
         {resetModalStep === 'form' ? (
           <form onSubmit={handleForgotPasswordSubmit} className="space-y-4 text-left">
             <div className="flex items-center gap-3 p-3 rounded-2xl bg-[#E8F5E9] border border-[#A5D6A7]/70">
-              <div className="w-8 h-8 rounded-xl bg-white text-[#0A4C36] flex items-center justify-center shrink-0 border border-[#A5D6A7]/50 shadow-xs">
+              <div className="w-8 h-8 rounded-xl bg-white text-[#0A4C36] flex items-center justify-center shrink-0 border border-[#A5D6A7]/50">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -416,7 +419,7 @@ function LoginForm() {
                 <button
                   type="submit"
                   disabled={isResetSending}
-                  className="px-4 py-1.5 rounded-xl text-xs font-bold bg-[#081C15] hover:bg-[#0A4C36] text-white transition flex items-center gap-1.5 shadow-sm disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-1.5 rounded-xl text-xs font-bold bg-[#081C15] hover:bg-[#0A4C36] text-white transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                 >
                   {isResetSending ? 'Sending...' : 'Send Link'}
                 </button>
@@ -440,7 +443,7 @@ function LoginForm() {
               <Link
                 href={`/auth/reset-password?email=${encodeURIComponent(resetEmail)}`}
                 onClick={() => setIsForgotPasswordOpen(false)}
-                className="w-full py-2 rounded-xl text-xs font-bold bg-[#081C15] hover:bg-[#0A4C36] text-white text-center shadow-sm transition"
+                className="w-full py-2 rounded-xl text-xs font-bold bg-[#081C15] hover:bg-[#0A4C36] text-white text-center transition"
               >
                 Set New Password Now →
               </Link>

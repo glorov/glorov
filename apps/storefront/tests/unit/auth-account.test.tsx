@@ -282,13 +282,19 @@ describe('Auth Pages — Login and Registration', () => {
       </CustomerAuthProvider>
     )
 
-    expect(screen.getByText('Welcome Back to GLOROV')).toBeDefined()
+    expect(screen.getByText('Welcome Back')).toBeDefined()
     expect(screen.getByLabelText('Email Address')).toBeDefined()
     expect(screen.getByLabelText('Password')).toBeDefined()
 
-    // Trigger demo login
-    const demoBtn = screen.getByText(/One-Tap Demo Login/i)
-    fireEvent.click(demoBtn)
+    // Fill credentials and sign in
+    fireEvent.change(screen.getByLabelText('Email Address'), {
+      target: { value: 'demo@glorov.in' },
+    })
+    fireEvent.change(screen.getByLabelText('Password'), {
+      target: { value: 'password123' },
+    })
+    const submitBtn = screen.getByRole('button', { name: /sign in/i })
+    fireEvent.click(submitBtn)
 
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith('/account')
@@ -302,11 +308,11 @@ describe('Auth Pages — Login and Registration', () => {
       </CustomerAuthProvider>
     )
 
-    expect(screen.getByText('Join the GLOROV Circle')).toBeDefined()
+    expect(screen.getByText('Create Account')).toBeDefined()
     expect(screen.getByLabelText('First Name *')).toBeDefined()
     expect(screen.getByLabelText('Last Name *')).toBeDefined()
     expect(screen.getByLabelText('Email Address *')).toBeDefined()
-    expect(screen.getByLabelText('Phone Number *')).toBeDefined()
+    expect(screen.getByLabelText('Mobile Phone *')).toBeDefined()
     expect(screen.getByLabelText('Password (min 8 chars) *')).toBeDefined()
     expect(screen.getByLabelText('Confirm Password *')).toBeDefined()
   })

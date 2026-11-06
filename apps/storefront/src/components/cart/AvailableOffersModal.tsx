@@ -19,8 +19,8 @@ export interface AvailableOffersModalProps {
 const DEFAULT_ACTIVE_FALLBACK_OFFERS: RawOfferLike[] = [
   {
     code: 'DIWALI10',
-    title: '10% OFF',
-    description: '10% OFF On orders above ₹999',
+    title: 'Botanical Sprout Discount',
+    description: 'Flat 10% OFF on all seed and botanical orders above ₹999',
     discount_badge: '10% OFF',
     discount_value: 10,
     min_spend: 999,
@@ -30,8 +30,8 @@ const DEFAULT_ACTIVE_FALLBACK_OFFERS: RawOfferLike[] = [
   },
   {
     code: 'DIWALI15',
-    title: '15% OFF',
-    description: '15% OFF On orders above ₹1,599',
+    title: 'Green Foliage Savings',
+    description: 'Save 15% on living plants and heirloom seeds above ₹1,599',
     discount_badge: '15% OFF',
     discount_value: 15,
     min_spend: 1599,
@@ -41,8 +41,8 @@ const DEFAULT_ACTIVE_FALLBACK_OFFERS: RawOfferLike[] = [
   },
   {
     code: 'DIWALI20',
-    title: '20% OFF',
-    description: '20% OFF On orders above ₹2,299',
+    title: 'Urban Jungle Mega Savings',
+    description: 'Get 20% OFF on large nursery orders above ₹2,299',
     discount_badge: '20% OFF',
     discount_value: 20,
     min_spend: 2299,
@@ -83,7 +83,7 @@ export const AvailableOffersModal: React.FC<AvailableOffersModalProps> = ({
       .then((data) => {
         if (isMounted && data && Array.isArray(data.offers)) {
           // Strictly only include active offers
-          const activeOnly = data.offers.filter((o: any) => o.is_active !== false)
+          const activeOnly = data.offers.filter((o: RawOfferLike) => o.is_active !== false)
           setModalOffers(activeOnly)
         }
       })

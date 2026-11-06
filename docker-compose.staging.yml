@@ -1,0 +1,178 @@
+name: glorov-staging
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. PostgreSQL 16 Database (Staging Instance - Port 15432)
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: glorov-staging-postgres
+    restart: unless-stopped
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=48MB"
+      - "-c"
+      - "max_connections=25"
+      - "-c"
+      - "work_mem=2MB"
+      - "-c"
+      - "maintenance_work_mem=16MB"
+      - "-c"
+      - "effective_cache_size=128MB"
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-staging_postgres_password_2026}
+      POSTGRES_DB: ${DB_NAME:-glorov_medusa_staging}
+    ports:
+      - "15432:5432"
+    volumes:
+      - staging-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-glorov_medusa_staging}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+          cpus: "0.25"
+    networks:
+      - glorov-staging-internal
+
+  # ----------------------------------------------------------------------------
+  # 2. Redis 7 Cache & Event Bus (Staging Instance - Port 16379)
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: glorov-staging-redis
+    restart: unless-stopped
+    command:
+      - "redis-server"
+      - "--appendonly"
+      - "yes"
+      - "--requirepass"
+      - "${REDIS_PASSWORD:-staging_redis_secret_2026}"
+      - "--maxmemory"
+      - "48mb"
+      - "--maxmemory-policy"
+      - "allkeys-lru"
+    ports:
+      - "16379:6379"
+    volumes:
+      - staging-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-staging_redis_secret_2026}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.15"
+    networks:
+      - glorov-staging-internal
+
+  # ----------------------------------------------------------------------------
+  # 3. Medusa v2 Commerce Backend (Staging Instance - Port 9001)
+  # ----------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: glorov-staging-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "9001:9000"
+    environment:
+      NODE_ENV: production
+      PORT: 9000
+      NODE_OPTIONS: "--max-old-space-size=160"
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-staging_postgres_password_2026}@postgres:5432/${DB_NAME:-glorov_medusa_staging}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-staging_redis_secret_2026}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:-staging_jwt_supersecret_key_32chars_min!}
+      COOKIE_SECRET: ${COOKIE_SECRET:-staging_cookie_supersecret_key_32chars!}
+      STORE_CORS: ${STORE_CORS:-https://staging.glorov.in,http://localhost:3001}
+      ADMIN_CORS: ${ADMIN_CORS:-https://staging-admin.glorov.in,http://localhost:9001}
+      AUTH_CORS: ${AUTH_CORS:-https://staging.glorov.in,https://staging-admin.glorov.in,http://localhost:3001}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_staging_dummy_key}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-staging_dummy_secret}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-staging_webhook_secret}
+      RAZORPAY_MOCK_MODE: "true"
+      SHIPROCKET_EMAIL: ${SHIPROCKET_EMAIL:-test@glorov.in}
+      SHIPROCKET_PASSWORD: ${SHIPROCKET_PASSWORD:-testpassword}
+      SHIPROCKET_WEBHOOK_TOKEN: ${SHIPROCKET_WEBHOOK_TOKEN:-staging_shiprocket_token}
+      SHIPROCKET_PICKUP_LOCATION: ${SHIPROCKET_PICKUP_LOCATION:-"Pune Staging Nursery Hub"}
+      SHIPROCKET_PICKUP_PINCODE: ${SHIPROCKET_PICKUP_PINCODE:-"411001"}
+      SHIPROCKET_MOCK_MODE: "true"
+      COD_MAX_AMOUNT_PAISE: 500000
+      NOTIFICATION_FROM_EMAIL: staging-orders@glorov.in
+      NOTIFICATION_MOCK_MODE: "true"
+      AUTO_MIGRATE: "true"
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 160M
+          cpus: "0.3"
+    networks:
+      - glorov-staging-internal
+      - glorov-staging-public
+
+  # ----------------------------------------------------------------------------
+  # 4. Next.js 15 Storefront (Staging Instance - Port 3001)
+  # ----------------------------------------------------------------------------
+  storefront:
+    build:
+      context: .
+      dockerfile: apps/storefront/Dockerfile
+    container_name: glorov-staging-storefront
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NODE_OPTIONS: "--max-old-space-size=96"
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${NEXT_PUBLIC_MEDUSA_BACKEND_URL:-http://backend:9000}
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:-pk_staging_mock_publishable_key}
+      NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-https://staging.glorov.in}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 96M
+          cpus: "0.3"
+    networks:
+      - glorov-staging-internal
+      - glorov-staging-public
+
+volumes:
+  staging-pgdata:
+  staging-redisdata:
+
+networks:
+  glorov-staging-internal:
+    internal: true
+  glorov-staging-public:

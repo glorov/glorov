@@ -83,6 +83,13 @@ export interface ShiprocketCreateOrderPayload {
   weight: number
 }
 
+export interface ShiprocketPackageDimensions {
+  length: number
+  breadth: number
+  height: number
+  weight: number
+}
+
 export interface ShiprocketCreateOrderResponse {
   order_id: number
   shipment_id: number

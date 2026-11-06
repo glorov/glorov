@@ -15,11 +15,11 @@ export function BotanicalEditorialShowcase({ className }: { className?: string }
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Text Column (7 cols on desktop) */}
           <div className="lg:col-span-7 space-y-4 sm:space-y-6">
-            <span className="inline-block px-3 py-1 rounded-full bg-[#52B788] text-[#081C15] font-extrabold text-[10px] sm:text-xs tracking-wider uppercase shadow-md">
+            <span className="inline-block px-3 py-1 rounded-full bg-[#52B788] text-[#081C15] font-extrabold text-[10px] sm:text-xs tracking-wider uppercase">
               CERTIFIED 100% ORGANIC NURSERY
             </span>
 
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black leading-tight text-white drop-shadow">
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black leading-tight text-white">
               Nurture Nature in Every Corner of Your Home
             </h2>
 
@@ -31,7 +31,7 @@ export function BotanicalEditorialShowcase({ className }: { className?: string }
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
               <Link
                 href="/categories/seeds"
-                className="px-6 py-3 rounded-full bg-[#52B788] hover:bg-[#74C69D] text-[#081C15] font-bold text-xs sm:text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all text-center justify-center"
+                className="px-6 py-3 rounded-full bg-[#52B788] hover:bg-[#74C69D] text-[#081C15] font-bold text-xs sm:text-sm uppercase tracking-wider active:scale-95 transition-all text-center justify-center"
               >
                 Explore Desi Seeds
               </Link>
@@ -74,7 +74,7 @@ export function BotanicalEditorialShowcase({ className }: { className?: string }
 
           {/* Right Visual Image Column with Floating Badges (5 cols on desktop) */}
           <div className="lg:col-span-5 relative">
-            <div className="relative w-full h-[280px] sm:h-[360px] lg:h-[460px] rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-[#1B4332]">
+            <div className="relative w-full h-[280px] sm:h-[360px] lg:h-[460px] rounded-2xl overflow-hidden border border-white/20 bg-[#1B4332]">
               <GlorovImage
                 src="/images/monstera_deliciosa_hero.jpg"
                 alt="Monstera Deliciosa Botanical Specimen"
@@ -90,8 +90,8 @@ export function BotanicalEditorialShowcase({ className }: { className?: string }
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 pointer-events-none" />
 
               {/* Floating Badge 1: Rating */}
-              <div className="absolute top-3 left-3 sm:top-4 sm:left-4 p-2 sm:p-2.5 rounded-xl bg-white/95 text-[#0F172A] backdrop-blur-md shadow-xl border border-white/90 flex items-center gap-2 z-10 transition-transform hover:scale-105">
-                <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#16A34A] text-white shrink-0 shadow-sm">
+              <div className="absolute top-3 left-3 sm:top-4 sm:left-4 p-2 sm:p-2.5 rounded-xl bg-white text-[#0F172A] border border-stone-200 flex items-center gap-2 z-10 transition-transform hover:scale-105">
+                <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#16A34A] text-white shrink-0">
                   <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
@@ -103,8 +103,8 @@ export function BotanicalEditorialShowcase({ className }: { className?: string }
               </div>
 
               {/* Floating Badge 2: Air Purifying */}
-              <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 p-2 sm:p-2.5 rounded-xl bg-[#081C15]/90 text-white backdrop-blur-md shadow-xl border border-white/20 flex items-center gap-2 z-10 transition-transform hover:scale-105">
-                <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#52B788] text-[#081C15] shrink-0 shadow-sm">
+              <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 p-2 sm:p-2.5 rounded-xl bg-[#081C15] text-white border border-white/20 flex items-center gap-2 z-10 transition-transform hover:scale-105">
+                <span className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#52B788] text-[#081C15] shrink-0">
                   <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>

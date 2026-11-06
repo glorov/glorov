@@ -71,9 +71,9 @@ describe("Cloudinary File Provider & Media Operations", () => {
         } as any,
       },
       {
-        cloud_name: "naodmm8w",
-        api_key: "179253354861549",
-        api_secret: "0FkMyyEi9taeWd2f8nEN55zqOUM",
+        cloud_name: "mock-cloud-name",
+        api_key: "mock-api-key",
+        api_secret: "mock-api-secret",
         folder: "glorov/test",
       }
     );
@@ -82,9 +82,9 @@ describe("Cloudinary File Provider & Media Operations", () => {
   it("configures Cloudinary credentials on initialization", () => {
     expect(cloudinary.config).toHaveBeenCalledWith(
       expect.objectContaining({
-        cloud_name: "naodmm8w",
-        api_key: "179253354861549",
-        api_secret: "0FkMyyEi9taeWd2f8nEN55zqOUM",
+        cloud_name: "mock-cloud-name",
+        api_key: "mock-api-key",
+        api_secret: "mock-api-secret",
         secure: true,
       })
     );

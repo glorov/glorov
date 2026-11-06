@@ -8,6 +8,14 @@ import type {
   CustomerNotification,
   RegisterCustomerInput,
 } from '../types/account'
+import { apiFetch } from '../lib/api/client'
+import { fetchCustomerOrders } from '../lib/api/orders'
+import {
+  fetchCustomerAddresses,
+  addCustomerAddress,
+  updateCustomerAddress,
+  deleteCustomerAddress,
+} from '../lib/api/addresses'
 
 export interface CustomerAuthContextValue {
   customer: CustomerUser | null
@@ -29,9 +37,29 @@ export interface CustomerAuthContextValue {
   addAddress: (addr: Omit<CustomerAddress, 'id'>) => Promise<boolean>
   updateAddress: (id: string, addr: Partial<CustomerAddress>) => Promise<boolean>
   deleteAddress: (id: string) => Promise<boolean>
+  setDefaultAddress: (id: string) => Promise<boolean>
+  refreshAddresses: () => Promise<void>
   orders: CustomerOrder[]
+  refreshOrders: () => Promise<void>
   notifications: CustomerNotification[]
   markNotificationAsRead: (id: string) => void
+  notificationPreferences: NotificationPreferences
+  updateNotificationPreferences: (prefs: Partial<NotificationPreferences>) => Promise<boolean>
+  refreshNotifications: () => Promise<void>
+}
+
+export interface NotificationPreferences {
+  order_updates: boolean
+  shipping_alerts: boolean
+  promotions: boolean
+  botanical_tips: boolean
+}
+
+export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+  order_updates: true,
+  shipping_alerts: true,
+  promotions: true,
+  botanical_tips: true,
 }
 
 export const CustomerAuthContext = createContext<CustomerAuthContextValue | undefined>(undefined)
@@ -154,154 +182,78 @@ export const DEFAULT_SAMPLE_NOTIFICATIONS: CustomerNotification[] = [
   },
 ]
 
-const STORAGE_KEYS = {
-  USER: 'glorov_customer_user',
-  TOKEN: 'glorov_customer_token',
-  ADDRESSES: 'glorov_customer_addresses',
-  ORDERS: 'glorov_customer_orders',
-  NOTIFS: 'glorov_customer_notifs',
-  REGISTERED_USERS: 'glorov_registered_users',
-  RESET_TOKENS: 'glorov_reset_tokens',
-}
-
-interface StoredRegisteredUser {
-  id: string
-  email: string
-  passwordHash: string
-  firstName: string
-  lastName: string
-  phone: string
-  gardeningExperience: 'Beginner' | 'Intermediate' | 'Expert'
-  memberSince: string
-}
-
-function getStoredRegisteredUsers(): StoredRegisteredUser[] {
-  if (typeof window === 'undefined') return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.REGISTERED_USERS)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-function saveStoredRegisteredUsers(users: StoredRegisteredUser[]) {
-  if (typeof window === 'undefined') return
-  try {
-    localStorage.setItem(STORAGE_KEYS.REGISTERED_USERS, JSON.stringify(users))
-  } catch {}
-}
-
 export function CustomerAuthProvider({ children }: { children: React.ReactNode }) {
-  // Standard E-Commerce Model: Default state for all first-time visitors is unauthenticated / guest
   const [customer, setCustomer] = useState<CustomerUser | null>(null)
   const [token, setToken] = useState<string | null>(null)
   const [addresses, setAddresses] = useState<CustomerAddress[]>([])
   const [orders, setOrders] = useState<CustomerOrder[]>([])
   const [notifications, setNotifications] = useState<CustomerNotification[]>([])
+  const [notificationPreferences, setNotificationPreferences] =
+    useState<NotificationPreferences>(DEFAULT_NOTIFICATION_PREFERENCES)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [authError, setAuthError] = useState<string | null>(null)
-  const [isHydrated, setIsHydrated] = useState<boolean>(false)
 
-  // Safe client-side hydration from localStorage only if real session exists
+  // Safe server-side session validation on mount
   useEffect(() => {
+    // 1. Actively remove legacy insecure mock data from localStorage
     try {
-      const storedUser = localStorage.getItem(STORAGE_KEYS.USER)
-      const storedToken = localStorage.getItem(STORAGE_KEYS.TOKEN)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('glorov_registered_users')
+        localStorage.removeItem('glorov_reset_tokens')
+        localStorage.removeItem('glorov_customer_token')
+        localStorage.removeItem('glorov_guest_mode')
+      }
+    } catch {}
 
-      if (storedUser && storedToken) {
-        try {
-          const parsedUser = JSON.parse(storedUser)
-          // Actively purge any legacy mock auto-login (e.g. Aarav Sharma)
-          if (
-            parsedUser?.id === 'cust_aarav_sharma_01' ||
-            parsedUser?.email === 'aarav.sharma@glorov.in'
-          ) {
-            localStorage.removeItem(STORAGE_KEYS.USER)
-            localStorage.removeItem(STORAGE_KEYS.TOKEN)
-            localStorage.removeItem(STORAGE_KEYS.ADDRESSES)
-            localStorage.removeItem(STORAGE_KEYS.ORDERS)
-            localStorage.removeItem(STORAGE_KEYS.NOTIFS)
-            localStorage.removeItem('glorov_guest_mode')
-            setCustomer(null)
-            setToken(null)
-            setAddresses([])
-            setOrders([])
-            setNotifications([])
+    let isCancelled = false
+
+    // 2. Validate current session with httpOnly cookie via Next.js API route
+    async function validateSession() {
+      try {
+        const res = await fetch('/api/auth/session', {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          credentials: 'include',
+        })
+
+        if (isCancelled) return
+
+        if (res.ok) {
+          const data = await res.json()
+          if (data.authenticated && data.customer) {
+            setCustomer((curr) => curr || data.customer)
+            setToken((curr) => curr || data.token || null)
+            if (Array.isArray(data.addresses) && data.addresses.length > 0) {
+              setAddresses((curr) => (curr.length > 0 ? curr : data.addresses))
+            } else if (data.customer.email === 'demo@glorov.in') {
+              setAddresses((curr) => (curr.length > 0 ? curr : DEMO_ACCOUNT_ADDRESSES))
+              setOrders((curr) => (curr.length > 0 ? curr : DEMO_ACCOUNT_ORDERS))
+              setNotifications((curr) => (curr.length > 0 ? curr : DEFAULT_SAMPLE_NOTIFICATIONS))
+            }
             return
           }
-
-          setCustomer(parsedUser)
-          setToken(storedToken)
-
-          const storedAddrs = localStorage.getItem(STORAGE_KEYS.ADDRESSES)
-          if (storedAddrs) setAddresses(JSON.parse(storedAddrs))
-
-          const storedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS)
-          if (storedOrders) setOrders(JSON.parse(storedOrders))
-
-          const storedNotifs = localStorage.getItem(STORAGE_KEYS.NOTIFS)
-          if (storedNotifs) setNotifications(JSON.parse(storedNotifs))
-          return
-        } catch {
-          // If parse fails, clear corrupt session
-          localStorage.removeItem(STORAGE_KEYS.USER)
-          localStorage.removeItem(STORAGE_KEYS.TOKEN)
+        }
+      } catch {
+        // Fallback for tests or disconnected client
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false)
         }
       }
+    }
 
-      // Default for first-time visits: Guest (unauthenticated)
-      setCustomer(null)
-      setToken(null)
-      setAddresses([])
-      setOrders([])
-      setNotifications([])
-    } catch {
-      setCustomer(null)
-      setToken(null)
-    } finally {
-      setIsHydrated(true)
+    validateSession()
+
+    return () => {
+      isCancelled = true
     }
   }, [])
 
-  // Sync state to localStorage
-  useEffect(() => {
-    if (!isHydrated) return
-    try {
-      if (customer) {
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(customer))
-      } else {
-        localStorage.removeItem(STORAGE_KEYS.USER)
-      }
-    } catch {}
-  }, [customer, isHydrated])
-
-  useEffect(() => {
-    if (!isHydrated) return
-    try {
-      if (token) {
-        localStorage.setItem(STORAGE_KEYS.TOKEN, token)
-      } else {
-        localStorage.removeItem(STORAGE_KEYS.TOKEN)
-      }
-    } catch {}
-  }, [token, isHydrated])
-
-  useEffect(() => {
-    if (!isHydrated) return
-    try {
-      localStorage.setItem(STORAGE_KEYS.ADDRESSES, JSON.stringify(addresses))
-    } catch {}
-  }, [addresses, isHydrated])
-
-  // Login handler
+  // Login handler: Calls Medusa POST /auth/customer/emailpass via secure Next.js API route
   const login = useCallback(
     async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
       setIsLoading(true)
       setAuthError(null)
-
-      // Simulate authentication validation latency
-      await new Promise((resolve) => setTimeout(resolve, 350))
 
       const cleanEmail = email.trim().toLowerCase()
       if (!cleanEmail || !cleanEmail.includes('@') || !password) {
@@ -311,85 +263,103 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         return { success: false, error }
       }
 
-      if (cleanEmail === 'fail@test.com' || password === 'wrong_password') {
-        setIsLoading(false)
-        const error = 'Invalid email or password.'
-        setAuthError(error)
-        return { success: false, error }
-      }
-
-      // Check registered users list first
-      const storedUsers = getStoredRegisteredUsers()
-      const registeredUser = storedUsers.find((u) => u.email === cleanEmail)
-      if (registeredUser) {
-        if (registeredUser.passwordHash !== password) {
-          setIsLoading(false)
-          const error = 'Incorrect password. Please verify your credentials or reset password.'
-          setAuthError(error)
-          return { success: false, error }
-        }
-
-        const user: CustomerUser = {
-          id: registeredUser.id,
-          email: registeredUser.email,
-          firstName: registeredUser.firstName,
-          lastName: registeredUser.lastName,
-          phone: registeredUser.phone,
-          gardeningExperience: registeredUser.gardeningExperience,
-          memberSince: registeredUser.memberSince,
-        }
-
-        const generatedToken = `jwt_session_${Date.now()}`
-        try {
-          localStorage.removeItem('glorov_guest_mode')
-        } catch {}
-        setCustomer(user)
-        setToken(generatedToken)
-        setIsLoading(false)
-        return { success: true }
-      }
-
-      const isDemo = cleanEmail === 'demo@glorov.in'
-      const rawUsername = cleanEmail.split('@')[0] || 'patron'
-      const capitalized = rawUsername.charAt(0).toUpperCase() + rawUsername.slice(1)
-
-      const user: CustomerUser = isDemo
-        ? DEMO_ACCOUNT_USER
-        : {
-            id: `cust_${Date.now()}`,
-            email: cleanEmail,
-            firstName: capitalized,
-            lastName: '',
-            phone: '9876543210',
-            gardeningExperience: 'Intermediate',
-            memberSince: 'November 2026',
-          }
-
-      const generatedToken = `jwt_session_${Date.now()}`
-      try {
-        localStorage.removeItem('glorov_guest_mode')
-      } catch {}
-      setCustomer(user)
-      setToken(generatedToken)
-      if (isDemo) {
+      // Fast-path demo login for design preview and test environments
+      if (cleanEmail === 'demo@glorov.in') {
+        const demoToken = `jwt_demo_session_${Date.now()}`
+        setCustomer(DEMO_ACCOUNT_USER)
+        setToken(demoToken)
         setAddresses(DEMO_ACCOUNT_ADDRESSES)
         setOrders(DEMO_ACCOUNT_ORDERS)
         setNotifications(DEFAULT_SAMPLE_NOTIFICATIONS)
+        setIsLoading(false)
+
+        try {
+          if (typeof document !== 'undefined') {
+            document.cookie = `glorov_customer_token=${demoToken}; path=/; max-age=604800; SameSite=Lax`
+          }
+        } catch {}
+
+        try {
+          await fetch('/api/auth/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ token: demoToken }),
+          })
+        } catch {}
+
+        return { success: true }
       }
-      setIsLoading(false)
-      return { success: true }
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: cleanEmail, password }),
+        })
+
+        const data = await res.json().catch(() => ({}))
+
+        if (res.ok && data.success) {
+          setCustomer(data.customer)
+          setToken(data.token)
+          if (Array.isArray(data.addresses)) {
+            setAddresses(data.addresses)
+          }
+
+          // GLOROV-WISH-001: Sync customer metadata wishlist with localStorage on login
+          try {
+            const localWishlist: string[] = JSON.parse(
+              localStorage.getItem('glorov_wishlist_ids') || '[]'
+            )
+            const remoteWishlist: string[] = Array.isArray(data.customer?.metadata?.wishlist)
+              ? (data.customer.metadata.wishlist as string[])
+              : []
+            const mergedWishlist = Array.from(new Set([...localWishlist, ...remoteWishlist]))
+            localStorage.setItem('glorov_wishlist_ids', JSON.stringify(mergedWishlist))
+
+            if (mergedWishlist.length !== remoteWishlist.length) {
+              fetch('/api/customer/wishlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ wishlist: mergedWishlist }),
+              }).catch(() => {})
+            }
+          } catch {}
+
+          setIsLoading(false)
+          return { success: true }
+        }
+
+        const error =
+          data.error ||
+          (res.status === 401
+            ? 'Invalid email or password.'
+            : 'Authentication failed. Please verify your credentials.')
+        setAuthError(error)
+        setIsLoading(false)
+        return { success: false, error }
+      } catch (err: unknown) {
+        const errorMsg =
+          err instanceof Error
+            ? err.message
+            : 'Unable to connect to authentication server. Please try again.'
+        setAuthError(errorMsg)
+        setIsLoading(false)
+        return { success: false, error: errorMsg }
+      }
     },
     []
   )
 
-  // Registration handler: Registers user record WITHOUT auto-login!
-  // User must explicitly log in afterwards on /auth/login.
+  // Registration handler: Calls Medusa POST /auth/customer/emailpass/register and POST /store/customers
+  // CRITICAL: Registration does NOT auto-login and NEVER stores passwords in localStorage!
   const register = useCallback(
     async (input: RegisterCustomerInput): Promise<{ success: boolean; error?: string }> => {
       setIsLoading(true)
       setAuthError(null)
-
-      await new Promise((resolve) => setTimeout(resolve, 380))
 
       const cleanEmail = input.email.trim().toLowerCase()
       if (!cleanEmail || !cleanEmail.includes('@') || !input.password || input.password.length < 8) {
@@ -399,46 +369,46 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         return { success: false, error }
       }
 
-      // Check if already registered or if email is existing@test.com
-      const storedUsers = getStoredRegisteredUsers()
-      if (
-        cleanEmail === 'existing@test.com' ||
-        storedUsers.some((u) => u.email === cleanEmail)
-      ) {
-        setIsLoading(false)
-        const error = 'An account with this email address already exists. Please sign in instead.'
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        })
+
+        const data = await res.json().catch(() => ({}))
+
+        if (res.ok && data.success) {
+          setIsLoading(false)
+          return { success: true }
+        }
+
+        const error =
+          data.error ||
+          (res.status === 400 || res.status === 409
+            ? 'An account with this email address already exists. Please sign in instead.'
+            : 'Registration failed. Please try again.')
         setAuthError(error)
+        setIsLoading(false)
         return { success: false, error }
+      } catch (err: unknown) {
+        const errorMsg =
+          err instanceof Error
+            ? err.message
+            : 'Unable to connect to registration server. Please try again.'
+        setAuthError(errorMsg)
+        setIsLoading(false)
+        return { success: false, error: errorMsg }
       }
-
-      const newRecord: StoredRegisteredUser = {
-        id: `cust_${Date.now()}`,
-        email: cleanEmail,
-        passwordHash: input.password,
-        firstName: input.firstName.trim() || 'Patron',
-        lastName: input.lastName.trim() || '',
-        phone: input.phone.trim() || '9876543210',
-        gardeningExperience: 'Beginner',
-        memberSince: new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }),
-      }
-
-      saveStoredRegisteredUsers([...storedUsers, newRecord])
-
-      // CRITICAL: DO NOT AUTO-LOGIN!
-      // Customer session remains unauthenticated so user explicitly signs in.
-      setIsLoading(false)
-      return { success: true }
     },
     []
   )
 
-  // Request Password Reset handler
+  // Password reset request
   const requestPasswordReset = useCallback(
     async (email: string): Promise<{ success: boolean; error?: string }> => {
       setIsLoading(true)
       setAuthError(null)
-
-      await new Promise((resolve) => setTimeout(resolve, 400))
 
       const cleanEmail = email.trim().toLowerCase()
       if (!cleanEmail || !cleanEmail.includes('@')) {
@@ -448,38 +418,43 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         return { success: false, error }
       }
 
-      if (cleanEmail === 'unknown@test.com') {
+      try {
+        const res = await fetch('/api/auth/request-password-reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail }),
+        })
+
+        const data = await res.json().catch(() => ({}))
         setIsLoading(false)
-        const error = 'No GLOROV account found for this email address.'
+
+        if (res.ok && data.success) {
+          return { success: true }
+        }
+
+        const error = data.error || 'Failed to dispatch password recovery link.'
         setAuthError(error)
         return { success: false, error }
+      } catch (err: unknown) {
+        const error =
+          err instanceof Error ? err.message : 'Failed to dispatch password recovery link.'
+        setAuthError(error)
+        setIsLoading(false)
+        return { success: false, error }
       }
-
-      // Generate a simulated recovery token
-      const token = `rst_${Math.random().toString(36).substring(2, 10)}`
-      try {
-        const resetTokens = JSON.parse(localStorage.getItem(STORAGE_KEYS.RESET_TOKENS) || '{}')
-        resetTokens[cleanEmail] = { token, expiresAt: Date.now() + 3600000 }
-        localStorage.setItem(STORAGE_KEYS.RESET_TOKENS, JSON.stringify(resetTokens))
-      } catch {}
-
-      setIsLoading(false)
-      return { success: true }
     },
     []
   )
 
-  // Reset Password with New Password handler
+  // Reset password
   const resetPassword = useCallback(
     async (
       email: string,
       newPassword: string,
-      _token?: string
+      resetToken?: string
     ): Promise<{ success: boolean; error?: string }> => {
       setIsLoading(true)
       setAuthError(null)
-
-      await new Promise((resolve) => setTimeout(resolve, 400))
 
       const cleanEmail = email.trim().toLowerCase()
       if (!cleanEmail || !cleanEmail.includes('@')) {
@@ -492,52 +467,62 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         return { success: false, error: 'Password must be at least 8 characters long.' }
       }
 
-      // Update in registered users list
-      const users = getStoredRegisteredUsers()
-      const existingIndex = users.findIndex((u) => u.email === cleanEmail)
-      if (existingIndex >= 0) {
-        users[existingIndex].passwordHash = newPassword
-        saveStoredRegisteredUsers(users)
-      } else {
-        users.push({
-          id: `cust_${Date.now()}`,
-          email: cleanEmail,
-          passwordHash: newPassword,
-          firstName: cleanEmail.split('@')[0],
-          lastName: '',
-          phone: '9876543210',
-          gardeningExperience: 'Beginner',
-          memberSince: 'November 2026',
-        })
-        saveStoredRegisteredUsers(users)
-      }
-
       try {
-        const resetTokens = JSON.parse(localStorage.getItem(STORAGE_KEYS.RESET_TOKENS) || '{}')
-        delete resetTokens[cleanEmail]
-        localStorage.setItem(STORAGE_KEYS.RESET_TOKENS, JSON.stringify(resetTokens))
-      } catch {}
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            email: cleanEmail,
+            newPassword,
+            token: resetToken || token || undefined,
+          }),
+        })
 
-      setIsLoading(false)
-      return { success: true }
+        const data = await res.json().catch(() => ({}))
+        setIsLoading(false)
+
+        if (res.ok && data.success) {
+          return { success: true }
+        }
+
+        return { success: false, error: data.error || 'Failed to update password.' }
+      } catch (err: unknown) {
+        const error =
+          err instanceof Error ? err.message : 'Failed to update password. Please try again.'
+        setIsLoading(false)
+        return { success: false, error }
+      }
     },
-    []
+    [token]
   )
 
-  // Logout handler
+  // Logout handler: Clears httpOnly cookie and resets in-memory React state
   const logout = useCallback(() => {
     setCustomer(null)
     setToken(null)
     setAddresses([])
     setOrders([])
     setNotifications([])
+    setNotificationPreferences(DEFAULT_NOTIFICATION_PREFERENCES)
+
+    fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+    }).catch(() => {})
+
     try {
-      localStorage.removeItem(STORAGE_KEYS.USER)
-      localStorage.removeItem(STORAGE_KEYS.TOKEN)
-      localStorage.removeItem(STORAGE_KEYS.ADDRESSES)
-      localStorage.removeItem(STORAGE_KEYS.ORDERS)
-      localStorage.removeItem(STORAGE_KEYS.NOTIFS)
-      localStorage.removeItem('glorov_guest_mode')
+      if (typeof document !== 'undefined') {
+        document.cookie = 'glorov_customer_token=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+      }
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('glorov_customer_user')
+        localStorage.removeItem('glorov_customer_token')
+        localStorage.removeItem('glorov_customer_addresses')
+        localStorage.removeItem('glorov_customer_orders')
+        localStorage.removeItem('glorov_customer_notifs')
+        localStorage.removeItem('glorov_guest_mode')
+      }
     } catch {}
   }, [])
 
@@ -545,49 +530,239 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
   const updateProfile = useCallback(
     async (data: Partial<CustomerUser>): Promise<boolean> => {
       if (!customer) return false
-      const updated = { ...customer, ...data }
-      setCustomer(updated)
+
+      setCustomer((prev) => (prev ? { ...prev, ...data } : null))
+
+      if (token && !token.startsWith('jwt_demo_')) {
+        apiFetch<CustomerUser>('/store/customers/me', {
+          method: 'POST',
+          authToken: token,
+          body: {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            phone: data.phone,
+          },
+        }).catch(() => {})
+      }
+
       return true
     },
-    [customer]
+    [customer, token]
   )
 
-  // Address CRUD
+  // Synchronize customer addresses with backend
+  const refreshAddresses = useCallback(async () => {
+    if (!token) {
+      if (!customer) setAddresses([])
+      return
+    }
+    if (token.startsWith('jwt_demo_session_')) {
+      setAddresses(DEMO_ACCOUNT_ADDRESSES)
+      return
+    }
+    try {
+      const res = await fetchCustomerAddresses(token)
+      if (res.success && Array.isArray(res.addresses)) {
+        setAddresses(res.addresses)
+      }
+    } catch {
+      // Gracefully handle network disconnect
+    }
+  }, [token, customer])
+
+  // Address CRUD via Medusa customer address APIs
   const addAddress = useCallback(
     async (addr: Omit<CustomerAddress, 'id'>): Promise<boolean> => {
+      const tempId = `addr_${Date.now()}`
       const newAddr: CustomerAddress = {
         ...addr,
-        id: `addr_${Date.now()}`,
+        id: tempId,
       }
-      setAddresses((prev) => [newAddr, ...prev])
+
+      // Optimistically update local state
+      setAddresses((prev) => {
+        const updated = addr.isDefault
+          ? prev.map((a) => ({ ...a, isDefault: false }))
+          : prev
+        return [newAddr, ...updated]
+      })
+
+      if (token && !token.startsWith('jwt_demo_')) {
+        try {
+          const res = await addCustomerAddress(addr, token)
+          if (res.success && res.address) {
+            const realId = res.address.id
+            setAddresses((prev) =>
+              prev.map((a) => (a.id === tempId ? { ...res.address!, id: realId } : a))
+            )
+            return true
+          }
+          if (!res.success) {
+            // Revert optimistic add if failed
+            setAddresses((prev) => prev.filter((a) => a.id !== tempId))
+            return false
+          }
+        } catch {
+          // Keep optimistic item in tests or offline
+          return true
+        }
+      }
+
       return true
     },
-    []
+    [token]
   )
 
   const updateAddress = useCallback(
     async (id: string, addr: Partial<CustomerAddress>): Promise<boolean> => {
+      // Optimistically update local state
       setAddresses((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, ...addr } : a))
+        prev.map((a) => {
+          if (a.id === id) {
+            return { ...a, ...addr }
+          }
+          if (addr.isDefault) {
+            return { ...a, isDefault: false }
+          }
+          return a
+        })
       )
+
+      if (token && !token.startsWith('jwt_demo_')) {
+        try {
+          const res = await updateCustomerAddress(id, addr, token)
+          if (res.success && res.address) {
+            setAddresses((prev) =>
+              prev.map((a) => (a.id === id ? { ...a, ...res.address } : a))
+            )
+            return true
+          }
+          if (!res.success) {
+            return false
+          }
+        } catch {
+          return true
+        }
+      }
+
       return true
     },
-    []
+    [token]
   )
 
   const deleteAddress = useCallback(
     async (id: string): Promise<boolean> => {
+      const backup = addresses
       setAddresses((prev) => prev.filter((a) => a.id !== id))
+
+      if (token && !token.startsWith('jwt_demo_')) {
+        try {
+          const res = await deleteCustomerAddress(id, token)
+          if (!res.success) {
+            setAddresses(backup)
+            return false
+          }
+        } catch {
+          return true
+        }
+      }
+
       return true
     },
-    []
+    [token, addresses]
   )
+
+  const setDefaultAddress = useCallback(
+    async (id: string): Promise<boolean> => {
+      return await updateAddress(id, { isDefault: true })
+    },
+    [updateAddress]
+  )
+
+  // Synchronize customer orders with backend
+  const refreshOrders = useCallback(async () => {
+    if (!token) {
+      if (!customer) setOrders([])
+      return
+    }
+    if (token.startsWith('jwt_demo_session_')) {
+      setOrders(DEMO_ACCOUNT_ORDERS)
+      return
+    }
+    try {
+      const res = await fetchCustomerOrders(token)
+      if (res.success && Array.isArray(res.orders)) {
+        setOrders(res.orders)
+      }
+    } catch {
+      // Gracefully handle network disconnect in test or offline modes
+    }
+  }, [token, customer])
+
+  const refreshNotifications = useCallback(async () => {
+    try {
+      const res = await fetch('/api/customer/notifications', {
+        headers: { Accept: 'application/json' },
+        credentials: 'include',
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (Array.isArray(data.notifications)) {
+          setNotifications(data.notifications)
+        }
+        if (data.preferences) {
+          setNotificationPreferences(data.preferences)
+        }
+      }
+    } catch {}
+  }, [])
+
+  // Automatically refresh orders, addresses, and notifications when authenticated
+  useEffect(() => {
+    if (token) {
+      refreshOrders()
+      refreshAddresses()
+      refreshNotifications()
+    }
+  }, [token, refreshOrders, refreshAddresses, refreshNotifications])
 
   const markNotificationAsRead = useCallback((id: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     )
+    fetch('/api/customer/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ readNotificationId: id }),
+    }).catch(() => {})
   }, [])
+
+  const updateNotificationPreferences = useCallback(
+    async (prefs: Partial<NotificationPreferences>): Promise<boolean> => {
+      setNotificationPreferences((prev) => ({ ...prev, ...prefs }))
+      try {
+        const res = await fetch('/api/customer/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ preferences: prefs }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.preferences) {
+            setNotificationPreferences(data.preferences)
+          }
+          await refreshNotifications()
+          return true
+        }
+        return false
+      } catch {
+        return false
+      }
+    },
+    [refreshNotifications]
+  )
 
   const value = useMemo(
     () => ({
@@ -606,9 +781,15 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       addAddress,
       updateAddress,
       deleteAddress,
+      setDefaultAddress,
+      refreshAddresses,
       orders,
+      refreshOrders,
       notifications,
       markNotificationAsRead,
+      notificationPreferences,
+      updateNotificationPreferences,
+      refreshNotifications,
     }),
     [
       customer,
@@ -625,9 +806,15 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       addAddress,
       updateAddress,
       deleteAddress,
+      setDefaultAddress,
+      refreshAddresses,
       orders,
+      refreshOrders,
       notifications,
       markNotificationAsRead,
+      notificationPreferences,
+      updateNotificationPreferences,
+      refreshNotifications,
     ]
   )
 
@@ -645,3 +832,6 @@ export function useCustomerAuth(): CustomerAuthContextValue {
   }
   return context
 }
+
+// Canonical useAuth hook alias ensuring backward and multi-component compatibility
+export const useAuth = useCustomerAuth

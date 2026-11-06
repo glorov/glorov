@@ -95,7 +95,7 @@ export const BotanicalSpecsTable: React.FC<BotanicalSpecsTableProps> = ({
   if (specItems.length === 0) return null
 
   return (
-    <div className="w-full my-8 p-6 rounded-2xl bg-white border border-stone-200 shadow-xs">
+    <div className="w-full my-8 p-6 rounded-2xl bg-white border border-stone-200">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-6 border-b border-stone-100 gap-2">
         <div>
           <h2 className="text-lg font-bold text-stone-900 tracking-tight">

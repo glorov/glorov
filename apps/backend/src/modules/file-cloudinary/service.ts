@@ -22,9 +22,9 @@ export class CloudinaryFileService extends AbstractFileProviderService {
     this.logger_ = dependencies.logger
     this.options_ = options || {}
 
-    const cloudName = this.options_.cloud_name || process.env.CLOUDINARY_CLOUD_NAME || "naodmm8w"
-    const apiKey = this.options_.api_key || process.env.CLOUDINARY_API_KEY || "179253354861549"
-    const apiSecret = this.options_.api_secret || process.env.CLOUDINARY_API_SECRET || "0FkMyyEi9taeWd2f8nEN55zqOUM"
+    const cloudName = this.options_.cloud_name || process.env.CLOUDINARY_CLOUD_NAME || ""
+    const apiKey = this.options_.api_key || process.env.CLOUDINARY_API_KEY || ""
+    const apiSecret = this.options_.api_secret || process.env.CLOUDINARY_API_SECRET || ""
 
     cloudinary.config({
       cloud_name: cloudName,

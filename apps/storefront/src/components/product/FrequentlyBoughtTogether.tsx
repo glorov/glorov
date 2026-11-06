@@ -68,7 +68,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
   }
 
   return (
-    <div className="w-full p-4 rounded-2xl bg-white border border-[#E5E7EB] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+    <div className="w-full p-4 rounded-2xl bg-white border border-[#E5E7EB]">
       <h3 className="font-serif text-[15px] sm:text-base font-extrabold text-[#111827]">
         Frequently bought together
       </h3>
@@ -180,7 +180,7 @@ export const FrequentlyBoughtTogether: React.FC<FrequentlyBoughtTogetherProps> =
           type="button"
           disabled={count === 0}
           onClick={handleAddBundle}
-          className="px-4 py-2 rounded-lg bg-[#1B4332] text-white text-xs font-bold hover:bg-[#143427] active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-xs flex items-center gap-1"
+          className="px-4 py-2 rounded-lg bg-[#1B4332] text-white text-xs font-bold hover:bg-[#143427] active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
         >
           <span>Add {count} Items To Cart</span>
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

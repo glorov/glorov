@@ -69,4 +69,19 @@ export interface RazorpayVerificationResponse {
   error?: string
   cart_id?: string
   razorpay_payment_id?: string
+  payment_id?: string
+}
+
+export interface MedusaPaymentSession {
+  id?: string
+  provider_id?: string
+  amount?: number
+  currency_code?: string
+  status?: string
+  data?: {
+    razorpay_order_id?: string
+    id?: string
+    [key: string]: unknown
+  } | string
+  [key: string]: unknown
 }

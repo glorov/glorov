@@ -4,7 +4,6 @@ import React, { useRef, useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { GlorovImage } from '../ui/GlorovImage'
 import { GlorovCustomIcons } from '../common/GlorovIcons'
-import { MOCK_PRODUCTS } from '../../lib/mock-data'
 import { useCart } from '../../context/StorefrontContext'
 import type { GlorovProductItem } from '../../types/storefront'
 
@@ -12,7 +11,7 @@ export interface RecommendedProductsSectionProps {
   products?: GlorovProductItem[]
 }
 
-type RecommendationTab = 'for-you' | 'bestsellers' | 'seeds-soil' | 'plants-pots' | 'under-150'
+type RecommendationTab = 'for-you' | 'bestsellers' | 'seeds-vegetables' | 'living-plants' | 'under-150'
 
 /**
  * GLOROV Intelligent Cart Recommendation System & Refined Card UI
@@ -49,7 +48,26 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
     return map
   }, [cartItems])
 
-  const pool = products && products.length > 0 ? products : MOCK_PRODUCTS
+  const [fetchedProducts, setFetchedProducts] = useState<GlorovProductItem[]>([])
+
+  useEffect(() => {
+    if (products && products.length > 0) return
+    let active = true
+    fetch('/api/products?limit=16')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active) return
+        if (data && Array.isArray(data.products)) {
+          setFetchedProducts(data.products)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [products])
+
+  const pool = products && products.length > 0 ? products : fetchedProducts
 
   // Cart Context Analysis
   const cartContext = useMemo(() => {
@@ -96,26 +114,22 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
           .sort((a, b) => b.rating - a.rating)
           .slice(0, 10)
       }
-      case 'seeds-soil': {
+      case 'seeds-vegetables': {
         return sourcePool
           .filter(
             (p) =>
               p.category.toLowerCase().includes('seed') ||
-              p.category.toLowerCase().includes('care') ||
-              p.category.toLowerCase().includes('soil') ||
-              p.productType === 'seeds' ||
-              p.productType === 'care',
+              p.category.toLowerCase().includes('vegetable') ||
+              p.productType === 'seeds',
           )
           .slice(0, 10)
       }
-      case 'plants-pots': {
+      case 'living-plants': {
         return sourcePool
           .filter(
             (p) =>
               p.category.toLowerCase().includes('plant') ||
-              p.category.toLowerCase().includes('pot') ||
-              p.productType === 'plants' ||
-              p.productType === 'planters',
+              p.productType === 'plants',
           )
           .slice(0, 10)
       }
@@ -243,7 +257,7 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
             type="button"
             onClick={() => handleScroll('left')}
             disabled={!canScrollLeft}
-            className={`w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#0A4C36] transition-all shadow-2xs ${
+            className={`w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#0A4C36] transition-colors ${
               canScrollLeft
                 ? 'hover:bg-[#F2FAF5] active:scale-90 cursor-pointer text-[#0A4C36]'
                 : 'opacity-40 cursor-not-allowed text-stone-300'
@@ -256,7 +270,7 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
             type="button"
             onClick={() => handleScroll('right')}
             disabled={!canScrollRight}
-            className={`w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#0A4C36] transition-all shadow-2xs ${
+            className={`w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#0A4C36] transition-colors ${
               canScrollRight
                 ? 'hover:bg-[#F2FAF5] active:scale-90 cursor-pointer text-[#0A4C36]'
                 : 'opacity-40 cursor-not-allowed text-stone-300'
@@ -273,8 +287,8 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
         {[
           { id: 'for-you', label: '✨ For You' },
           { id: 'bestsellers', label: '🔥 Bestsellers' },
-          { id: 'seeds-soil', label: '🌱 Seeds & Soil' },
-          { id: 'plants-pots', label: '🪴 Plants & Pots' },
+          { id: 'seeds-vegetables', label: '🌱 Seeds & Veggies' },
+          { id: 'living-plants', label: '🪴 Living Plants' },
           { id: 'under-150', label: '⚡ Under ₹150' },
         ].map((tab) => {
           const isActive = activeTab === tab.id
@@ -288,9 +302,9 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
                   scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' })
                 }
               }}
-              className={`px-3 py-1 rounded-full text-[11.5px] font-bold tracking-[0.2px] whitespace-nowrap transition-all duration-150 cursor-pointer select-none ${
+              className={`px-3 py-1 rounded-full text-[11.5px] font-bold tracking-[0.2px] whitespace-nowrap transition-colors duration-150 cursor-pointer select-none ${
                 isActive
-                  ? 'bg-[#0A4C36] text-white shadow-[0_1px_4px_rgba(10,76,54,0.25)] scale-[1.02]'
+                  ? 'bg-[#0A4C36] text-white scale-[1.02]'
                   : 'bg-white text-[#4B5563] border border-[#E5E7EB] hover:border-[#0A4C36]/40 hover:text-[#0A4C36] hover:bg-[#F9FAF8]'
               }`}
             >
@@ -372,7 +386,7 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
           return (
             <div
               key={prod.id}
-              className="w-[168px] min-w-[168px] sm:w-[176px] sm:min-w-[176px] h-[272px] sm:h-[278px] flex-shrink-0 rounded-[20px] bg-white border border-[#E5ECE8] shadow-[0_2px_8px_rgba(0,0,0,0.035)] overflow-hidden flex flex-col justify-between transition-all duration-200 hover:border-[#0A4C36]/35 hover:shadow-[0_12px_24px_rgba(10,76,54,0.12)] hover:-translate-y-1 group relative"
+              className="w-[168px] min-w-[168px] sm:w-[176px] sm:min-w-[176px] h-[272px] sm:h-[278px] flex-shrink-0 rounded-[20px] bg-white border border-[#E5ECE8] overflow-hidden flex flex-col justify-between transition-colors duration-200 hover:border-[#0A4C36]/50 group relative"
             >
               {/* Media with Overlays */}
               <div className="relative w-full h-[148px] sm:h-[154px] bg-[#F4F7F4] overflow-hidden shrink-0 rounded-t-[20px]">
@@ -391,7 +405,7 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
                 {/* Top-Left Signature Flush Docked Tag with Golden Lightning Bolt */}
                 {badgeText && (
                   <div className="absolute top-0 left-0 z-10 pointer-events-none">
-                    <span className="inline-flex items-center gap-[3px] bg-[#0C2340] text-white text-[9px] font-extrabold tracking-[0.4px] uppercase px-2 py-[3.5px] rounded-tl-[20px] rounded-tr-[7px] rounded-br-[7px] rounded-bl-0 shadow-[0_1px_4px_rgba(0,0,0,0.22)] select-none leading-none">
+                    <span className="inline-flex items-center gap-[3px] bg-[#0C2340] text-white text-[9px] font-extrabold tracking-[0.4px] uppercase px-2 py-[3.5px] rounded-tl-[20px] rounded-tr-[7px] rounded-br-[7px] rounded-bl-0 select-none leading-none">
                       <svg
                         width={10}
                         height={10}
@@ -411,8 +425,8 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
                   </div>
                 )}
 
-                {/* Bottom-Left Solid White Rating Badge (Solid opacity for high contrast on all photo backgrounds) */}
-                <div className="absolute left-2 bottom-2 px-1.5 py-[3px] rounded-[6px] bg-white text-[#0F172A] border border-white shadow-[0_1px_4px_rgba(0,0,0,0.18)] flex items-center gap-1 leading-none select-none z-10">
+                {/* Bottom-Left Solid White Rating Badge */}
+                <div className="absolute left-2 bottom-2 px-1.5 py-[3px] rounded-[6px] bg-white text-[#0F172A] border border-stone-200 flex items-center gap-1 leading-none select-none z-10">
                   <span className="text-[11px] font-extrabold text-[#0F172A]">{prod.rating.toFixed(1)}</span>
                   <GlorovCustomIcons.star size={11} className="text-[#16A34A] fill-current" />
                   <span className="text-[#CBD5E1] text-[9.5px]">|</span>
@@ -462,7 +476,7 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
                     onClick={(e) => handleAddToCart(e, prod)}
                     aria-label={`Add ${prod.title} to cart`}
                     title={inCartQty > 0 ? `In Cart (${inCartQty}). Click to add another` : 'Add to cart'}
-                    className={`w-[34px] h-[34px] rounded-full flex items-center justify-center shrink-0 shadow-[0_2px_6px_rgba(10,76,54,0.18)] cursor-pointer active:scale-90 hover:scale-105 transition-all relative ${
+                    className={`w-[34px] h-[34px] rounded-full flex items-center justify-center shrink-0 cursor-pointer active:scale-90 hover:scale-105 transition-all relative ${
                       isJustAdded
                         ? 'bg-[#15803D] text-white scale-105 ring-2 ring-emerald-200'
                         : inCartQty > 0
@@ -487,7 +501,7 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
                     ) : inCartQty > 0 ? (
                       <div className="flex items-center justify-center relative">
                         <GlorovCustomIcons.cart size={16} className="text-white" />
-                        <span className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-[#16A34A] text-white text-[9.5px] font-black flex items-center justify-center border border-white leading-none shadow-xs">
+                        <span className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-[#16A34A] text-white text-[9.5px] font-black flex items-center justify-center border border-white leading-none">
                           {inCartQty}
                         </span>
                       </div>

@@ -7,10 +7,12 @@ import { useToast } from '../../../context/StorefrontContext'
 import { Modal } from '../../../components/ui/Modal'
 import { AddressCard } from '../../../components/account/AddressCard'
 import { AddressModal } from '../../../components/account/AddressModal'
+import { reportError } from '../../../lib/error-reporter'
 import type { CustomerAddress } from '../../../types/account'
 
 export default function AddressesPage() {
-  const { customer, addresses, addAddress, updateAddress, deleteAddress } = useCustomerAuth()
+  const { customer, addresses, addAddress, updateAddress, deleteAddress, setDefaultAddress } =
+    useCustomerAuth()
   const { showToast } = useToast()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingAddress, setEditingAddress] = useState<CustomerAddress | null>(null)
@@ -19,7 +21,7 @@ export default function AddressesPage() {
 
   if (!customer) {
     return (
-      <div className="p-6 sm:p-10 rounded-3xl bg-white border border-stone-200/90 shadow-xs text-center space-y-4">
+      <div className="p-6 sm:p-10 rounded-3xl bg-white border border-stone-200/90 text-center space-y-4">
         <div className="w-14 h-14 mx-auto rounded-full bg-[#E8F5E9] border-1.5 border-[#86EFAC] text-[#1B4332] flex items-center justify-center">
           <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -35,7 +37,7 @@ export default function AddressesPage() {
         <div className="flex items-center justify-center gap-3 pt-2">
           <Link
             href="/auth/login?redirect=/account/addresses"
-            className="px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-bold hover:bg-[#163829] transition shadow-xs"
+            className="px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-bold hover:bg-[#163829] transition"
           >
             Sign In to GLOROV
           </Link>
@@ -61,10 +63,57 @@ export default function AddressesPage() {
   }
 
   const handleSaveAddress = async (data: Omit<CustomerAddress, 'id'>): Promise<boolean> => {
-    if (editingAddress) {
-      return await updateAddress(editingAddress.id, data)
-    } else {
-      return await addAddress(data)
+    try {
+      if (editingAddress) {
+        const ok = await updateAddress(editingAddress.id, data)
+        if (ok) {
+          showToast('success', 'Delivery address updated successfully.', {
+            title: 'Address Updated',
+          })
+        } else {
+          showToast('error', 'Unable to update address. Please verify the information.', {
+            title: 'Update Failed',
+          })
+        }
+        return ok
+      } else {
+        const ok = await addAddress(data)
+        if (ok) {
+          showToast('success', 'New delivery address saved to your account.', {
+            title: 'Address Saved',
+          })
+        } else {
+          showToast('error', 'Unable to save address. Please verify the information.', {
+            title: 'Save Failed',
+          })
+        }
+        return ok
+      }
+    } catch (err: unknown) {
+      reportError(err, {
+        page: '/account/addresses',
+        action: editingAddress ? 'update-address' : 'add-address',
+      })
+      showToast('error', 'Unable to process address request. Please try again.')
+      return false
+    }
+  }
+
+  const handleSetDefaultAddress = async (id: string) => {
+    try {
+      const ok = await setDefaultAddress(id)
+      if (ok) {
+        showToast('success', 'Default shipping address has been updated.', {
+          title: 'Default Address Set',
+        })
+      } else {
+        showToast('error', 'Unable to set default address. Please try again.', {
+          title: 'Update Failed',
+        })
+      }
+    } catch (err: unknown) {
+      reportError(err, { page: '/account/addresses', action: 'set-default-address', addressId: id })
+      showToast('error', 'Unable to set default address. Please try again.')
     }
   }
 
@@ -77,7 +126,7 @@ export default function AddressesPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-white border border-stone-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-5 sm:p-6 rounded-3xl bg-white border border-stone-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-lg sm:text-xl font-bold text-stone-900 font-serif">Delivery Addresses</h1>
           <p className="text-xs text-stone-500 mt-1">
@@ -88,7 +137,7 @@ export default function AddressesPage() {
         <button
           type="button"
           onClick={handleOpenAdd}
-          className="px-4 py-2.5 rounded-xl bg-brand-primary hover:bg-emerald-700 text-white font-bold text-xs transition shadow-xs flex items-center justify-center gap-1.5 self-start sm:self-auto"
+          className="px-4 py-2.5 rounded-xl bg-brand-primary hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 self-start sm:self-auto"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -125,6 +174,7 @@ export default function AddressesPage() {
               address={address}
               onEdit={handleOpenEdit}
               onDelete={handleDeleteAddress}
+              onSetDefault={handleSetDefaultAddress}
             />
           ))}
         </div>
@@ -183,14 +233,24 @@ export default function AddressesPage() {
               onClick={async () => {
                 if (!deleteTargetId) return
                 setIsDeleting(true)
-                await deleteAddress(deleteTargetId)
-                setIsDeleting(false)
-                setDeleteTargetId(null)
-                showToast('info', 'Delivery address removed successfully.', {
-                  title: 'Address Removed',
-                })
+                try {
+                  const ok = await deleteAddress(deleteTargetId)
+                  if (ok) {
+                    showToast('info', 'Delivery address removed successfully.', {
+                      title: 'Address Removed',
+                    })
+                  } else {
+                    showToast('error', 'Unable to remove address.', { title: 'Delete Failed' })
+                  }
+                } catch (err: unknown) {
+                  reportError(err, { page: '/account/addresses', action: 'delete-address', addressId: deleteTargetId })
+                  showToast('error', 'Unable to remove address.')
+                } finally {
+                  setIsDeleting(false)
+                  setDeleteTargetId(null)
+                }
               }}
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white transition flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white transition flex items-center gap-1.5 disabled:opacity-50"
             >
               {isDeleting ? 'Removing...' : 'Delete Address'}
             </button>

@@ -180,7 +180,7 @@ function SingleAnnouncement({
       {/* Highlight Badge with embedded Icon inside the colored pill */}
       {highlightText && (
         <span
-          className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-[4px] font-extrabold text-[10px] tracking-[0.4px] shadow-sm uppercase shrink-0 transition-colors"
+          className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-[4px] font-extrabold text-[10px] tracking-[0.4px] uppercase shrink-0 transition-colors"
           style={{
             backgroundColor: badgeColor,
             color: badgeTextColor,
@@ -201,7 +201,7 @@ function SingleAnnouncement({
       {/* If icon exists but no highlightText, render icon in its own colored pill */}
       {!highlightText && item.icon && (
         <span
-          className="inline-flex items-center justify-center w-5 h-5 rounded-[4px] shrink-0 shadow-sm"
+          className="inline-flex items-center justify-center w-5 h-5 rounded-[4px] shrink-0"
           style={{
             backgroundColor: badgeColor,
             color: badgeTextColor,
@@ -324,6 +324,16 @@ export function AnnouncementBar({
     }
   }, [])
 
+  // Ensure enough items in each half-track so wide screens (e.g. 4K, 1440p) loop seamlessly
+  const displayItems = useMemo(() => {
+    if (!items || items.length === 0) return []
+    let list = [...items]
+    while (list.length < 6) {
+      list = [...list, ...items]
+    }
+    return list
+  }, [items])
+
   const isEnabled = config?.isEnabled ?? config?.is_enabled ?? true
   if (!isEnabled || items.length === 0) {
     return null
@@ -334,16 +344,6 @@ export function AnnouncementBar({
   const speed = forcedSpeed ?? config?.speedSeconds ?? config?.speed_seconds ?? 32
   const pauseOnHover = config?.pauseOnHover ?? config?.pause_on_hover ?? false
   const fallbackBadgeColor = config?.highlightColor || config?.highlight_color || '#D48B46'
-
-  // Ensure enough items in each half-track so wide screens (e.g. 4K, 1440p) loop seamlessly
-  const displayItems = useMemo(() => {
-    if (!items || items.length === 0) return []
-    let list = [...items]
-    while (list.length < 6) {
-      list = [...list, ...items]
-    }
-    return list
-  }, [items])
 
   return (
     <aside

@@ -4,9 +4,9 @@ import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { PageContainer } from '../layout/PageContainer'
 import { ProductCard } from '../product/ProductCard'
-import { MOCK_PRODUCTS } from '../../lib/mock-data'
 import type { GlorovProductItem } from '../../types/storefront'
 import { cn } from '../../lib/utils/cn'
+import { MOCK_PRODUCTS } from '../../lib/mock-products'
 
 const CURATED_FEATURED_SLUGS = [
   'brinjal-banarshi-giant-seeds',
@@ -49,8 +49,8 @@ export function FeaturedProductsSection({
 }: FeaturedProductsSectionProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'plants' | 'seeds'>('all')
 
-  // Source of truth: Server-preloaded initialProducts or local botanical catalog
-  const productSource = useMemo(() => {
+  // Source of truth: Server-preloaded initialProducts
+  const productSource: GlorovProductItem[] = useMemo(() => {
     return initialProducts && initialProducts.length > 0 ? initialProducts : MOCK_PRODUCTS
   }, [initialProducts])
 
@@ -120,9 +120,9 @@ export function FeaturedProductsSection({
             type="button"
             onClick={() => setActiveTab('all')}
             className={cn(
-              'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all border shrink-0',
+              'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-colors border shrink-0',
               activeTab === 'all'
-                ? 'bg-[#1B4332] text-white border-[#1B4332] shadow-xs'
+                ? 'bg-[#1B4332] text-white border-[#1B4332]'
                 : 'bg-white text-[#4B5563] border-[#E5E7EB] hover:text-[#111827]'
             )}
           >
@@ -137,9 +137,9 @@ export function FeaturedProductsSection({
             type="button"
             onClick={() => setActiveTab('plants')}
             className={cn(
-              'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all border shrink-0',
+              'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-colors border shrink-0',
               activeTab === 'plants'
-                ? 'bg-[#1B4332] text-white border-[#1B4332] shadow-xs'
+                ? 'bg-[#1B4332] text-white border-[#1B4332]'
                 : 'bg-white text-[#4B5563] border-[#E5E7EB] hover:text-[#111827]'
             )}
           >
@@ -154,9 +154,9 @@ export function FeaturedProductsSection({
             type="button"
             onClick={() => setActiveTab('seeds')}
             className={cn(
-              'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-all border shrink-0',
+              'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition-colors border shrink-0',
               activeTab === 'seeds'
-                ? 'bg-[#1B4332] text-white border-[#1B4332] shadow-xs'
+                ? 'bg-[#1B4332] text-white border-[#1B4332]'
                 : 'bg-white text-[#4B5563] border-[#E5E7EB] hover:text-[#111827]'
             )}
           >
@@ -177,7 +177,7 @@ export function FeaturedProductsSection({
         </div>
 
         {/* Specimen Counter Pill matching Flutter */}
-        <div className="mt-8 sm:mt-10 p-4 sm:p-5 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-8 sm:mt-10 p-4 sm:p-5 rounded-2xl bg-white border border-[#E5E7EB] flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5 text-center sm:text-left">
             <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#E8F5E9] text-[#1B4332] text-sm shrink-0">
               🌱
@@ -189,7 +189,7 @@ export function FeaturedProductsSection({
 
           <Link
             href="/categories"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1B4332] hover:bg-[#2D6A4F] text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all active:scale-95 shrink-0"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1B4332] hover:bg-[#2D6A4F] text-white font-bold text-xs uppercase tracking-wider transition-all active:scale-95 shrink-0"
           >
             <span>Explore Full Catalog (60+)</span>
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

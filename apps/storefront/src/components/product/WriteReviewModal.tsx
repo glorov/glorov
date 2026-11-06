@@ -181,7 +181,7 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
                   onClick={() => handleToggleTag(tag)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                     isSelected
-                      ? 'bg-brand-primary text-white border-brand-primary shadow-xs'
+                      ? 'bg-brand-primary text-white border-brand-primary'
                       : 'bg-white text-stone-700 border-stone-200 hover:border-emerald-600 hover:text-emerald-700'
                   }`}
                 >
@@ -257,7 +257,7 @@ export const WriteReviewModal: React.FC<WriteReviewModalProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 disabled:opacity-50"
           >
             {isSubmitting ? (
               <span>Submitting...</span>

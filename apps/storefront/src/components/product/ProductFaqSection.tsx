@@ -146,7 +146,7 @@ export const ProductFaqSection: React.FC<ProductFaqSectionProps> = ({
           return (
             <div
               key={`faq-${idx}`}
-              className="rounded-[22px] border border-[#E2E8F0] bg-white overflow-hidden transition-all shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-[#CBD5E1]"
+              className="rounded-[22px] border border-[#E2E8F0] bg-white overflow-hidden transition-colors hover:border-[#CBD5E1]"
             >
               <button
                 type="button"

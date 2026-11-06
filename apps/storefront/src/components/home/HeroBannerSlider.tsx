@@ -45,8 +45,7 @@ function SliderArrowButton({
       aria-label={label}
       className={cn(
         'hidden md:flex absolute top-1/2 -translate-y-1/2 z-30 items-center justify-center',
-        'w-[42px] h-[42px] rounded-full bg-[#1E3D2F] text-white',
-        'shadow-[0_3px_10px_rgba(0,0,0,0.28)] cursor-pointer',
+        'w-[42px] h-[42px] rounded-full bg-[#1E3D2F] text-white border border-white/20 cursor-pointer',
         'hover:scale-110 active:scale-90 transition-transform duration-150 ease-out',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white',
         direction === 'prev' ? 'left-6' : 'right-6'
@@ -444,7 +443,7 @@ export function HeroBannerSlider({
         {slidesCount > 1 && (
           <div className="absolute bottom-5 left-0 right-0 z-30 flex items-center justify-center pointer-events-auto">
             <div
-              className="flex items-center bg-black/25 backdrop-blur-[2px] px-2 py-1 rounded-full"
+              className="flex items-center bg-black/40 px-2 py-1 rounded-full border border-white/10"
               onPointerDown={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
             >
@@ -469,7 +468,7 @@ export function HeroBannerSlider({
                   >
                     <div
                       className={cn(
-                        'h-[6px] rounded-[4px] bg-white/40 shadow-[0_1.5px_4px_rgba(0,0,0,0.35)]',
+                        'h-[6px] rounded-[4px] bg-white/40',
                         'transition-all duration-300 ease-out',
                         isActive ? 'w-[34px] overflow-hidden relative bg-white/30' : 'w-2 group-hover:bg-white/70'
                       )}

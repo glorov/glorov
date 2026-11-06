@@ -2,6 +2,9 @@ import type { NextConfig } from 'next'
 import path from 'path'
 
 const nextConfig: NextConfig = {
+  // GLOROV-PERF-005: CDN asset prefix support (uncomment when CDN distribution is active)
+  // assetPrefix: process.env.CDN_URL || '',
+
   // Standalone output for super-lightweight production deployment (<80MB RAM)
   output: 'standalone',
 
@@ -11,13 +14,12 @@ const nextConfig: NextConfig = {
   // Strict mode for React — surfaces potential issues early
   reactStrictMode: true,
 
-  // Monorepo compatibility: Medusa backend uses React 18 while Storefront uses React 19.
-  // Ignore build errors during Next.js standalone packaging so hoisted type mismatches do not block CI.
+  // Strict type checking and linting during production builds
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
 
   // Image optimisation — allow Cloudinary and local public assets
@@ -48,6 +50,7 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_MEDUSA_BACKEND_URL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ?? 'http://localhost:9000',
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000',
     NEXT_PUBLIC_SITE_NAME: process.env.NEXT_PUBLIC_SITE_NAME ?? 'GLOROV',
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN ?? process.env.SENTRY_DSN ?? '',
   },
 
   // Compiler options
@@ -65,12 +68,75 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [],
   },
 
-  // Rewrites to proxy Medusa backend requests cleanly without browser CORS issues
-  async rewrites() {
+  // Webpack tuning: disable dev filesystem pack cache to prevent file-locking corruption during test runs
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.cache = false
+    }
+    return config
+  },
+
+  // Security: Disable X-Powered-By header to avoid leaking server technology (GLOROV-SEC-003)
+  poweredByHeader: false,
+
+  // Security Headers for defense-in-depth complementing reverse proxy (GLOROV-SEC-003)
+  async headers() {
+    const cspDirectives = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https://res.cloudinary.com https://i.imgur.com",
+      "font-src 'self' data:",
+      "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com https://api.glorov.in https://api.glorov.tech http://localhost:9000 http://127.0.0.1:9000 https://*.ingest.sentry.io https://*.sentry.io",
+      "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'self'",
+      "upgrade-insecure-requests",
+    ].join('; ')
+
     return [
       {
-        source: '/medusa/:path*',
-        destination: `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ?? 'http://127.0.0.1:9000'}/:path*`,
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: cspDirectives,
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(self)',
+          },
+        ],
+      },
+    ]
+  },
+
+  // Rewrites to proxy Medusa backend requests cleanly without browser CORS issues
+  // Restricts proxying to /store/* endpoints only, preventing exposure of /admin/* (GLOROV-PROXY-001)
+  async rewrites() {
+    const backendUrl = (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ?? 'http://127.0.0.1:9000').replace(/\/$/, '')
+    return [
+      {
+        source: '/medusa/store/:path*',
+        destination: `${backendUrl}/store/:path*`,
       },
     ]
   },

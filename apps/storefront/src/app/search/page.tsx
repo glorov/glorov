@@ -3,6 +3,7 @@ import React, { Suspense } from 'react'
 import { SearchClientView } from '../../components/search/SearchClientView'
 import { BotanicalLoadingState } from '../../components/feedback/BotanicalLoadingState'
 import { SITE_NAME } from '../../lib/constants'
+import { getAllStoreProducts } from '../../lib/api/products'
 
 export const metadata: Metadata = {
   title: `Search Botanical Catalog | ${SITE_NAME}`,
@@ -50,10 +51,12 @@ function SearchLoadingFallback(): React.ReactElement {
  * GLOROV Search Route
  * App Router Page hosting interactive search, filtering, and sorting with Next.js Suspense boundary.
  */
-export default function SearchPage(): React.ReactElement {
+export default async function SearchPage(): Promise<React.ReactElement> {
+  const initialProducts = await getAllStoreProducts(100)
+
   return (
     <Suspense fallback={<SearchLoadingFallback />}>
-      <SearchClientView />
+      <SearchClientView initialProducts={initialProducts} />
     </Suspense>
   )
 }

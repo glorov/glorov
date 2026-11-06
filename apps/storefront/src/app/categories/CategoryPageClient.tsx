@@ -6,6 +6,14 @@ import { useRouter } from 'next/navigation'
 import { GlorovImage } from '../../components/ui/GlorovImage'
 import { useCart } from '../../context/StorefrontContext'
 import {
+  GlorovSeedIcon,
+  GlorovVegetableIcon,
+  GlorovLivePlantIcon,
+  GlorovFlowerIcon,
+  GlorovHerbIcon,
+  GlorovAllIcon,
+} from '../../components/common/GlorovIcons'
+import {
   GLOROV_BOTANICAL_CATEGORIES,
 } from '../../lib/botanical-categories'
 
@@ -73,11 +81,12 @@ export function CategoryPageClient({
   }, [selectedDesktopGroup])
 
   const desktopTabs = [
-    { label: 'All Categories', icon: 'grid' },
-    { label: 'Seeds', icon: 'grain' },
-    { label: 'Live Plants', icon: 'flower' },
-    { label: 'Planters & Pots', icon: 'pot' },
-    { label: 'Plant Care & Soil', icon: 'leaf' },
+    { label: 'All Categories', Icon: GlorovAllIcon },
+    { label: 'Seeds', Icon: GlorovSeedIcon },
+    { label: 'Vegetables', Icon: GlorovVegetableIcon },
+    { label: 'Living Plants', Icon: GlorovLivePlantIcon },
+    { label: 'Flowers', Icon: GlorovFlowerIcon },
+    { label: 'Herbs', Icon: GlorovHerbIcon },
   ]
 
   return (
@@ -88,7 +97,7 @@ export function CategoryPageClient({
           ========================================================================= */}
       <div className="cat-desktop:hidden flex flex-col w-full h-full bg-white overflow-hidden select-none">
         {/* Mobile Top App Bar */}
-        <header className="h-14 min-h-14 bg-white border-b border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex items-center justify-between px-1 z-20">
+        <header className="h-14 min-h-14 bg-white border-b border-[#E5E7EB] flex items-center justify-between px-1 z-20">
           <div className="flex items-center">
             <button
               type="button"
@@ -123,11 +132,10 @@ export function CategoryPageClient({
             >
               <svg className="w-[21px] h-[21px]" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="1.85" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5.5 8.5h13l1.2 12.2a2 2 0 0 1-2 2.3H6.3a2 2 0 0 1-2-2.3L5.5 8.5z" />
-                <path d="M9 8.5V6a3 3 0 0 1 6 0v2.5" />
                 <path d="M9.5 12.5a2.5 2.5 0 0 0 5 0" />
               </svg>
               {cartCount > 0 && (
-                <span className="absolute top-2 right-1.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#1B4332] text-white text-[8.5px] font-extrabold flex items-center justify-center border-[1.2px] border-white shadow-sm">
+                <span className="absolute top-2 right-1.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#1B4332] text-white text-[8.5px] font-extrabold flex items-center justify-center border-[1.2px] border-white">
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}
@@ -162,13 +170,13 @@ export function CategoryPageClient({
 
                   {/* Thumbnail Container */}
                   <div
-                    className={`w-12 h-12 rounded-[14px] flex items-center justify-center overflow-hidden transition-all ${
+                    className={`w-12 h-12 rounded-[14px] flex items-center justify-center overflow-hidden transition-colors ${
                       isForYou
                         ? isSelected
-                          ? 'bg-[#D8F3DC] border-[1.8px] border-[#1B4332] shadow-[0_2px_8px_rgba(27,67,50,0.12)]'
+                          ? 'bg-[#D8F3DC] border-[1.8px] border-[#1B4332]'
                           : 'bg-[#E8F5E9] border border-[#E5E7EB]'
                         : isSelected
-                          ? 'border-[1.8px] border-[#1B4332] shadow-[0_2px_8px_rgba(27,67,50,0.12)] bg-white'
+                          ? 'border-[1.8px] border-[#1B4332] bg-white'
                           : 'border border-[#E5E7EB] bg-white'
                     }`}
                   >
@@ -227,7 +235,7 @@ export function CategoryPageClient({
                   href={`/categories/${activeMobileCategory.handle}?subcat=${encodeURIComponent(sub.title)}`}
                   className="flex flex-col items-center text-center group active:scale-95 transition-transform"
                 >
-                  <div className="w-full aspect-square rounded-[14px] bg-[#F9FAF8] border border-[#ECEEEB] shadow-[0_1px_4px_rgba(0,0,0,0.03)] overflow-hidden relative">
+                  <div className="w-full aspect-square rounded-[14px] bg-[#F9FAF8] border border-[#ECEEEB] overflow-hidden relative">
                     <GlorovImage
                       src={sub.image}
                       alt={sub.title}
@@ -345,7 +353,7 @@ export function CategoryPageClient({
 
             {/* Description */}
             <p className="text-white/85 text-[16px] max-w-[720px] mt-2 leading-[1.5] font-normal">
-              Browse acclimatized live indoor houseplants, germination-tested Desi heirloom seeds, artisanal terracotta planters, and certified organic soil blends.
+              Browse acclimatized live indoor houseplants, germination-tested Desi heirloom seeds, fresh vegetable varieties, vibrant flowering plants, and aromatic kitchen herbs.
             </p>
 
             {/* Stat Chips */}
@@ -384,7 +392,7 @@ export function CategoryPageClient({
         {/* Desktop Main Content Container */}
         <div className="max-w-[1280px] mx-auto px-8 py-6 space-y-6">
           {/* Desktop Search Box */}
-          <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm flex items-center px-4 py-3 gap-3">
+          <div className="bg-white rounded-2xl border border-[#E5E7EB] flex items-center px-4 py-3 gap-3">
             <svg className="w-5 h-5 text-[#1B4332] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -392,7 +400,7 @@ export function CategoryPageClient({
               type="text"
               value={desktopSearchQuery}
               onChange={(e) => setDesktopSearchQuery(e.target.value)}
-              placeholder="Search categories, seeds, houseplants, pots..."
+              placeholder="Search categories, seeds, houseplants, vegetables..."
               className="flex-1 text-[15px] text-[#111827] placeholder:text-[#6B7280] focus:outline-none bg-transparent"
             />
             {desktopSearchQuery.length > 0 && (
@@ -418,37 +426,16 @@ export function CategoryPageClient({
                   key={tab.label}
                   type="button"
                   onClick={() => setSelectedDesktopGroup(tab.label)}
-                  className={`px-3.5 py-2 rounded-full border text-[13px] flex items-center gap-2 transition-all shrink-0 ${
+                  className={`px-3.5 py-2 rounded-full border text-[13px] flex items-center gap-2 transition-colors shrink-0 ${
                     isSelected
-                      ? 'bg-[#1B4332] text-white font-bold border-[#1B4332] shadow-sm'
+                      ? 'bg-[#1B4332] text-white font-bold border-[#1B4332]'
                       : 'bg-white text-[#111827] hover:bg-[#F9FAF8] font-semibold border-[#E5E7EB]'
                   }`}
                 >
-                  {tab.icon === 'grid' && (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z" />
-                    </svg>
-                  )}
-                  {tab.icon === 'grain' && (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
-                    </svg>
-                  )}
-                  {tab.icon === 'flower' && (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2c1.1 0 2 .9 2 2v1.07c1.3.26 2.4.98 3.17 1.99.77-.38 1.65-.56 2.58-.46 2.19.23 3.9 2.02 4 4.22.1 1.99-1.2 3.75-3.04 4.3.17.61.29 1.25.29 1.88 0 1.1-.9 2-2 2h-1.07c-.26 1.3-.98 2.4-1.99 3.17.38.77.56 1.65.46 2.58-.23 2.19-2.02 3.9-4.22 4-1.99.1-3.75-1.2-4.3-3.04-.61.17-1.25.29-1.88.29-1.1 0-2-.9-2-2v-1.07c-1.3-.26-2.4-.98-3.17-1.99-.77.38-1.65.56-2.58.46-2.19-.23-3.9-2.02-4-4.22-.1-1.99 1.2-3.75 3.04-4.3-.17-.61-.29-1.25-.29-1.88 0-1.1.9-2 2-2h1.07c.26-1.3.98-2.4 1.99-3.17-.38-.77-.56-1.65-.46-2.58.23-2.19 2.02-3.9 4.22-4 1.99-.1 3.75 1.2 4.3 3.04.61-.17 1.25-.29 1.88-.29zm0 8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                    </svg>
-                  )}
-                  {tab.icon === 'pot' && (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20 2H4c-1 0-2 .9-2 2v3.01c0 1.06.84 1.93 1.9 1.99L5 19c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2l1.1-10c1.06-.06 1.9-.93 1.9-1.99V4c0-1.1-.9-2-2-2zm-1 3.01H5V4h14v1.01zM17 19H7l-1-9h12l-1 9z" />
-                    </svg>
-                  )}
-                  {tab.icon === 'leaf' && (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66l.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z" />
-                    </svg>
-                  )}
+                  <tab.Icon
+                    size={16}
+                    className={isSelected ? 'text-white' : 'text-[#1B4332]'}
+                  />
                   <span>{tab.label}</span>
                 </button>
               )
@@ -462,7 +449,7 @@ export function CategoryPageClient({
                 <div
                   key={cat.id}
                   onClick={() => setSelectedDesktopGroup(cat.title)}
-                  className="bg-white rounded-[20px] border border-[#E5E7EB] shadow-[0_4px_10px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between group cursor-pointer aspect-[0.74]"
+                  className="bg-white rounded-[20px] border border-[#E5E7EB] hover:border-[#1B4332]/50 transition-colors overflow-hidden flex flex-col justify-between group cursor-pointer aspect-[0.74]"
                 >
                   {/* 16:9 Image with Overlaid Badges */}
                   <div className="relative w-full aspect-[16/9] overflow-hidden bg-[#F3F4F1]">
@@ -476,11 +463,11 @@ export function CategoryPageClient({
                       fallbackTitle={cat.title}
                     />
                     {/* Yellow Top-Left Badge */}
-                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#FFD51F] text-[#042018] text-[11px] font-extrabold shadow-sm">
+                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#FFD51F] text-[#042018] text-[11px] font-extrabold">
                       {cat.badge}
                     </span>
                     {/* Top-Right Varieties Badge */}
-                    <span className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/65 text-white text-[11px] font-semibold backdrop-blur-sm shadow-sm">
+                    <span className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/75 text-white text-[11px] font-semibold">
                       {cat.count} Varieties
                     </span>
                   </div>
@@ -527,7 +514,7 @@ export function CategoryPageClient({
             /* Single Category Showcase */
             <div className="space-y-8 pt-2">
               {/* Category Spotlight Hero Card */}
-              <div className="bg-white rounded-[20px] border border-[#E5E7EB] shadow-[0_4px_10px_rgba(0,0,0,0.04)] p-8 flex items-center gap-8">
+              <div className="bg-white rounded-[20px] border border-[#E5E7EB] p-8 flex items-center gap-8">
                 <div className="w-[120px] h-[120px] rounded-2xl overflow-hidden relative shrink-0 bg-[#F3F4F1]">
                   <GlorovImage
                     src={activeDesktopCategory.image}
@@ -580,7 +567,7 @@ export function CategoryPageClient({
                     <Link
                       key={sub.handle}
                       href={`/categories/${activeDesktopCategory.handle}?subcat=${encodeURIComponent(sub.title)}`}
-                      className="bg-white rounded-[16px] border border-[#E5E7EB] shadow-[0_4px_10px_rgba(0,0,0,0.04)] overflow-hidden flex h-[100px] cursor-pointer hover:border-[#1B4332]/40 transition-colors group"
+                      className="bg-white rounded-[16px] border border-[#E5E7EB] overflow-hidden flex h-[100px] cursor-pointer hover:border-[#1B4332]/40 transition-colors group"
                     >
                       <div className="w-[120px] h-full relative shrink-0 bg-[#F3F4F1]">
                         <GlorovImage
@@ -628,7 +615,7 @@ export function CategoryPageClient({
                         <Link
                           key={launch.handle}
                           href={`/products/${launch.handle}`}
-                          className="bg-white rounded-[16px] border border-[#E5E7EB] shadow-[0_4px_10px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col justify-between cursor-pointer hover:shadow-md transition-shadow group"
+                          className="bg-white rounded-[16px] border border-[#E5E7EB] overflow-hidden flex flex-col justify-between cursor-pointer hover:border-[#1B4332]/50 transition-colors group"
                         >
                           <div className="w-full aspect-[1.15] bg-[#F9FAF8] overflow-hidden relative">
                             <GlorovImage
@@ -681,7 +668,7 @@ export function CategoryPageClient({
               <button
                 type="button"
                 onClick={() => setSelectedDesktopGroup('Seeds')}
-                className="bg-[#1B4332] hover:bg-[#2D6A4F] text-white px-5 py-3 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 active:scale-95 transition-all shadow-sm"
+                className="bg-[#1B4332] hover:bg-[#2D6A4F] text-white px-5 py-3 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 active:scale-95 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

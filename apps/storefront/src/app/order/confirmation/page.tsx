@@ -1,21 +1,66 @@
 'use client'
 
-import React, { Suspense } from 'react'
+import React, { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { GlorovImage } from '../../../components/ui/GlorovImage'
 import { useSearchParams } from 'next/navigation'
 import { useCheckout } from '../../../context/StorefrontContext'
+import { useCustomerAuth } from '../../../context/CustomerAuthContext'
 import { Breadcrumbs } from '../../../components/layout/Breadcrumbs'
 import { PageContainer } from '../../../components/layout/PageContainer'
 import { formatINR } from '../../../components/product/ProductPrice'
+import { fetchMedusaOrder } from '../../../lib/api/checkout'
+import type { PlacedOrderReceipt } from '../../../types/checkout'
 
 function OrderConfirmationContent(): React.ReactElement {
   const searchParams = useSearchParams()
   const orderIdParam = searchParams ? searchParams.get('id') : null
   const { latestOrder } = useCheckout()
+  const { token: authToken } = useCustomerAuth()
 
-  // Use latest order or placeholder
-  const order = latestOrder
+  const [order, setOrder] = useState<PlacedOrderReceipt | null>(latestOrder)
+  const [isLoading, setIsLoading] = useState<boolean>(!latestOrder && !!orderIdParam)
+
+  // Fetch authoritative order data from Medusa v2 backend if orderId is provided
+  useEffect(() => {
+    if (!orderIdParam) return
+
+    let isMounted = true
+    setIsLoading(true)
+
+    fetchMedusaOrder(orderIdParam, authToken)
+      .then((realOrder) => {
+        if (isMounted && realOrder) {
+          setOrder(realOrder)
+        }
+      })
+      .catch(() => {
+        // Fall back to latestOrder if present in state
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [orderIdParam, authToken])
+
+  if (isLoading && !order) {
+    return (
+      <div className="p-12 text-center rounded-2xl bg-white border border-stone-200 max-w-md mx-auto my-12 animate-pulse">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin" />
+        </div>
+        <h2 className="text-lg font-bold text-stone-900 mb-1">Verifying Botanical Order</h2>
+        <p className="text-xs text-stone-500">
+          Loading your order details from Medusa commerce server...
+        </p>
+      </div>
+    )
+  }
 
   if (!order && !orderIdParam) {
     return (
@@ -31,7 +76,7 @@ function OrderConfirmationContent(): React.ReactElement {
         </p>
         <Link
           href="/categories/seeds"
-          className="px-6 py-2.5 rounded-xl bg-brand-primary text-white font-bold text-xs uppercase tracking-wider inline-block hover:bg-brand-primary/95 transition shadow-xs"
+          className="px-6 py-2.5 rounded-xl bg-brand-primary text-white font-bold text-xs uppercase tracking-wider inline-block hover:bg-brand-primary/95 transition"
         >
           Explore Seeds & Plants
         </Link>
@@ -39,9 +84,9 @@ function OrderConfirmationContent(): React.ReactElement {
     )
   }
 
-  // Display receipt
-  const displayId = order?.displayId || `GLR-${orderIdParam?.slice(-6) || '782910'}`
-  const customerEmail = order?.email || 'customer@example.com'
+  // Display receipt with real Medusa data
+  const displayId = order?.displayId || `GLR-${orderIdParam?.slice(-6).toUpperCase() || 'ORDER'}`
+  const customerEmail = order?.email || order?.shippingAddress?.email || 'customer@example.com'
   const customerName = order?.customerName || order?.shippingAddress?.fullName || 'Botanical Patron'
   const estDelivery = order?.estimatedDeliveryDate || 'Within 3 — 5 Business Days'
   const items = order?.items || []
@@ -49,7 +94,7 @@ function OrderConfirmationContent(): React.ReactElement {
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-6">
       {/* 1. Celebration Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200/90 shadow-sm text-center flex flex-col items-center">
+      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200/90 text-center flex flex-col items-center">
         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-100 text-brand-primary flex items-center justify-center mb-4 ring-8 ring-emerald-50">
           <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -138,7 +183,7 @@ function OrderConfirmationContent(): React.ReactElement {
 
       {/* 4. Itemized Order Review */}
       {items.length > 0 && (
-        <div className="p-5 rounded-2xl bg-white border border-stone-200/90 shadow-xs">
+        <div className="p-5 rounded-2xl bg-white border border-stone-200/90">
           <h3 className="font-bold text-stone-900 uppercase tracking-wider mb-3 text-xs pb-2 border-b border-stone-100">
             Ordered Botanical Specimens ({items.length})
           </h3>
@@ -201,7 +246,7 @@ function OrderConfirmationContent(): React.ReactElement {
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
         <Link
           href="/categories/seeds"
-          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-primary text-white font-bold text-xs uppercase tracking-wider text-center hover:bg-brand-primary/95 transition shadow-xs"
+          className="w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-primary text-white font-bold text-xs uppercase tracking-wider text-center hover:bg-brand-primary/95 transition"
         >
           Continue Shopping
         </Link>

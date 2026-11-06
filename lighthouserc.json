@@ -1,0 +1,27 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 1,
+      "startServerCommand": "pnpm --filter @glorov/storefront start",
+      "startServerReadyPattern": "Ready in",
+      "startServerReadyTimeout": 60000,
+      "url": [
+        "http://localhost:3000/",
+        "http://localhost:3000/categories",
+        "http://localhost:3000/products/green-chilli-seeds",
+        "http://localhost:3000/cart"
+      ]
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["warn", { "minScore": 0.70 }],
+        "categories:accessibility": ["warn", { "minScore": 0.80 }],
+        "categories:best-practices": ["warn", { "minScore": 0.80 }],
+        "categories:seo": ["warn", { "minScore": 0.80 }]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

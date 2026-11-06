@@ -85,15 +85,15 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
 
     const variantClasses = {
       primary:
-        'bg-forest-deep text-white hover:bg-forest-medium shadow-sm focus-visible:ring-2 focus-visible:ring-forest-deep focus-visible:ring-offset-2',
+        'bg-forest-deep text-white hover:bg-forest-medium focus-visible:ring-2 focus-visible:ring-forest-deep focus-visible:ring-offset-2',
       secondary:
-        'bg-sage text-white hover:bg-forest-medium shadow-sm focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2',
+        'bg-sage text-white hover:bg-forest-medium focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2',
       outline:
         'border border-border-medium bg-transparent text-forest-deep hover:bg-surface-muted hover:border-forest-deep focus-visible:ring-2 focus-visible:ring-forest-deep',
       ghost:
         'bg-transparent text-forest-deep hover:bg-surface-muted focus-visible:ring-2 focus-visible:ring-forest-deep',
       danger:
-        'bg-brand-error text-white hover:bg-red-700 shadow-sm focus-visible:ring-2 focus-visible:ring-brand-error focus-visible:ring-offset-2',
+        'bg-brand-error text-white hover:bg-red-700 focus-visible:ring-2 focus-visible:ring-brand-error focus-visible:ring-offset-2',
       subtle:
         'bg-mint-badge text-forest-deep hover:bg-mint focus-visible:ring-2 focus-visible:ring-forest-deep',
     }[variant]

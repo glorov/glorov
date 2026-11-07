@@ -1,4 +1,12 @@
-import * as Sentry from '@sentry/node'
+let Sentry: typeof import('@sentry/node') | null = null
+try {
+  // Safe dynamic require for optional Sentry dependency on memory-constrained servers
+  // eslint-disable-next-line
+  Sentry = require('@sentry/node')
+} catch {
+  // Optional dependency: Sentry not installed or omitted in slim production
+}
+
 import {
   redactSensitiveData,
   SafeErrorClassification,
@@ -42,7 +50,7 @@ export function initBackendErrorReporting(): boolean {
   }
 
   const dsn = process.env.SENTRY_DSN
-  if (!dsn) {
+  if (!dsn || !Sentry) {
     return false
   }
 
@@ -103,7 +111,7 @@ export function reportBackendError(
       const statusCode = context?.statusCode ? String(context.statusCode) : undefined
       const operation = context?.operation || 'backend.operation'
 
-      if (process.env.SENTRY_DSN) {
+      if (Sentry && process.env.SENTRY_DSN) {
         Sentry.withScope((scope) => {
           if (correlationId) {
             scope.setTag('correlation_id', correlationId)
@@ -156,7 +164,7 @@ export function reportDeadLetter(
         testListener({ type: 'dead_letter', error: err, deadLetterRecord: sanitizedRecord })
       }
 
-      if (process.env.SENTRY_DSN) {
+      if (Sentry && process.env.SENTRY_DSN) {
         Sentry.withScope((scope) => {
           scope.setLevel('error')
           scope.setTag('dead_letter', 'true')

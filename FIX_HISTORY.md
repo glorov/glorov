@@ -859,6 +859,44 @@
 ### Template for Future Entries
 
 ```
+### FIX-020: Comprehensive Botanical Catalog Image Audit, Zero-Duplication Remediation, Cloudinary CDN Synchronization & Medusa Admin Dashboard Gallery Widget
+- **Related Issue:** GLOROV-MEDIA-001 (Catalog Image Integrity & Duplication Remediation)
+- **Date:** 2026-11-07
+- **Module:** Media Assets, PostgreSQL Database, Medusa v2 Admin Dashboard (`apps/backend`), Storefront (`apps/storefront`), Flutter App
+- **Problem:**
+  1. Multiple catalog products had mismatched or identical placeholder images copied across distinct categories. All 6 gardening tools shared an identical transplanter/trowel image for slot 1 and soil images for slots 2 & 3 (e.g. an 1800W electric lawn mower displayed a hand trowel and soil).
+  2. All 6 potting soils and fertilizers shared identical generic soil pile images.
+  3. All 8 ceramic planters and pots shared identical photos of Olivia Ivory pot.
+  4. 15+ seed products shared an identical generic nursery seedling tray at slot 3, and several shared seed images at slot 2 across completely different botanical species. Internal duplicates also existed where slots 4/5 were exact duplicates of slot 1.
+  5. The Medusa Admin Dashboard lacked an interactive visual media gallery inspection widget on the product details page.
+- **Root Cause:** Prototyping seeds and static directories (`apps/backend/static/products`) contained duplicated binary files that were uploaded with identical hashes across multiple products, and seed scripts reused generic Unsplash/placeholder URLs.
+- **Files Changed:**
+  - `apps/backend/src/admin/widgets/product-gallery-widget.tsx` (New interactive admin widget displaying verified media gallery, thumbnail sync, rank badges, and 1-click Cloudinary CDN copy)
+  - `apps/backend/static/products/**` (84 local product images replaced with authentic, unique, 1000x1000 square JPEGs across all 11 categories)
+  - `apps/backend/data/cloudinary-image-map.json` (Updated with 84 new secure Cloudinary URLs)
+  - `apps/backend/data/sync_clean_catalog_images.sql` (Reproducible SQL migration script for all 57 products and 228 images)
+  - `apps/storefront/src/lib/mock-products.ts` (Synchronized all 35 mock products with new verified Cloudinary CDN URLs)
+  - `scratch/apply_catalog_image_updates.js` (Executed database migration script)
+- **Database Changes:** Executed transactional update on Supabase PostgreSQL database:
+  - Updated `product.thumbnail` for all 57 products to match slot 1 primary image.
+  - Purged duplicate and mismatched rows in `image` table and inserted 228 verified, unique image records with proper ranks (`0..N-1`) and metadata.
+- **Solution Implemented:**
+  1. Audited all 57 products (226 existing images) via MD5 hashing; identified 36 products with internal duplicates or cross-product shared images.
+  2. Curated 84 distinct, authentic, high-resolution botanical and hardware photos from Wikimedia Commons and verified botanical repositories.
+  3. Pre-processed all 84 images via PIL/LANCZOS to standardized 1000x1000 high-resolution square JPEGs (92% quality).
+  4. Verified 0 duplicate hashes across all 84 new images.
+  5. Uploaded all 84 assets to Cloudinary CDN (`glorov/products/<category>/<handle>-<slot>.jpg`).
+  6. Updated PostgreSQL database via an atomic transaction (verified 57 products, 228 images, 228 unique URLs, 0 duplicates).
+  7. Built and integrated `ProductGalleryWidget` into Medusa v2 Admin Dashboard (`product.details.before`).
+  8. Synchronized storefront mock catalog and backend static assets.
+- **Tests Executed:**
+  - `pnpm --filter @glorov/backend typecheck` (Pass, 0 errors)
+  - `pnpm --filter @glorov/storefront typecheck` (Pass, 0 errors)
+  - `pnpm --filter @glorov/storefront test` (Pass, 28 test files, 285 unit tests)
+  - `pnpm --filter @glorov/backend test` (Pass, 26 test suites, 329 unit tests)
+  - `flutter test test/glorov_backend_contract_test.dart test/glorov_product_details_test.dart` (Pass, 35 tests)
+- **Test Results:** PASS (All 649+ tests across storefront, backend, and Flutter passed with zero errors).
+
 ### FIX-XXX: [Title]
 - **Related Issue:** GLOROV-XXX-XXX
 - **Date:** YYYY-MM-DD

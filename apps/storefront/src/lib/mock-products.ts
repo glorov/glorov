@@ -50,11 +50,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025063/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571728/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571727/glorov/products/vegetable-seeds/brinjal-banarshi-giant-seeds-1.jpg",
     inStock: true,
     badges: ["Summer Sale"],
@@ -78,11 +78,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571728/glorov/products/vegetable-seeds/chinese-cabbage-seeds-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571728/glorov/products/vegetable-seeds/chinese-cabbage-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571728/glorov/products/vegetable-seeds/chinese-cabbage-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025065/glorov/products/vegetable-seeds/chinese-cabbage-seeds-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571728/glorov/products/vegetable-seeds/chinese-cabbage-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571730/glorov/products/vegetable-seeds/chinese-cabbage-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571730/glorov/products/vegetable-seeds/chinese-cabbage-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571728/glorov/products/vegetable-seeds/chinese-cabbage-seeds-1.jpg",
     inStock: true,
     badges: ["Summer Sale"],
@@ -106,11 +106,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571732/glorov/products/vegetable-seeds/green-onion-seeds-leek-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571734/glorov/products/vegetable-seeds/green-onion-seeds-leek-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571734/glorov/products/vegetable-seeds/green-onion-seeds-leek-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025112/glorov/products/vegetable-seeds/green-onion-seeds-leek-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571734/glorov/products/vegetable-seeds/green-onion-seeds-leek-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571734/glorov/products/vegetable-seeds/green-onion-seeds-leek-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571734/glorov/products/vegetable-seeds/green-onion-seeds-leek-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571732/glorov/products/vegetable-seeds/green-onion-seeds-leek-1.jpg",
     inStock: true,
     badges: ["Summer Sale"],
@@ -134,11 +134,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571730/glorov/products/vegetable-seeds/drumstick-seeds-moringa-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571730/glorov/products/vegetable-seeds/drumstick-seeds-moringa-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571730/glorov/products/vegetable-seeds/drumstick-seeds-moringa-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025089/glorov/products/vegetable-seeds/drumstick-seeds-moringa-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571731/glorov/products/vegetable-seeds/drumstick-seeds-moringa-4.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571731/glorov/products/vegetable-seeds/drumstick-seeds-moringa-5.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025091/glorov/products/vegetable-seeds/drumstick-seeds-moringa-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571731/glorov/products/vegetable-seeds/drumstick-seeds-moringa-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571730/glorov/products/vegetable-seeds/drumstick-seeds-moringa-1.jpg",
     inStock: true,
     badges: ["Summer Sale"],
@@ -166,7 +166,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571735/glorov/products/vegetable-seeds/heirloom-tomato-vegetable-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571735/glorov/products/vegetable-seeds/heirloom-tomato-vegetable-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571736/glorov/products/vegetable-seeds/heirloom-tomato-vegetable-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571735/glorov/products/vegetable-seeds/heirloom-tomato-vegetable-seeds-1.png",
     inStock: true,
     badges: ["Summer Sale", "Popular"],
@@ -194,7 +194,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571736/glorov/products/vegetable-seeds/watermelon-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571737/glorov/products/vegetable-seeds/watermelon-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571737/glorov/products/vegetable-seeds/watermelon-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571736/glorov/products/vegetable-seeds/watermelon-seeds-1.jpg",
     inStock: true,
     badges: ["Summer Sale"],
@@ -222,7 +222,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571738/glorov/products/vegetable-seeds/white-cucumber-seeds-khira-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571738/glorov/products/vegetable-seeds/white-cucumber-seeds-khira-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571738/glorov/products/vegetable-seeds/white-cucumber-seeds-khira-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571737/glorov/products/vegetable-seeds/white-cucumber-seeds-khira-1.jpg",
     inStock: true,
     badges: ["Summer Sale"],
@@ -245,12 +245,12 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     reviewCount: 45,
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571745/glorov/products/flower-seeds/petunia-mix-seeds-1.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571745/glorov/products/flower-seeds/petunia-mix-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571745/glorov/products/flower-seeds/petunia-mix-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025153/glorov/products/flower-seeds/petunia-mix-seeds-2.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025154/glorov/products/flower-seeds/petunia-mix-seeds-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571746/glorov/products/flower-seeds/petunia-mix-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571746/glorov/products/flower-seeds/petunia-mix-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571746/glorov/products/flower-seeds/petunia-mix-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571745/glorov/products/flower-seeds/petunia-mix-seeds-1.jpg",
     inStock: true,
     badges: ["Vibrant Blooms"],
@@ -274,11 +274,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571741/glorov/products/flower-seeds/dahlia-seeds-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571741/glorov/products/flower-seeds/dahlia-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571741/glorov/products/flower-seeds/dahlia-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025083/glorov/products/flower-seeds/dahlia-seeds-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571741/glorov/products/flower-seeds/dahlia-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571741/glorov/products/flower-seeds/dahlia-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571744/glorov/products/flower-seeds/dahlia-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571741/glorov/products/flower-seeds/dahlia-seeds-1.jpg",
     inStock: true,
     badges: ["Vibrant Blooms"],
@@ -302,11 +302,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571743/glorov/products/flower-seeds/marigold-african-double-seeds-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571743/glorov/products/flower-seeds/marigold-african-double-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571744/glorov/products/flower-seeds/marigold-african-double-seeds-3.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571743/glorov/products/flower-seeds/marigold-african-double-seeds-4.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025122/glorov/products/flower-seeds/marigold-african-double-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025124/glorov/products/flower-seeds/marigold-african-double-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571745/glorov/products/flower-seeds/marigold-african-double-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571745/glorov/products/flower-seeds/marigold-african-double-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571743/glorov/products/flower-seeds/marigold-african-double-seeds-1.jpg",
     inStock: true,
     badges: ["Vibrant Blooms"],
@@ -330,11 +330,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571739/glorov/products/flower-seeds/cosmos-mix-seeds-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571740/glorov/products/flower-seeds/cosmos-mix-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571740/glorov/products/flower-seeds/cosmos-mix-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025075/glorov/products/flower-seeds/cosmos-mix-seeds-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571740/glorov/products/flower-seeds/cosmos-mix-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571740/glorov/products/flower-seeds/cosmos-mix-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571740/glorov/products/flower-seeds/cosmos-mix-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571739/glorov/products/flower-seeds/cosmos-mix-seeds-1.jpg",
     inStock: true,
     badges: ["Vibrant Blooms"],
@@ -357,12 +357,12 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     reviewCount: 45,
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571738/glorov/products/flower-seeds/chrysanthemum-mix-250-seeds-1.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571738/glorov/products/flower-seeds/chrysanthemum-mix-250-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571739/glorov/products/flower-seeds/chrysanthemum-mix-250-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025066/glorov/products/flower-seeds/chrysanthemum-mix-250-seeds-2.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025068/glorov/products/flower-seeds/chrysanthemum-mix-250-seeds-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571739/glorov/products/flower-seeds/chrysanthemum-mix-250-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571739/glorov/products/flower-seeds/chrysanthemum-mix-250-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571739/glorov/products/flower-seeds/chrysanthemum-mix-250-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571738/glorov/products/flower-seeds/chrysanthemum-mix-250-seeds-1.jpg",
     inStock: true,
     badges: ["Vibrant Blooms"],
@@ -385,12 +385,12 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     reviewCount: 37,
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571746/glorov/products/flower-seeds/portulaca-mix-seeds-1.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571746/glorov/products/flower-seeds/portulaca-mix-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571747/glorov/products/flower-seeds/portulaca-mix-seeds-3.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571747/glorov/products/flower-seeds/portulaca-mix-seeds-4.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025156/glorov/products/flower-seeds/portulaca-mix-seeds-2.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025157/glorov/products/flower-seeds/portulaca-mix-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025158/glorov/products/flower-seeds/portulaca-mix-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571747/glorov/products/flower-seeds/portulaca-mix-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571747/glorov/products/flower-seeds/portulaca-mix-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571746/glorov/products/flower-seeds/portulaca-mix-seeds-1.jpg",
     inStock: true,
     badges: ["Vibrant Blooms"],
@@ -414,11 +414,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025121/glorov/products/herb-seeds/italian-basil-1000-seeds-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571751/glorov/products/herb-seeds/italian-basil-1000-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/italian-basil-1000-seeds-1.jpg",
     inStock: true,
     badges: ["Culinary Herb"],
@@ -442,11 +442,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571747/glorov/products/herb-seeds/arugula-seeds-rocket-leaves-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571748/glorov/products/herb-seeds/arugula-seeds-rocket-leaves-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571748/glorov/products/herb-seeds/arugula-seeds-rocket-leaves-3.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571748/glorov/products/herb-seeds/arugula-seeds-rocket-leaves-4.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571749/glorov/products/herb-seeds/arugula-seeds-rocket-leaves-5.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025057/glorov/products/herb-seeds/arugula-seeds-rocket-leaves-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025059/glorov/products/herb-seeds/arugula-seeds-rocket-leaves-4.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025061/glorov/products/herb-seeds/arugula-seeds-rocket-leaves-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571748/glorov/products/herb-seeds/arugula-seeds-rocket-leaves-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571747/glorov/products/herb-seeds/arugula-seeds-rocket-leaves-1.jpg",
     inStock: true,
     badges: ["Culinary Herb"],
@@ -470,11 +470,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571754/glorov/products/herb-seeds/tulsi-seeds-holy-basil-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571755/glorov/products/herb-seeds/tulsi-seeds-holy-basil-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571755/glorov/products/herb-seeds/tulsi-seeds-holy-basil-3.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571755/glorov/products/herb-seeds/tulsi-seeds-holy-basil-4.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025194/glorov/products/herb-seeds/tulsi-seeds-holy-basil-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025196/glorov/products/herb-seeds/tulsi-seeds-holy-basil-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571755/glorov/products/herb-seeds/tulsi-seeds-holy-basil-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571755/glorov/products/herb-seeds/tulsi-seeds-holy-basil-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571754/glorov/products/herb-seeds/tulsi-seeds-holy-basil-1.jpg",
     inStock: true,
     badges: ["Culinary Herb"],
@@ -498,11 +498,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571752/glorov/products/herb-seeds/parsley-1000-seeds-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571752/glorov/products/herb-seeds/parsley-1000-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571752/glorov/products/herb-seeds/parsley-1000-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025147/glorov/products/herb-seeds/parsley-1000-seeds-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571753/glorov/products/herb-seeds/parsley-1000-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571753/glorov/products/herb-seeds/parsley-1000-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571753/glorov/products/herb-seeds/parsley-1000-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571752/glorov/products/herb-seeds/parsley-1000-seeds-1.jpg",
     inStock: true,
     badges: ["Culinary Herb"],
@@ -525,12 +525,12 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     reviewCount: 43,
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571751/glorov/products/herb-seeds/oregano-1500-seeds-1.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571751/glorov/products/herb-seeds/oregano-1500-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571751/glorov/products/herb-seeds/oregano-1500-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025138/glorov/products/herb-seeds/oregano-1500-seeds-2.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025139/glorov/products/herb-seeds/oregano-1500-seeds-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571751/glorov/products/herb-seeds/oregano-1500-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571752/glorov/products/herb-seeds/oregano-1500-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571752/glorov/products/herb-seeds/oregano-1500-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571751/glorov/products/herb-seeds/oregano-1500-seeds-1.jpg",
     inStock: true,
     badges: ["Culinary Herb"],
@@ -554,11 +554,11 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
     imageUrls: [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571753/glorov/products/herb-seeds/thyme-750-seeds-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571753/glorov/products/herb-seeds/thyme-750-seeds-2.jpg",
-      "https://res.cloudinary.com/naodmm8w/image/upload/v1793571754/glorov/products/herb-seeds/thyme-750-seeds-3.jpg",
+      "https://res.cloudinary.com/naodmm8w/image/upload/v1794025183/glorov/products/herb-seeds/thyme-750-seeds-3.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571754/glorov/products/herb-seeds/thyme-750-seeds-4.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571754/glorov/products/herb-seeds/thyme-750-seeds-5.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793571754/glorov/products/herb-seeds/thyme-750-seeds-6.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793571753/glorov/products/herb-seeds/thyme-750-seeds-1.jpg",
     inStock: true,
     badges: ["Culinary Herb"],
@@ -583,7 +583,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516579/glorov/products/indoor-plants/peace-lily-plant-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516579/glorov/products/indoor-plants/peace-lily-plant-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516579/glorov/products/indoor-plants/peace-lily-plant-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516579/glorov/products/indoor-plants/peace-lily-plant-1.jpg",
     inStock: true,
     badges: ["Low Maintenance"],
@@ -608,7 +608,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516577/glorov/products/indoor-plants/anthurium-red-plant-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516577/glorov/products/indoor-plants/anthurium-red-plant-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516577/glorov/products/indoor-plants/anthurium-red-plant-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516577/glorov/products/indoor-plants/anthurium-red-plant-1.jpg",
     inStock: true,
     badges: ["Low Maintenance"],
@@ -633,7 +633,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516578/glorov/products/indoor-plants/jade-plant-mini-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516578/glorov/products/indoor-plants/jade-plant-mini-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516579/glorov/products/indoor-plants/jade-plant-mini-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516578/glorov/products/indoor-plants/jade-plant-mini-1.jpg",
     inStock: true,
     badges: ["Low Maintenance"],
@@ -658,7 +658,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516579/glorov/products/indoor-plants/money-plant-golden-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516579/glorov/products/indoor-plants/money-plant-golden-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516579/glorov/products/indoor-plants/money-plant-golden-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516579/glorov/products/indoor-plants/money-plant-golden-1.jpg",
     inStock: true,
     badges: ["Low Maintenance"],
@@ -683,7 +683,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516580/glorov/products/indoor-plants/the-china-doll-plant-xl-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516580/glorov/products/indoor-plants/the-china-doll-plant-xl-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516580/glorov/products/indoor-plants/the-china-doll-plant-xl-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516580/glorov/products/indoor-plants/the-china-doll-plant-xl-1.jpg",
     inStock: true,
     badges: ["Low Maintenance"],
@@ -708,7 +708,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516578/glorov/products/indoor-plants/areca-palm-plant-xl-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516578/glorov/products/indoor-plants/areca-palm-plant-xl-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516578/glorov/products/indoor-plants/areca-palm-plant-xl-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516578/glorov/products/indoor-plants/areca-palm-plant-xl-1.jpg",
     inStock: true,
     badges: ["Low Maintenance"],
@@ -808,7 +808,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516563/glorov/products/air-purifying-plants/aglaonema-pink-beauty-plant-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516563/glorov/products/air-purifying-plants/aglaonema-pink-beauty-plant-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516564/glorov/products/air-purifying-plants/aglaonema-pink-beauty-plant-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516563/glorov/products/air-purifying-plants/aglaonema-pink-beauty-plant-1.jpg",
     inStock: true,
     badges: ["NASA Air Purifier"],
@@ -833,7 +833,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516564/glorov/products/air-purifying-plants/aglaonema-red-plant-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516564/glorov/products/air-purifying-plants/aglaonema-red-plant-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516564/glorov/products/air-purifying-plants/aglaonema-red-plant-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516564/glorov/products/air-purifying-plants/aglaonema-red-plant-1.jpg",
     inStock: true,
     badges: ["NASA Air Purifier"],
@@ -858,7 +858,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516565/glorov/products/air-purifying-plants/zz-plant-xl-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516565/glorov/products/air-purifying-plants/zz-plant-xl-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516565/glorov/products/air-purifying-plants/zz-plant-xl-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516565/glorov/products/air-purifying-plants/zz-plant-xl-1.jpg",
     inStock: true,
     badges: ["NASA Air Purifier"],
@@ -958,7 +958,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516570/glorov/products/flowering-plants/aglaonema-snow-white-plant-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516570/glorov/products/flowering-plants/aglaonema-snow-white-plant-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516571/glorov/products/flowering-plants/aglaonema-snow-white-plant-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516570/glorov/products/flowering-plants/aglaonema-snow-white-plant-1.jpg",
     inStock: true,
     badges: ["Continuous Blooms"],
@@ -983,7 +983,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516571/glorov/products/flowering-plants/bird-of-paradise-plant-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516571/glorov/products/flowering-plants/bird-of-paradise-plant-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516571/glorov/products/flowering-plants/bird-of-paradise-plant-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516571/glorov/products/flowering-plants/bird-of-paradise-plant-1.jpg",
     inStock: true,
     badges: ["Continuous Blooms"],
@@ -1058,7 +1058,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516583/glorov/products/succulents-bonsai/sansevieria-laurentii-plant-xl-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516583/glorov/products/succulents-bonsai/sansevieria-laurentii-plant-xl-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516583/glorov/products/succulents-bonsai/sansevieria-laurentii-plant-xl-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516583/glorov/products/succulents-bonsai/sansevieria-laurentii-plant-xl-1.jpg",
     inStock: true,
     badges: ["Drought Tolerant"],
@@ -1083,7 +1083,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516584/glorov/products/succulents-bonsai/snake-plant-golden-hahnii-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516584/glorov/products/succulents-bonsai/snake-plant-golden-hahnii-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516584/glorov/products/succulents-bonsai/snake-plant-golden-hahnii-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516584/glorov/products/succulents-bonsai/snake-plant-golden-hahnii-1.jpg",
     inStock: true,
     badges: ["Drought Tolerant"],
@@ -1108,7 +1108,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516583/glorov/products/succulents-bonsai/snake-plant-futura-superba-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516584/glorov/products/succulents-bonsai/snake-plant-futura-superba-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516584/glorov/products/succulents-bonsai/snake-plant-futura-superba-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516583/glorov/products/succulents-bonsai/snake-plant-futura-superba-1.jpg",
     inStock: true,
     badges: ["Drought Tolerant"],
@@ -1133,7 +1133,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516583/glorov/products/succulents-bonsai/sansevieria-zeylanica-xl-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516583/glorov/products/succulents-bonsai/sansevieria-zeylanica-xl-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516583/glorov/products/succulents-bonsai/sansevieria-zeylanica-xl-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516583/glorov/products/succulents-bonsai/sansevieria-zeylanica-xl-1.jpg",
     inStock: true,
     badges: ["Drought Tolerant"],
@@ -1158,7 +1158,7 @@ export const MOCK_PRODUCTS: GlorovProductItem[] = /*#__PURE__*/ [
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516585/glorov/products/succulents-bonsai/weeping-jade-with-hanging-pot-1.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516585/glorov/products/succulents-bonsai/weeping-jade-with-hanging-pot-2.jpg",
       "https://res.cloudinary.com/naodmm8w/image/upload/v1793516585/glorov/products/succulents-bonsai/weeping-jade-with-hanging-pot-3.jpg"
-],
+    ],
     primaryImage: "https://res.cloudinary.com/naodmm8w/image/upload/v1793516585/glorov/products/succulents-bonsai/weeping-jade-with-hanging-pot-1.jpg",
     inStock: true,
     badges: ["Drought Tolerant"],

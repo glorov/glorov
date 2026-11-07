@@ -15,7 +15,6 @@ jobs:
     name: Build & Deploy to Azure VM (1GB RAM Optimized)
     runs-on: ubuntu-latest
     env:
-      SSH_KEY: ${{ secrets.AZURE_SSH_KEY || secrets.SERVER_SSH_KEY }}
       HOST: ${{ secrets.AZURE_HOST || '20.244.48.139' }}
       USER: ${{ secrets.AZURE_USER || 'elsesourav' }}
     steps:
@@ -53,7 +52,7 @@ jobs:
           NODE_ENV: production
           MEDUSA_BUILD_PHASE: "true"
           ADMIN_PATH: "/"
-          MEDUSA_BACKEND_URL: https://api.glorov.in
+          MEDUSA_BACKEND_URL: https://api.glorov.tech
         run: |
           echo "🔨 Compiling Medusa v2 backend and admin dashboard..."
           pnpm --filter @glorov/types build || true
@@ -64,9 +63,9 @@ jobs:
       - name: 8. Build Next.js Storefront (Standalone)
         env:
           NODE_ENV: production
-          NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://api.glorov.in/medusa
+          NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://api.glorov.tech/medusa
           NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_2550b4af7f0ff9f2f1ff1b5f9b16c11e753ba1b574d55e1d9221d496085a7ef8
-          NEXT_PUBLIC_BASE_URL: https://glorov.in
+          NEXT_PUBLIC_BASE_URL: https://glorov.tech
           NEXT_PUBLIC_SITE_NAME: "GLOROV — Indian Seeds & Live Plants"
         run: |
           echo "🔨 Compiling Next.js Storefront in standalone mode..."
@@ -78,6 +77,8 @@ jobs:
           bash deploy/prepare-standalone-assets.sh
 
       - name: 9. Configure SSH & Deploy Deployment Automation Scripts
+        env:
+          SSH_KEY: ${{ secrets.AZURE_SSH_KEY || secrets.SERVER_SSH_KEY }}
         run: |
           if [ -z "$SSH_KEY" ]; then
             echo "❌ Error: Secret AZURE_SSH_KEY is not configured in GitHub repository secrets!"
@@ -154,15 +155,15 @@ jobs:
           echo "🩺 Verifying live production services..."
           sleep 5
 
-          echo "1. Checking Storefront (https://glorov.in)..."
-          curl -f -s -I "https://glorov.in" | head -n 10
+          echo "1. Checking Storefront (https://glorov.tech)..."
+          curl -f -s -I "https://glorov.tech" | head -n 10
 
-          echo "2. Checking Admin Dashboard (https://admin.glorov.in)..."
-          curl -f -s -I "https://admin.glorov.in" | head -n 10
-          curl -f -s -L -I "https://admin.glorov.in/app" | head -n 10
+          echo "2. Checking Admin Dashboard (https://admin.glorov.tech)..."
+          curl -f -s -I "https://admin.glorov.tech" | head -n 10
+          curl -f -s -L -I "https://admin.glorov.tech/app" | head -n 10
 
-          echo "3. Checking Backend Health (https://api.glorov.in/health)..."
-          curl -f -s -I "https://api.glorov.in/health" | head -n 10
+          echo "3. Checking Backend Health (https://api.glorov.tech/health)..."
+          curl -f -s -I "https://api.glorov.tech/health" | head -n 10
 
           echo "🎉 All production services are ONLINE and HEALTHY!"
 

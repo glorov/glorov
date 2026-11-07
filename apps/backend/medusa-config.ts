@@ -97,7 +97,7 @@ export default defineConfig({
     path: (process.env.ADMIN_PATH as `/${string}`) || (process.env.NODE_ENV === "production" ? "/" : "/app"),
     backendUrl:
       process.env.MEDUSA_BACKEND_URL ||
-      (process.env.NODE_ENV === "production" ? "https://api.glorov.in" : "http://localhost:9000"),
+      (process.env.NODE_ENV === "production" ? "https://api.glorov.tech" : "http://localhost:9000"),
     disable: process.env.MEDUSA_ADMIN_DISABLED === "true",
   },
   projectConfig: {

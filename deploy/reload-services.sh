@@ -49,16 +49,22 @@ if [ -d "${BASE_DIR}/apps/backend" ]; then
   fi
   [ -f "${BASE_DIR}/apps/backend/package.json" ] && cp -f "${BASE_DIR}/apps/backend/package.json" "${RELEASE_DIR}/apps/backend/"
   [ -f "${BASE_DIR}/apps/backend/medusa-config.ts" ] && cp -f "${BASE_DIR}/apps/backend/medusa-config.ts" "${RELEASE_DIR}/apps/backend/"
+  [ -f "${BASE_DIR}/apps/backend/tsconfig.json" ] && cp -f "${BASE_DIR}/apps/backend/tsconfig.json" "${RELEASE_DIR}/apps/backend/"
   [ -f "${BASE_DIR}/apps/backend/.env" ] && cp -f "${BASE_DIR}/apps/backend/.env" "${RELEASE_DIR}/apps/backend/"
   if [ -d "${BASE_DIR}/apps/backend/static" ]; then
     cp -r "${BASE_DIR}/apps/backend/static" "${RELEASE_DIR}/apps/backend/" 2>/dev/null || true
   fi
-  # Symlink node_modules to avoid duplicating heavy dependency trees on 1GB RAM VM
+  # Symlink src and node_modules so custom plugins like payment-razorpay resolve reliably
+  if [ -d "${BASE_DIR}/apps/backend/src" ]; then
+    ln -sfn "${BASE_DIR}/apps/backend/src" "${RELEASE_DIR}/apps/backend/src"
+  fi
   if [ -d "${BASE_DIR}/apps/backend/node_modules" ]; then
     ln -sfn "${BASE_DIR}/apps/backend/node_modules" "${RELEASE_DIR}/apps/backend/node_modules"
   elif [ -d "${CURRENT_LINK}/apps/backend/node_modules" ]; then
     ln -sfn "${CURRENT_LINK}/apps/backend/node_modules" "${RELEASE_DIR}/apps/backend/node_modules"
   fi
+  # Maintain reverse symlink so /var/www/glorov/apps/backend/.medusa points to current release
+  ln -sfn "${RELEASE_DIR}/apps/backend/.medusa" "${BASE_DIR}/apps/backend/.medusa"
 fi
 
 # C. Medusa Admin Dashboard static build

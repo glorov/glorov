@@ -78,6 +78,8 @@ fi
 # 4. Atomically symlink current to latest release
 echo "🔗 Symlinking ${CURRENT_LINK} -> ${RELEASE_DIR}..."
 ln -sfn "${RELEASE_DIR}" "${CURRENT_LINK}"
+ln -sfn "${CURRENT_LINK}/storefront-next" "${BASE_DIR}/storefront-next"
+ln -sfn "${CURRENT_LINK}/admin" "${BASE_DIR}/admin"
 
 # -----------------------------------------------------------------------------
 # GLOROV-DEPLOY-007: Idempotent Medusa Admin /app Symlink Handler

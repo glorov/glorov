@@ -28,9 +28,8 @@ type RecommendationTab = 'for-you' | 'bestsellers' | 'seeds-vegetables' | 'livin
  *   - Tactile quick-add circular button with animated spring checkmark & in-cart states
  *   - Smooth trackpad horizontal wheel scroll & smart arrow bounds
  */
-export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProps> = ({
-  products,
-}) => {
+export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProps> = React.memo(
+  function RecommendedProductsSection({ products }) {
   const { cartItems, cartSubtotal, addToCart, showToast } = useCart()
   const [activeTab, setActiveTab] = useState<RecommendationTab>('for-you')
   const [justAddedId, setJustAddedId] = useState<string | null>(null)
@@ -539,4 +538,4 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
       </div>
     </section>
   )
-}
+})

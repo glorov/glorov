@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCart } from '../../context/CartContext'
@@ -57,7 +57,7 @@ export default function CartPage(): React.ReactElement {
   const [isOffersModalOpen, setIsOffersModalOpen] = useState(false)
   const [isTaxModalOpen, setIsTaxModalOpen] = useState(false)
 
-  const rawActiveOffers = React.useMemo(() => {
+  const rawActiveOffers = useMemo(() => {
     return activeOffers.map((o) => ({
       id: o.code,
       code: o.code,
@@ -79,23 +79,43 @@ export default function CartPage(): React.ReactElement {
     }
   }
 
-  const handleApplyCoupon = async (code: string) => {
-    try {
-      await applyCoupon(code)
-    } catch (err: unknown) {
-      reportError(err, { page: '/cart', action: 'apply-coupon', couponCode: code })
-      showToast('error', 'Unable to apply coupon. Please try again.')
-    }
-  }
+  const handleApplyCoupon = useCallback(
+    async (code: string) => {
+      try {
+        await applyCoupon(code)
+      } catch (err: unknown) {
+        reportError(err, { page: '/cart', action: 'apply-coupon', couponCode: code })
+        showToast('error', 'Unable to apply coupon. Please try again.')
+      }
+    },
+    [applyCoupon, showToast]
+  )
 
-  const handleUpdateQuantity = async (itemId: string, newQty: number) => {
-    try {
-      await updateCartQuantity(itemId, newQty)
-    } catch (err: unknown) {
-      reportError(err, { page: '/cart', action: 'update-quantity', itemId, quantity: newQty })
-      showToast('error', 'Unable to update item quantity.')
-    }
-  }
+  const handleUpdateQuantity = useCallback(
+    (itemId: string, newQty: number) => {
+      try {
+        updateCartQuantity(itemId, newQty)
+      } catch (err: unknown) {
+        reportError(err, { page: '/cart', action: 'update-quantity', itemId, quantity: newQty })
+        showToast('error', 'Unable to update item quantity.')
+      }
+    },
+    [updateCartQuantity, showToast]
+  )
+
+  const handleRemove = useCallback(
+    (itemId: string) => {
+      removeFromCart(itemId)
+    },
+    [removeFromCart]
+  )
+
+  const handleMoveToWishlist = useCallback(
+    (itemId: string) => {
+      moveToWishlist(itemId)
+    },
+    [moveToWishlist]
+  )
 
   return (
     <div className="w-full min-h-screen bg-[#F9FAF8] text-[#111827] flex flex-col">
@@ -146,16 +166,16 @@ export default function CartPage(): React.ReactElement {
           <CartEmptyState />
         ) : (
           <div className="w-full max-w-[1280px] mx-auto px-2.5 sm:px-6 py-1.5 sm:py-4">
-            {/* Desktop Layout (>= 1024px, matching Flutter _buildDesktopLayout: flex 13 / flex 8) */}
-            <div className="hidden lg:flex items-start gap-6">
-              {/* Left Column: Milestone, Items, Recommendations (Flex 13) */}
-              <div className="flex-[13] min-w-0 flex flex-col gap-3">
+            {/* Desktop & Tablet Layout (>= 640px, matching Flutter _buildDesktopLayout & _buildTabletLayout) */}
+            <div className="hidden sm:flex items-start gap-4 lg:gap-6">
+              {/* Left Column: Milestone, Items, Recommendations */}
+              <div className="flex-[12] lg:flex-[13] min-w-0 flex flex-col gap-2.5 lg:gap-3">
                 <FreeShippingProgressBar
                   subtotal={cartSubtotal}
                   appliedCoupon={appliedCoupon}
                   offers={rawActiveOffers}
                   onOpenOffers={() => setIsOffersModalOpen(true)}
-                  onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
+                  onApplyCoupon={handleApplyCoupon}
                   onShowNotice={(msg) => showToast('info', msg)}
                 />
 
@@ -165,9 +185,9 @@ export default function CartPage(): React.ReactElement {
                       key={item.id}
                       item={item}
                       appliedCoupon={appliedCoupon}
-                      onUpdateQuantity={(newQty) => { void handleUpdateQuantity(item.id, newQty) }}
-                      onRemove={() => removeFromCart(item.id)}
-                      onMoveToWishlist={() => moveToWishlist(item.id)}
+                      onUpdateQuantity={handleUpdateQuantity}
+                      onRemove={handleRemove}
+                      onMoveToWishlist={handleMoveToWishlist}
                     />
                   ))}
                 </div>
@@ -177,70 +197,11 @@ export default function CartPage(): React.ReactElement {
                 </div>
               </div>
 
-              {/* Right Column: Coupon, Pincode, Order Summary, Guarantee (Flex 8) */}
-              <div className="flex-[8] min-w-0 flex flex-col gap-3.5 sticky top-4">
+              {/* Right Column: Coupon, Pincode, Order Summary, Guarantee */}
+              <div className="flex-[9] lg:flex-[8] min-w-0 flex flex-col gap-3 lg:gap-3.5 sticky top-4">
                 <CouponVoucherCard
                   appliedCoupon={appliedCoupon}
-                  onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
-                  onRemoveCoupon={removeCoupon}
-                  onOpenOffersModal={() => setIsOffersModalOpen(true)}
-                  subtotal={cartSubtotal}
-                  availableOffers={activeOffers}
-                />
-
-                <CartPincodeBox />
-
-                <CartOrderSummary
-                  subtotal={cartSubtotal}
-                  compareSubtotal={compareSubtotal}
-                  discountAmount={discountAmount}
-                  shippingAmount={shippingAmount}
-                  total={cartTotal}
-                  overallDiscountPercent={overallDiscountPercent}
-                  appliedCoupon={appliedCoupon}
-                  checkoutHref="/checkout"
-                />
-
-                <CartTransitGuarantee />
-              </div>
-            </div>
-
-            {/* Tablet Layout (640px to 1023px, matching Flutter _buildTabletLayout: flex 12 / flex 9) */}
-            <div className="hidden sm:flex lg:hidden items-start gap-4">
-              {/* Left Column: Milestone Progress, Items List, Recommendations (Flex 12) */}
-              <div className="flex-[12] min-w-0 flex flex-col gap-2.5">
-                <FreeShippingProgressBar
-                  subtotal={cartSubtotal}
-                  appliedCoupon={appliedCoupon}
-                  offers={rawActiveOffers}
-                  onOpenOffers={() => setIsOffersModalOpen(true)}
-                  onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
-                  onShowNotice={(msg) => showToast('info', msg)}
-                />
-
-                <div className="flex flex-col">
-                  {cartItems.map((item) => (
-                    <CartItemRow
-                      key={item.id}
-                      item={item}
-                      appliedCoupon={appliedCoupon}
-                      onUpdateQuantity={(newQty) => { void handleUpdateQuantity(item.id, newQty) }}
-                      onRemove={() => removeFromCart(item.id)}
-                      onMoveToWishlist={() => moveToWishlist(item.id)}
-                    />
-                  ))}
-                </div>
-
-                <div className="pt-2">
-                  <RecommendedProductsSection />
-                </div>
-              </div>
-
-              {/* Right Column: Coupon, Delivery/Pincode, Order Summary, Guarantee (Flex 9) */}
-              <div className="flex-[9] min-w-0 flex flex-col gap-3">
-                <CouponVoucherCard
-                  appliedCoupon={appliedCoupon}
-                  onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
+                  onApplyCoupon={handleApplyCoupon}
                   onRemoveCoupon={removeCoupon}
                   onOpenOffersModal={() => setIsOffersModalOpen(true)}
                   subtotal={cartSubtotal}
@@ -272,7 +233,7 @@ export default function CartPage(): React.ReactElement {
                 appliedCoupon={appliedCoupon}
                 offers={rawActiveOffers}
                 onOpenOffers={() => setIsOffersModalOpen(true)}
-                onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
+                onApplyCoupon={handleApplyCoupon}
                 onShowNotice={(msg) => showToast('info', msg)}
               />
 
@@ -283,9 +244,9 @@ export default function CartPage(): React.ReactElement {
                     key={item.id}
                     item={item}
                     appliedCoupon={appliedCoupon}
-                    onUpdateQuantity={(newQty) => { void handleUpdateQuantity(item.id, newQty) }}
-                    onRemove={() => removeFromCart(item.id)}
-                    onMoveToWishlist={() => moveToWishlist(item.id)}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onRemove={handleRemove}
+                    onMoveToWishlist={handleMoveToWishlist}
                   />
                 ))}
               </div>
@@ -298,7 +259,7 @@ export default function CartPage(): React.ReactElement {
               {/* 4. In-Flow Coupon Voucher Card */}
               <CouponVoucherCard
                 appliedCoupon={appliedCoupon}
-                onApplyCoupon={(code) => { void handleApplyCoupon(code) }}
+                onApplyCoupon={handleApplyCoupon}
                 onRemoveCoupon={removeCoupon}
                 onOpenOffersModal={() => setIsOffersModalOpen(true)}
                 subtotal={cartSubtotal}

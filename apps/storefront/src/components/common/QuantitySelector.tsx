@@ -27,7 +27,7 @@ export interface QuantitySelectorProps {
  * - 'lg': Prominent large stepper (44px mobile / 48px desktop height), matching the exact
  *         height and rounded radius of PDP "Add To Cart" & "Buy Now" buttons.
  */
-export function QuantitySelector({
+export const QuantitySelector = React.memo<QuantitySelectorProps>(function QuantitySelector({
   value,
   onChange,
   min = 1,
@@ -145,4 +145,4 @@ export function QuantitySelector({
       </button>
     </div>
   )
-}
+})

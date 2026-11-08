@@ -138,6 +138,7 @@ export interface CartContextValue {
   removeCoupon: () => Promise<void> | void
   moveToWishlist: (itemId: string) => void
   refreshCart: () => Promise<void>
+  flushPendingCartUpdates?: () => Promise<void>
 
   // Dynamic offers
   activeOffers: MilestoneOffer[]
@@ -237,6 +238,7 @@ export function CartProvider({
         setAppliedCoupon(localCoupon)
       }
     } catch {}
+    setIsHydrated(true)
   }, [])
 
   // Dynamic offers state
@@ -245,6 +247,20 @@ export function CartProvider({
 
   // Guard against duplicate customer transfer calls
   const transferredCustomerIdRef = useRef<string | null>(null)
+
+  // Debounce timers for per-item quantity mutations to prevent network stampedes
+  const updateDebounceTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
+  // Track latest requested optimistic quantity per item id to prevent stale server responses from rolling back UI
+  const pendingItemQuantitiesRef = useRef<Map<string, number>>(new Map())
+
+  // Cleanup pending debounce timers on unmount
+  useEffect(() => {
+    const timers = updateDebounceTimersRef.current
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer))
+      timers.clear()
+    }
+  }, [])
 
   // 1. Fetch Dynamic Promotional Offers from backend
   const refreshOffers = useCallback(async () => {
@@ -307,10 +323,28 @@ export function CartProvider({
 
     const transformed = transformMedusaCart(serverCart)
     if (transformed.cartItems.length > 0) {
-      setCartItems(transformed.cartItems)
-      try {
-        localStorage.setItem(STORAGE_KEYS.CART_ITEMS, JSON.stringify(transformed.cartItems))
-      } catch {}
+      setCartItems((prevItems) => {
+        // Reconcile server line items with pending optimistic state
+        const reconciled = transformed.cartItems.map((serverItem) => {
+          const pendingQty = pendingItemQuantitiesRef.current.get(serverItem.id)
+          if (pendingQty !== undefined) {
+            return { ...serverItem, quantity: pendingQty }
+          }
+          const localItem = prevItems.find((p) => p.id === serverItem.id)
+          if (
+            localItem &&
+            localItem.quantity !== serverItem.quantity &&
+            pendingItemQuantitiesRef.current.has(serverItem.id)
+          ) {
+            return { ...serverItem, quantity: localItem.quantity }
+          }
+          return serverItem
+        })
+        try {
+          localStorage.setItem(STORAGE_KEYS.CART_ITEMS, JSON.stringify(reconciled))
+        } catch {}
+        return reconciled
+      })
     }
 
     if (transformed.appliedCoupon) {
@@ -353,24 +387,37 @@ export function CartProvider({
             if (transformed.cartItems.length > 0) {
               setCartItems(transformed.cartItems)
             } else {
-              // Restore local items if available
+              // Restore local items if available and cart is currently empty
+              setCartItems((current) => {
+                if (current.length > 0) return current
+                try {
+                  const localItems = localStorage.getItem(STORAGE_KEYS.CART_ITEMS)
+                  if (localItems) {
+                    const parsed = JSON.parse(localItems)
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                      return parsed
+                    }
+                  }
+                } catch {}
+                return current
+              })
+            }
+          } else {
+            // Offline fallback: load local items if available
+            setCartItems((current) => {
+              if (current.length > 0) return current
               try {
                 const localItems = localStorage.getItem(STORAGE_KEYS.CART_ITEMS)
                 if (localItems) {
                   const parsed = JSON.parse(localItems)
                   if (Array.isArray(parsed) && parsed.length > 0) {
-                    setCartItems(parsed)
+                    return parsed
                   }
                 }
               } catch {}
-            }
-          } else {
-            // Offline fallback: load local items if available
+              return current
+            })
             try {
-              const localItems = localStorage.getItem(STORAGE_KEYS.CART_ITEMS)
-              if (localItems) {
-                setCartItems(JSON.parse(localItems))
-              }
               const localCoupon = localStorage.getItem(STORAGE_KEYS.APPLIED_COUPON)
               if (localCoupon) {
                 setAppliedCoupon(localCoupon)
@@ -380,12 +427,16 @@ export function CartProvider({
         }
       } catch {
         // Fallback for disconnected / offline test environments
-        try {
-          const localItems = localStorage.getItem(STORAGE_KEYS.CART_ITEMS)
-          if (localItems) {
-            setCartItems(JSON.parse(localItems))
-          }
-        } catch {}
+        setCartItems((current) => {
+          if (current.length > 0) return current
+          try {
+            const localItems = localStorage.getItem(STORAGE_KEYS.CART_ITEMS)
+            if (localItems) {
+              return JSON.parse(localItems)
+            }
+          } catch {}
+          return current
+        })
       } finally {
         if (!isCancelled) {
           setIsHydrated(true)
@@ -454,28 +505,18 @@ export function CartProvider({
     mergeCustomerCart()
   }, [isAuthenticated, customerUser, customerToken, cartId, syncServerCart])
 
-  // 6. Calculations from server response (Requirement 3.f) or optimistic fallback
+  // 6. Calculations from cart items (immediate 0ms optimistic) & server metadata
   const cartSubtotal = useMemo(() => {
-    if (cart && typeof cart.item_subtotal === 'number') {
-      return cart.item_subtotal > 500
-        ? Math.round(cart.item_subtotal / 100)
-        : cart.item_subtotal
-    }
     return cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0)
-  }, [cart, cartItems])
+  }, [cartItems])
 
   const compareSubtotal = useMemo(() => {
-    if (cart && typeof cart.original_item_total === 'number' && cart.original_item_total > 0) {
-      return cart.original_item_total > 500
-        ? Math.round(cart.original_item_total / 100)
-        : cart.original_item_total
-    }
     const raw = cartItems.reduce(
       (acc, item) => acc + (item.originalPrice || item.price) * item.quantity,
       0
     )
     return raw > 0 ? raw : cartSubtotal
-  }, [cart, cartItems, cartSubtotal])
+  }, [cartItems, cartSubtotal])
 
   const cartCount = useMemo(
     () => cartItems.reduce((acc, item) => acc + item.quantity, 0),
@@ -488,14 +529,15 @@ export function CartProvider({
   )
 
   const discountAmount = useMemo(() => {
-    // If server calculated discount is available on cart, use server total
-    if (cart && typeof cart.discount_total === 'number' && cart.discount_total > 0) {
-      return cart.discount_total > 500
-        ? Math.round(cart.discount_total / 100)
-        : cart.discount_total
+    if (!activeOffer) {
+      if (cart && typeof cart.discount_total === 'number' && cart.discount_total > 0) {
+        return cart.discount_total > 500
+          ? Math.round(cart.discount_total / 100)
+          : cart.discount_total
+      }
+      return 0
     }
 
-    if (!activeOffer) return 0
     const norm = (s?: string) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '')
 
     if (activeOffer.applicableCategories && activeOffer.applicableCategories.length > 0) {
@@ -520,30 +562,12 @@ export function CartProvider({
 
   const shippingAmount = useMemo(() => {
     if (cartItems.length === 0) return 0
-    if (cart && typeof cart.shipping_total === 'number' && cart.shipping_total > 0) {
-      return cart.shipping_total > 500
-        ? Math.round(cart.shipping_total / 100)
-        : cart.shipping_total
-    }
     return cartSubtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 99
-  }, [cart, cartItems.length, cartSubtotal])
+  }, [cartItems.length, cartSubtotal])
 
   const cartTotal = useMemo(() => {
-    if (cart && typeof cart.total === 'number' && cart.total > 0) {
-      const serverTotal =
-        cart.total > 500 ? Math.round(cart.total / 100) : cart.total
-      // If shipping has not been added to server cart yet, add estimated shipping
-      if (
-        (cart.shipping_total === 0 || cart.shipping_total === undefined) &&
-        cartItems.length > 0 &&
-        serverTotal === cartSubtotal - discountAmount
-      ) {
-        return Math.max(0, serverTotal + shippingAmount)
-      }
-      return serverTotal
-    }
     return Math.max(0, cartSubtotal - discountAmount + shippingAmount)
-  }, [cart, cartSubtotal, discountAmount, shippingAmount, cartItems.length])
+  }, [cartSubtotal, discountAmount, shippingAmount])
 
   const overallDiscountPercent = useMemo(() => {
     if (compareSubtotal <= 0 || compareSubtotal <= cartSubtotal) return 0
@@ -630,7 +654,6 @@ export function CartProvider({
 
       // Step 2: Background / Async Medusa v2 Cart API call: POST /store/carts/:id/line-items
       try {
-        setIsLoading(true)
         const currentCartId = await getOrCreateCartId()
 
         // Resolve Medusa Variant ID
@@ -667,62 +690,23 @@ export function CartProvider({
         }
       } catch {
         // Optimistic state remains in place if API fails
-      } finally {
-        setIsLoading(false)
       }
     },
     [customerToken, getOrCreateCartId, showToast, syncServerCart]
   )
 
-  // 8. updateCartQuantity handler (Requirement 3.d)
-  const updateCartQuantity = useCallback(
-    async (itemId: string, quantity: number) => {
-      const sanitizedQty = Math.floor(quantity)
-      if (sanitizedQty <= 0) {
-        await removeFromCart(itemId)
-        return
-      }
-      const boundedQty = Math.min(50, sanitizedQty)
-
-      // Step 1: Optimistic state update
-      setCartItems((prev) => {
-        const updated = prev.map((item) =>
-          item.id === itemId ? { ...item, quantity: boundedQty } : item
-        )
-        try {
-          localStorage.setItem(STORAGE_KEYS.CART_ITEMS, JSON.stringify(updated))
-        } catch {}
-        return updated
-      })
-
-      // Step 2: Call Medusa v2 API: POST /store/carts/:id/line-items/:line_id
-      if (cartId) {
-        try {
-          setIsLoading(true)
-          const res = await updateMedusaLineItem(
-            cartId,
-            itemId,
-            boundedQty,
-            customerToken || undefined
-          )
-          if (res.success && res.data?.cart) {
-            syncServerCart(res.data.cart)
-          }
-        } catch {
-          // Keep optimistic state
-        } finally {
-          setIsLoading(false)
-        }
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [cartId, customerToken, syncServerCart]
-  )
-
-  // 9. removeFromCart handler (Requirement 3.e)
+  // 8. removeFromCart handler (Requirement 3.e)
   const removeFromCart = useCallback(
     async (itemId: string) => {
-      // Step 1: Optimistic state update
+      // Clear any pending debounce timer for this item
+      const existingTimer = updateDebounceTimersRef.current.get(itemId)
+      if (existingTimer) {
+        clearTimeout(existingTimer)
+        updateDebounceTimersRef.current.delete(itemId)
+      }
+      pendingItemQuantitiesRef.current.delete(itemId)
+
+      // Step 1: Instant optimistic state update
       setCartItems((prev) => {
         const updated = prev.filter((item) => item.id !== itemId)
         try {
@@ -732,10 +716,9 @@ export function CartProvider({
       })
       showToast('info', 'Item removed from your cart')
 
-      // Step 2: Call Medusa v2 API: DELETE /store/carts/:id/line-items/:line_id
+      // Step 2: Background call Medusa v2 API: DELETE /store/carts/:id/line-items/:line_id
       if (cartId) {
         try {
-          setIsLoading(true)
           const res = await deleteMedusaLineItem(
             cartId,
             itemId,
@@ -757,13 +740,95 @@ export function CartProvider({
           }
         } catch {
           // Keep optimistic state
-        } finally {
-          setIsLoading(false)
         }
       }
     },
     [cartId, customerToken, showToast, syncServerCart]
   )
+
+  // 9. updateCartQuantity handler (Optimistic 0ms update + 300ms debounced backend sync)
+  const updateCartQuantity = useCallback(
+    (itemId: string, quantity: number) => {
+      const sanitizedQty = Math.floor(quantity)
+      if (sanitizedQty <= 0) {
+        void removeFromCart(itemId)
+        return
+      }
+      const boundedQty = Math.min(50, sanitizedQty)
+
+      // Record latest requested quantity for this item
+      pendingItemQuantitiesRef.current.set(itemId, boundedQty)
+
+      // Step 1: Instant synchronous optimistic state update (0ms perceived latency)
+      setCartItems((prev) => {
+        const updated = prev.map((item) =>
+          item.id === itemId ? { ...item, quantity: boundedQty } : item
+        )
+        try {
+          localStorage.setItem(STORAGE_KEYS.CART_ITEMS, JSON.stringify(updated))
+        } catch {}
+        return updated
+      })
+
+      // Step 2: Clear any pending debounce timer for this line item
+      const existingTimer = updateDebounceTimersRef.current.get(itemId)
+      if (existingTimer) {
+        clearTimeout(existingTimer)
+      }
+
+      if (!cartId) return
+
+      // Step 3: Debounce backend sync by 300ms so rapid clicks don't flood the server
+      const timer = setTimeout(async () => {
+        updateDebounceTimersRef.current.delete(itemId)
+        const targetQty = pendingItemQuantitiesRef.current.get(itemId) ?? boundedQty
+
+        try {
+          const res = await updateMedusaLineItem(
+            cartId,
+            itemId,
+            targetQty,
+            customerToken || undefined
+          )
+          if (res.success && res.data?.cart) {
+            const currentPending = pendingItemQuantitiesRef.current.get(itemId)
+            if (currentPending === undefined || currentPending === targetQty) {
+              pendingItemQuantitiesRef.current.delete(itemId)
+              syncServerCart(res.data.cart)
+            }
+          }
+        } catch {
+          // Keep optimistic state intact on error
+        }
+      }, 300)
+
+      updateDebounceTimersRef.current.set(itemId, timer)
+    },
+    [cartId, customerToken, removeFromCart, syncServerCart]
+  )
+
+  // Helper to flush all pending debounced updates before critical operations like checkout
+  const flushPendingCartUpdates = useCallback(async () => {
+    if (updateDebounceTimersRef.current.size === 0) return
+    const promises: Promise<unknown>[] = []
+    updateDebounceTimersRef.current.forEach((timer, itemId) => {
+      clearTimeout(timer)
+      const targetQty = pendingItemQuantitiesRef.current.get(itemId)
+      if (cartId && targetQty !== undefined) {
+        promises.push(
+          updateMedusaLineItem(cartId, itemId, targetQty, customerToken || undefined)
+            .then((res) => {
+              if (res.success && res.data?.cart) {
+                syncServerCart(res.data.cart)
+              }
+            })
+            .catch(() => {})
+        )
+      }
+    })
+    updateDebounceTimersRef.current.clear()
+    await Promise.all(promises)
+  }, [cartId, customerToken, syncServerCart])
 
   // 10. clearCart handler
   const clearCart = useCallback(async () => {
@@ -1045,6 +1110,7 @@ export function CartProvider({
       removeCoupon,
       moveToWishlist,
       refreshCart,
+      flushPendingCartUpdates,
       activeOffers,
       welcomeBannerOffer,
       refreshOffers,
@@ -1073,6 +1139,7 @@ export function CartProvider({
       removeCoupon,
       moveToWishlist,
       refreshCart,
+      flushPendingCartUpdates,
       activeOffers,
       welcomeBannerOffer,
       refreshOffers,
@@ -1111,6 +1178,7 @@ export function useCart(): CartContextValue {
       removeCoupon: () => {},
       moveToWishlist: () => {},
       refreshCart: async () => {},
+      flushPendingCartUpdates: async () => {},
       activeOffers: MILESTONE_COUPONS,
       welcomeBannerOffer: null,
       refreshOffers: async () => {},

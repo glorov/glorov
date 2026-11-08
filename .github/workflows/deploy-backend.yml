@@ -50,8 +50,8 @@ jobs:
       - name: 8. Configure SSH & Deploy to Azure VM
         env:
           SSH_KEY: ${{ secrets.AZURE_SSH_KEY || secrets.SERVER_SSH_KEY }}
-          HOST: ${{ secrets.AZURE_HOST || '20.244.48.139' }}
-          USER: ${{ secrets.AZURE_USER || 'elsesourav' }}
+          HOST: ${{ secrets.AZURE_HOST || '98.70.48.224' }}
+          USER: ${{ secrets.AZURE_USER || 'esv2' }}
         run: |
           if [ -z "$SSH_KEY" ]; then
             echo "❌ Error: Secret AZURE_SSH_KEY is not configured in GitHub repository secrets!"

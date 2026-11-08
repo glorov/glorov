@@ -15,8 +15,8 @@ jobs:
     name: Build & Deploy to Azure VM (1GB RAM Optimized)
     runs-on: ubuntu-latest
     env:
-      HOST: ${{ secrets.AZURE_HOST || '20.244.48.139' }}
-      USER: ${{ secrets.AZURE_USER || 'elsesourav' }}
+      HOST: ${{ secrets.AZURE_HOST || '98.70.48.224' }}
+      USER: ${{ secrets.AZURE_USER || 'esv2' }}
     steps:
       - name: 1. Checkout Repository
         uses: actions/checkout@v4
@@ -127,7 +127,11 @@ jobs:
 
           rsync -avz \
             -e "$SSH_CMD" \
-            ./apps/backend/package.json ./apps/backend/medusa-config.ts "$USER@$HOST:/var/www/glorov/apps/backend/"
+            ./apps/backend/package.json ./apps/backend/medusa-config.ts ./apps/backend/tsconfig.json "$USER@$HOST:/var/www/glorov/apps/backend/"
+
+          rsync -avz --delete \
+            -e "$SSH_CMD" \
+            ./apps/backend/src/ "$USER@$HOST:/var/www/glorov/apps/backend/src/"
 
           if [ -d "./apps/backend/.medusa/server/public/admin" ]; then
             echo "📦 Deploying Medusa Admin Dashboard..."

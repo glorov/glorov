@@ -87,7 +87,7 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://res.cloudinary.com https://i.imgur.com",
       "font-src 'self' data:",
-      "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com https://api.glorov.in https://api.glorov.tech http://localhost:9000 http://127.0.0.1:9000 https://*.ingest.sentry.io https://*.sentry.io",
+      "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com https://api.glorov.in https://api.glorov.tech https://api.glorov.com http://localhost:9000 http://127.0.0.1:9000 https://*.ingest.sentry.io https://*.sentry.io",
       "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
       "object-src 'none'",
       "base-uri 'self'",

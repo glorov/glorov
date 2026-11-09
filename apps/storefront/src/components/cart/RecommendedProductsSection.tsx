@@ -350,7 +350,7 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
         return scored.map((s) => s.product).slice(0, 10)
       }
     }
-  }, [pool, cartItemMap, activeTab, cartContext, isProductInCart])
+  }, [pool, activeTab, cartContext, isProductInCart])
 
   // Scroll bounds checker with rAF and threshold deduplication
   const updateScrollBounds = useCallback(() => {

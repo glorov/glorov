@@ -325,8 +325,8 @@ describe('Auth Pages — Login and Registration', () => {
     )
 
     // Initial state: Step 1 active
-    expect(screen.getByText('1. Personal Details')).toBeDefined()
-    expect(screen.getByText('2. Set Password')).toBeDefined()
+    expect(screen.getByText('Personal Details')).toBeDefined()
+    expect(screen.getByText('Set Password')).toBeDefined()
 
     const firstNameInput = screen.getByLabelText('First Name *')
     const lastNameInput = screen.getByLabelText('Last Name *')

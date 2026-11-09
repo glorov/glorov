@@ -308,12 +308,68 @@ describe('Auth Pages — Login and Registration', () => {
       </CustomerAuthProvider>
     )
 
-    expect(screen.getByText('Create Account')).toBeDefined()
+    expect(screen.getAllByText('Create Account').length).toBeGreaterThan(0)
     expect(screen.getByLabelText('First Name *')).toBeDefined()
     expect(screen.getByLabelText('Last Name *')).toBeDefined()
     expect(screen.getByLabelText('Email Address *')).toBeDefined()
     expect(screen.getByLabelText('Mobile Phone *')).toBeDefined()
     expect(screen.getByLabelText('Password (min 8 chars) *')).toBeDefined()
     expect(screen.getByLabelText('Confirm Password *')).toBeDefined()
+  })
+
+  it('navigates seamlessly between Step 1 (Personal Details) and Step 2 (Password) preserving data', async () => {
+    render(
+      <CustomerAuthProvider>
+        <SignupPage />
+      </CustomerAuthProvider>
+    )
+
+    // Initial state: Step 1 active
+    expect(screen.getByText('1. Personal Details')).toBeDefined()
+    expect(screen.getByText('2. Set Password')).toBeDefined()
+
+    const firstNameInput = screen.getByLabelText('First Name *')
+    const lastNameInput = screen.getByLabelText('Last Name *')
+    const emailInput = screen.getByLabelText('Email Address *')
+    const phoneInput = screen.getByLabelText('Mobile Phone *')
+    const nextBtn = screen.getByRole('button', { name: /continue to set password/i })
+
+    // Next button is disabled initially
+    expect((nextBtn as HTMLButtonElement).disabled).toBe(true)
+
+    // Fill Step 1 fields
+    fireEvent.change(firstNameInput, { target: { value: 'Sourav' } })
+    fireEvent.change(lastNameInput, { target: { value: 'Patron' } })
+    fireEvent.change(emailInput, { target: { value: 'sourav@example.com' } })
+    fireEvent.change(phoneInput, { target: { value: '9876543210' } })
+
+    // Now Step 1 button is enabled
+    expect((nextBtn as HTMLButtonElement).disabled).toBe(false)
+    fireEvent.click(nextBtn)
+
+    // Step 2 shows summary pill and back button
+    expect(screen.getByText(/Sourav Patron/)).toBeDefined()
+    expect(screen.getByText(/sourav@example.com • \+91 9876543210/)).toBeDefined()
+
+    // Test going back to Step 1
+    const backBtn = screen.getByRole('button', { name: /← back/i })
+    fireEvent.click(backBtn)
+
+    // Data should be preserved
+    expect((screen.getByLabelText('First Name *') as HTMLInputElement).value).toBe('Sourav')
+    expect((screen.getByLabelText('Email Address *') as HTMLInputElement).value).toBe('sourav@example.com')
+
+    // Advance to Step 2 again
+    fireEvent.click(screen.getByRole('button', { name: /continue to set password/i }))
+
+    // Fill password in Step 2
+    const passwordInput = screen.getByLabelText('Password (min 8 chars) *')
+    const confirmInput = screen.getByLabelText('Confirm Password *')
+    fireEvent.change(passwordInput, { target: { value: 'StrongBotanicalPass123' } })
+    fireEvent.change(confirmInput, { target: { value: 'StrongBotanicalPass123' } })
+
+    expect(screen.getByText(/✓ Match/i)).toBeDefined()
+    const submitBtn = screen.getByRole('button', { name: /create patron account/i })
+    expect((submitBtn as HTMLButtonElement).disabled).toBe(false)
   })
 })

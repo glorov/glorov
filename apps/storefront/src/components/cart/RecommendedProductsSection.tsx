@@ -14,6 +14,95 @@ export interface RecommendedProductsSectionProps {
 type RecommendationTab = 'for-you' | 'bestsellers' | 'seeds-vegetables' | 'living-plants' | 'under-150'
 
 /**
+ * Shimmer Skeleton Loader for Botanical Recommended Products
+ * Renders an exact layout wireframe with pulse shimmer and smooth transition
+ */
+export const RecommendedProductsSkeleton: React.FC = () => {
+  return (
+    <section className="w-full select-none" aria-label="Loading recommendations" aria-busy="true">
+      {/* 1. Header Skeleton */}
+      <div className="flex items-center justify-between gap-3 mb-2.5">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-6 h-6 rounded-full bg-[#EAF5EE] flex items-center justify-center shrink-0">
+            <div className="w-3.5 h-3.5 rounded-full bg-[#0A4C36]/20 animate-pulse" />
+          </div>
+          <div className="h-5 w-44 rounded-md bg-[#0A4C36]/10 animate-pulse" />
+        </div>
+
+        {/* Carousel Arrow Controls Skeleton */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <div className="w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center opacity-40">
+            <div className="w-3 h-3 rounded bg-stone-200" />
+          </div>
+          <div className="w-7 h-7 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center opacity-40">
+            <div className="w-3 h-3 rounded bg-stone-200" />
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Interactive Filter Tabs Skeleton */}
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2.5 pt-0.5 -mx-1 px-1">
+        {[
+          { w: 'w-20', active: true },
+          { w: 'w-24', active: false },
+          { w: 'w-28', active: false },
+          { w: 'w-24', active: false },
+          { w: 'w-20', active: false },
+        ].map((tab, idx) => (
+          <div
+            key={idx}
+            className={`h-7 ${tab.w} rounded-full shrink-0 animate-pulse ${
+              tab.active
+                ? 'bg-[#0A4C36]/80'
+                : 'bg-white border border-[#E5E7EB]'
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* 3. Horizontal Cards Skeleton Carousel */}
+      <div className="flex items-stretch gap-3 overflow-x-hidden pb-3 pt-1 -mx-1 px-1">
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="w-[168px] min-w-[168px] sm:w-[176px] sm:min-w-[176px] h-[272px] sm:h-[278px] flex-shrink-0 rounded-[20px] bg-white border border-[#E5ECE8] overflow-hidden flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+          >
+            {/* Media Shimmer */}
+            <div className="relative w-full h-[148px] sm:h-[154px] bg-[#F4F7F4] overflow-hidden shrink-0 rounded-t-[20px]">
+              <div className="w-full h-full skeleton animate-pulse" />
+              {/* Badge placeholder */}
+              <div className="absolute top-2 left-2 w-14 h-4 rounded-[5px] bg-white/70 backdrop-blur-[2px] animate-pulse" />
+              {/* Rating pill placeholder */}
+              <div className="absolute left-2 bottom-2 w-12 h-5 rounded-[6px] bg-white/90 border border-stone-200/60 animate-pulse" />
+            </div>
+
+            {/* Content Shimmer */}
+            <div className="p-2.5 flex-1 flex flex-col justify-between min-h-[114px]">
+              <div>
+                {/* Category Micro-tag */}
+                <div className="h-2 w-16 rounded bg-[#16A34A]/20 animate-pulse mb-1.5" />
+                {/* Title 2-lines */}
+                <div className="h-3.5 w-full rounded bg-stone-200 animate-pulse mb-1.5" />
+                <div className="h-3.5 w-3/4 rounded bg-stone-200 animate-pulse" />
+              </div>
+
+              {/* Price & Quick-Add Button Row */}
+              <div className="flex items-center justify-between gap-1 mt-auto pt-1">
+                <div className="flex items-baseline gap-1">
+                  <div className="h-4 w-12 rounded bg-stone-200 animate-pulse" />
+                  <div className="h-3 w-7 rounded bg-stone-100 animate-pulse" />
+                </div>
+                <div className="w-[34px] h-[34px] rounded-full bg-[#0A4C36]/20 animate-pulse shrink-0" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/**
  * GLOROV Intelligent Cart Recommendation System & Refined Card UI
  * Features:
  * - Smart Recommendation Engine: Context-aware pairing based on active cart contents (seeds, plants, planters, soil)
@@ -28,6 +117,33 @@ type RecommendationTab = 'for-you' | 'bestsellers' | 'seeds-vegetables' | 'livin
  *   - Tactile quick-add circular button with animated spring checkmark & in-cart states
  *   - Smooth trackpad horizontal wheel scroll & smart arrow bounds
  */
+// Shared in-memory cache & deduplicated promise to synchronize desktop & mobile carousels
+let globalProductsCache: GlorovProductItem[] | null = null
+let globalFetchPromise: Promise<GlorovProductItem[]> | null = null
+
+async function getRecommendedProducts(): Promise<GlorovProductItem[]> {
+  if (globalProductsCache && globalProductsCache.length > 0) {
+    return globalProductsCache
+  }
+  if (globalFetchPromise) {
+    return globalFetchPromise
+  }
+  globalFetchPromise = fetch('/api/products?limit=16')
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      if (data && Array.isArray(data.products) && data.products.length > 0) {
+        globalProductsCache = data.products
+        return data.products
+      }
+      return []
+    })
+    .catch(() => [])
+    .finally(() => {
+      globalFetchPromise = null
+    })
+  return globalFetchPromise
+}
+
 export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProps> = React.memo(
   function RecommendedProductsSection({ products }) {
   const { cartItems, cartSubtotal, addToCart, showToast } = useCart()
@@ -39,6 +155,77 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
   const canScrollRightRef = useRef(true)
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  const [fetchedProducts, setFetchedProducts] = useState<GlorovProductItem[]>(
+    () => globalProductsCache || []
+  )
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (products && products.length > 0) return false
+    if (globalProductsCache && globalProductsCache.length > 0) return false
+    return true
+  })
+
+  useEffect(() => {
+    if (products && products.length > 0) {
+      setIsLoading(false)
+      return
+    }
+    if (globalProductsCache && globalProductsCache.length > 0) {
+      setFetchedProducts(globalProductsCache)
+      setIsLoading(false)
+      return
+    }
+    let active = true
+    setIsLoading(true)
+    getRecommendedProducts().then((items) => {
+      if (!active) return
+      setFetchedProducts(items)
+      setIsLoading(false)
+    })
+    return () => {
+      active = false
+    }
+  }, [products])
+
+  const pool = products && products.length > 0 ? products : fetchedProducts
+
+  // Set of all normalized identifiers currently in cart to guarantee 100% exclusion
+  const cartItemKeys = useMemo(() => {
+    const keys = new Set<string>()
+    for (const item of cartItems) {
+      if (item.id) keys.add(item.id.toLowerCase().trim())
+      if (item.productId) keys.add(item.productId.toLowerCase().trim())
+      const itemRecord = item as unknown as Record<string, unknown>
+      if (typeof itemRecord.slug === 'string' && itemRecord.slug) {
+        keys.add(itemRecord.slug.toLowerCase().trim())
+      }
+      if (item.title) {
+        keys.add(item.title.toLowerCase().trim())
+        keys.add(item.title.toLowerCase().replace(/[^a-z0-9]/g, ''))
+      }
+    }
+    return keys
+  }, [cartItems])
+
+  const isProductInCart = useCallback(
+    (p: GlorovProductItem) => {
+      if (p.id && cartItemKeys.has(p.id.toLowerCase().trim())) return true
+      if (p.slug && cartItemKeys.has(p.slug.toLowerCase().trim())) return true
+      if (p.title) {
+        const titleLower = p.title.toLowerCase().trim()
+        const titleClean = titleLower.replace(/[^a-z0-9]/g, '')
+        if (cartItemKeys.has(titleLower) || cartItemKeys.has(titleClean)) return true
+        for (const item of cartItems) {
+          const itemClean = item.title.toLowerCase().replace(/[^a-z0-9]/g, '')
+          if (itemClean && titleClean && (itemClean.includes(titleClean) || titleClean.includes(itemClean))) {
+            return true
+          }
+        }
+      }
+      return false
+    },
+    [cartItemKeys, cartItems]
+  )
+
   // Track items in cart for smart exclusion & quantity indicators
   const cartItemMap = useMemo(() => {
     const map = new Map<string, number>()
@@ -48,27 +235,6 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
     }
     return map
   }, [cartItems])
-
-  const [fetchedProducts, setFetchedProducts] = useState<GlorovProductItem[]>([])
-
-  useEffect(() => {
-    if (products && products.length > 0) return
-    let active = true
-    fetch('/api/products?limit=16')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!active) return
-        if (data && Array.isArray(data.products)) {
-          setFetchedProducts(data.products)
-        }
-      })
-      .catch(() => {})
-    return () => {
-      active = false
-    }
-  }, [products])
-
-  const pool = products && products.length > 0 ? products : fetchedProducts
 
   // Cart Context Analysis
   const cartContext = useMemo(() => {
@@ -104,9 +270,8 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
 
   // Smart Recommendation Engine
   const recommendedItems = useMemo(() => {
-    // 1. Filter out items already in cart
-    const unadded = pool.filter((p) => !cartItemMap.has(p.id) && !cartItemMap.has(p.slug || ''))
-    const sourcePool = unadded.length >= 3 ? unadded : pool
+    // 1. Strict exclusion of items already in cart
+    const sourcePool = pool.filter((p) => !isProductInCart(p))
 
     switch (activeTab) {
       case 'bestsellers': {
@@ -185,7 +350,7 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
         return scored.map((s) => s.product).slice(0, 10)
       }
     }
-  }, [pool, cartItemMap, activeTab, cartContext])
+  }, [pool, cartItemMap, activeTab, cartContext, isProductInCart])
 
   // Scroll bounds checker with rAF and threshold deduplication
   const updateScrollBounds = useCallback(() => {
@@ -255,10 +420,14 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
     }
   }
 
+  if (isLoading && pool.length === 0) {
+    return <RecommendedProductsSkeleton />
+  }
+
   if (recommendedItems.length === 0) return null
 
   return (
-    <section className="w-full select-none" aria-label="Recommended Products">
+    <section className="w-full select-none animate-fade-in" aria-label="Recommended Products">
       {/* 1. Header with Controls & Contextual Milestone Guidance */}
       <div className="flex items-center justify-between gap-3 mb-2.5">
         <div className="flex items-center gap-2 min-w-0">
@@ -423,31 +592,23 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
                   />
                 </Link>
 
-                {/* Top-Left Signature Flush Docked Tag with Golden Lightning Bolt */}
+                {/* Top-Left Floating Badge matching Flutter */}
                 {badgeText && (
-                  <div className="absolute top-0 left-0 z-10 pointer-events-none">
-                    <span className="inline-flex items-center gap-[3px] bg-[#0C2340] text-white text-[9px] font-extrabold tracking-[0.4px] uppercase px-2 py-[3.5px] rounded-tl-[20px] rounded-tr-[7px] rounded-br-[7px] rounded-bl-0 select-none leading-none">
-                      <svg
-                        width={10}
-                        height={10}
-                        className="w-2.5 h-2.5 text-[#F9C74F] shrink-0"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <span>{badgeText}</span>
-                    </span>
+                  <div className="absolute top-2 left-2 z-10 pointer-events-none">
+                    {badgeText === 'BESTSELLER' ? (
+                      <span className="inline-flex items-center bg-[#FACC15] text-[#78350F] text-[9.5px] font-black tracking-[0.5px] uppercase px-2 py-[2.5px] rounded-[5px] select-none leading-none shadow-sm">
+                        BESTSELLER
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center bg-[#0C2340] text-white text-[9.5px] font-extrabold tracking-[0.4px] uppercase px-2 py-[2.5px] rounded-[5px] select-none leading-none shadow-sm">
+                        {badgeText}
+                      </span>
+                    )}
                   </div>
                 )}
 
-                {/* Bottom-Left Solid White Rating Badge */}
-                <div className="absolute left-2 bottom-2 px-1.5 py-[3px] rounded-[6px] bg-white text-[#0F172A] border border-stone-200 flex items-center gap-1 leading-none select-none z-10">
+                {/* Bottom-Left Translucent Frosted Rating Badge matching Flutter */}
+                <div className="absolute left-2 bottom-2 px-1.5 py-[3px] rounded-[6px] bg-white/90 backdrop-blur-[2px] text-[#0F172A] border border-white/90 shadow-sm flex items-center gap-1 leading-none select-none z-10">
                   <span className="text-[11px] font-extrabold text-[#0F172A]">{prod.rating.toFixed(1)}</span>
                   <GlorovCustomIcons.star size={11} className="text-[#16A34A] fill-current" />
                   <span className="text-[#CBD5E1] text-[9.5px]">|</span>
@@ -463,10 +624,9 @@ export const RecommendedProductsSection: React.FC<RecommendedProductsSectionProp
                     {categoryTag}
                   </span>
 
-                  {/* 2-line editorial Fraunces serif title */}
+                  {/* 2-line editorial Fraunces serif title without native browser hover tooltip */}
                   <Link
                     href={`/products/${prod.slug || prod.id}`}
-                    title={prod.title}
                     className="font-serif font-bold text-[13px] sm:text-[13.5px] text-[#0F2F24] line-clamp-2 leading-[1.25] h-[34px] flex items-start overflow-hidden group-hover:text-[#16A34A] transition-colors"
                   >
                     {prod.title}

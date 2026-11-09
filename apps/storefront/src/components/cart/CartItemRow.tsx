@@ -81,10 +81,7 @@ export const CartItemRow = React.memo<CartItemRowProps>(
           <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
             {/* Row 1: Title and Top-Right Trash Button */}
             <div className="flex items-start justify-between gap-1">
-              <h3
-                title={item.title}
-                className="font-serif text-[13px] font-bold text-[#111827] truncate leading-tight flex-1"
-              >
+              <h3 className="font-serif text-[13px] font-bold text-[#111827] truncate leading-tight flex-1">
                 {item.title}
               </h3>
               <button

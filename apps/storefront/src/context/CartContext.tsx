@@ -83,7 +83,44 @@ export const MILESTONE_COUPONS: MilestoneOffer[] = [
     category: 'seeds',
     applicableCategories: ['seeds'],
   },
+  {
+    code: 'SEEDS20',
+    title: '20% OFF Seeds',
+    description: '20% off on vegetable & flower seeds above ₹599',
+    minSpend: 599,
+    discountPercent: 20,
+    category: 'seeds',
+    applicableCategories: ['seeds'],
+  },
+  {
+    code: 'GLOROV10',
+    title: '10% OFF Welcome',
+    description: '10% off on orders above ₹499',
+    minSpend: 499,
+    discountPercent: 10,
+    category: 'sitewide',
+    applicableCategories: ['*'],
+  },
 ]
+
+export const getKnownCouponMinSpend = (code: string): number => {
+  const clean = code.trim().toUpperCase()
+  switch (clean) {
+    case 'DIWALI20':
+      return 2299
+    case 'DIWALI15':
+      return 1599
+    case 'DIWALI10':
+      return 999
+    case 'SEEDS20':
+      return 599
+    case 'HEIRLOOM20':
+    case 'GLOROV10':
+      return 499
+    default:
+      return 0
+  }
+}
 
 export const DEFAULT_SHIPPING_OPTIONS: ShippingOption[] = [
   {
@@ -523,10 +560,14 @@ export function CartProvider({
     [cartItems]
   )
 
-  const activeOffer = useMemo(
-    () => activeOffers.find((c) => c.code.toUpperCase() === appliedCoupon?.toUpperCase()),
-    [activeOffers, appliedCoupon]
-  )
+  const activeOffer = useMemo(() => {
+    if (!appliedCoupon) return undefined
+    const clean = appliedCoupon.toUpperCase().trim()
+    return (
+      activeOffers.find((c) => c.code.toUpperCase() === clean) ||
+      MILESTONE_COUPONS.find((c) => c.code.toUpperCase() === clean)
+    )
+  }, [activeOffers, appliedCoupon])
 
   const discountAmount = useMemo(() => {
     if (!activeOffer) {
@@ -573,6 +614,63 @@ export function CartProvider({
     if (compareSubtotal <= 0 || compareSubtotal <= cartSubtotal) return 0
     return Math.round(((compareSubtotal - cartSubtotal) / compareSubtotal) * 100)
   }, [compareSubtotal, cartSubtotal])
+
+  // 6b. Automatically revoke applied coupon if cart subtotal drops below required minimum spend
+  useEffect(() => {
+    if (!appliedCoupon) return
+    if (cartItems.length === 0) {
+      setAppliedCoupon(null)
+      try {
+        localStorage.removeItem(STORAGE_KEYS.APPLIED_COUPON)
+      } catch {}
+      return
+    }
+    const minSpend = activeOffer?.minSpend || getKnownCouponMinSpend(appliedCoupon)
+    const norm = (s?: string) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+    let isEligible = true
+
+    if (
+      activeOffer?.applicableCategories &&
+      activeOffer.applicableCategories.length > 0 &&
+      !activeOffer.applicableCategories.includes('*')
+    ) {
+      const targets = activeOffer.applicableCategories.map(norm)
+      const matchingItems = cartItems.filter((item) => {
+        const cat = norm(item.category)
+        const tit = norm(item.title)
+        return targets.some((t) => cat.includes(t) || t.includes(cat) || tit.includes(t))
+      })
+
+      const eligibleSubtotal = matchingItems.reduce(
+        (sum, it) => sum + it.price * it.quantity,
+        0
+      )
+      if (matchingItems.length === 0 || eligibleSubtotal < minSpend) {
+        isEligible = false
+      }
+    } else {
+      if (cartSubtotal < minSpend) {
+        isEligible = false
+      }
+    }
+
+    if (!isEligible) {
+      const revokedCode = appliedCoupon
+      setAppliedCoupon(null)
+      try {
+        localStorage.removeItem(STORAGE_KEYS.APPLIED_COUPON)
+      } catch {}
+
+      if (cartId) {
+        removeMedusaPromotion(cartId, revokedCode, customerToken || undefined).catch(() => {})
+      }
+
+      showToast(
+        'info',
+        `Coupon ${revokedCode} removed: Minimum order of ₹${minSpend.toLocaleString('en-IN')} required.`
+      )
+    }
+  }, [cartSubtotal, cartItems, appliedCoupon, activeOffer, cartId, customerToken, showToast])
 
   // 7. addToCart handler (Requirement 3.c)
   const addToCart = useCallback(

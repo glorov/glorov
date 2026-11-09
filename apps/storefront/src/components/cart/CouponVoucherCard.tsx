@@ -134,6 +134,11 @@ export const CouponVoucherCard: React.FC<CouponVoucherCardProps> = ({
     )
   }
 
+  // Dynamically resolve milestone offers sorted by minSpend
+  const sortedOffers = availableOffers.slice().sort((a, b) => a.minSpend - b.minSpend)
+  const lowestOffer = sortedOffers[0]
+  const nextTargetOffer = sortedOffers.find((o) => o.minSpend > subtotal) || lowestOffer
+
   // Unapplied state
   const title = bestApplicable
     ? `Apply ${bestApplicable.code} (${Math.round(bestApplicable.discountPercent)}% OFF)`
@@ -141,9 +146,15 @@ export const CouponVoucherCard: React.FC<CouponVoucherCardProps> = ({
 
   const subtitle = bestApplicable
     ? `Tap to save ₹${Math.round((subtotal * bestApplicable.discountPercent) / 100)} on this order`
-    : subtotal > 0
-      ? `Add ₹${Math.max(0, Math.round(999 - subtotal))} more to unlock 10% OFF`
-      : 'Milestone offers up to 20% off available'
+    : nextTargetOffer && subtotal > 0 && nextTargetOffer.minSpend > subtotal
+      ? `Add ₹${Math.max(0, Math.round(nextTargetOffer.minSpend - subtotal))} more to unlock ${Math.round(nextTargetOffer.discountPercent)}% OFF`
+      : nextTargetOffer
+        ? `Milestone offers up to ${Math.round(sortedOffers[sortedOffers.length - 1]?.discountPercent || 20)}% off available`
+        : 'Promotional discount vouchers available'
+
+  const badgeLabel = nextTargetOffer
+    ? `${Math.round(nextTargetOffer.discountPercent)}% at ₹${Math.round(nextTargetOffer.minSpend)}`
+    : 'Offers Available'
 
   return (
     <div
@@ -185,7 +196,7 @@ export const CouponVoucherCard: React.FC<CouponVoucherCardProps> = ({
           </button>
         ) : (
           <span className="px-2.5 py-1.25 rounded-[8px] bg-[#F3FAF6] border border-[#D6EAE0] text-[11px] font-bold text-[#0A4C36] whitespace-nowrap">
-            10% at ₹999
+            {badgeLabel}
           </span>
         )}
       </div>

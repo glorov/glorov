@@ -19,6 +19,8 @@ export interface CheckoutAddressFormProps {
   customerName?: string
   customerPhone?: string
   onSaveNewAddress?: (address: Omit<CustomerAddress, 'id'>) => Promise<boolean>
+  onSetDefaultAddress?: (addressId: string) => Promise<boolean>
+  onSaveOptionsChange?: (options: { saveToAccount: boolean; setAsDefault: boolean }) => void
   deliverabilityError?: string | null
   isDeliverable?: boolean
   showAllErrors?: boolean
@@ -64,6 +66,8 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
   customerName = '',
   customerPhone = '',
   onSaveNewAddress,
+  onSetDefaultAddress,
+  onSaveOptionsChange,
   deliverabilityError = null,
   isDeliverable = true,
   showAllErrors = false,
@@ -79,6 +83,8 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
   )
   const [isEnteringNew, setIsEnteringNew] = useState<boolean>(!hasSavedAddresses)
   const [saveToAccount, setSaveToAccount] = useState<boolean>(false)
+  const [saveAsDefault, setSaveAsDefault] = useState<boolean>(!hasSavedAddresses)
+  const [isUpdatingDefault, setIsUpdatingDefault] = useState<string | null>(null)
 
   const [address, setAddress] = useState<DeliveryAddress>(() => {
     if (initialAddress && (initialAddress.fullName || initialAddress.addressLine1)) {
@@ -86,6 +92,22 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
     }
     if (defaultSavedAddress) {
       return customerAddressToDeliveryAddress(defaultSavedAddress, customerEmail)
+    }
+    if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'test') {
+      try {
+        const stored = localStorage.getItem('glorov_last_delivery_address')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (parsed && (parsed.addressLine1 || parsed.pincode)) {
+            return {
+              ...parsed,
+              email: customerEmail || parsed.email || '',
+              fullName: customerName || parsed.fullName || '',
+              phoneNumber: customerPhone || parsed.phoneNumber || '',
+            }
+          }
+        }
+      } catch {}
     }
     return createEmptyAddress(customerEmail, customerName, customerPhone)
   })
@@ -144,11 +166,24 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
     return valid
   }
 
+  const handleSetDefault = async (addressId: string) => {
+    if (!onSetDefaultAddress) return
+    setIsUpdatingDefault(addressId)
+    try {
+      await onSetDefaultAddress(addressId)
+    } finally {
+      setIsUpdatingDefault(null)
+    }
+  }
+
   const handleChange = (field: keyof DeliveryAddress, value: string): void => {
     const next = { ...address, [field]: value }
     setAddress(next)
     setTouched((prev) => ({ ...prev, [field]: true }))
     const valid = validate(next)
+    try {
+      localStorage.setItem('glorov_last_delivery_address', JSON.stringify(next))
+    } catch {}
     onChange(next, valid)
   }
 
@@ -274,11 +309,26 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
                           />
                           <span className="font-bold text-stone-900">{saved.name}</span>
                         </div>
-                        {saved.isDefault && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-900">
-                            Default
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          {saved.isDefault ? (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-900 flex items-center gap-0.5">
+                              ★ Default
+                            </span>
+                          ) : onSetDefaultAddress ? (
+                            <button
+                              type="button"
+                              disabled={isUpdatingDefault === saved.id}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleSetDefault(saved.id)
+                              }}
+                              className="px-2 py-0.5 rounded-full text-[10px] font-bold text-[#0A4C36] bg-[#EBF5F0] hover:bg-[#D8EFE4] border border-[#BCE3D0] transition-colors"
+                              title="Set this address as your default delivery location"
+                            >
+                              {isUpdatingDefault === saved.id ? 'Setting...' : 'Set as Default'}
+                            </button>
+                          ) : null}
+                        </div>
                       </div>
                       <p className="font-semibold text-stone-800">{saved.fullName}</p>
                       <p className="text-stone-600 leading-snug">{saved.addressLine1}</p>
@@ -484,32 +534,52 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
           </div>
 
           {/* Option to save new address to account for authenticated patrons */}
-          {customerEmail && onSaveNewAddress && (
-            <label className="flex items-center gap-2 mt-1 cursor-pointer select-none text-xs text-stone-700">
-              <input
-                type="checkbox"
-                checked={saveToAccount}
-                onChange={(e) => {
-                  setSaveToAccount(e.target.checked)
-                  if (e.target.checked && validate(address)) {
-                    onSaveNewAddress({
-                      name: 'Home',
-                      fullName: address.fullName,
-                      phoneNumber: address.phoneNumber,
-                      addressLine1: address.addressLine1,
-                      addressLine2: address.addressLine2,
-                      city: address.city,
-                      state: address.state,
-                      pincode: address.pincode,
-                      countryCode: 'in',
-                      isDefault: false,
-                    }).catch(() => {})
-                  }
-                }}
-                className="rounded text-[#0A4C36] focus:ring-[#0A4C36]"
-              />
-              <span>Save this address to my GLOROV account for future orders</span>
-            </label>
+          {customerEmail && (
+            <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-stone-100">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-stone-700">
+                <input
+                  type="checkbox"
+                  checked={saveToAccount}
+                  onChange={(e) => {
+                    const checked = e.target.checked
+                    setSaveToAccount(checked)
+                    onSaveOptionsChange?.({ saveToAccount: checked, setAsDefault: saveAsDefault })
+                    if (checked && onSaveNewAddress && validate(address)) {
+                      onSaveNewAddress({
+                        name: 'Home',
+                        fullName: address.fullName,
+                        phoneNumber: address.phoneNumber,
+                        addressLine1: address.addressLine1,
+                        addressLine2: address.addressLine2,
+                        city: address.city,
+                        state: address.state,
+                        pincode: address.pincode,
+                        countryCode: 'in',
+                        isDefault: saveAsDefault,
+                      }).catch(() => {})
+                    }
+                  }}
+                  className="rounded text-[#0A4C36] focus:ring-[#0A4C36]"
+                />
+                <span className="font-semibold text-stone-800">Save this address to my GLOROV account for future orders</span>
+              </label>
+
+              {saveToAccount && (
+                <label className="flex items-center gap-2 pl-5 cursor-pointer select-none text-xs text-stone-600 animate-fade-in">
+                  <input
+                    type="checkbox"
+                    checked={saveAsDefault}
+                    onChange={(e) => {
+                      const checked = e.target.checked
+                      setSaveAsDefault(checked)
+                      onSaveOptionsChange?.({ saveToAccount: true, setAsDefault: checked })
+                    }}
+                    className="rounded text-[#0A4C36] focus:ring-[#0A4C36]"
+                  />
+                  <span>Set as my default delivery address</span>
+                </label>
+              )}
+            </div>
           )}
         </div>
       )}

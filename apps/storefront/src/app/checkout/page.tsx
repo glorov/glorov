@@ -44,8 +44,9 @@ import type { DeliveryAddress, PaymentMethodType } from '../../types/checkout'
 export default function CheckoutPage(): React.ReactElement {
   const router = useRouter()
   const { showToast } = useToast()
-  const { token: customerAuthToken, customer, addresses, addAddress } = useCustomerAuth()
+  const { token: customerAuthToken, customer, addresses, addAddress, setDefaultAddress } = useCustomerAuth()
   const {
+    cartId,
     cartItems,
     cartSubtotal,
     cartTotal,
@@ -62,12 +63,39 @@ export default function CheckoutPage(): React.ReactElement {
   const [address, setAddress] = useState<DeliveryAddress | null>(shippingAddress)
   const [isAddressValid, setIsAddressValid] = useState<boolean>(false)
   const [showAddressErrors, setShowAddressErrors] = useState<boolean>(false)
+  const [saveAddressOptions, setSaveAddressOptions] = useState<{
+    saveToAccount: boolean
+    setAsDefault: boolean
+  }>({ saveToAccount: false, setAsDefault: false })
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethodType | null>(null)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [checkoutErrors, setCheckoutErrors] = useState<string[]>([])
   const [validationWarnings, setValidationWarnings] = useState<string[]>([])
   const [backendConnected, setBackendConnected] = useState<boolean>(true)
   const [deliverabilityError, setDeliverabilityError] = useState<string | null>(null)
+
+  // Automatically pre-select default saved address if no address is set yet
+  React.useEffect(() => {
+    if (!address && addresses && addresses.length > 0) {
+      const def = addresses.find((a) => a.isDefault) || addresses[0]
+      if (def) {
+        const mapped: DeliveryAddress = {
+          fullName: def.fullName,
+          phoneNumber: def.phoneNumber,
+          email: customer?.email || '',
+          addressLine1: def.addressLine1,
+          addressLine2: def.addressLine2,
+          city: def.city,
+          state: def.state,
+          pincode: def.pincode,
+          countryCode: def.countryCode || 'in',
+        }
+        setAddress(mapped)
+        setShippingAddress(mapped)
+        setIsAddressValid(true)
+      }
+    }
+  }, [addresses, customer, address, setShippingAddress])
 
   // Verify backend / admin dashboard connectivity on mount
   React.useEffect(() => {
@@ -178,13 +206,30 @@ export default function CheckoutPage(): React.ReactElement {
     resetRazorpayState()
 
     try {
-      // 1. Create real Medusa cart with line items, address, and coupon
+      // 1. Create or reuse real Medusa cart with line items, address, and coupon
       const medusaCart = await createMedusaCart({
         items: cartItems,
         address,
         couponCode: appliedCoupon,
         authToken: customerAuthToken,
+        existingCartId: cartId,
       })
+
+      // If patron opted to save address to their account, persist with default preference
+      if (saveAddressOptions.saveToAccount && customerAuthToken && address) {
+        addAddress({
+          name: 'Home',
+          fullName: address.fullName,
+          phoneNumber: address.phoneNumber,
+          addressLine1: address.addressLine1,
+          addressLine2: address.addressLine2,
+          city: address.city,
+          state: address.state,
+          pincode: address.pincode,
+          countryCode: address.countryCode || 'in',
+          isDefault: saveAddressOptions.setAsDefault,
+        }).catch(() => {})
+      }
 
       // 2. Shipping Step (Step 3a): POST /store/carts/:id/shipping-methods
       await setMedusaShippingMethod(
@@ -465,6 +510,8 @@ export default function CheckoutPage(): React.ReactElement {
                   customerName={customer ? `${customer.firstName || ''} ${customer.lastName || ''}`.trim() : ''}
                   customerPhone={customer?.phone}
                   onSaveNewAddress={addAddress}
+                  onSetDefaultAddress={setDefaultAddress}
+                  onSaveOptionsChange={setSaveAddressOptions}
                   deliverabilityError={deliverabilityError}
                   isDeliverable={backendConnected}
                   showAllErrors={showAddressErrors}

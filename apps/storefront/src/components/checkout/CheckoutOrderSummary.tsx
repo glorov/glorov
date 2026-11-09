@@ -37,7 +37,7 @@ export const CheckoutOrderSummary: React.FC<CheckoutOrderSummaryProps> = ({
   hasSelectedPayment = true,
   onPlaceOrder,
 }) => {
-  const { applyCoupon, removeCoupon } = useCart()
+  const { applyCoupon, removeCoupon, activeOffers } = useCart()
   const { showToast } = useToast()
   const [couponInput, setCouponInput] = useState<string>('')
 
@@ -142,7 +142,7 @@ export const CheckoutOrderSummary: React.FC<CheckoutOrderSummaryProps> = ({
       <div className="pt-1">
         {appliedCoupon ? (
           (() => {
-            const activeOffer = MILESTONE_COUPONS.find(
+            const activeOffer = (activeOffers || MILESTONE_COUPONS).find(
               (c) => c.code.toUpperCase() === appliedCoupon?.toUpperCase()
             )
             return (

@@ -113,16 +113,19 @@ export interface CreateMedusaCartParams {
   address: DeliveryAddress
   couponCode?: string | null
   authToken?: string | null
+  existingCartId?: string | null
 }
 
 /**
- * Creates and initializes a real Medusa v2 cart with line items, delivery address, and promotions.
+ * Creates, reuses, and initializes a real Medusa v2 cart with line items, delivery address, and promotions.
+ * If existingCartId is provided and active, reuses it to eliminate redundant line-item creation delays.
  */
 export async function createMedusaCart({
   items,
   address,
   couponCode,
   authToken,
+  existingCartId,
 }: CreateMedusaCartParams): Promise<{ id: string; [key: string]: unknown }> {
   const baseUrl = getCleanBaseUrl()
   const headers = getHeaders(authToken)
@@ -131,39 +134,81 @@ export async function createMedusaCart({
     throw new Error('Your cart is empty. Add botanical items before checkout.')
   }
 
-  // 1. POST /store/carts - Create Cart
-  const cartRes = await fetch(`${baseUrl}/store/carts`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ currency_code: 'inr' }),
-  })
+  let cartId: string | null = null
+  let cart: { id: string; items?: Array<{ variant_id?: string; quantity?: number }>; [key: string]: unknown } | null = null
+  let needToAddItems = true
 
-  if (!cartRes.ok) {
-    const err = await cartRes.json().catch(() => ({}))
-    throw new Error(err.message || `Failed to create Medusa cart (${cartRes.status}).`)
+  // Fast path: Reuse existing active Medusa cart from user session
+  if (existingCartId) {
+    try {
+      const existingRes = await fetch(`${baseUrl}/store/carts/${existingCartId}`, {
+        headers,
+      })
+      if (existingRes.ok) {
+        const data = await existingRes.json()
+        if (data.cart && !data.cart.completed_at) {
+          cart = data.cart
+          cartId = data.cart.id
+          // Check if cart already has line items
+          if (Array.isArray(data.cart.items) && data.cart.items.length > 0) {
+            needToAddItems = false
+          }
+        }
+      }
+    } catch {
+      // Fall through to fresh cart creation
+    }
   }
 
-  const { cart } = await cartRes.json()
-  const cartId = cart.id
-
-  // 2. POST /store/carts/:id/line-items - Add Line Items
-  for (const item of items) {
-    const resolvedVariantId = await resolveMedusaVariantId(item.productId, item.variantId, item.title)
-    const lineRes = await fetch(`${baseUrl}/store/carts/${cartId}/line-items`, {
+  // 1. POST /store/carts - Create Cart if not reusing existing
+  if (!cartId) {
+    const cartRes = await fetch(`${baseUrl}/store/carts`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({
-        variant_id: resolvedVariantId,
-        quantity: item.quantity,
-      }),
+      body: JSON.stringify({ currency_code: 'inr' }),
     })
 
-    if (!lineRes.ok) {
-      const lineErr = await lineRes.json().catch(() => ({}))
-      throw new Error(
-        lineErr.message || `Unable to add "${item.title}" to cart. It may be out of stock.`
-      )
+    if (!cartRes.ok) {
+      const err = await cartRes.json().catch(() => ({}))
+      throw new Error(err.message || `Failed to create Medusa cart (${cartRes.status}).`)
     }
+
+    const createdData = await cartRes.json()
+    cart = createdData.cart
+    cartId = createdData.cart.id
+    needToAddItems = true
+  }
+
+  if (!cartId) {
+    throw new Error('Failed to obtain a valid Medusa cart session.')
+  }
+
+  // 2. Add Line Items (concurrently via Promise.all when creating new cart)
+  if (needToAddItems) {
+    const lineItemPromises = items.map(async (item) => {
+      const resolvedVariantId = await resolveMedusaVariantId(
+        item.productId,
+        item.variantId,
+        item.title
+      )
+      const lineRes = await fetch(`${baseUrl}/store/carts/${cartId}/line-items`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          variant_id: resolvedVariantId,
+          quantity: item.quantity,
+        }),
+      })
+
+      if (!lineRes.ok) {
+        const lineErr = await lineRes.json().catch(() => ({}))
+        throw new Error(
+          lineErr.message || `Unable to add "${item.title}" to cart. It may be out of stock.`
+        )
+      }
+    })
+
+    await Promise.all(lineItemPromises)
   }
 
   // 3. POST /store/carts/:id - Update Email and Addresses
@@ -198,6 +243,11 @@ export async function createMedusaCart({
     throw new Error(updateErr.message || 'Failed to attach delivery address to cart.')
   }
 
+  const updateData = await updateRes.json().catch(() => ({}))
+  if (updateData.cart) {
+    cart = updateData.cart
+  }
+
   // 4. POST /store/carts/:id/promotions - Apply Promo Code if present
   if (couponCode && couponCode.trim()) {
     try {
@@ -211,7 +261,53 @@ export async function createMedusaCart({
     }
   }
 
-  return cart
+  return cart || { id: cartId }
+}
+
+/**
+ * Directly updates cart shipping & billing address in Medusa v2.
+ * Used for optimistic / background checkout address synchronization.
+ */
+export async function updateMedusaCartAddress(
+  cartId: string,
+  address: DeliveryAddress,
+  authToken?: string | null
+): Promise<Record<string, unknown>> {
+  const baseUrl = getCleanBaseUrl()
+  const headers = getHeaders(authToken)
+
+  const nameParts = (address.fullName || '').trim().split(/\s+/)
+  const firstName = nameParts[0] || 'Valued'
+  const lastName = nameParts.slice(1).join(' ') || 'Customer'
+
+  const addressPayload = {
+    first_name: firstName,
+    last_name: lastName,
+    address_1: address.addressLine1,
+    address_2: address.addressLine2 || address.landmark || '',
+    city: address.city,
+    province: address.state,
+    postal_code: address.pincode,
+    country_code: (address.countryCode || 'in').toLowerCase(),
+    phone: address.phoneNumber,
+  }
+
+  const updateRes = await fetch(`${baseUrl}/store/carts/${cartId}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      email: address.email,
+      shipping_address: addressPayload,
+      billing_address: addressPayload,
+    }),
+  })
+
+  if (!updateRes.ok) {
+    const updateErr = await updateRes.json().catch(() => ({}))
+    throw new Error(updateErr.message || 'Failed to update delivery address on cart.')
+  }
+
+  return updateRes.json()
 }
 
 /**

@@ -74,37 +74,15 @@ export const MILESTONE_COUPONS: MilestoneOffer[] = [
     category: 'sitewide',
     applicableCategories: ['*'],
   },
-  {
-    code: 'HEIRLOOM20',
-    title: '20% OFF Desi Seeds',
-    description: '20% off on all heirloom seeds above ₹499',
-    minSpend: 499,
-    discountPercent: 20,
-    category: 'seeds',
-    applicableCategories: ['seeds'],
-  },
-  {
-    code: 'SEEDS20',
-    title: '20% OFF Seeds',
-    description: '20% off on vegetable & flower seeds above ₹599',
-    minSpend: 599,
-    discountPercent: 20,
-    category: 'seeds',
-    applicableCategories: ['seeds'],
-  },
-  {
-    code: 'GLOROV10',
-    title: '10% OFF Welcome',
-    description: '10% off on orders above ₹499',
-    minSpend: 499,
-    discountPercent: 10,
-    category: 'sitewide',
-    applicableCategories: ['*'],
-  },
 ]
 
-export const getKnownCouponMinSpend = (code: string): number => {
+export const getKnownCouponMinSpend = (
+  code: string,
+  offers: MilestoneOffer[] = MILESTONE_COUPONS
+): number => {
   const clean = code.trim().toUpperCase()
+  const found = offers.find((o) => o.code.toUpperCase() === clean)
+  if (found) return found.minSpend
   switch (clean) {
     case 'DIWALI20':
       return 2299
@@ -112,11 +90,6 @@ export const getKnownCouponMinSpend = (code: string): number => {
       return 1599
     case 'DIWALI10':
       return 999
-    case 'SEEDS20':
-      return 599
-    case 'HEIRLOOM20':
-    case 'GLOROV10':
-      return 499
     default:
       return 0
   }
@@ -311,25 +284,28 @@ export function CartProvider({
       const res = await fetch('/api/offers', { cache: 'no-store' })
       if (!res.ok) return
       const data = await res.json()
-      if (data && Array.isArray(data.offers) && data.offers.length > 0) {
-        const mapped: MilestoneOffer[] = data.offers.map((o: {
-          code: string
-          title: string
-          description?: string
-          min_spend?: number
-          discount_value?: number
-          category?: string
-          applicable_categories?: string[]
-        }) => ({
-          code: o.code,
-          title: o.title,
-          description: o.description,
-          minSpend: o.min_spend ?? 0,
-          discountPercent: o.discount_value ?? 0,
-          category: o.category,
-          applicableCategories: o.applicable_categories,
-        }))
-        setActiveOffers(mapped)
+      if (data && Array.isArray(data.offers)) {
+        const activeOnly = data.offers.filter((o: { is_active?: boolean }) => o.is_active !== false)
+        if (activeOnly.length > 0) {
+          const mapped: MilestoneOffer[] = activeOnly.map((o: {
+            code: string
+            title: string
+            description?: string
+            min_spend?: number
+            discount_value?: number
+            category?: string
+            applicable_categories?: string[]
+          }) => ({
+            code: o.code,
+            title: o.title,
+            description: o.description,
+            minSpend: o.min_spend ?? 0,
+            discountPercent: o.discount_value ?? 0,
+            category: o.category,
+            applicableCategories: o.applicable_categories,
+          }))
+          setActiveOffers(mapped)
+        }
       }
       if (
         data &&
@@ -656,7 +632,7 @@ export function CartProvider({
       } catch {}
       return
     }
-    const minSpend = activeOffer?.minSpend || getKnownCouponMinSpend(appliedCoupon)
+    const minSpend = activeOffer?.minSpend || getKnownCouponMinSpend(appliedCoupon, activeOffers)
     const norm = (s?: string) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '')
     let isEligible = true
 
@@ -701,7 +677,7 @@ export function CartProvider({
         `Coupon ${revokedCode} removed: Minimum order of ₹${minSpend.toLocaleString('en-IN')} required.`
       )
     }
-  }, [cartSubtotal, cartItems, appliedCoupon, activeOffer, cartId, customerToken, showToast])
+  }, [cartSubtotal, cartItems, appliedCoupon, activeOffer, activeOffers, cartId, customerToken, showToast])
 
   // 7. addToCart handler (Requirement 3.c)
   const addToCart = useCallback(

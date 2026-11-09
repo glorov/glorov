@@ -73,6 +73,35 @@ describe('Medusa v2 Checkout Flow Client (lib/api/checkout.ts)', () => {
     expect(global.fetch).toHaveBeenCalledTimes(3)
   })
 
+  it('createMedusaCart reuses existing active cart with items and skips redundant line-item creation', async () => {
+    global.fetch = vi.fn()
+      // 1. GET /store/carts/:id (check existing cart)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          cart: {
+            id: 'cart_existing_123',
+            items: [{ variant_id: 'variant_monstera_std', quantity: 1 }],
+          },
+        }),
+      })
+      // 2. POST /store/carts/:id (address update directly)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ cart: { id: 'cart_existing_123' } }),
+      })
+
+    const cart = await createMedusaCart({
+      items: [mockCartItem],
+      address: mockDeliveryAddress,
+      existingCartId: 'cart_existing_123',
+    })
+
+    expect(cart.id).toBe('cart_existing_123')
+    // Skips POST /store/carts and POST line-items! Only 2 calls: GET existing cart + POST address update
+    expect(global.fetch).toHaveBeenCalledTimes(2)
+  })
+
   it('setMedusaShippingMethod discovers shipping options and calls POST /store/carts/:id/shipping-methods', async () => {
     global.fetch = vi.fn()
       // 1. GET /store/shipping-options?cart_id=...

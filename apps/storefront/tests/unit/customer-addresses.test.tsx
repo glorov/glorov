@@ -308,6 +308,28 @@ describe('CheckoutAddressForm Saved Address Selection', () => {
     expect(screen.getByText(/Entering a new shipping destination/i)).toBeDefined()
     expect(screen.getByLabelText(/Flat, House No., Building, Street/i)).toBeDefined()
   })
+
+  it('calls onSetDefaultAddress when "Set as Default" button is clicked on a non-default address card', () => {
+    const onChange = vi.fn()
+    const onSetDefault = vi.fn().mockResolvedValue(true)
+
+    render(
+      <CheckoutAddressForm
+        initialAddress={null}
+        onChange={onChange}
+        savedAddresses={savedTestAddresses}
+        customerEmail="aarav@glorov.in"
+        onSetDefaultAddress={onSetDefault}
+      />
+    )
+
+    // Studio Nursery is not default, so it should have a 'Set as Default' button
+    const setDefaultBtn = screen.getByText('Set as Default')
+    expect(setDefaultBtn).toBeDefined()
+
+    fireEvent.click(setDefaultBtn)
+    expect(onSetDefault).toHaveBeenCalledWith('addr_saved_02')
+  })
 })
 
 describe('CustomerAuthContext Address State & Default Management', () => {

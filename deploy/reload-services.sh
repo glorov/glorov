@@ -169,26 +169,34 @@ else
   PORT=9000 pm2 start "npx medusa start" --name glorov-backend --node-args="--max-old-space-size=256"
 fi
 
-# 9. Ensure standalone node_modules packages from .pnpm are properly linked
-if [ -d "${CURRENT_LINK}/storefront-next/node_modules/.pnpm" ]; then
-  echo "🔗 Linking standalone pnpm dependencies..."
-  cd "${CURRENT_LINK}/storefront-next/node_modules"
-  for pkg in .pnpm/*/node_modules/*; do
-    [ -d "$pkg" ] && ln -sfn "$pkg" $(basename "$pkg") 2>/dev/null || true
-  done
-  cd - > /dev/null
-fi
+# 9. Storefront is hosted on Vercel CDN; skip local VM process by default (saves ~120MB RAM)
+if [ "${ENABLE_LOCAL_STOREFRONT:-false}" = "true" ]; then
+  if [ -d "${CURRENT_LINK}/storefront-next/node_modules/.pnpm" ]; then
+    echo "🔗 Linking standalone pnpm dependencies..."
+    cd "${CURRENT_LINK}/storefront-next/node_modules"
+    for pkg in .pnpm/*/node_modules/*; do
+      [ -d "$pkg" ] && ln -sfn "$pkg" $(basename "$pkg") 2>/dev/null || true
+    done
+    cd - > /dev/null
+  fi
 
-# 10. Reload Next.js storefront (standalone mode on port 3001, zero-downtime reload)
-if pm2 describe glorov-storefront > /dev/null 2>&1; then
-  echo "♻️ Reloading PM2 glorov-storefront (zero-downtime)..."
-  cd "${CURRENT_LINK}/storefront-next"
-  pm2 reload glorov-storefront --update-env
+  if pm2 describe glorov-storefront > /dev/null 2>&1; then
+    echo "♻️ Reloading PM2 glorov-storefront (zero-downtime)..."
+    cd "${CURRENT_LINK}/storefront-next"
+    pm2 reload glorov-storefront --update-env
+  else
+    echo "🚀 Starting PM2 glorov-storefront..."
+    PORT=3001 HOSTNAME=127.0.0.1 NODE_ENV=production pm2 start "${CURRENT_LINK}/storefront-next/apps/storefront/server.js" \
+      --name glorov-storefront \
+      --node-args="--max-old-space-size=128"
+  fi
 else
-  echo "🚀 Starting PM2 glorov-storefront..."
-  PORT=3001 HOSTNAME=127.0.0.1 NODE_ENV=production pm2 start "${CURRENT_LINK}/storefront-next/apps/storefront/server.js" \
-    --name glorov-storefront \
-    --node-args="--max-old-space-size=128"
+  # Ensure storefront is stopped if running to free RAM for Medusa API
+  if pm2 describe glorov-storefront > /dev/null 2>&1; then
+    echo "🛑 Storefront is hosted on Vercel; stopping local process to conserve memory..."
+    pm2 stop glorov-storefront > /dev/null 2>&1 || true
+    pm2 delete glorov-storefront > /dev/null 2>&1 || true
+  fi
 fi
 
 pm2 save
@@ -212,11 +220,11 @@ if [[ "${BACKEND_ONLINE}" -ne 1 ]]; then
   echo "⚠️ Backend warming up slowly; check with 'pm2 logs glorov-backend'"
 fi
 
-STOREFRONT_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:3001/" || true)
-if [[ "${STOREFRONT_CODE}" == "200" ]]; then
-  echo "✅ Storefront is ONLINE on port 3001! (HTTP 200)"
-else
-  echo "⚠️ Storefront returned HTTP ${STOREFRONT_CODE}"
+if [ "${ENABLE_LOCAL_STOREFRONT:-false}" = "true" ]; then
+  STOREFRONT_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:3001/" || true)
+  if [[ "${STOREFRONT_CODE}" == "200" ]]; then
+    echo "✅ Local Storefront is ONLINE on port 3001! (HTTP 200)"
+  fi
 fi
 
 echo "🎉 Services reloaded successfully on release ${TIMESTAMP}!"

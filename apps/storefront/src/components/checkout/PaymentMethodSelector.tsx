@@ -6,7 +6,7 @@ import { GlorovCustomIcons } from '../common/GlorovIcons'
 import { isCodAmountEligible } from '../../lib/constants'
 
 export interface PaymentMethodSelectorProps {
-  selectedMethod: PaymentMethodType
+  selectedMethod: PaymentMethodType | null
   onSelectMethod: (method: PaymentMethodType) => void
   totalAmount?: number
   totalAmountPaise?: number

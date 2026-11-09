@@ -61,10 +61,50 @@ export default function CheckoutPage(): React.ReactElement {
 
   const [address, setAddress] = useState<DeliveryAddress | null>(shippingAddress)
   const [isAddressValid, setIsAddressValid] = useState<boolean>(false)
-  const [selectedPayment, setSelectedPayment] = useState<PaymentMethodType>('cod')
+  const [selectedPayment, setSelectedPayment] = useState<PaymentMethodType | null>(null)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [checkoutErrors, setCheckoutErrors] = useState<string[]>([])
   const [validationWarnings, setValidationWarnings] = useState<string[]>([])
+  const [backendConnected, setBackendConnected] = useState<boolean>(true)
+  const [deliverabilityError, setDeliverabilityError] = useState<string | null>(null)
+
+  // Verify backend / admin dashboard connectivity on mount
+  React.useEffect(() => {
+    let isMounted = true
+    async function checkAdminBackendConnection() {
+      try {
+        const res = await fetch('/api/health', { cache: 'no-store' })
+        if (!isMounted) return
+        if (!res.ok) {
+          setBackendConnected(false)
+          setDeliverabilityError(
+            'Delivery is not available to this address. Fulfillment network is not connected to the store.'
+          )
+          return
+        }
+        const data = await res.json()
+        if (!data.upstream_backend?.connected) {
+          setBackendConnected(false)
+          setDeliverabilityError(
+            'Delivery is not available to this address. Fulfillment network is disconnected.'
+          )
+        } else {
+          setBackendConnected(true)
+          setDeliverabilityError(null)
+        }
+      } catch {
+        if (!isMounted) return
+        setBackendConnected(false)
+        setDeliverabilityError(
+          'Delivery is not available to this address. Fulfillment network is disconnected.'
+        )
+      }
+    }
+    checkAdminBackendConnection()
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const {
     openRazorpayCheckout,
@@ -96,9 +136,28 @@ export default function CheckoutPage(): React.ReactElement {
   }
 
   const handlePlaceOrder = async (): Promise<void> => {
+    if (!backendConnected) {
+      showToast(
+        'error',
+        'Delivery is not available to this address. Fulfillment network is not connected to the store.',
+        { title: 'Delivery Unavailable' }
+      )
+      setCheckoutErrors([
+        'Delivery is not available to this address: Fulfillment network is currently disconnected.',
+      ])
+      return
+    }
+
     if (!address || !isAddressValid) {
       showToast('error', 'Please complete all required delivery address fields.', {
         title: 'Incomplete Address',
+      })
+      return
+    }
+
+    if (!selectedPayment) {
+      showToast('error', 'Please choose a payment method before completing your order.', {
+        title: 'Payment Method Required',
       })
       return
     }
@@ -322,6 +381,26 @@ export default function CheckoutPage(): React.ReactElement {
               </span>
             </div>
 
+            {/* Deliverability Disconnected Alert Banner */}
+            {!backendConnected && (
+              <div
+                role="alert"
+                className="mb-6 p-4 rounded-2xl bg-red-50 border-2 border-red-300 text-red-900 flex items-start gap-3 shadow-sm"
+              >
+                <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-700 flex-shrink-0 mt-0.5">
+                  <GlorovCustomIcons.info size={18} />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-serif font-bold text-[14.5px] text-red-950">
+                    Delivery is not available to this address
+                  </h3>
+                  <p className="text-[12.5px] text-red-800 mt-0.5 leading-relaxed">
+                    Our fulfillment network is currently not connected to the store admin dashboard. Doorstep courier dispatch cannot be scheduled at this time. Please check back later.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
               {/* Left Column: Multi-Step Forms matching Flutter (Flex 13 / 60%) */}
               <div className="lg:col-span-7 flex flex-col gap-6">
@@ -380,7 +459,11 @@ export default function CheckoutPage(): React.ReactElement {
                   onChange={handleAddressChange}
                   savedAddresses={addresses}
                   customerEmail={customer?.email}
+                  customerName={customer ? `${customer.firstName || ''} ${customer.lastName || ''}`.trim() : ''}
+                  customerPhone={customer?.phone}
                   onSaveNewAddress={addAddress}
+                  deliverabilityError={deliverabilityError}
+                  isDeliverable={backendConnected}
                 />
 
                 {/* 2. Shipping Speed */}
@@ -438,6 +521,9 @@ export default function CheckoutPage(): React.ReactElement {
                   appliedCoupon={appliedCoupon}
                   isSubmitting={isSubmitting}
                   isAddressValid={isAddressValid}
+                  isDeliverable={backendConnected}
+                  deliverabilityError={deliverabilityError}
+                  hasSelectedPayment={Boolean(selectedPayment)}
                   onPlaceOrder={handlePlaceOrder}
                 />
               </div>

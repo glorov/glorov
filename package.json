@@ -32,7 +32,7 @@
     "deploy:github": "git push origin main",
     "deploy:vm": "./scripts/deploy-vm.sh",
     "deploy:firebase": "./scripts/deploy-firebase.sh",
-    "deploy:tech": "./scripts/deploy-custom-domain.sh",
+    "deploy:domain": "./deploy/reload-services.sh",
     "deploy:all": "./scripts/deploy-all.sh"
   },
   "pnpm": {

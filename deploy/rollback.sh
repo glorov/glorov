@@ -128,8 +128,12 @@ ensure_admin_symlink() {
 ensure_admin_symlink "${CURRENT_LINK}/admin"
 
 # Update Nginx configuration if present in target release
-if [ -f "${CURRENT_LINK}/deploy/nginx-glorov.tech.conf" ]; then
+if [ -f "${CURRENT_LINK}/deploy/nginx-glorov.com.conf" ]; then
   echo "🌐 Updating Nginx configuration to target release..."
+  sudo cp "${CURRENT_LINK}/deploy/nginx-glorov.com.conf" /etc/nginx/sites-available/glorov.com 2>/dev/null || true
+  sudo ln -sf /etc/nginx/sites-available/glorov.com /etc/nginx/sites-enabled/glorov.com 2>/dev/null || true
+  sudo nginx -t 2>/dev/null && sudo systemctl reload nginx 2>/dev/null || true
+elif [ -f "${CURRENT_LINK}/deploy/nginx-glorov.tech.conf" ]; then
   sudo cp "${CURRENT_LINK}/deploy/nginx-glorov.tech.conf" /etc/nginx/sites-available/glorov-tech 2>/dev/null || true
   sudo nginx -t 2>/dev/null && sudo systemctl reload nginx 2>/dev/null || true
 fi

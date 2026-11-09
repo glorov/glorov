@@ -14,8 +14,8 @@ export interface CartPincodeBoxProps {
  * green check button, and serviceability status alert.
  */
 export const CartPincodeBox: React.FC<CartPincodeBoxProps> = ({ onPincodeChange }) => {
-  const [activePincode, setActivePincode] = useState<string>('411001')
-  const [inputPincode, setInputPincode] = useState<string>('411001')
+  const [activePincode, setActivePincode] = useState<string>('')
+  const [inputPincode, setInputPincode] = useState<string>('')
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
   const [isChecking, setIsChecking] = useState<boolean>(false)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
@@ -64,18 +64,30 @@ export const CartPincodeBox: React.FC<CartPincodeBoxProps> = ({ onPincodeChange 
 
         {/* Text */}
         <p className="flex-1 min-w-0 text-[12px] text-[#4B5563] truncate">
-          <span>Deliver to </span>
-          <span className="font-extrabold text-[#111827]">{activePincode}</span>
-          <span className="font-semibold text-[#059669]"> • Free Express (2–3 Days)</span>
+          {activePincode ? (
+            <>
+              <span>Deliver to </span>
+              <span className="font-extrabold text-[#111827]">{activePincode}</span>
+              <span className="font-semibold text-[#059669]"> • Free Express (2–3 Days)</span>
+            </>
+          ) : (
+            <span className="text-[#6B7280]">Enter PIN code for delivery estimate</span>
+          )}
         </p>
 
-        {/* Change/Close Button */}
+        {/* Change/Enter PIN Button */}
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="px-2 py-0.75 rounded-[12px] bg-[#F0FDF4] border border-[#A7F3D0] text-[10.5px] font-extrabold text-[#0A4C36] hover:bg-[#DCFCE7] transition-colors active:scale-95"
+          className={`px-2.5 py-1 rounded-[12px] text-[10.5px] font-extrabold transition-colors active:scale-95 ${
+            isExpanded
+              ? 'bg-[#F3F4F6] text-[#4B5563] border border-[#D1D5DB]'
+              : activePincode
+              ? 'bg-[#F0FDF4] border border-[#A7F3D0] text-[#0A4C36] hover:bg-[#DCFCE7]'
+              : 'bg-[#0A4C36] text-white hover:bg-[#135841]'
+          }`}
         >
-          {isExpanded ? 'Close' : 'Change'}
+          {isExpanded ? 'Close' : activePincode ? 'Change' : 'Enter PIN'}
         </button>
       </div>
 

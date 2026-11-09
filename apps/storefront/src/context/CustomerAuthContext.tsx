@@ -223,12 +223,13 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
           if (data.authenticated && data.customer) {
             setCustomer((curr) => curr || data.customer)
             setToken((curr) => curr || data.token || null)
-            if (Array.isArray(data.addresses) && data.addresses.length > 0) {
-              setAddresses((curr) => (curr.length > 0 ? curr : data.addresses))
-            } else if (data.customer.email === 'demo@glorov.in') {
-              setAddresses((curr) => (curr.length > 0 ? curr : DEMO_ACCOUNT_ADDRESSES))
-              setOrders((curr) => (curr.length > 0 ? curr : DEMO_ACCOUNT_ORDERS))
-              setNotifications((curr) => (curr.length > 0 ? curr : DEFAULT_SAMPLE_NOTIFICATIONS))
+            if (data.customer.email === 'demo@glorov.in') {
+              setAddresses(DEMO_ACCOUNT_ADDRESSES)
+              setOrders(DEMO_ACCOUNT_ORDERS)
+              setNotifications(DEFAULT_SAMPLE_NOTIFICATIONS)
+            } else {
+              setAddresses(Array.isArray(data.addresses) ? data.addresses : [])
+              setOrders(Array.isArray(data.orders) ? data.orders : [])
             }
             return
           }
@@ -304,9 +305,8 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
         if (res.ok && data.success) {
           setCustomer(data.customer)
           setToken(data.token)
-          if (Array.isArray(data.addresses)) {
-            setAddresses(data.addresses)
-          }
+          setAddresses(Array.isArray(data.addresses) ? data.addresses : [])
+          setOrders(Array.isArray(data.orders) ? data.orders : [])
 
           // GLOROV-WISH-001: Sync customer metadata wishlist with localStorage on login
           try {
@@ -564,9 +564,11 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       const res = await fetchCustomerAddresses(token)
       if (res.success && Array.isArray(res.addresses)) {
         setAddresses(res.addresses)
+      } else {
+        setAddresses([])
       }
     } catch {
-      // Gracefully handle network disconnect
+      setAddresses([])
     }
   }, [token, customer])
 
@@ -693,9 +695,11 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
       const res = await fetchCustomerOrders(token)
       if (res.success && Array.isArray(res.orders)) {
         setOrders(res.orders)
+      } else {
+        setOrders([])
       }
     } catch {
-      // Gracefully handle network disconnect in test or offline modes
+      setOrders([])
     }
   }, [token, customer])
 

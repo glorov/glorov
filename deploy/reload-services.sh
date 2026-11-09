@@ -141,9 +141,10 @@ ls -1dt */ 2>/dev/null | tail -n +"$((RETENTION_COUNT + 1))" | while read -r old
 done
 
 # 6. Sync Nginx configuration
-if [ -f "${CURRENT_LINK}/deploy/nginx-glorov.tech.conf" ]; then
+if [ -f "${CURRENT_LINK}/deploy/nginx-glorov.com.conf" ]; then
   echo "🌐 Updating Nginx configuration..."
-  sudo cp "${CURRENT_LINK}/deploy/nginx-glorov.tech.conf" /etc/nginx/sites-available/glorov-tech
+  sudo cp "${CURRENT_LINK}/deploy/nginx-glorov.com.conf" /etc/nginx/sites-available/glorov.com
+  sudo ln -sf /etc/nginx/sites-available/glorov.com /etc/nginx/sites-enabled/glorov.com
   sudo nginx -t && sudo systemctl reload nginx
 fi
 

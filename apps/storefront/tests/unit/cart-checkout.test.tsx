@@ -178,12 +178,16 @@ describe('Checkout — CheckoutAddressForm', () => {
     const phoneInput = screen.getByPlaceholderText(/9876543210/i)
     const emailInput = screen.getByPlaceholderText(/name@example.com/i)
     const addressInput = screen.getByPlaceholderText(/Flat 402/i)
+    const cityInput = screen.getByPlaceholderText(/Bengaluru/i)
+    const stateSelect = screen.getByLabelText(/State/i)
     const pincodeInput = screen.getByLabelText(/PIN Code/i)
 
     fireEvent.change(nameInput, { target: { value: 'Rohit Verma' } })
     fireEvent.change(phoneInput, { target: { value: '9876543210' } })
     fireEvent.change(emailInput, { target: { value: 'rohit@example.com' } })
     fireEvent.change(addressInput, { target: { value: 'House 14, Lotus Enclave' } })
+    fireEvent.change(cityInput, { target: { value: 'Bengaluru' } })
+    fireEvent.change(stateSelect, { target: { value: 'Karnataka' } })
     fireEvent.change(pincodeInput, { target: { value: '560034' } })
 
     expect(onChange).toHaveBeenLastCalledWith(

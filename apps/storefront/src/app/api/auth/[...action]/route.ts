@@ -97,7 +97,14 @@ interface MedusaAddressResponse {
 
 function mapMedusaCustomer(customerData?: MedusaCustomerResponse | null): CustomerUser {
   if (!customerData) {
-    return DEMO_ACCOUNT_USER
+    return {
+      id: `cust_${Date.now()}`,
+      email: '',
+      firstName: '',
+      lastName: '',
+      gardeningExperience: 'Beginner',
+      memberSince: 'November 2026',
+    }
   }
 
   const createdAt = customerData.created_at
@@ -594,6 +601,14 @@ export async function GET(
         }
 
         const data = await custRes.json()
+        if (!data.customer) {
+          return NextResponse.json({
+            authenticated: false,
+            customer: null,
+            addresses: [],
+            token: null,
+          })
+        }
         const customer = mapMedusaCustomer(data.customer)
         const addresses = Array.isArray(data.customer?.addresses)
           ? data.customer.addresses.map(mapMedusaAddress)

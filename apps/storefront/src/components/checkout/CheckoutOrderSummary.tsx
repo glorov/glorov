@@ -17,6 +17,9 @@ export interface CheckoutOrderSummaryProps {
   appliedCoupon?: string | null
   isSubmitting: boolean
   isAddressValid: boolean
+  isDeliverable?: boolean
+  deliverabilityError?: string | null
+  hasSelectedPayment?: boolean
   onPlaceOrder: () => void
 }
 
@@ -29,6 +32,9 @@ export const CheckoutOrderSummary: React.FC<CheckoutOrderSummaryProps> = ({
   appliedCoupon,
   isSubmitting,
   isAddressValid,
+  isDeliverable = true,
+  deliverabilityError = null,
+  hasSelectedPayment = true,
   onPlaceOrder,
 }) => {
   const { applyCoupon, removeCoupon } = useCart()
@@ -183,14 +189,23 @@ export const CheckoutOrderSummary: React.FC<CheckoutOrderSummaryProps> = ({
       {/* Place Order CTA Button */}
       <button
         type="button"
-        disabled={isSubmitting || !isAddressValid || items.length === 0}
+        disabled={isSubmitting || !isAddressValid || items.length === 0 || isDeliverable === false || !hasSelectedPayment}
         onClick={onPlaceOrder}
-        className="w-full py-3.5 px-5 rounded-full bg-[#0A4C36] hover:bg-[#135841] text-white font-extrabold text-[13.5px] uppercase tracking-[0.8px] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+        className={`w-full py-3.5 px-5 rounded-full font-extrabold text-[13.5px] uppercase tracking-[0.8px] active:scale-[0.98] disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 ${
+          isDeliverable === false
+            ? 'bg-rose-700 text-white cursor-not-allowed opacity-90'
+            : 'bg-[#0A4C36] hover:bg-[#135841] text-white disabled:opacity-50'
+        }`}
       >
         {isSubmitting ? (
           <>
             <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
             <span>CONFIRMING ORDER...</span>
+          </>
+        ) : isDeliverable === false ? (
+          <>
+            <GlorovCustomIcons.info size={16} className="text-white" />
+            <span>DELIVERY NOT AVAILABLE TO THIS ADDRESS</span>
           </>
         ) : (
           <>
@@ -200,9 +215,21 @@ export const CheckoutOrderSummary: React.FC<CheckoutOrderSummaryProps> = ({
         )}
       </button>
 
-      {!isAddressValid && (
+      {isDeliverable === false && (
+        <p className="text-[11px] text-red-800 text-center font-bold bg-red-50 p-2.5 rounded-[10px] border border-red-200">
+          ⚠️ {deliverabilityError || 'Delivery is not available to this address. Fulfillment network is disconnected.'}
+        </p>
+      )}
+
+      {isDeliverable !== false && !isAddressValid && (
         <p className="text-[11px] text-[#92400E] text-center font-medium bg-[#FEF3C7] p-2 rounded-[10px] border border-[#FDE68A]">
           Please complete the required delivery address fields to confirm your order.
+        </p>
+      )}
+
+      {isDeliverable !== false && isAddressValid && !hasSelectedPayment && (
+        <p className="text-[11px] text-stone-700 text-center font-medium bg-stone-100 p-2 rounded-[10px] border border-stone-200">
+          Please select a payment method above to proceed.
         </p>
       )}
 
@@ -210,7 +237,7 @@ export const CheckoutOrderSummary: React.FC<CheckoutOrderSummaryProps> = ({
       <div className="pt-2 border-t border-[#F0F4F2] flex flex-col gap-1 text-[11px] text-[#6B7280] text-center">
         <div className="flex items-center justify-center gap-1.5 text-[#0A4C36] font-semibold">
           <GlorovCustomIcons.shieldCheck size={13} />
-          <span>Simulated Demonstration Checkout</span>
+          <span>Verified Secure Botanical Transit</span>
         </div>
         <p>🔒 256-Bit SSL Encrypted • 🌱 7-Day Live Plant Replacement Guarantee</p>
       </div>

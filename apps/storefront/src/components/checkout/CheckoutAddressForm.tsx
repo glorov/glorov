@@ -16,41 +16,27 @@ export interface CheckoutAddressFormProps {
   onChange: (address: DeliveryAddress, isValid: boolean) => void
   savedAddresses?: CustomerAddress[]
   customerEmail?: string
+  customerName?: string
+  customerPhone?: string
   onSaveNewAddress?: (address: Omit<CustomerAddress, 'id'>) => Promise<boolean>
+  deliverabilityError?: string | null
+  isDeliverable?: boolean
 }
 
-const DEMO_ADDRESS_PRESETS: Array<{ label: string; address: DeliveryAddress }> = [
-  {
-    label: 'Home (Pune - 411001)',
-    address: {
-      fullName: 'Priya Nair',
-      phoneNumber: '9876543210',
-      email: 'priya.nair@example.com',
-      addressLine1: 'Flat 402, Green Meadows, Koregaon Park',
-      addressLine2: 'Lane 5, Near Botanical Garden Gate 2',
-      landmark: 'Next to Blossom Orchid Cafe',
-      city: 'Pune',
-      state: 'Maharashtra',
-      pincode: '411001',
-      countryCode: 'in',
-    },
-  },
-  {
-    label: 'Office (Bengaluru - 560001)',
-    address: {
-      fullName: 'Arjun Mehta',
-      phoneNumber: '9123456789',
-      email: 'arjun.m@example.com',
-      addressLine1: 'Level 4, Flora Tech Park, MG Road',
-      addressLine2: 'Indiranagar Central',
-      landmark: 'Opposite Metro Station',
-      city: 'Bengaluru',
-      state: 'Karnataka',
-      pincode: '560001',
-      countryCode: 'in',
-    },
-  },
-]
+function createEmptyAddress(email = '', name = '', phone = ''): DeliveryAddress {
+  return {
+    fullName: name,
+    phoneNumber: phone,
+    email: email,
+    addressLine1: '',
+    addressLine2: '',
+    landmark: '',
+    city: '',
+    state: '',
+    pincode: '',
+    countryCode: 'in',
+  }
+}
 
 function customerAddressToDeliveryAddress(
   addr: CustomerAddress,
@@ -74,7 +60,11 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
   onChange,
   savedAddresses = [],
   customerEmail = '',
+  customerName = '',
+  customerPhone = '',
   onSaveNewAddress,
+  deliverabilityError = null,
+  isDeliverable = true,
 }) => {
   const hasSavedAddresses = savedAddresses.length > 0
 
@@ -89,11 +79,13 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
   const [saveToAccount, setSaveToAccount] = useState<boolean>(false)
 
   const [address, setAddress] = useState<DeliveryAddress>(() => {
-    if (initialAddress) return initialAddress
+    if (initialAddress && (initialAddress.fullName || initialAddress.addressLine1)) {
+      return initialAddress
+    }
     if (defaultSavedAddress) {
       return customerAddressToDeliveryAddress(defaultSavedAddress, customerEmail)
     }
-    return DEMO_ADDRESS_PRESETS[0].address
+    return createEmptyAddress(customerEmail, customerName, customerPhone)
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -161,25 +153,19 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
     setSelectedAddressId(null)
     setIsEnteringNew(true)
     const newEmptyAddr: DeliveryAddress = {
-      fullName: '',
-      phoneNumber: '',
+      fullName: customerName || '',
+      phoneNumber: customerPhone || '',
       email: customerEmail || address.email || '',
       addressLine1: '',
       addressLine2: '',
       city: '',
-      state: 'Karnataka',
+      state: '',
       pincode: '',
       countryCode: 'in',
     }
     setAddress(newEmptyAddr)
     const valid = validate(newEmptyAddr)
     onChange(newEmptyAddr, valid)
-  }
-
-  const applyPreset = (preset: DeliveryAddress): void => {
-    setAddress(preset)
-    const valid = validate(preset)
-    onChange(preset, valid)
   }
 
   // Synchronize on mount or when savedAddresses initially load
@@ -209,28 +195,23 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
             </p>
           </div>
         </div>
-
-        {/* Guest Demo Presets (only shown when not selecting from saved addresses) */}
-        {!hasSavedAddresses && (
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10.5px] font-semibold text-[#6B7280] hidden sm:inline">Presets:</span>
-            {DEMO_ADDRESS_PRESETS.map((preset) => (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => applyPreset(preset.address)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all border ${
-                  address.pincode === preset.address.pincode
-                    ? 'bg-[#0A4C36] text-white border-[#0A4C36]'
-                    : 'bg-[#F9FAF8] text-[#4B5563] border-[#E5ECE8] hover:border-[#0A4C36]'
-                }`}
-              >
-                {preset.label.split(' ')[0]}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
+
+      {/* Deliverability / Admin Disconnected Alert */}
+      {(deliverabilityError || isDeliverable === false) && (
+        <div
+          role="alert"
+          className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-[12.5px] flex items-start gap-2.5"
+        >
+          <GlorovCustomIcons.info size={16} className="text-red-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="font-bold text-red-900 leading-tight">Delivery is not available to this address</p>
+            <p className="text-[11.5px] text-red-700 mt-0.5">
+              {deliverabilityError || 'The store admin and fulfillment network are currently disconnected. Orders cannot be shipped to this location.'}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Step 1.A: Saved Address Selection Step (for authenticated customers with Medusa addresses) */}
       {hasSavedAddresses && (
@@ -451,6 +432,7 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
                     errors.state ? 'border-rose-500' : 'border-[#D1D5DB]'
                   } bg-white focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[12.5px] text-[#111827] cursor-pointer`}
                 >
+                  <option value="">Select State / UT</option>
                   {INDIAN_STATES.map((st) => (
                     <option key={st} value={st}>
                       {st}
@@ -507,8 +489,8 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
         </div>
       )}
 
-      {/* Pincode Serviceability Live Badge */}
-      {isServiceable && address.pincode.length === 6 && (
+      {/* Pincode Serviceability Live Badge (Only when backend is connected and no deliverability error) */}
+      {!deliverabilityError && isDeliverable !== false && isServiceable && address.pincode.length === 6 && (
         <div className="mt-1 px-3 py-2 rounded-[10px] bg-[#E8F5E9] border border-[#A7F3D0] flex items-center gap-2 text-[#047857]">
           <GlorovCustomIcons.check size={14} className="text-[#059669] flex-shrink-0" />
           <p className="text-[11.5px] font-semibold leading-tight">

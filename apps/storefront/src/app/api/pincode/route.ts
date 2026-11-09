@@ -33,32 +33,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(data)
     }
 
-    // Backend returned non-200
+    // Backend returned non-200 or is unavailable
     return NextResponse.json(
       {
         pincode,
-        serviceable: true,
-        city: 'India Metro Area',
-        state: 'India',
-        estimated_days: 3,
-        courier_name: 'Standard Botanical Courier',
-        message: 'Serviceable via Express Nursery Delivery (3 business days)',
+        serviceable: false,
+        connected: false,
+        message: 'Delivery is not available to this address. Fulfillment network is not connected to the store.',
       },
-      { status: 200 }
+      { status: 503 }
     )
   } catch {
-    // Graceful offline fallback
+    // When backend / admin dashboard is disconnected
     return NextResponse.json(
       {
         pincode,
-        serviceable: true,
-        city: 'Verified Nursery Corridor',
-        state: 'India',
-        estimated_days: 3,
-        courier_name: 'Delhivery Botanical Express',
-        message: 'Serviceable via Express Botanical Air Corridor (3-4 days)',
+        serviceable: false,
+        connected: false,
+        message: 'Delivery is not available to this address. Fulfillment network is disconnected from the store.',
       },
-      { status: 200 }
+      { status: 503 }
     )
   }
 }

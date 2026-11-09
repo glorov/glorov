@@ -11,6 +11,7 @@ export interface ProductVariantItem {
   price: number
   discountPrice?: number
   inStock?: boolean
+  stockQuantity?: number
 }
 
 export interface BotanicalSpecifications {
@@ -64,6 +65,7 @@ export interface GlorovProductItem {
   imageUrls: string[]
   primaryImage: string
   inStock: boolean
+  stockQuantity?: number
   isBestSeller?: boolean
   isStaffPick?: boolean
   isFeatured?: boolean

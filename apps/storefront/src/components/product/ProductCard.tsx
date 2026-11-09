@@ -6,6 +6,7 @@ import type { GlorovProductItem } from '../../types/storefront'
 import { GlorovImage } from '../ui/GlorovImage'
 import { WishlistButton } from './WishlistButton'
 import { AddToCartButton } from './AddToCartButton'
+import { useRestockNotification } from '../../lib/hooks/useRestockNotification'
 import { cn } from '../../lib/utils/cn'
 
 export interface ProductCardProps {
@@ -35,6 +36,19 @@ export function ProductCard({
   className,
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false)
+
+  const isSoldOut = !product.inStock || (product.stockQuantity !== undefined && product.stockQuantity <= 0)
+  const isLowStock = !isSoldOut && product.stockQuantity !== undefined && product.stockQuantity > 0 && product.stockQuantity <= 3
+
+  const { isSubscribed, subscribeToRestock, isLoading: isNotifyLoading } = useRestockNotification()
+  const subscribed = isSubscribed(product.id)
+
+  const handleNotifyClick = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (subscribed || isNotifyLoading) return
+    await subscribeToRestock({ id: product.id, title: product.title, slug: product.slug })
+  }
 
   const primaryBadge = (() => {
     if (product.badges && product.badges.length > 0 && product.badges[0].trim()) {
@@ -84,15 +98,23 @@ export function ProductCard({
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className={cn(
               'object-cover transition-transform duration-300 ease-out',
-              isHovered && 'scale-[1.04]'
+              isHovered && !isSoldOut && 'scale-[1.04]',
+              isSoldOut && 'opacity-85 grayscale-[20%]'
             )}
             containerClassName="w-full h-full"
             fallbackTitle={product.title}
           />
         </Link>
 
-        {/* Top-Left Promotional Badge (Dark Navy with Gold Bolt matching Flutter) */}
-        {primaryBadge && (
+        {/* Top-Left Badge: Sold Out badge takes priority if product is out of stock */}
+        {isSoldOut ? (
+          <div className="absolute top-2 left-2 z-10 pointer-events-none">
+            <span className="inline-flex items-center gap-1.5 bg-[#1F2937]/95 backdrop-blur-sm text-white text-[9.5px] sm:text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-sm border border-white/20 select-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444] animate-pulse shrink-0" />
+              <span>Sold Out</span>
+            </span>
+          </div>
+        ) : primaryBadge ? (
           <div className="absolute top-0 left-0 z-10 pointer-events-none">
             <span className="inline-flex items-center gap-[3px] bg-[#0C2340] text-white text-[9.5px] font-extrabold tracking-[0.4px] uppercase px-2 py-[3.5px] rounded-tl-[inherit] rounded-tr-[8px] rounded-br-[8px] rounded-bl-0 select-none">
               <svg width={11} height={11} className="w-[11px] h-[11px] text-[#F9C74F] shrink-0" viewBox="0 0 20 20" fill="currentColor">
@@ -105,7 +127,7 @@ export function ProductCard({
               <span>{primaryBadge}</span>
             </span>
           </div>
-        )}
+        ) : null}
 
         {/* Top-Right Wishlist Heart Button */}
         {showWishlist && (
@@ -146,23 +168,48 @@ export function ProductCard({
         </div>
       </div>
 
-      {/* 2. Card Body: Title, Subtitle, Price & Green Action Button */}
+      {/* 2. Card Body: Title, Subtitle, Price & Responsive Action */}
       <div className="flex flex-col flex-1 p-2.5 sm:p-3 lg:p-3.5 justify-between gap-1.5 sm:gap-2">
-        <Link href={`/products/${product.slug}`} className="group/link block">
-          {/* Title */}
-          <h3 className="font-serif font-bold text-[13.5px] sm:text-[16.5px] lg:text-[18.5px] text-[#0F2F24] leading-[1.22] tracking-[-0.2px] line-clamp-2 group-hover/link:text-[#1B4332] transition-colors">
-            {product.title}
-          </h3>
+        <div className="flex flex-col gap-1">
+          <Link href={`/products/${product.slug}`} className="group/link block">
+            {/* Title */}
+            <h3 className="font-serif font-bold text-[13.5px] sm:text-[16.5px] lg:text-[18.5px] text-[#0F2F24] leading-[1.22] tracking-[-0.2px] line-clamp-2 group-hover/link:text-[#1B4332] transition-colors">
+              {product.title}
+            </h3>
 
-          {/* Subtitle / Short Description (if explicitly requested) */}
-          {showSubtitle && product.shortDescription && (
-            <p className="hidden sm:block text-[11.5px] lg:text-[12.5px] text-[#6B7280] line-clamp-1 mt-0.5 font-normal">
-              {product.shortDescription}
-            </p>
+            {/* Subtitle / Short Description (if explicitly requested) */}
+            {showSubtitle && product.shortDescription && (
+              <p className="hidden sm:block text-[11.5px] lg:text-[12.5px] text-[#6B7280] line-clamp-1 mt-0.5 font-normal">
+                {product.shortDescription}
+              </p>
+            )}
+          </Link>
+
+          {/* Low Stock Urgency Pill (strictly inside the product card body) */}
+          {isLowStock && (
+            <div className="flex items-center pt-0.5">
+              <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-[#B45309] bg-[#FFFBEB] border border-[#FDE68A] px-2 py-0.5 rounded-full leading-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] animate-pulse shrink-0" />
+                <span>
+                  {product.stockQuantity === 1
+                    ? 'Only 1 stock remaining'
+                    : `Only ${product.stockQuantity} stocks remaining`}
+                </span>
+              </span>
+            </div>
           )}
-        </Link>
 
-        {/* Bottom Row: Price on Left, Green Action Button on Right */}
+          {/* Sold Out / Out of Stock subtle state inside card body */}
+          {isSoldOut && (
+            <div className="flex items-center pt-0.5">
+              <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold text-[#64748B] bg-[#F1F5F9] border border-[#E2E8F0] px-2 py-0.5 rounded-full leading-none">
+                <span>Out of Stock</span>
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Row: Price on Left, Action on Right */}
         <div className="flex items-center justify-between gap-1.5 pt-1">
           {/* Pricing Stack with MRP and Discount Percentage */}
           <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
@@ -181,9 +228,112 @@ export function ProductCard({
             )}
           </div>
 
-          {/* Green Action Button: Circular on mobile (< sm), Pill on tablet/desktop (sm+) */}
+          {/* Responsive Action Button: In-Stock AddToCart vs. Sold-Out Notify Button */}
           <div className="shrink-0">
-            {forceCircularAction ? (
+            {isSoldOut ? (
+              forceCircularAction ? (
+                // Force circular Notify/Alert Set
+                subscribed ? (
+                  <button
+                    type="button"
+                    disabled
+                    title="Restock notification alert set"
+                    aria-label="Restock notification alert set"
+                    className="flex items-center justify-center w-9 h-9 min-w-[36px] rounded-full bg-[#DCFCE7] text-[#166534] border border-[#86EFAC] cursor-default select-none shadow-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleNotifyClick}
+                    disabled={isNotifyLoading}
+                    title="Notify me when restocked"
+                    aria-label={`Notify me when ${product.title} is restocked`}
+                    className="flex items-center justify-center w-9 h-9 min-w-[36px] rounded-full bg-[#FFFBEB] text-[#B45309] border border-[#FCD34D] hover:bg-[#FEF3C7] active:scale-90 transition-all cursor-pointer shadow-sm"
+                  >
+                    {isNotifyLoading ? (
+                      <div className="w-3.5 h-3.5 rounded-full border-2 border-[#B45309] border-t-transparent animate-spin" />
+                    ) : (
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                      </svg>
+                    )}
+                  </button>
+                )
+              ) : (
+                <>
+                  {/* Mobile (< 640px): Circular Notify button */}
+                  <div className="sm:hidden">
+                    {subscribed ? (
+                      <button
+                        type="button"
+                        disabled
+                        title="Restock notification alert set"
+                        aria-label="Restock notification alert set"
+                        className="flex items-center justify-center w-9 h-9 min-w-[36px] rounded-full bg-[#DCFCE7] text-[#166534] border border-[#86EFAC] cursor-default select-none shadow-sm"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleNotifyClick}
+                        disabled={isNotifyLoading}
+                        title="Notify me when restocked"
+                        aria-label={`Notify me when ${product.title} is restocked`}
+                        className="flex items-center justify-center w-9 h-9 min-w-[36px] rounded-full bg-[#FFFBEB] text-[#B45309] border border-[#FCD34D] hover:bg-[#FEF3C7] active:scale-90 transition-all cursor-pointer shadow-sm"
+                      >
+                        {isNotifyLoading ? (
+                          <div className="w-3.5 h-3.5 rounded-full border-2 border-[#B45309] border-t-transparent animate-spin" />
+                        ) : (
+                          <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                          </svg>
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Tablet & Desktop (>= 640px): Pill Notify Me button */}
+                  <div className="hidden sm:block">
+                    {subscribed ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 text-[11px] sm:text-[12px] font-bold rounded-full bg-[#DCFCE7] text-[#166534] border border-[#86EFAC] cursor-default select-none min-h-[36px]"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Alert Set</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleNotifyClick}
+                        disabled={isNotifyLoading}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 text-[11px] sm:text-[12px] font-bold rounded-full bg-[#FFFBEB] text-[#B45309] border border-[#FCD34D] hover:bg-[#FEF3C7] active:scale-95 transition-all shadow-sm min-h-[36px] cursor-pointer"
+                        aria-label={`Notify me when ${product.title} is restocked`}
+                      >
+                        {isNotifyLoading ? (
+                          <div className="w-3.5 h-3.5 rounded-full border-2 border-[#B45309] border-t-transparent animate-spin" />
+                        ) : (
+                          <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 20 20">
+                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                          </svg>
+                        )}
+                        <span>Notify Me</span>
+                      </button>
+                    )}
+                  </div>
+                </>
+              )
+            ) : forceCircularAction ? (
               <AddToCartButton product={product} variant="circular" />
             ) : (
               <>

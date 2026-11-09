@@ -238,7 +238,25 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // 4. Optional Promotions if preference is active
+    // 4. Restock Alerts from customer metadata
+    const stockAlerts = Array.isArray(meta.stock_alerts)
+      ? (meta.stock_alerts as Array<{ productId: string; productTitle: string; requestedAt?: string }>)
+      : []
+    for (const alert of stockAlerts) {
+      if (!alert.productId) continue
+      const notifId = `stock_alert_${alert.productId}`
+      notifications.push({
+        id: notifId,
+        title: `Restock Alert: ${alert.productTitle || 'Botanical Specimen'}`,
+        message: `You will be notified immediately when ${alert.productTitle || 'this item'} returns to GLOROV nursery stock.`,
+        date: formatNotificationDate(alert.requestedAt),
+        isRead: readIds.has(notifId),
+        category: 'stock_alert',
+        link: `/products/${alert.productId}`,
+      })
+    }
+
+    // 5. Optional Promotions if preference is active
     if (preferences.promotions) {
       const promoId = 'promo_monsoon_flora'
       notifications.push({
@@ -258,6 +276,7 @@ export async function GET(request: NextRequest) {
       success: true,
       authenticated: true,
       preferences,
+      stockAlerts,
       notifications,
       unreadCount,
     })
@@ -295,13 +314,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}))
-    const { preferences, readNotificationId, markAllRead, notificationIds } = body
+    const {
+      preferences,
+      readNotificationId,
+      markAllRead,
+      notificationIds,
+      restockAlert,
+      removeRestockAlertId,
+    } = body
 
     // Demo account fast-path
     if (token.startsWith('jwt_demo_session_')) {
       return NextResponse.json({
         success: true,
         preferences: preferences ? { ...DEFAULT_NOTIFICATION_PREFERENCES, ...preferences } : DEFAULT_NOTIFICATION_PREFERENCES,
+        stockAlerts: restockAlert ? [restockAlert] : [],
       })
     }
 
@@ -348,6 +375,25 @@ export async function POST(request: NextRequest) {
       updatedReadIds = updatedReadIds.slice(-100)
     }
 
+    // Handle restock alerts list
+    let updatedStockAlerts: Array<{ productId: string; productTitle: string; requestedAt: string }> =
+      Array.isArray(currentMeta.stock_alerts)
+        ? [...(currentMeta.stock_alerts as Array<{ productId: string; productTitle: string; requestedAt: string }>)]
+        : []
+
+    if (restockAlert && restockAlert.productId) {
+      updatedStockAlerts = updatedStockAlerts.filter((a) => a.productId !== restockAlert.productId)
+      updatedStockAlerts.push({
+        productId: String(restockAlert.productId),
+        productTitle: String(restockAlert.productTitle || 'Botanical Product'),
+        requestedAt: new Date().toISOString(),
+      })
+    }
+
+    if (removeRestockAlertId) {
+      updatedStockAlerts = updatedStockAlerts.filter((a) => a.productId !== removeRestockAlertId)
+    }
+
     // 3. Persist to Medusa
     const patchRes = await fetch(`${baseUrl}/store/customers/me`, {
       method: 'POST',
@@ -357,6 +403,7 @@ export async function POST(request: NextRequest) {
           ...currentMeta,
           notification_preferences: updatedPreferences,
           notification_read_ids: updatedReadIds,
+          stock_alerts: updatedStockAlerts,
         },
       }),
     })
@@ -373,6 +420,7 @@ export async function POST(request: NextRequest) {
       success: true,
       preferences: updatedPreferences,
       readIds: updatedReadIds,
+      stockAlerts: updatedStockAlerts,
     })
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Failed to update preferences'

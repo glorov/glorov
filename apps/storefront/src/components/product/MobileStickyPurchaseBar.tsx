@@ -15,6 +15,9 @@ export interface MobileStickyPurchaseBarProps {
   isAdding?: boolean
   productId?: string
   variantName?: string
+  isSubscribed?: boolean
+  isNotifyLoading?: boolean
+  onNotify?: () => void
 }
 
 /**
@@ -35,6 +38,9 @@ export const MobileStickyPurchaseBar: React.FC<MobileStickyPurchaseBarProps> = (
   isAdding = false,
   productId,
   variantName,
+  isSubscribed = false,
+  isNotifyLoading = false,
+  onNotify,
 }) => {
   const [isVisible, setIsVisible] = useState(false)
   const isVisibleRef = useRef(false)
@@ -148,15 +154,46 @@ export const MobileStickyPurchaseBar: React.FC<MobileStickyPurchaseBarProps> = (
           </button>
         )}
 
-        {/* Right: Signature Forest Deep Add to Cart Button */}
-        <button
-          type="button"
-          disabled={!inStock || isAdding}
-          onClick={onAddToCart}
-          className="flex-1 py-3 px-4 rounded-[10px] bg-[#1B4332] text-white font-extrabold text-[13.5px] tracking-wide uppercase hover:bg-[#2D6A4F] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
-        >
-          {isAdding ? 'ADDING...' : inStock ? 'ADD TO CART' : 'OUT OF STOCK'}
-        </button>
+        {/* Right: Signature Action Button - Add to Cart or Restock Notification */}
+        {!inStock ? (
+          isSubscribed ? (
+            <button
+              type="button"
+              disabled
+              className="flex-1 py-3 px-4 rounded-[10px] bg-[#DCFCE7] text-[#166534] border border-[#86EFAC] font-extrabold text-[13px] tracking-wide uppercase cursor-default flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <svg className="w-4 h-4 shrink-0 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>ALERT SET</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onNotify}
+              disabled={isNotifyLoading}
+              className="flex-1 py-3 px-4 rounded-[10px] bg-[#D97706] text-white font-extrabold text-[13px] tracking-wide uppercase hover:bg-[#B45309] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              {isNotifyLoading ? (
+                <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin shrink-0" />
+              ) : (
+                <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 20 20">
+                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                </svg>
+              )}
+              <span>{isNotifyLoading ? 'SAVING...' : 'NOTIFY ME'}</span>
+            </button>
+          )
+        ) : (
+          <button
+            type="button"
+            disabled={isAdding}
+            onClick={onAddToCart}
+            className="flex-1 py-3 px-4 rounded-[10px] bg-[#1B4332] text-white font-extrabold text-[13.5px] tracking-wide uppercase hover:bg-[#2D6A4F] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+          >
+            {isAdding ? 'ADDING...' : 'ADD TO CART'}
+          </button>
+        )}
       </div>
     </aside>
   )

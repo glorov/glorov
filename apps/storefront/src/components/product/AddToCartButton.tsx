@@ -59,12 +59,30 @@ export function AddToCartButton({
   }
 
   if (!effectiveInStock) {
+    if (variant === 'circular') {
+      return (
+        <button
+          type="button"
+          disabled
+          aria-label="Sold out"
+          className={cn(
+            'flex items-center justify-center w-9 h-9 min-w-[36px] rounded-full bg-gray-100 text-gray-400 font-bold text-xs cursor-not-allowed select-none border border-gray-200',
+            className
+          )}
+        >
+          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      )
+    }
+
     return (
       <button
         type="button"
         disabled
         className={cn(
-          'px-3 py-1.5 rounded-full bg-gray-200 text-gray-500 font-semibold text-xs cursor-not-allowed select-none min-h-[36px]',
+          'px-3.5 py-1.5 rounded-full bg-gray-100 border border-gray-200 text-gray-500 font-semibold text-xs cursor-not-allowed select-none min-h-[36px]',
           fullWidth && 'w-full',
           className
         )}

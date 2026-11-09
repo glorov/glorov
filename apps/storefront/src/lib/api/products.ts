@@ -168,6 +168,19 @@ export function transformMedusaProduct(raw: MedusaProductRaw): GlorovProductItem
         ? imageUrls
         : [primaryImage]
 
+  const rawStock =
+    meta.stock_quantity ??
+    meta.inventory_quantity ??
+    (raw.variants?.[0] as { inventory_quantity?: number } | undefined)?.inventory_quantity ??
+    mockMatch?.stockQuantity
+  const stockQuantity = rawStock !== undefined ? Number(rawStock) : undefined
+  const inStock =
+    meta.in_stock !== undefined
+      ? Boolean(meta.in_stock)
+      : stockQuantity !== undefined
+      ? stockQuantity > 0
+      : (mockMatch?.inStock ?? true)
+
   return {
     id: raw.id,
     slug: raw.handle || raw.id,
@@ -185,7 +198,8 @@ export function transformMedusaProduct(raw: MedusaProductRaw): GlorovProductItem
     reviewCount,
     imageUrls: resolvedImages,
     primaryImage: resolvedImages[0] || primaryImage,
-    inStock: true,
+    inStock,
+    stockQuantity,
     isBestSeller: mockMatch?.isBestSeller ?? true,
     badges,
     tags: raw.tags?.map((t) => t.value) || (mockMatch?.tags || ['botanical', productType]),

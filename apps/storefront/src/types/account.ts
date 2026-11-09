@@ -253,7 +253,7 @@ export interface CustomerNotification {
   message: string
   date: string
   isRead: boolean
-  category: 'order' | 'gardening_tip' | 'wishlist' | 'announcement'
+  category: 'order' | 'gardening_tip' | 'wishlist' | 'announcement' | 'stock_alert'
   link?: string
 }
 

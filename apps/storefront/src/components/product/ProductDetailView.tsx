@@ -20,6 +20,7 @@ import { ProductReviewsSection } from './ProductReviewsSection'
 import { MobileStickyPurchaseBar } from './MobileStickyPurchaseBar'
 import { ProductCard } from './ProductCard'
 import { QuantitySelector } from '../common/QuantitySelector'
+import { useRestockNotification } from '@/lib/hooks/useRestockNotification'
 
 export interface ProductDetailViewProps {
   product: GlorovProductItem
@@ -79,7 +80,19 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
       ? Math.round(((originalPrice - effectivePrice) / originalPrice) * 100)
       : product.discountPercent
 
-  const isInStock = selectedVariant ? selectedVariant.inStock !== false : product.inStock
+  const effectiveStock = selectedVariant?.stockQuantity ?? product.stockQuantity
+  const isInStock =
+    (selectedVariant ? selectedVariant.inStock !== false : product.inStock) &&
+    (effectiveStock === undefined || effectiveStock > 0)
+  const isLowStock = isInStock && effectiveStock !== undefined && effectiveStock > 0 && effectiveStock <= 3
+
+  const { isSubscribed, subscribeToRestock, isLoading: isNotifyLoading } = useRestockNotification()
+  const subscribed = isSubscribed(product.id)
+
+  const handleNotifyMe = async () => {
+    if (subscribed || isNotifyLoading) return
+    await subscribeToRestock({ id: product.id, title: product.title, slug: product.slug })
+  }
 
   const handleAddToCart = (navigateToCart: boolean = false): void => {
     if (!isInStock || isAdding) return
@@ -236,86 +249,158 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     </div>
   )
 
-  // In-Page Add to Cart and Buy Now Console
-  const renderPurchaseConsole = () => (
-    <div className="w-full flex flex-col gap-2.5 pt-1">
-      {/* Desktop Layout: Stepper + Add To Cart + Buy Now on 1 line */}
-      <div className="hidden sm:flex items-center gap-3">
-        {/* Quantity Stepper (Size LG matching 48px height & 10px radius) */}
-        <QuantitySelector
-          value={quantity}
-          onChange={setQuantity}
-          min={1}
-          max={99}
-          size="lg"
-        />
+  // In-Page Add to Cart, Buy Now Console, or Restock Notification Module
+  const renderPurchaseConsole = () => {
+    if (!isInStock) {
+      return (
+        <div className="w-full flex flex-col gap-3 p-4 sm:p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#EF4444]/10 text-[#DC2626] flex items-center justify-center shrink-0 mt-0.5">
+              <svg className="w-5 h-5 fill-current" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-serif font-bold text-sm sm:text-base text-[#1E293B]">Currently Out of Stock</h4>
+              <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">
+                Fresh nursery batches are in progress. Click below to receive an instant notification when new stock arrives.
+              </p>
+            </div>
+          </div>
 
-        {/* Green Add to Cart Button */}
-        <button
-          type="button"
-          disabled={!isInStock || isAdding}
-          onClick={() => handleAddToCart(false)}
-          className="flex-1 h-12 rounded-[10px] bg-[#1B4332] text-white font-bold text-sm tracking-wide hover:bg-[#143427] active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer overflow-hidden"
-        >
-          <svg width={18} height={18} className="w-[18px] h-[18px] text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-          </svg>
-          <span className="truncate">{isAdding ? 'Adding...' : isInStock ? 'Add To Cart' : 'Out of Stock'}</span>
-        </button>
+          <div className="pt-1">
+            {subscribed ? (
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-[#DCFCE7] border border-[#86EFAC] text-[#166534]">
+                <svg className="w-5 h-5 shrink-0 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <div className="text-xs">
+                  <p className="font-bold">Restock Alert Active</p>
+                  <p className="text-[11px] text-[#15803D]">We will notify you immediately once this botanical specimen is replenished.</p>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleNotifyMe}
+                disabled={isNotifyLoading}
+                className="w-full h-12 rounded-xl bg-[#1B4332] text-white font-bold text-sm tracking-wide hover:bg-[#143427] active:scale-[0.99] transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+              >
+                {isNotifyLoading ? (
+                  <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                ) : (
+                  <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 20 20">
+                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                  </svg>
+                )}
+                <span>Notify Me When Available</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )
+    }
 
-        {/* Warm Amber Buy Now Button */}
-        <button
-          type="button"
-          disabled={!isInStock || isAdding}
-          onClick={() => handleAddToCart(true)}
-          className="flex-[0.8] h-12 rounded-[10px] bg-[#D97706] text-white font-bold text-sm tracking-wide hover:bg-[#B45309] active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer overflow-hidden"
-        >
-          <svg width={18} height={18} className="w-[18px] h-[18px] text-white fill-current shrink-0" viewBox="0 0 24 24">
-            <path d="M13 2L3 14h7v8l11-14h-8l0-6z" />
-          </svg>
-          <span className="truncate">Buy Now</span>
-        </button>
-      </div>
+    return (
+      <div className="w-full flex flex-col gap-2.5 pt-1">
+        {/* Low Stock Urgency Banner */}
+        {isLowStock && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#FEF3C7] border border-[#FCD34D] text-[#92400E] text-xs font-bold animate-pulse">
+            <svg className="w-4 h-4 text-[#D97706] shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.316.492-.533 1.054-.72 1.62-.315.952-.51 1.954-.626 2.964-.132 1.157-.17 2.33-.09 3.493.076 1.09.28 2.164.675 3.19.167.432.378.847.639 1.233.155.23.336.442.54.628.21.19.45.347.712.457.262.11.547.16.837.147.29-.013.573-.089.83-.223.256-.134.484-.321.666-.549.364-.456.59-1.002.73-1.57.14-.567.187-1.154.17-1.743a13.39 13.39 0 00-.31-2.453c-.17-.81-.444-1.597-.82-2.34-.376-.743-.873-1.428-1.481-2.019a8.91 8.91 0 00-.65-.572z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span>
+              Hurry! Only {effectiveStock} {effectiveStock === 1 ? 'stock' : 'stocks'} remaining in our nursery.
+            </span>
+          </div>
+        )}
 
-      {/* Mobile Layout: Row 1 (Stepper + Add To Cart), Row 2 (Buy Now) */}
-      <div className="flex sm:hidden flex-col gap-2.5">
-        <div className="flex items-center gap-2.5">
+        {/* Desktop Layout: Stepper + Add To Cart + Buy Now on 1 line */}
+        <div className="hidden sm:flex items-center gap-3">
+          {/* Quantity Stepper (Size LG matching 48px height & 10px radius) */}
           <QuantitySelector
             value={quantity}
             onChange={setQuantity}
             min={1}
             max={99}
             size="lg"
-            className="h-11 rounded-lg"
           />
 
+          {/* Green Add to Cart Button */}
           <button
             type="button"
             disabled={!isInStock || isAdding}
             onClick={() => handleAddToCart(false)}
-            className="flex-1 h-11 rounded-lg bg-[#1B4332] text-white font-bold text-xs tracking-wide hover:bg-[#143427] active:scale-[0.98] transition flex items-center justify-center gap-1.5 disabled:opacity-50 overflow-hidden"
+            className="flex-1 h-12 rounded-[10px] bg-[#1B4332] text-white font-bold text-sm tracking-wide hover:bg-[#143427] active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer overflow-hidden"
           >
-            <svg width={16} height={16} className="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg width={18} height={18} className="w-[18px] h-[18px] text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
-            <span className="truncate">{isAdding ? 'Adding...' : isInStock ? 'Add To Cart' : 'Out of Stock'}</span>
+            <span className="truncate">{isAdding ? 'Adding...' : 'Add To Cart'}</span>
+          </button>
+
+          {/* Warm Amber Buy Now Button */}
+          <button
+            type="button"
+            disabled={!isInStock || isAdding}
+            onClick={() => handleAddToCart(true)}
+            className="flex-[0.8] h-12 rounded-[10px] bg-[#D97706] text-white font-bold text-sm tracking-wide hover:bg-[#B45309] active:scale-[0.98] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer overflow-hidden"
+          >
+            <svg width={18} height={18} className="w-[18px] h-[18px] text-white fill-current shrink-0" viewBox="0 0 24 24">
+              <path d="M13 2L3 14h7v8l11-14h-8l0-6z" />
+            </svg>
+            <span className="truncate">Buy Now</span>
           </button>
         </div>
 
-        <button
-          type="button"
-          disabled={!isInStock || isAdding}
-          onClick={() => handleAddToCart(true)}
-          className="w-full h-11 rounded-lg bg-[#D97706] text-white font-bold text-xs tracking-wide hover:bg-[#B45309] active:scale-[0.98] transition flex items-center justify-center gap-1.5 disabled:opacity-50 overflow-hidden"
-        >
-          <svg width={16} height={16} className="w-4 h-4 text-white fill-current shrink-0" viewBox="0 0 24 24">
-            <path d="M13 2L3 14h7v8l11-14h-8l0-6z" />
-          </svg>
-          <span className="truncate">Buy Now</span>
-        </button>
+        {/* Mobile Layout: Row 1 (Stepper + Add To Cart), Row 2 (Buy Now) */}
+        <div className="flex sm:hidden flex-col gap-2.5">
+          <div className="flex items-center gap-2.5">
+            <QuantitySelector
+              value={quantity}
+              onChange={setQuantity}
+              min={1}
+              max={99}
+              size="lg"
+              className="h-11 rounded-lg"
+            />
+
+            <button
+              type="button"
+              disabled={!isInStock || isAdding}
+              onClick={() => handleAddToCart(false)}
+              className="flex-1 h-11 rounded-lg bg-[#1B4332] text-white font-bold text-xs tracking-wide hover:bg-[#143427] active:scale-[0.98] transition flex items-center justify-center gap-1.5 disabled:opacity-50 overflow-hidden"
+            >
+              <svg width={16} height={16} className="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              <span className="truncate">{isAdding ? 'Adding...' : 'Add To Cart'}</span>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            disabled={!isInStock || isAdding}
+            onClick={() => handleAddToCart(true)}
+            className="w-full h-11 rounded-lg bg-[#D97706] text-white font-bold text-xs tracking-wide hover:bg-[#B45309] active:scale-[0.98] transition flex items-center justify-center gap-1.5 disabled:opacity-50 overflow-hidden"
+          >
+            <svg width={16} height={16} className="w-4 h-4 text-white fill-current shrink-0" viewBox="0 0 24 24">
+              <path d="M13 2L3 14h7v8l11-14h-8l0-6z" />
+            </svg>
+            <span className="truncate">Buy Now</span>
+          </button>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   return (
     <div className="w-full">
@@ -509,6 +594,9 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
         isAdding={isAdding}
         productId={product.id}
         variantName={selectedVariant?.name || 'Standard Pack'}
+        isSubscribed={subscribed}
+        isNotifyLoading={isNotifyLoading}
+        onNotify={handleNotifyMe}
       />
     </div>
   )

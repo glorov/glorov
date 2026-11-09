@@ -285,6 +285,12 @@ export function CartProvider({
   // Guard against duplicate customer transfer calls
   const transferredCustomerIdRef = useRef<string | null>(null)
 
+  // Guard against duplicate cart creations in flight
+  const cartCreationPromiseRef = useRef<Promise<string | null> | null>(null)
+
+  // Sequential FIFO queue for background cart mutations to eliminate Medusa concurrency lock 500s
+  const syncQueueRef = useRef<Promise<void>>(Promise.resolve())
+
   // Debounce timers for per-item quantity mutations to prevent network stampedes
   const updateDebounceTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
   // Track latest requested optimistic quantity per item id to prevent stale server responses from rolling back UI
@@ -352,7 +358,7 @@ export function CartProvider({
     } catch {}
   }, [cartItems, isHydrated])
 
-  // 2. Helper to sync raw Medusa cart response into React state
+  // 2. Helper to sync raw Medusa cart response into React state without ever dropping local items
   const syncServerCart = useCallback((serverCart: MedusaCart) => {
     setCart(serverCart)
     setCartId(serverCart.id)
@@ -361,13 +367,19 @@ export function CartProvider({
     const transformed = transformMedusaCart(serverCart)
     if (transformed.cartItems.length > 0) {
       setCartItems((prevItems) => {
+        // Collect server line item identifiers
+        const serverKeys = new Set(transformed.cartItems.map((item) => item.id))
+        const serverProductIds = new Set(
+          transformed.cartItems.map((item) => item.productId).filter(Boolean)
+        )
+
         // Reconcile server line items with pending optimistic state
-        const reconciled = transformed.cartItems.map((serverItem) => {
+        const reconciledServerItems = transformed.cartItems.map((serverItem) => {
           const pendingQty = pendingItemQuantitiesRef.current.get(serverItem.id)
           if (pendingQty !== undefined) {
             return { ...serverItem, quantity: pendingQty }
           }
-          const localItem = prevItems.find((p) => p.id === serverItem.id)
+          const localItem = prevItems.find((p) => p.id === serverItem.id || (p.productId && p.productId === serverItem.productId))
           if (
             localItem &&
             localItem.quantity !== serverItem.quantity &&
@@ -377,10 +389,19 @@ export function CartProvider({
           }
           return serverItem
         })
+
+        // CRITICAL: Retain optimistic local items that have not yet been synced to the server!
+        const unSyncedLocalItems = prevItems.filter(
+          (localItem) =>
+            !serverKeys.has(localItem.id) &&
+            (!localItem.productId || !serverProductIds.has(localItem.productId))
+        )
+
+        const merged = [...reconciledServerItems, ...unSyncedLocalItems]
         try {
-          localStorage.setItem(STORAGE_KEYS.CART_ITEMS, JSON.stringify(reconciled))
+          localStorage.setItem(STORAGE_KEYS.CART_ITEMS, JSON.stringify(merged))
         } catch {}
-        return reconciled
+        return merged
       })
     }
 
@@ -488,7 +509,7 @@ export function CartProvider({
     }
   }, [customerToken, syncServerCart])
 
-  // 4. Ensure we have a valid cart_id before calling cart mutations
+  // 4. Ensure we have a valid cart_id before calling cart mutations (deduplicated against parallel calls)
   const getOrCreateCartId = useCallback(
     async (forceNew = false): Promise<string | null> => {
       if (!forceNew && cartId) return cartId
@@ -499,17 +520,27 @@ export function CartProvider({
         return existingCartId
       }
 
-      try {
-        const res = await createMedusaCart(customerToken || undefined)
-        if (res.success && res.data?.cart) {
-          setCart(res.data.cart)
-          setCartId(res.data.cart.id)
-          setCartIdCookie(res.data.cart.id)
-          return res.data.cart.id
-        }
-      } catch {}
+      // Reuse in-flight promise to prevent concurrent duplicate cart creations
+      if (cartCreationPromiseRef.current) {
+        return cartCreationPromiseRef.current
+      }
 
-      return null
+      cartCreationPromiseRef.current = (async () => {
+        try {
+          const res = await createMedusaCart(customerToken || undefined)
+          if (res.success && res.data?.cart) {
+            setCart(res.data.cart)
+            setCartId(res.data.cart.id)
+            setCartIdCookie(res.data.cart.id)
+            return res.data.cart.id
+          }
+        } catch {} finally {
+          cartCreationPromiseRef.current = null
+        }
+        return null
+      })()
+
+      return cartCreationPromiseRef.current
     },
     [cartId, customerToken]
   )
@@ -750,45 +781,49 @@ export function CartProvider({
         })
       }
 
-      // Step 2: Background / Async Medusa v2 Cart API call: POST /store/carts/:id/line-items
-      try {
-        const currentCartId = await getOrCreateCartId()
+      // Step 2: Background / Async Medusa v2 Cart API call chained sequentially on syncQueue
+      syncQueueRef.current = syncQueueRef.current
+        .then(async () => {
+          try {
+            const currentCartId = await getOrCreateCartId()
 
-        // Resolve Medusa Variant ID
-        let resolvedVariantId = targetVariant?.id
+            // Resolve Medusa Variant ID
+            let resolvedVariantId = targetVariant?.id
 
-        if (!resolvedVariantId && (product.slug || product.id)) {
-          if (Array.isArray(product.variants) && product.variants.length > 0 && product.variants[0]?.id) {
-            resolvedVariantId = product.variants[0].id
-          } else {
-            try {
-              const res = await fetch(`/api/products?handle=${encodeURIComponent(product.slug || product.id)}&limit=1`)
-              if (res.ok) {
-                const data = await res.json()
-                const found = Array.isArray(data.products) ? data.products[0] : (data.product || data)
-                if (found?.variants && found.variants.length > 0) {
-                  resolvedVariantId = found.variants[0].id
-                }
+            if (!resolvedVariantId && (product.slug || product.id)) {
+              if (Array.isArray(product.variants) && product.variants.length > 0 && product.variants[0]?.id) {
+                resolvedVariantId = product.variants[0].id
+              } else {
+                try {
+                  const res = await fetch(`/api/products?handle=${encodeURIComponent(product.slug || product.id)}&limit=1`)
+                  if (res.ok) {
+                    const data = await res.json()
+                    const found = Array.isArray(data.products) ? data.products[0] : (data.product || data)
+                    if (found?.variants && found.variants.length > 0) {
+                      resolvedVariantId = found.variants[0].id
+                    }
+                  }
+                } catch {}
               }
-            } catch {}
-          }
-        }
+            }
 
-        if (currentCartId && resolvedVariantId) {
-          const res = await addMedusaLineItem(
-            currentCartId,
-            resolvedVariantId,
-            cleanQuantity,
-            customerToken || undefined
-          )
+            if (currentCartId && resolvedVariantId) {
+              const res = await addMedusaLineItem(
+                currentCartId,
+                resolvedVariantId,
+                cleanQuantity,
+                customerToken || undefined
+              )
 
-          if (res.success && res.data?.cart) {
-            syncServerCart(res.data.cart)
+              if (res.success && res.data?.cart) {
+                syncServerCart(res.data.cart)
+              }
+            }
+          } catch {
+            // Optimistic state remains in place safely if background API fails
           }
-        }
-      } catch {
-        // Optimistic state remains in place if API fails
-      }
+        })
+        .catch(() => {})
     },
     [customerToken, getOrCreateCartId, showToast, syncServerCart]
   )
@@ -814,31 +849,35 @@ export function CartProvider({
       })
       showToast('info', 'Item removed from your cart')
 
-      // Step 2: Background call Medusa v2 API: DELETE /store/carts/:id/line-items/:line_id
+      // Step 2: Background call Medusa v2 API chained sequentially
       if (cartId) {
-        try {
-          const res = await deleteMedusaLineItem(
-            cartId,
-            itemId,
-            customerToken || undefined
-          )
-          if (res.success) {
-            const data = res.data as { parent?: MedusaCart; cart?: MedusaCart } | null
-            if (data?.parent) {
-              syncServerCart(data.parent)
-            } else if (data?.cart) {
-              syncServerCart(data.cart)
-            } else {
-              // Refresh cart from server
-              const refreshed = await getMedusaCart(cartId, customerToken || undefined)
-              if (refreshed.success && refreshed.data?.cart) {
-                syncServerCart(refreshed.data.cart)
+        syncQueueRef.current = syncQueueRef.current
+          .then(async () => {
+            try {
+              const res = await deleteMedusaLineItem(
+                cartId,
+                itemId,
+                customerToken || undefined
+              )
+              if (res.success) {
+                const data = res.data as { parent?: MedusaCart; cart?: MedusaCart } | null
+                if (data?.parent) {
+                  syncServerCart(data.parent)
+                } else if (data?.cart) {
+                  syncServerCart(data.cart)
+                } else {
+                  // Refresh cart from server
+                  const refreshed = await getMedusaCart(cartId, customerToken || undefined)
+                  if (refreshed.success && refreshed.data?.cart) {
+                    syncServerCart(refreshed.data.cart)
+                  }
+                }
               }
+            } catch {
+              // Keep optimistic state
             }
-          }
-        } catch {
-          // Keep optimistic state
-        }
+          })
+          .catch(() => {})
       }
     },
     [cartId, customerToken, showToast, syncServerCart]
@@ -877,27 +916,31 @@ export function CartProvider({
       if (!cartId) return
 
       // Step 3: Debounce backend sync by 300ms so rapid clicks don't flood the server
-      const timer = setTimeout(async () => {
+      const timer = setTimeout(() => {
         updateDebounceTimersRef.current.delete(itemId)
         const targetQty = pendingItemQuantitiesRef.current.get(itemId) ?? boundedQty
 
-        try {
-          const res = await updateMedusaLineItem(
-            cartId,
-            itemId,
-            targetQty,
-            customerToken || undefined
-          )
-          if (res.success && res.data?.cart) {
-            const currentPending = pendingItemQuantitiesRef.current.get(itemId)
-            if (currentPending === undefined || currentPending === targetQty) {
-              pendingItemQuantitiesRef.current.delete(itemId)
-              syncServerCart(res.data.cart)
+        syncQueueRef.current = syncQueueRef.current
+          .then(async () => {
+            try {
+              const res = await updateMedusaLineItem(
+                cartId,
+                itemId,
+                targetQty,
+                customerToken || undefined
+              )
+              if (res.success && res.data?.cart) {
+                const currentPending = pendingItemQuantitiesRef.current.get(itemId)
+                if (currentPending === undefined || currentPending === targetQty) {
+                  pendingItemQuantitiesRef.current.delete(itemId)
+                  syncServerCart(res.data.cart)
+                }
+              }
+            } catch {
+              // Keep optimistic state intact on error
             }
-          }
-        } catch {
-          // Keep optimistic state intact on error
-        }
+          })
+          .catch(() => {})
       }, 300)
 
       updateDebounceTimersRef.current.set(itemId, timer)

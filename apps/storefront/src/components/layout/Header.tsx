@@ -103,13 +103,13 @@ function SearchRotatingPlaceholder({
         Search for
       </span>
 
-      {/* 2. Rotating Refined Keyword Container: More font width, soft non-deep color */}
+      {/* 2. Rotating Refined Keyword Container: Normal weight, soft color */}
       <div className="relative flex-1 min-w-0 h-full overflow-hidden [contain:paint]">
         {prevIndex !== null && (
           <span
             key={`prev-${prevIndex}`}
             className={cn(
-              'absolute inset-0 flex items-center font-semibold text-[#6B7280] truncate leading-none animate-hint-out',
+              'absolute inset-0 flex items-center font-normal text-[#6B7280] truncate leading-none animate-hint-out',
               isDesktop ? 'text-[13.5px]' : 'text-[12.5px]'
             )}
           >
@@ -119,7 +119,7 @@ function SearchRotatingPlaceholder({
         <span
           key={`curr-${currentIndex}`}
           className={cn(
-            'absolute inset-0 flex items-center font-semibold text-[#6B7280] truncate leading-none',
+            'absolute inset-0 flex items-center font-normal text-[#6B7280] truncate leading-none',
             isDesktop ? 'text-[13.5px]' : 'text-[12.5px]',
             prevIndex !== null ? 'animate-hint-in' : ''
           )}

@@ -21,6 +21,7 @@ export interface CheckoutAddressFormProps {
   onSaveNewAddress?: (address: Omit<CustomerAddress, 'id'>) => Promise<boolean>
   deliverabilityError?: string | null
   isDeliverable?: boolean
+  showAllErrors?: boolean
 }
 
 function createEmptyAddress(email = '', name = '', phone = ''): DeliveryAddress {
@@ -65,6 +66,7 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
   onSaveNewAddress,
   deliverabilityError = null,
   isDeliverable = true,
+  showAllErrors = false,
 }) => {
   const hasSavedAddresses = savedAddresses.length > 0
 
@@ -89,7 +91,19 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [isServiceable, setIsServiceable] = useState<boolean>(true)
+
+  const getVisibleError = (field: string): string | undefined => {
+    if (touched[field] || showAllErrors) {
+      return errors[field]
+    }
+    return undefined
+  }
+
+  const handleBlur = (field: keyof DeliveryAddress): void => {
+    setTouched((prev) => ({ ...prev, [field]: true }))
+  }
 
   const validate = (current: DeliveryAddress): boolean => {
     const errs: Record<string, string> = {}
@@ -133,6 +147,7 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
   const handleChange = (field: keyof DeliveryAddress, value: string): void => {
     const next = { ...address, [field]: value }
     setAddress(next)
+    setTouched((prev) => ({ ...prev, [field]: true }))
     const valid = validate(next)
     onChange(next, valid)
   }
@@ -140,6 +155,7 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
   const handleSelectSavedAddress = (saved: CustomerAddress) => {
     setSelectedAddressId(saved.id)
     setIsEnteringNew(false)
+    setTouched({})
     const next = customerAddressToDeliveryAddress(
       saved,
       address.email || customerEmail
@@ -152,6 +168,7 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
   const handleSwitchToNewAddress = () => {
     setSelectedAddressId(null)
     setIsEnteringNew(true)
+    setTouched({})
     const newEmptyAddr: DeliveryAddress = {
       fullName: customerName || '',
       phoneNumber: customerPhone || '',
@@ -313,12 +330,13 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
                 type="text"
                 value={address.fullName}
                 onChange={(e) => handleChange('fullName', e.target.value)}
+                onBlur={() => handleBlur('fullName')}
                 placeholder="Recipient full name"
                 className={`w-full px-3.5 py-2.5 rounded-[10px] border ${
-                  errors.fullName ? 'border-rose-500' : 'border-[#D1D5DB]'
+                  getVisibleError('fullName') ? 'border-rose-500' : 'border-[#D1D5DB]'
                 } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] transition-colors`}
               />
-              {errors.fullName && <p className="mt-1 text-[11px] text-rose-500">{errors.fullName}</p>}
+              {getVisibleError('fullName') && <p className="mt-1 text-[11px] text-rose-500">{getVisibleError('fullName')}</p>}
             </div>
 
             {/* Mobile Phone */}
@@ -334,13 +352,14 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
                   maxLength={10}
                   value={address.phoneNumber}
                   onChange={(e) => handleChange('phoneNumber', e.target.value.replace(/\D/g, ''))}
+                  onBlur={() => handleBlur('phoneNumber')}
                   placeholder="9876543210"
                   className={`w-full pl-11 pr-3.5 py-2.5 rounded-[10px] border ${
-                    errors.phoneNumber ? 'border-rose-500' : 'border-[#D1D5DB]'
+                    getVisibleError('phoneNumber') ? 'border-rose-500' : 'border-[#D1D5DB]'
                   } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] font-mono transition-colors`}
                 />
               </div>
-              {errors.phoneNumber && <p className="mt-1 text-[11px] text-rose-500">{errors.phoneNumber}</p>}
+              {getVisibleError('phoneNumber') && <p className="mt-1 text-[11px] text-rose-500">{getVisibleError('phoneNumber')}</p>}
             </div>
 
             {/* Email */}
@@ -353,12 +372,13 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
                 type="email"
                 value={address.email}
                 onChange={(e) => handleChange('email', e.target.value)}
+                onBlur={() => handleBlur('email')}
                 placeholder="name@example.com"
                 className={`w-full px-3.5 py-2.5 rounded-[10px] border ${
-                  errors.email ? 'border-rose-500' : 'border-[#D1D5DB]'
+                  getVisibleError('email') ? 'border-rose-500' : 'border-[#D1D5DB]'
                 } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] transition-colors`}
               />
-              {errors.email && <p className="mt-1 text-[11px] text-rose-500">{errors.email}</p>}
+              {getVisibleError('email') && <p className="mt-1 text-[11px] text-rose-500">{getVisibleError('email')}</p>}
             </div>
 
             {/* Street Address */}
@@ -371,12 +391,13 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
                 type="text"
                 value={address.addressLine1}
                 onChange={(e) => handleChange('addressLine1', e.target.value)}
+                onBlur={() => handleBlur('addressLine1')}
                 placeholder="Flat 402, Green Meadows, Orchid Lane"
                 className={`w-full px-3.5 py-2.5 rounded-[10px] border ${
-                  errors.addressLine1 ? 'border-rose-500' : 'border-[#D1D5DB]'
+                  getVisibleError('addressLine1') ? 'border-rose-500' : 'border-[#D1D5DB]'
                 } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] placeholder:text-[#9CA3AF] transition-colors`}
               />
-              {errors.addressLine1 && <p className="mt-1 text-[11px] text-rose-500">{errors.addressLine1}</p>}
+              {getVisibleError('addressLine1') && <p className="mt-1 text-[11px] text-rose-500">{getVisibleError('addressLine1')}</p>}
             </div>
 
             {/* PIN Code & City */}
@@ -392,12 +413,13 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
                   maxLength={6}
                   value={address.pincode}
                   onChange={(e) => handleChange('pincode', e.target.value.replace(/\D/g, ''))}
+                  onBlur={() => handleBlur('pincode')}
                   placeholder="560001"
                   className={`w-full px-3 py-2.5 rounded-[10px] border ${
-                    errors.pincode ? 'border-rose-500' : 'border-[#D1D5DB]'
+                    getVisibleError('pincode') ? 'border-rose-500' : 'border-[#D1D5DB]'
                   } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] font-mono transition-colors`}
                 />
-                {errors.pincode && <p className="mt-1 text-[11px] text-rose-500">{errors.pincode}</p>}
+                {getVisibleError('pincode') && <p className="mt-1 text-[11px] text-rose-500">{getVisibleError('pincode')}</p>}
               </div>
 
               <div>
@@ -409,12 +431,13 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
                   type="text"
                   value={address.city}
                   onChange={(e) => handleChange('city', e.target.value)}
+                  onBlur={() => handleBlur('city')}
                   placeholder="Bengaluru"
                   className={`w-full px-3 py-2.5 rounded-[10px] border ${
-                    errors.city ? 'border-rose-500' : 'border-[#D1D5DB]'
+                    getVisibleError('city') ? 'border-rose-500' : 'border-[#D1D5DB]'
                   } focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[13px] text-[#111827] transition-colors`}
                 />
-                {errors.city && <p className="mt-1 text-[11px] text-rose-500">{errors.city}</p>}
+                {getVisibleError('city') && <p className="mt-1 text-[11px] text-rose-500">{getVisibleError('city')}</p>}
               </div>
             </div>
 
@@ -428,8 +451,9 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
                   id="checkout-addr-state"
                   value={address.state}
                   onChange={(e) => handleChange('state', e.target.value)}
+                  onBlur={() => handleBlur('state')}
                   className={`w-full px-2.5 py-2.5 rounded-[10px] border ${
-                    errors.state ? 'border-rose-500' : 'border-[#D1D5DB]'
+                    getVisibleError('state') ? 'border-rose-500' : 'border-[#D1D5DB]'
                   } bg-white focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[12.5px] text-[#111827] cursor-pointer`}
                 >
                   <option value="">Select State / UT</option>
@@ -439,7 +463,7 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
                     </option>
                   ))}
                 </select>
-                {errors.state && <p className="mt-1 text-[11px] text-rose-500">{errors.state}</p>}
+                {getVisibleError('state') && <p className="mt-1 text-[11px] text-rose-500">{getVisibleError('state')}</p>}
               </div>
 
               <div>
@@ -451,6 +475,7 @@ export const CheckoutAddressForm: React.FC<CheckoutAddressFormProps> = ({
                   type="text"
                   value={address.landmark || ''}
                   onChange={(e) => handleChange('landmark', e.target.value)}
+                  onBlur={() => handleBlur('landmark')}
                   placeholder="Near Garden"
                   className="w-full px-3 py-2.5 rounded-[10px] border border-[#D1D5DB] focus:outline-none focus:border-[#0A4C36] focus:ring-1 focus:ring-[#0A4C36] text-[12.5px] text-[#111827] transition-colors"
                 />

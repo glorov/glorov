@@ -164,4 +164,41 @@ describe('AddressForm Component Tests (AddressForm.test.tsx)', () => {
     expect(screen.getByText('Aarav Sharma')).toBeDefined()
     expect(screen.getAllByText(/560038/).length).toBeGreaterThan(0)
   })
+
+  it('does not display any red error messages on initial render when fields are empty', () => {
+    render(<AddressForm initialAddress={null} onChange={vi.fn()} />)
+
+    // Ensure none of the validation error messages are visible on initial mount
+    expect(screen.queryByText(/Enter recipient full name/i)).toBeNull()
+    expect(screen.queryByText(/Must be a 10-digit Indian mobile number/i)).toBeNull()
+    expect(screen.queryByText(/Enter a valid email/i)).toBeNull()
+    expect(screen.queryByText(/Enter house\/flat no/i)).toBeNull()
+    expect(screen.queryByText(/Must be a valid 6-digit PIN/i)).toBeNull()
+    expect(screen.queryByText(/Enter city or district/i)).toBeNull()
+    expect(screen.queryByText(/Select a valid Indian State/i)).toBeNull()
+  })
+
+  it('shows error on field blur or touch when invalid', () => {
+    render(<AddressForm initialAddress={null} onChange={vi.fn()} />)
+
+    const nameInput = screen.getByLabelText(/full name/i)
+    // Initially no error
+    expect(screen.queryByText(/Enter recipient full name/i)).toBeNull()
+
+    // Blur empty field
+    fireEvent.blur(nameInput)
+    expect(screen.getByText(/Enter recipient full name/i)).toBeDefined()
+  })
+
+  it('displays all errors when showAllErrors is set to true', () => {
+    render(<AddressForm initialAddress={null} onChange={vi.fn()} showAllErrors={true} />)
+
+    expect(screen.getByText(/Enter recipient full name/i)).toBeDefined()
+    expect(screen.getByText(/Must be a 10-digit Indian mobile number/i)).toBeDefined()
+    expect(screen.getByText(/Enter a valid email/i)).toBeDefined()
+    expect(screen.getByText(/Enter house\/flat no/i)).toBeDefined()
+    expect(screen.getByText(/Must be a valid 6-digit PIN/i)).toBeDefined()
+    expect(screen.getByText(/Enter city or district/i)).toBeDefined()
+    expect(screen.getByText(/Select a valid Indian State/i)).toBeDefined()
+  })
 })

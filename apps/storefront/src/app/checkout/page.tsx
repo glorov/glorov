@@ -61,6 +61,7 @@ export default function CheckoutPage(): React.ReactElement {
 
   const [address, setAddress] = useState<DeliveryAddress | null>(shippingAddress)
   const [isAddressValid, setIsAddressValid] = useState<boolean>(false)
+  const [showAddressErrors, setShowAddressErrors] = useState<boolean>(false)
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethodType | null>(null)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const [checkoutErrors, setCheckoutErrors] = useState<string[]>([])
@@ -132,6 +133,7 @@ export default function CheckoutPage(): React.ReactElement {
     setIsAddressValid(valid)
     if (valid) {
       setShippingAddress(addr)
+      setShowAddressErrors(false)
     }
   }
 
@@ -149,6 +151,7 @@ export default function CheckoutPage(): React.ReactElement {
     }
 
     if (!address || !isAddressValid) {
+      setShowAddressErrors(true)
       showToast('error', 'Please complete all required delivery address fields.', {
         title: 'Incomplete Address',
       })
@@ -464,6 +467,7 @@ export default function CheckoutPage(): React.ReactElement {
                   onSaveNewAddress={addAddress}
                   deliverabilityError={deliverabilityError}
                   isDeliverable={backendConnected}
+                  showAllErrors={showAddressErrors}
                 />
 
                 {/* 2. Shipping Speed */}

@@ -224,15 +224,24 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
         <div className="inline-flex items-center gap-1 shrink-0 whitespace-nowrap">
           {isInStock ? (
-            <>
-              <svg width={14} height={14} className="w-3.5 h-3.5 text-[#16A34A] fill-none stroke-current shrink-0" strokeWidth={2} viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
-              </svg>
-              <span className="text-[12.5px] font-semibold text-[#15803D] whitespace-nowrap">
-                In Stock
-              </span>
-            </>
+            isLowStock ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-[#D97706] animate-pulse shrink-0" />
+                <span className="text-[12.5px] font-bold text-[#B45309] whitespace-nowrap">
+                  Only {effectiveStock} {effectiveStock === 1 ? 'stock' : 'stocks'} left
+                </span>
+              </>
+            ) : (
+              <>
+                <svg width={14} height={14} className="w-3.5 h-3.5 text-[#16A34A] fill-none stroke-current shrink-0" strokeWidth={2} viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
+                </svg>
+                <span className="text-[12.5px] font-semibold text-[#15803D] whitespace-nowrap">
+                  In Stock
+                </span>
+              </>
+            )
           ) : (
             <>
               <svg width={14} height={14} className="w-3.5 h-3.5 text-[#DC2626] fill-none stroke-current shrink-0" strokeWidth={2} viewBox="0 0 24 24">

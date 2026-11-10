@@ -2,7 +2,9 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ProductCard } from '../../src/components/product/ProductCard'
+import { ProductDetailView } from '../../src/components/product/ProductDetailView'
 import { CartProvider } from '../../src/context/CartContext'
+import { StorefrontProvider } from '../../src/context/StorefrontContext'
 import type { GlorovProductItem } from '../../src/types/storefront'
 
 const baseMockProduct: GlorovProductItem = {
@@ -29,7 +31,7 @@ describe('Stock Handling & Restock Notification Suite', () => {
     localStorage.clear()
   })
 
-  it('renders "Only 1 stock remaining" inside the card when stockQuantity is 1', () => {
+  it('does NOT render low stock warning on ProductCard to keep the card clean', () => {
     const lowStockProduct: GlorovProductItem = {
       ...baseMockProduct,
       inStock: true,
@@ -42,23 +44,30 @@ describe('Stock Handling & Restock Notification Suite', () => {
       </CartProvider>
     )
 
-    expect(screen.getByText('Only 1 stock remaining')).toBeDefined()
+    // ProductCard should keep the listing clean - no low stock text
+    expect(screen.queryByText(/remaining/i)).toBeNull()
+    expect(screen.queryByText(/Only 1/i)).toBeNull()
+    expect(screen.getByText('Peace Lily Plant')).toBeDefined()
   })
 
-  it('renders "Only 2 stocks remaining" inside the card when stockQuantity is 2', () => {
+  it('renders low stock warning ONLY inside the product detail page when opened', () => {
     const lowStockProduct: GlorovProductItem = {
       ...baseMockProduct,
       inStock: true,
-      stockQuantity: 2,
+      stockQuantity: 1,
     }
 
     render(
-      <CartProvider>
-        <ProductCard product={lowStockProduct} />
-      </CartProvider>
+      <StorefrontProvider>
+        <CartProvider>
+          <ProductDetailView product={lowStockProduct} />
+        </CartProvider>
+      </StorefrontProvider>
     )
 
-    expect(screen.getByText('Only 2 stocks remaining')).toBeDefined()
+    // Inside product page: shows urgency banner and stock status
+    expect(screen.getAllByText(/Only 1 stock remaining in our nursery/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Only 1 stock left/i).length).toBeGreaterThan(0)
   })
 
   it('renders Sold Out badge on top card and Out of Stock in body when inStock is false', () => {

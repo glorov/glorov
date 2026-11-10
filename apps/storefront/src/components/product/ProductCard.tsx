@@ -38,7 +38,6 @@ export function ProductCard({
   const [isHovered, setIsHovered] = useState(false)
 
   const isSoldOut = !product.inStock || (product.stockQuantity !== undefined && product.stockQuantity <= 0)
-  const isLowStock = !isSoldOut && product.stockQuantity !== undefined && product.stockQuantity > 0 && product.stockQuantity <= 3
 
   const { isSubscribed, subscribeToRestock, isLoading: isNotifyLoading } = useRestockNotification()
   const subscribed = isSubscribed(product.id)
@@ -184,20 +183,6 @@ export function ProductCard({
               </p>
             )}
           </Link>
-
-          {/* Low Stock Urgency Pill (strictly inside the product card body) */}
-          {isLowStock && (
-            <div className="flex items-center pt-0.5">
-              <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold text-[#B45309] bg-[#FFFBEB] border border-[#FDE68A] px-2 py-0.5 rounded-full leading-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] animate-pulse shrink-0" />
-                <span>
-                  {product.stockQuantity === 1
-                    ? 'Only 1 stock remaining'
-                    : `Only ${product.stockQuantity} stocks remaining`}
-                </span>
-              </span>
-            </div>
-          )}
 
           {/* Sold Out / Out of Stock subtle state inside card body */}
           {isSoldOut && (

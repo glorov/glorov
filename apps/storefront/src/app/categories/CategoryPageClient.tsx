@@ -37,6 +37,8 @@ export function CategoryPageClient({
   }, [initialCategoryHandle])
 
   const [selectedMobileIndex, setSelectedMobileIndex] = useState<number>(initialIndex)
+  // Mobile layout mode: 'rail' (fast dual-column switcher) or 'feed' (immersive full-bleed visual cards)
+  const [mobileViewMode, setMobileViewMode] = useState<'rail' | 'feed'>('rail')
 
   // Desktop search & tab filters
   const [desktopSearchQuery, setDesktopSearchQuery] = useState('')
@@ -50,7 +52,7 @@ export function CategoryPageClient({
   const activeMobileCategory = GLOROV_BOTANICAL_CATEGORIES[selectedMobileIndex] || GLOROV_BOTANICAL_CATEGORIES[0]
   const isForYouMobile = activeMobileCategory.handle === 'for-you'
 
-  // Desktop categories (exclude "for-you")
+  // Desktop categories (exclude "for-you" in the main list)
   const filteredDesktopCategories = useMemo(() => {
     let list = GLOROV_BOTANICAL_CATEGORIES.filter((c) => c.handle !== 'for-you')
 
@@ -92,35 +94,66 @@ export function CategoryPageClient({
   return (
     <div className="w-full h-full cat-desktop:h-auto flex flex-col bg-white cat-desktop:bg-[#F9FAF8]">
       {/* =========================================================================
-          1. MOBILE DUAL-COLUMN CATEGORY BROWSER (< 800px / cat-desktop:hidden)
-          100% exact match with Flutter `_buildMobileDualColumnLayout`
+          1. MOBILE VIEWPORT (< 800px / cat-desktop:hidden)
+          Sleek, modern mobile botanical experience with dual-view toggle:
+          - Rail View (Fast dual-column rail with spacious 2-column cards)
+          - Feed View (Immersive card feed for visual exploration)
           ========================================================================= */}
-      <div className="cat-desktop:hidden flex flex-col w-full h-full bg-white overflow-hidden select-none">
-        {/* Mobile Top App Bar */}
-        <header className="h-14 min-h-14 bg-white border-b border-[#E5E7EB] flex items-center justify-between px-1 z-20">
-          <div className="flex items-center">
+      <div className="cat-desktop:hidden flex flex-col w-full h-full bg-[#F9FAF8] overflow-hidden select-none">
+        {/* Mobile Top Navigation App Bar */}
+        <header className="h-14 min-h-14 bg-white border-b border-[#E5E7EB] flex items-center justify-between px-2 z-20 shadow-[0_1px_4px_rgba(0,0,0,0.03)]">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => router.push('/')}
               aria-label="Back to home"
-              className="w-12 h-14 flex items-center justify-center text-[#111827] active:bg-[#F3F4F1] transition-colors"
+              className="w-10 h-10 flex items-center justify-center text-[#111827] active:bg-[#F3F4F1] rounded-full transition-colors"
             >
-              <svg className="w-6 h-6 text-[#111827]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-[#111827]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
             </button>
-            <h1 className="text-[18px] font-extrabold text-[#111827] tracking-[-0.2px] leading-tight ml-2">
-              All Categories
-            </h1>
+            <div>
+              <h1 className="text-[17px] font-extrabold text-[#111827] tracking-[-0.2px] leading-tight">
+                Botanical Categories
+              </h1>
+              <p className="text-[10px] text-[#6B7280] font-medium leading-none mt-0.5">
+                Pune Nursery Acclimatized
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center pr-1">
+          <div className="flex items-center gap-1">
+            {/* View Mode Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setMobileViewMode((v) => (v === 'rail' ? 'feed' : 'rail'))}
+              title={mobileViewMode === 'rail' ? 'Switch to Card Feed View' : 'Switch to Dual Rail View'}
+              className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#F3F7F4] text-[#1B4332] border border-[#D8E6DD] flex items-center gap-1 active:scale-95 transition-all"
+            >
+              {mobileViewMode === 'rail' ? (
+                <>
+                  <svg className="w-3.5 h-3.5 text-[#1B4332]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                  <span>Feed</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-3.5 h-3.5 text-[#1B4332]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7" />
+                  </svg>
+                  <span>Rail</span>
+                </>
+              )}
+            </button>
+
             <Link
               href="/search"
               aria-label="Search collection"
-              className="w-11 h-14 flex items-center justify-center text-[#111827] active:bg-[#F3F4F1] transition-colors"
+              className="w-9 h-9 flex items-center justify-center text-[#111827] active:bg-[#F3F4F1] rounded-full transition-colors"
             >
-              <svg className="w-6 h-6 text-[#111827]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-[#111827]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </Link>
@@ -128,14 +161,14 @@ export function CategoryPageClient({
             <Link
               href="/cart"
               aria-label="Shopping Cart"
-              className="w-11 h-14 flex items-center justify-center text-[#111827] active:bg-[#F3F4F1] transition-colors relative"
+              className="w-9 h-9 flex items-center justify-center text-[#111827] active:bg-[#F3F4F1] rounded-full transition-colors relative"
             >
-              <svg className="w-[21px] h-[21px]" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="1.85" strokeLinecap="round" strokeLinejoin="round">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="1.85" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5.5 8.5h13l1.2 12.2a2 2 0 0 1-2 2.3H6.3a2 2 0 0 1-2-2.3L5.5 8.5z" />
                 <path d="M9.5 12.5a2.5 2.5 0 0 0 5 0" />
               </svg>
               {cartCount > 0 && (
-                <span className="absolute top-2 right-1.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#1B4332] text-white text-[8.5px] font-extrabold flex items-center justify-center border-[1.2px] border-white">
+                <span className="absolute top-1 right-0.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#1B4332] text-white text-[8.5px] font-extrabold flex items-center justify-center border border-white">
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}
@@ -143,282 +176,394 @@ export function CategoryPageClient({
           </div>
         </header>
 
-        {/* Dual-Column Split Body */}
-        <div className="flex-1 flex flex-row overflow-hidden">
-          {/* Left Category Navigation Rail (88px) */}
-          <nav
-            aria-label="Botanical Category Rail"
-            className="w-[88px] min-w-[88px] max-w-[88px] bg-[#F8FAF9] border-r border-[#E5E7EB] overflow-y-auto overflow-x-hidden py-1 scrollbar-none"
-          >
-            {GLOROV_BOTANICAL_CATEGORIES.map((cat, idx) => {
-              const isSelected = idx === selectedMobileIndex
-              const isForYou = cat.handle === 'for-you'
+        {mobileViewMode === 'rail' ? (
+          /* =========================================================================
+             A. MOBILE DUAL-COLUMN RAIL VIEW (Fast category tap browsing)
+             ========================================================================= */
+          <div className="flex-1 flex flex-row overflow-hidden bg-white">
+            {/* Left Category Navigation Rail (88px) */}
+            <nav
+              aria-label="Botanical Category Rail"
+              className="w-[88px] min-w-[88px] max-w-[88px] bg-[#F7F9F7] border-r border-[#E5E7EB] overflow-y-auto overflow-x-hidden py-1.5 scrollbar-none"
+            >
+              {GLOROV_BOTANICAL_CATEGORIES.map((cat, idx) => {
+                const isSelected = idx === selectedMobileIndex
+                const isForYou = cat.handle === 'for-you'
 
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setSelectedMobileIndex(idx)}
-                  className={`w-full py-[11px] px-1 relative flex flex-col items-center justify-center transition-all ${
-                    isSelected ? 'bg-white' : 'bg-transparent hover:bg-black/[0.02]'
-                  }`}
-                >
-                  {/* Active Left Vertical Indicator Bar */}
-                  {isSelected && (
-                    <span className="absolute left-0 top-1 bottom-1 w-[3.8px] bg-[#1B4332] rounded-r-[3px]" />
-                  )}
-
-                  {/* Thumbnail Container */}
-                  <div
-                    className={`w-12 h-12 rounded-[14px] flex items-center justify-center overflow-hidden transition-colors ${
-                      isForYou
-                        ? isSelected
-                          ? 'bg-[#D8F3DC] border-[1.8px] border-[#1B4332]'
-                          : 'bg-[#E8F5E9] border border-[#E5E7EB]'
-                        : isSelected
-                          ? 'border-[1.8px] border-[#1B4332] bg-white'
-                          : 'border border-[#E5E7EB] bg-white'
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedMobileIndex(idx)}
+                    className={`w-full py-2.5 px-1 relative flex flex-col items-center justify-center transition-all ${
+                      isSelected ? 'bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)]' : 'bg-transparent hover:bg-black/[0.02]'
                     }`}
                   >
-                    {isForYou ? (
-                      <svg className="w-5 h-5 text-[#1B4332]" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z" />
-                      </svg>
-                    ) : (
-                      <div className="relative w-full h-full">
-                        <GlorovImage
-                          src={cat.image}
-                          alt={cat.title}
-                          fill
-                          sizes="48px"
-                          className="object-cover"
-                          containerClassName="w-full h-full"
-                          fallbackTitle={cat.title}
-                        />
-                      </div>
+                    {/* Active Left Vertical Indicator Bar */}
+                    {isSelected && (
+                      <span className="absolute left-0 top-1.5 bottom-1.5 w-[3.5px] bg-[#1B4332] rounded-r-[3px]" />
                     )}
-                  </div>
 
-                  {/* Label */}
-                  <span
-                    className={`text-[10.5px] leading-[1.2] text-center mt-1.5 px-0.5 line-clamp-2 ${
-                      isSelected ? 'font-extrabold text-[#1B4332]' : 'font-semibold text-[#4B5563]'
-                    }`}
-                  >
-                    {cat.title}
+                    {/* Thumbnail Container */}
+                    <div
+                      className={`w-12 h-12 rounded-[14px] flex items-center justify-center overflow-hidden transition-all ${
+                        isForYou
+                          ? isSelected
+                            ? 'bg-[#D8F3DC] border-2 border-[#1B4332] shadow-sm'
+                            : 'bg-[#E8F5E9] border border-[#E5E7EB]'
+                          : isSelected
+                            ? 'border-2 border-[#1B4332] bg-white shadow-sm ring-2 ring-[#1B4332]/10'
+                            : 'border border-[#E5E7EB] bg-white'
+                      }`}
+                    >
+                      {isForYou ? (
+                        <svg className="w-5 h-5 text-[#1B4332]" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z" />
+                        </svg>
+                      ) : (
+                        <div className="relative w-full h-full">
+                          <GlorovImage
+                            src={cat.image}
+                            alt={cat.title}
+                            fill
+                            sizes="48px"
+                            className="object-cover"
+                            containerClassName="w-full h-full"
+                            fallbackTitle={cat.title}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Label */}
+                    <span
+                      className={`text-[10.5px] leading-[1.2] text-center mt-1.5 px-0.5 line-clamp-2 ${
+                        isSelected ? 'font-extrabold text-[#1B4332]' : 'font-semibold text-[#4B5563]'
+                      }`}
+                    >
+                      {cat.title}
+                    </span>
+                  </button>
+                )
+              })}
+            </nav>
+
+            {/* Right Content Area (Clean 2-column cards for high readability) */}
+            <main
+              key={activeMobileCategory.handle}
+              className="flex-1 bg-white overflow-y-auto overflow-x-hidden p-3.5 animate-in fade-in duration-200"
+            >
+              {/* Category Header Banner */}
+              <div className="bg-gradient-to-r from-[#F0F5F2] to-[#E8F0EA] rounded-2xl p-3 mb-4 border border-[#DCE7DF] flex items-center justify-between">
+                <div>
+                  <span className="text-[9.5px] font-extrabold tracking-wider uppercase text-[#1B4332] bg-white/70 px-2 py-0.5 rounded-full inline-block">
+                    {activeMobileCategory.badge}
                   </span>
-                </button>
-              )
-            })}
-          </nav>
+                  <h2 className="text-[16px] font-extrabold text-[#111827] mt-1 leading-tight">
+                    {isForYouMobile ? 'Curated For You' : `${activeMobileCategory.title}`}
+                  </h2>
+                  <p className="text-[11px] text-[#4B5563] mt-0.5 line-clamp-1">
+                    {activeMobileCategory.description}
+                  </p>
+                </div>
+                {!isForYouMobile && (
+                  <Link
+                    href={`/categories/${activeMobileCategory.handle}`}
+                    className="shrink-0 px-2.5 py-1.5 rounded-full bg-[#1B4332] text-white text-[11px] font-bold flex items-center gap-1 shadow-sm active:scale-95 transition-all"
+                  >
+                    <span>View All</span>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                )}
+              </div>
 
-          {/* Right Scrollable Subcategory & Launch Content Area */}
-          <main
-            key={activeMobileCategory.handle}
-            className="flex-1 bg-white overflow-y-auto overflow-x-hidden px-3.5 py-4 animate-in fade-in slide-in-from-bottom-1 duration-200"
-          >
-            {/* Section 1: Collections Header */}
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-[15px] font-extrabold text-[#111827] tracking-[-0.2px] leading-tight">
-                {isForYouMobile ? 'Popular Collections' : `${activeMobileCategory.title} Collections`}
-              </h2>
-              <span className="text-[11px] font-semibold text-[#6B7280]">
-                {activeMobileCategory.subCategories.length} Collections
-              </span>
-            </div>
+              {/* Section 1: Subcategories in spacious 2-column cards */}
+              <div className="flex items-center justify-between mb-2.5">
+                <h3 className="text-[14px] font-extrabold text-[#111827] tracking-[-0.2px]">
+                  {isForYouMobile ? 'Popular Collections' : `${activeMobileCategory.title} Collections`}
+                </h3>
+                <span className="text-[11px] font-semibold text-[#6B7280]">
+                  {activeMobileCategory.subCategories.length} Collections
+                </span>
+              </div>
 
-            {/* 3-Column Subcategories Grid */}
-            <div className="grid grid-cols-3 gap-x-2.5 gap-y-3">
-              {activeMobileCategory.subCategories.map((sub) => (
-                <Link
-                  key={sub.handle}
-                  href={`/categories/${activeMobileCategory.handle}?subcat=${encodeURIComponent(sub.title)}`}
-                  className="flex flex-col items-center text-center group active:scale-95 transition-transform"
-                >
-                  <div className="w-full aspect-square rounded-[14px] bg-[#F9FAF8] border border-[#ECEEEB] overflow-hidden relative">
-                    <GlorovImage
-                      src={sub.image}
-                      alt={sub.title}
-                      fill
-                      sizes="96px"
-                      className="object-cover group-hover:scale-105 transition-transform duration-200"
-                      containerClassName="w-full h-full"
-                      fallbackTitle={sub.title}
-                    />
+              <div className="grid grid-cols-2 gap-2.5 mb-6">
+                {activeMobileCategory.subCategories.map((sub) => (
+                  <Link
+                    key={sub.handle}
+                    href={`/categories/${activeMobileCategory.handle}?subcat=${encodeURIComponent(sub.title)}`}
+                    className="flex flex-col bg-[#FBFDFB] rounded-[16px] border border-[#E5EDE7] overflow-hidden p-2 hover:border-[#1B4332]/40 active:scale-95 transition-all group shadow-[0_1px_4px_rgba(0,0,0,0.03)]"
+                  >
+                    <div className="w-full aspect-[4/3] rounded-[12px] bg-[#F4F4F5] overflow-hidden relative">
+                      <GlorovImage
+                        src={sub.image}
+                        alt={sub.title}
+                        fill
+                        sizes="140px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        containerClassName="w-full h-full"
+                        fallbackTitle={sub.title}
+                      />
+                      <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded-full bg-black/60 text-white text-[9px] font-bold backdrop-blur-xs">
+                        {sub.count} items
+                      </span>
+                    </div>
+                    <span className="text-[12px] font-bold text-[#1F2937] leading-[1.25] mt-1.5 line-clamp-1 group-hover:text-[#1B4332] transition-colors">
+                      {sub.title}
+                    </span>
+                    <span className="text-[10px] text-[#6B7280] font-medium flex items-center gap-0.5 mt-0.5">
+                      <span>Explore</span>
+                      <svg className="w-2.5 h-2.5 text-[#1B4332]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Section 2: Top Launches / Featured Varieties */}
+              {activeMobileCategory.launches.length > 0 && (
+                <>
+                  <div className="flex items-center gap-1.5 mb-2.5 pt-1">
+                    <svg className="w-4 h-4 text-[#BC4749] fill-current" viewBox="0 0 24 24">
+                      <path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z" />
+                    </svg>
+                    <h3 className="text-[14px] font-extrabold text-[#111827] tracking-[-0.2px]">
+                      {isForYouMobile ? 'Featured Arrivals' : 'Top Seeded Varieties'}
+                    </h3>
                   </div>
-                  <span className="text-[11px] font-bold text-[#1F2937] leading-[1.25] text-center mt-1.5 line-clamp-2">
-                    {sub.title}
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {activeMobileCategory.launches.map((launch) => {
+                      let tagBg = 'bg-[#1B4332] text-white'
+                      if (launch.tag === 'SALE IS LIVE') tagBg = 'bg-[#BC4749] text-white'
+                      else if (launch.tag === 'NEW LAUNCH') tagBg = 'bg-[#52B788] text-white'
+
+                      return (
+                        <Link
+                          key={launch.handle}
+                          href={`/products/${launch.handle}`}
+                          className="flex flex-col bg-white rounded-[16px] border border-[#E5EDE7] p-2 hover:border-[#1B4332]/40 active:scale-95 transition-all group shadow-[0_1px_4px_rgba(0,0,0,0.03)]"
+                        >
+                          <div className="w-full aspect-square rounded-[12px] bg-[#F9FAF8] overflow-hidden relative">
+                            <GlorovImage
+                              src={launch.image}
+                              alt={launch.title}
+                              fill
+                              sizes="140px"
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              containerClassName="w-full h-full"
+                              fallbackTitle={launch.title}
+                            />
+                            <span
+                              className={`absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide shadow-xs ${tagBg}`}
+                            >
+                              {launch.tag}
+                            </span>
+                          </div>
+
+                          <span className="text-[11.5px] font-bold text-[#1F2937] leading-[1.25] mt-1.5 line-clamp-1 group-hover:text-[#1B4332] transition-colors">
+                            {launch.title}
+                          </span>
+
+                          {launch.price !== undefined && (
+                            <span className="text-[12px] font-black text-[#1B4332] mt-0.5">
+                              ₹{launch.price.toFixed(0)}
+                            </span>
+                          )}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
+
+              <div className="h-10" />
+            </main>
+          </div>
+        ) : (
+          /* =========================================================================
+             B. MOBILE VISUAL FEED VIEW (Immersive full-bleed card stream)
+             ========================================================================= */
+          <main className="flex-1 overflow-y-auto p-3.5 space-y-4">
+            {GLOROV_BOTANICAL_CATEGORIES.filter((c) => c.handle !== 'for-you').map((cat) => (
+              <div
+                key={cat.id}
+                className="bg-white rounded-2xl border border-[#E5EDE7] shadow-sm overflow-hidden flex flex-col group"
+              >
+                <Link
+                  href={`/categories/${cat.handle}`}
+                  className="relative w-full aspect-[16/9] overflow-hidden bg-[#F4F4F5] block"
+                >
+                  <GlorovImage
+                    src={cat.image}
+                    alt={cat.title}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 50vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    containerClassName="w-full h-full"
+                    fallbackTitle={cat.title}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+                  <span className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-[#FFD51F] text-[#042018] text-[10px] font-black shadow-sm">
+                    {cat.badge}
+                  </span>
+                  <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-black/60 text-white text-[10px] font-bold backdrop-blur-xs">
+                    {cat.count} Varieties
                   </span>
                 </Link>
-              ))}
-            </div>
 
-            {/* Section 2: Top Seeded Varieties / Launches Header */}
-            {activeMobileCategory.launches.length > 0 && (
-              <>
-                <div className="mt-6 mb-3 flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-[#BC4749] fill-current" viewBox="0 0 24 24">
-                    <path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z" />
-                  </svg>
-                  <h2 className="text-[15px] font-extrabold text-[#111827] tracking-[-0.2px] leading-tight">
-                    {isForYouMobile ? 'New & Upcoming Launches' : 'Top Seeded Varieties'}
-                  </h2>
-                </div>
+                <div className="p-3.5">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <Link
+                      href={`/categories/${cat.handle}`}
+                      className="font-serif !text-[#042018] group-hover:!text-[#1B4332] text-[18px] font-bold tracking-tight transition-colors"
+                    >
+                      {cat.title}
+                    </Link>
+                    <span className="text-[10.5px] font-bold text-[#1B4332] bg-[#EFF6F1] px-2 py-0.5 rounded-full border border-[#DCE7DF]">
+                      {cat.count} Varieties
+                    </span>
+                  </div>
 
-                {/* 3-Column Launches Grid */}
-                <div className="grid grid-cols-3 gap-x-2.5 gap-y-3.5">
-                  {activeMobileCategory.launches.map((launch) => {
-                    let tagBg = 'bg-[#1B4332]'
-                    if (launch.tag === 'SALE IS LIVE') tagBg = 'bg-[#BC4749]'
-                    else if (launch.tag === 'NEW LAUNCH') tagBg = 'bg-[#52B788]'
+                  <p className="text-[12px] text-[#4B5563] line-clamp-2 leading-[1.45] mb-3">
+                    {cat.description}
+                  </p>
 
-                    return (
+                  <div className="flex flex-wrap gap-1.5 mb-3.5">
+                    {cat.subCategories.slice(0, 3).map((sub) => (
                       <Link
-                        key={launch.handle}
-                        href={`/products/${launch.handle}`}
-                        className="flex flex-col items-center text-center group active:scale-95 transition-transform"
+                        key={sub.handle}
+                        href={`/categories/${cat.handle}?subcat=${encodeURIComponent(sub.title)}`}
+                        className="px-2.5 py-1 rounded-full bg-[#F3F7F4] text-[#1B4332] text-[11px] font-semibold border border-[#DCE7DF]"
                       >
-                        <div className="w-full aspect-square rounded-[14px] bg-[#F9FAF8] border border-[#ECEEEB] overflow-hidden relative">
-                          <GlorovImage
-                            src={launch.image}
-                            alt={launch.title}
-                            fill
-                            sizes="96px"
-                            className="object-cover group-hover:scale-105 transition-transform duration-200"
-                            containerClassName="w-full h-full"
-                            fallbackTitle={launch.title}
-                          />
-                          <span
-                            className={`absolute inset-x-0 bottom-0 py-[2.5px] rounded-b-[13px] text-center text-white text-[9px] font-extrabold tracking-[0.3px] uppercase ${tagBg}`}
-                          >
-                            {launch.tag}
-                          </span>
-                        </div>
-
-                        <span className="text-[11px] font-bold text-[#1F2937] leading-[1.2] text-center mt-1.5 line-clamp-2">
-                          {launch.title}
-                        </span>
-
-                        {launch.price !== undefined && (
-                          <span className="text-[11.5px] font-extrabold text-[#1B4332] text-center mt-0.5">
-                            ₹{launch.price.toFixed(0)}
-                          </span>
-                        )}
+                        {sub.title} ({sub.count})
                       </Link>
-                    )
-                  })}
-                </div>
-              </>
-            )}
+                    ))}
+                  </div>
 
+                  <Link
+                    href={`/categories/${cat.handle}`}
+                    className="w-full py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-bold text-center flex items-center justify-center gap-1.5 active:bg-[#2D6A4F] transition-colors shadow-xs"
+                  >
+                    <span>Browse All {cat.title}</span>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
+            ))}
             <div className="h-8" />
           </main>
-        </div>
+        )}
       </div>
 
       {/* =========================================================================
-          2. DESKTOP VIEWPORT (>= 800px / hidden cat-desktop:block)
-          100% exact match with Flutter `_buildDesktopLayout`
+          2. DESKTOP & TABLET VIEWPORT (>= 800px / hidden cat-desktop:block)
+          Elevated botanical editorial taxonomy with luxury cards and instant filters
           ========================================================================= */}
       <div className="hidden cat-desktop:block w-full bg-[#F9FAF8] pb-16">
-        {/* Desktop Hero Banner Header */}
-        <section className="w-full bg-gradient-to-br from-[#042018] via-[#0A3729] to-[#144D3A] text-white px-12 py-12 border-b border-white/10">
-          <div className="max-w-[1200px] mx-auto">
-            {/* Back Button */}
-            <button
-              type="button"
-              onClick={() => router.push('/')}
-              className="inline-flex items-center gap-1 text-white/70 hover:text-white text-[13px] font-semibold pb-3 transition-colors"
-            >
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-              </svg>
-              <span>Back</span>
-            </button>
+        {/* Compact, Inspiring Botanical Hero Banner Header */}
+        <section className="w-full bg-gradient-to-br from-[#042018] via-[#0A3729] to-[#144D3A] text-white px-8 py-5 lg:px-12 lg:py-6 border-b border-white/10 relative overflow-hidden">
+          {/* Subtle botanical background aura */}
+          <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-[#52B788]/10 to-transparent pointer-events-none" />
 
-            {/* Pill Badge */}
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#D4E79E]/[0.18] border border-[#D4E79E]/[0.35] text-[#D4E79E] text-[11px] font-bold tracking-[0.8px] uppercase">
-                <svg className="w-3.5 h-3.5 text-[#D4E79E]" fill="currentColor" viewBox="0 0 24 24">
+          <div className="max-w-[1280px] mx-auto relative z-10">
+            {/* Top Bar: Back & Pill Badge */}
+            <div className="flex items-center justify-between gap-4 mb-2">
+              <button
+                type="button"
+                onClick={() => router.push('/')}
+                className="inline-flex items-center gap-1.5 text-white/75 hover:text-white text-[12.5px] font-semibold transition-colors group"
+              >
+                <svg className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>Back to Store</span>
+              </button>
+
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#D4E79E]/[0.18] border border-[#D4E79E]/[0.35] text-[#D4E79E] text-[10.5px] font-bold tracking-[0.8px] uppercase">
+                <svg className="w-3 h-3 text-[#D4E79E]" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66l.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z" />
                 </svg>
                 <span>PUNE CENTRAL NURSERY DIRECTORY</span>
               </div>
             </div>
 
-            {/* Heading */}
-            <h1 className="font-serif text-white font-extrabold text-[36px] leading-[1.2] tracking-[-0.5px] mt-4">
-              Explore Botanical Categories
-            </h1>
-
-            {/* Description */}
-            <p className="text-white/85 text-[16px] max-w-[720px] mt-2 leading-[1.5] font-normal">
-              Browse acclimatized live indoor houseplants, germination-tested Desi heirloom seeds, fresh vegetable varieties, vibrant flowering plants, and aromatic kitchen herbs.
-            </p>
-
-            {/* Stat Chips */}
-            <div className="flex flex-wrap gap-x-4 gap-y-2 mt-6">
-              <div className="px-2.5 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.12] text-white text-[12px] font-medium flex items-center gap-1.25">
-                <svg className="w-3.5 h-3.5 text-[#D4E79E]" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
-                </svg>
-                <span>100+ Verified Seeded Varieties</span>
+            {/* Main Headline & Stat Badges in Responsive Row */}
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+              <div className="max-w-2xl">
+                <h1 className="font-serif !text-white font-extrabold text-[26px] lg:text-[32px] leading-tight tracking-[-0.5px]">
+                  Explore Botanical Collections
+                </h1>
+                <p className="text-white/80 text-[13.5px] lg:text-[14px] leading-relaxed mt-1 font-normal">
+                  Discover indigenous Desi heirloom seeds with 98% germination guarantee, nursery-acclimatized foliage, and fresh garden blooms.
+                </p>
               </div>
 
-              <div className="px-2.5 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.12] text-white text-[12px] font-medium flex items-center gap-1.25">
-                <svg className="w-3.5 h-3.5 text-[#D4E79E]" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M20 8h-3V4H1v13h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
-                </svg>
-                <span>Pan-India Transit Safe</span>
-              </div>
-
-              <div className="px-2.5 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.12] text-white text-[12px] font-medium flex items-center gap-1.25">
-                <svg className="w-3.5 h-3.5 text-[#D4E79E]" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
-                </svg>
-                <span>7-Day Live Replacement</span>
-              </div>
-
-              <div className="px-2.5 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.12] text-white text-[12px] font-medium flex items-center gap-1.25">
-                <svg className="w-3.5 h-3.5 text-[#D4E79E]" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 2H6c-1.2 0-2 .8-2 2v16c0 1.2.8 2 2 2h13c1.2 0 2-.8 2-2V4c0-1.2-.8-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z" />
-                </svg>
-                <span>Free Care Guide Included</span>
+              {/* Botanical Trust Badges */}
+              <div className="flex flex-wrap items-center gap-2 shrink-0">
+                <div className="px-3 py-1 rounded-full bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.15] text-white text-[11px] font-medium flex items-center gap-1.5 transition-colors">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D4E79E]" />
+                  <span>98% Germination</span>
+                </div>
+                <div className="px-3 py-1 rounded-full bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.15] text-white text-[11px] font-medium flex items-center gap-1.5 transition-colors">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D4E79E]" />
+                  <span>100+ Varieties</span>
+                </div>
+                <div className="px-3 py-1 rounded-full bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.15] text-white text-[11px] font-medium flex items-center gap-1.5 transition-colors">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D4E79E]" />
+                  <span>Transit Safe Guaranteed</span>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Desktop Main Content Container */}
-        <div className="max-w-[1280px] mx-auto px-8 py-6 space-y-6">
-          {/* Desktop Search Box */}
-          <div className="bg-white rounded-2xl border border-[#E5E7EB] flex items-center px-4 py-3 gap-3">
-            <svg className="w-5 h-5 text-[#1B4332] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              value={desktopSearchQuery}
-              onChange={(e) => setDesktopSearchQuery(e.target.value)}
-              placeholder="Search categories, seeds, houseplants, vegetables..."
-              className="flex-1 text-[15px] text-[#111827] placeholder:text-[#6B7280] focus:outline-none bg-transparent"
-            />
-            {desktopSearchQuery.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setDesktopSearchQuery('')}
-                aria-label="Clear search"
-                className="text-[#9CA3AF] hover:text-[#111827]"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
+        {/* Main Content Area */}
+        <div className="max-w-[1280px] mx-auto px-6 lg:px-8 pt-5 pb-14 space-y-5">
+          {/* Search Box & Instant Filter Row */}
+          <div className="flex flex-col md:flex-row gap-3.5 items-stretch md:items-center justify-between">
+            {/* Live Search Input */}
+            <div className="flex-1 bg-white rounded-2xl border border-[#E5EDE7] shadow-[0_2px_12px_rgba(0,0,0,0.03)] focus-within:border-[#1B4332] focus-within:ring-2 focus-within:ring-[#1B4332]/10 flex items-center px-4 py-3 gap-3 transition-all">
+              <svg className="w-5 h-5 text-[#1B4332] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={desktopSearchQuery}
+                onChange={(e) => setDesktopSearchQuery(e.target.value)}
+                placeholder="Search categories, seeds, houseplants, herbs, or flowers..."
+                className="flex-1 text-[15px] text-[#111827] placeholder:text-[#6B7280] focus:outline-none bg-transparent"
+              />
+              {desktopSearchQuery.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setDesktopSearchQuery('')}
+                  aria-label="Clear search"
+                  className="text-[#9CA3AF] hover:text-[#111827] transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {/* Result Counter Pill */}
+            <div className="text-xs font-bold text-[#4B5563] bg-[#EFF4F0] px-3.5 py-3 rounded-2xl border border-[#DCE7DF] shrink-0 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#1B4332]" />
+              <span>
+                {filteredDesktopCategories.length} {filteredDesktopCategories.length === 1 ? 'Category' : 'Categories'}
+              </span>
+            </div>
           </div>
 
-          {/* Desktop Filter Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {/* Quick Filter Pill Tabs with Icons */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar scrollbar-none">
             {desktopTabs.map((tab) => {
               const isSelected = selectedDesktopGroup === tab.label
               return (
@@ -426,10 +571,10 @@ export function CategoryPageClient({
                   key={tab.label}
                   type="button"
                   onClick={() => setSelectedDesktopGroup(tab.label)}
-                  className={`px-3.5 py-2 rounded-full border text-[13px] flex items-center gap-2 transition-colors shrink-0 ${
+                  className={`px-4 py-2 rounded-full border text-[13px] flex items-center gap-2 transition-all shrink-0 ${
                     isSelected
-                      ? 'bg-[#1B4332] text-white font-bold border-[#1B4332]'
-                      : 'bg-white text-[#111827] hover:bg-[#F9FAF8] font-semibold border-[#E5E7EB]'
+                      ? 'bg-[#1B4332] text-white font-extrabold border-[#1B4332] shadow-sm ring-2 ring-[#1B4332]/20'
+                      : 'bg-white text-[#111827] hover:border-[#1B4332]/40 hover:bg-[#F9FAF8] font-semibold border-[#E5E7EB] shadow-[0_1px_4px_rgba(0,0,0,0.02)]'
                   }`}
                 >
                   <tab.Icon
@@ -442,153 +587,207 @@ export function CategoryPageClient({
             })}
           </div>
 
-          {/* Desktop Content Switcher: All Categories 3-Col Grid OR Single Category Showcase */}
+          {/* =========================================================================
+              VIEWPORT SWITCHER: All Categories (3-Col Grid) OR Single Category Showcase
+              ========================================================================= */}
           {selectedDesktopGroup === 'All Categories' ? (
-            <div className="grid grid-cols-3 gap-6 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-1">
               {filteredDesktopCategories.map((cat) => (
                 <div
                   key={cat.id}
-                  onClick={() => setSelectedDesktopGroup(cat.title)}
-                  className="bg-white rounded-[20px] border border-[#E5E7EB] hover:border-[#1B4332]/50 transition-colors overflow-hidden flex flex-col justify-between group cursor-pointer aspect-[0.74]"
+                  className="bg-white rounded-3xl border border-[#E5EDE7] shadow-[0_4px_20px_rgba(27,67,50,0.05)] hover:shadow-[0_18px_40px_rgba(27,67,50,0.12)] hover:border-[#2D6A4F]/40 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col justify-between group"
                 >
-                  {/* 16:9 Image with Overlaid Badges */}
-                  <div className="relative w-full aspect-[16/9] overflow-hidden bg-[#F3F4F1]">
+                  {/* Category Image Header with Rich Floating Badges */}
+                  <Link
+                    href={`/categories/${cat.handle}`}
+                    className="relative w-full aspect-[16/10] overflow-hidden bg-[#F4F4F5] block cursor-pointer"
+                  >
                     <GlorovImage
                       src={cat.image}
                       alt={cat.title}
                       fill
                       sizes="(max-width: 1024px) 50vw, 33vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
                       containerClassName="w-full h-full"
                       fallbackTitle={cat.title}
                     />
-                    {/* Yellow Top-Left Badge */}
-                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#FFD51F] text-[#042018] text-[11px] font-extrabold">
+
+                    {/* Subtle top gradient for badge contrast */}
+                    <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
+
+                    {/* Botanical Badge (Top-Left) */}
+                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#FFD51F] text-[#042018] text-[11px] font-black tracking-wide shadow-md">
                       {cat.badge}
                     </span>
-                    {/* Top-Right Varieties Badge */}
-                    <span className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/75 text-white text-[11px] font-semibold">
-                      {cat.count} Varieties
-                    </span>
-                  </div>
 
-                  {/* Body Content */}
-                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    {/* Varieties Count Badge (Top-Right Glassmorphic) */}
+                    <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/60 text-white text-[11px] font-bold backdrop-blur-md border border-white/25 shadow-md">
+                      {cat.count} Curated Varieties
+                    </span>
+                  </Link>
+
+                  {/* Card Body with Title, Subcategory Chips and Explorer Button */}
+                  <div className="p-5 flex-1 flex flex-col justify-between">
                     <div>
-                      <h2 className="text-[18px] font-extrabold text-[#111827] line-clamp-1">
-                        {cat.title}
-                      </h2>
-                      <p className="text-[13px] text-[#6B7280] leading-[1.4] mt-1 line-clamp-2">
+                      {/* Title Row with hover icon */}
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <Link
+                          href={`/categories/${cat.handle}`}
+                          className="font-serif !text-[#042018] group-hover:!text-[#1B4332] text-[22px] font-extrabold tracking-[-0.3px] leading-tight transition-colors"
+                        >
+                          {cat.title}
+                        </Link>
+                        <span className="w-8 h-8 rounded-full bg-[#F3F7F4] group-hover:bg-[#1B4332] group-hover:text-white text-[#1B4332] flex items-center justify-center transition-all duration-300 shrink-0">
+                          <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      </div>
+
+                      <p className="text-[13px] text-[#4B5563] leading-[1.5] line-clamp-2">
                         {cat.description}
                       </p>
 
-                      {/* Subcategory Pills */}
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {cat.subCategories.slice(0, 3).map((sub) => (
-                          <span
-                            key={sub.handle}
-                            className="px-2 py-0.5 rounded-full bg-[#F3F4F1] border border-[#E5E7EB] text-[11px] text-[#1B4332] font-semibold"
-                          >
-                            {sub.title}
+                      {/* Interactive Subcategory Pills */}
+                      <div className="mt-4 pt-3 border-t border-[#F1F5F2]">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">
+                            Popular Subcategories
                           </span>
-                        ))}
+                          <span className="text-[11px] font-semibold text-[#1B4332]">
+                            {cat.subCategories.length} Collections
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {cat.subCategories.map((sub) => (
+                            <Link
+                              key={sub.handle}
+                              href={`/categories/${cat.handle}?subcat=${encodeURIComponent(sub.title)}`}
+                              className="px-2.5 py-1 rounded-full bg-[#F3F7F4] hover:bg-[#1B4332] hover:text-white text-[#1B4332] text-[11px] font-bold border border-[#DCE7DF] transition-all flex items-center gap-1"
+                            >
+                              <span>{sub.title}</span>
+                              <span className="text-[9.5px] opacity-70">({sub.count})</span>
+                            </Link>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Bottom Action Row */}
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#F3F4F6]">
-                      <span className="text-[13px] font-bold text-[#1B4332]">
-                        Explore Collection
-                      </span>
-                      <div className="w-7 h-7 rounded-full bg-[#FFF3D9] flex items-center justify-center text-[#1B4332] group-hover:translate-x-0.5 transition-transform">
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    {/* Bottom Explore Action CTA */}
+                    <div className="mt-5 pt-3.5 border-t border-[#F1F5F2] flex items-center justify-between">
+                      <div className="text-xs font-semibold text-[#52B788] flex items-center gap-1">
+                        <svg className="w-3.5 h-3.5 text-[#52B788]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Pune Acclimatized</span>
+                      </div>
+
+                      <Link
+                        href={`/categories/${cat.handle}`}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#1B4332] text-white hover:bg-[#2D6A4F] text-xs font-bold shadow-xs hover:shadow-md transition-all active:scale-95"
+                      >
+                        <span>Explore Collection</span>
+                        <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                         </svg>
-                      </div>
+                      </Link>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : activeDesktopCategory ? (
-            /* Single Category Showcase */
-            <div className="space-y-8 pt-2">
-              {/* Category Spotlight Hero Card */}
-              <div className="bg-white rounded-[20px] border border-[#E5E7EB] p-8 flex items-center gap-8">
-                <div className="w-[120px] h-[120px] rounded-2xl overflow-hidden relative shrink-0 bg-[#F3F4F1]">
+            /* =========================================================================
+               SINGLE CATEGORY SHOWCASE VIEW (When a specific category tab is selected)
+               ========================================================================= */
+            <div className="space-y-8 pt-1">
+              {/* Category Spotlight Banner */}
+              <div className="bg-white rounded-3xl border border-[#E5EDE7] p-8 shadow-[0_4px_24px_rgba(27,67,50,0.06)] flex flex-col md:flex-row items-center gap-8">
+                <div className="w-[140px] h-[140px] rounded-2xl overflow-hidden relative shrink-0 bg-[#F4F4F5] shadow-md">
                   <GlorovImage
                     src={activeDesktopCategory.image}
                     alt={activeDesktopCategory.title}
                     fill
-                    sizes="120px"
+                    sizes="140px"
                     className="object-cover"
                     containerClassName="w-full h-full"
                     fallbackTitle={activeDesktopCategory.title}
                   />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded-full bg-[#D8F3DC] text-[#1B4332] text-[11px] font-extrabold">
+                <div className="flex-1 text-center md:text-left">
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                    <span className="px-3 py-1 rounded-full bg-[#FFD51F] text-[#042018] text-[11px] font-black">
                       {activeDesktopCategory.badge}
                     </span>
-                    <span className="text-[12px] font-semibold text-[#6B7280]">
+                    <span className="text-[12px] font-bold text-[#1B4332] bg-[#D8F3DC] px-2.5 py-0.5 rounded-full">
                       {activeDesktopCategory.count} Botanical Varieties
                     </span>
                   </div>
-                  <h2 className="font-serif text-[26px] font-extrabold text-[#111827] mt-2 tracking-[-0.4px]">
-                    {activeDesktopCategory.title}
+                  <h2 className="font-serif text-[28px] font-extrabold text-[#111827] mt-2 tracking-[-0.4px]">
+                    {activeDesktopCategory.title} Collections
                   </h2>
-                  <p className="text-[14px] text-[#4B5563] leading-[1.4] mt-1.5 max-w-3xl">
+                  <p className="text-[14.5px] text-[#4B5563] leading-[1.5] mt-1.5 max-w-3xl">
                     {activeDesktopCategory.description}
                   </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Link
+                      href={`/categories/${activeDesktopCategory.handle}`}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1B4332] text-white hover:bg-[#2D6A4F] text-xs font-bold transition-all shadow-sm"
+                    >
+                      <span>Shop Entire {activeDesktopCategory.title} Catalog</span>
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  </div>
                 </div>
               </div>
 
               {/* Subcategories Section */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[18px] font-extrabold text-[#111827]">
-                    {activeDesktopCategory.title} Collections
+                  <h3 className="text-[20px] font-extrabold text-[#111827]">
+                    Curated {activeDesktopCategory.title} Subcategories
                   </h3>
                   <button
                     type="button"
                     onClick={() => setSelectedDesktopGroup('All Categories')}
                     className="text-[13px] font-bold text-[#1B4332] hover:underline flex items-center gap-1"
                   >
-                    <span>View All in Catalog</span>
+                    <span>View All Categories</span>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {activeDesktopCategory.subCategories.map((sub) => (
                     <Link
                       key={sub.handle}
                       href={`/categories/${activeDesktopCategory.handle}?subcat=${encodeURIComponent(sub.title)}`}
-                      className="bg-white rounded-[16px] border border-[#E5E7EB] overflow-hidden flex h-[100px] cursor-pointer hover:border-[#1B4332]/40 transition-colors group"
+                      className="bg-white rounded-2xl border border-[#E5EDE7] shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden flex h-[105px] cursor-pointer hover:border-[#1B4332]/40 hover:shadow-md transition-all group"
                     >
-                      <div className="w-[120px] h-full relative shrink-0 bg-[#F3F4F1]">
+                      <div className="w-[120px] h-full relative shrink-0 bg-[#F4F4F5]">
                         <GlorovImage
                           src={sub.image}
                           alt={sub.title}
                           fill
                           sizes="120px"
-                          className="object-cover group-hover:scale-105 transition-transform duration-200"
+                          className="object-cover group-hover:scale-108 transition-transform duration-300"
                           containerClassName="w-full h-full"
                           fallbackTitle={sub.title}
                         />
                       </div>
                       <div className="px-4 py-3 flex-1 flex flex-col justify-center">
-                        <h4 className="text-[15.5px] font-extrabold text-[#111827] line-clamp-1">
+                        <h4 className="text-[15.5px] font-extrabold text-[#111827] line-clamp-1 group-hover:text-[#1B4332] transition-colors">
                           {sub.title}
                         </h4>
-                        <span className="text-[12.5px] text-[#6B7280] font-medium mt-0.5">
-                          {sub.count} curated varieties
+                        <span className="text-[12px] text-[#6B7280] font-medium mt-0.5">
+                          {sub.count} curated items
                         </span>
                         <div className="flex items-center gap-1 text-[12px] font-bold text-[#1B4332] mt-2">
-                          <span>Explore Collection</span>
+                          <span>Browse Collection</span>
                           <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
                           </svg>
@@ -602,46 +801,51 @@ export function CategoryPageClient({
               {/* Featured Launches Section */}
               {activeDesktopCategory.launches.length > 0 && (
                 <div>
-                  <h3 className="text-[18px] font-extrabold text-[#111827] mt-8 mb-4">
-                    Featured Varieties & Launches
+                  <h3 className="text-[20px] font-extrabold text-[#111827] mt-8 mb-4">
+                    Top Botanical Varieties & New Arrivals
                   </h3>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
                     {activeDesktopCategory.launches.map((launch) => {
-                      let tagBg = 'bg-[#1B4332]'
-                      if (launch.tag === 'SALE IS LIVE') tagBg = 'bg-[#BC4749]'
-                      else if (launch.tag === 'NEW LAUNCH') tagBg = 'bg-[#52B788]'
+                      let tagBg = 'bg-[#1B4332] text-white'
+                      if (launch.tag === 'SALE IS LIVE') tagBg = 'bg-[#BC4749] text-white'
+                      else if (launch.tag === 'NEW LAUNCH') tagBg = 'bg-[#52B788] text-white'
 
                       return (
                         <Link
                           key={launch.handle}
                           href={`/products/${launch.handle}`}
-                          className="bg-white rounded-[16px] border border-[#E5E7EB] overflow-hidden flex flex-col justify-between cursor-pointer hover:border-[#1B4332]/50 transition-colors group"
+                          className="bg-white rounded-2xl border border-[#E5EDE7] shadow-sm hover:shadow-md hover:border-[#1B4332]/40 transition-all overflow-hidden flex flex-col justify-between cursor-pointer group"
                         >
-                          <div className="w-full aspect-[1.15] bg-[#F9FAF8] overflow-hidden relative">
+                          <div className="w-full aspect-[4/3] bg-[#F9FAF8] overflow-hidden relative">
                             <GlorovImage
                               src={launch.image}
                               alt={launch.title}
                               fill
                               sizes="320px"
-                              className="object-cover group-hover:scale-105 transition-transform duration-200"
+                              className="object-cover group-hover:scale-108 transition-transform duration-300"
                               containerClassName="w-full h-full"
                               fallbackTitle={launch.title}
                             />
                             <span
-                              className={`absolute top-2 left-2 px-2 py-0.5 rounded-[6px] text-center text-white text-[9.5px] font-extrabold tracking-[0.2px] uppercase ${tagBg}`}
+                              className={`absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[9px] font-black tracking-wide shadow-xs ${tagBg}`}
                             >
                               {launch.tag}
                             </span>
                           </div>
 
-                          <div className="p-3 flex-1 flex flex-col justify-between">
-                            <h4 className="text-[13px] font-bold text-[#111827] line-clamp-1">
+                          <div className="p-3.5 flex-1 flex flex-col justify-between">
+                            <h4 className="text-[13px] font-bold text-[#111827] line-clamp-1 group-hover:text-[#1B4332] transition-colors">
                               {launch.title}
                             </h4>
                             {launch.price !== undefined && (
-                              <span className="text-[13.5px] font-extrabold text-[#1B4332] mt-1">
-                                ₹{launch.price.toFixed(0)}
-                              </span>
+                              <div className="mt-2 flex items-center justify-between">
+                                <span className="text-[14px] font-black text-[#1B4332]">
+                                  ₹{launch.price.toFixed(0)}
+                                </span>
+                                <span className="text-[10.5px] font-bold text-[#52B788] bg-[#D8F3DC] px-2 py-0.5 rounded-full">
+                                  In Stock
+                                </span>
+                              </div>
                             )}
                           </div>
                         </Link>
@@ -654,27 +858,35 @@ export function CategoryPageClient({
           ) : null}
 
           {/* Seasonal Sowing Spotlight Banner */}
-          <section className="bg-[#F9F5EC] rounded-2xl border border-[#E2D6C3] p-6 lg:p-8 mt-10 space-y-3">
-            <span className="inline-block px-2.5 py-1 rounded-full bg-[#1B4332] text-white text-[10.5px] font-extrabold tracking-wider uppercase">
-              SEASONAL SOWING GUIDE
-            </span>
-            <h2 className="font-serif text-xl sm:text-2xl font-extrabold text-[#111827]">
-              Need Help Choosing What to Plant This Month?
-            </h2>
-            <p className="text-[13.5px] text-[#6B7280] max-w-3xl leading-relaxed">
-              Explore our month-by-month Indian Sowing Calendar designed for Kharif, Rabi, and Zaid cultivation across Indian agro-climatic zones.
-            </p>
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => setSelectedDesktopGroup('Seeds')}
-                className="bg-[#1B4332] hover:bg-[#2D6A4F] text-white px-5 py-3 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 active:scale-95 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span>View Indian Sowing Calendar</span>
-              </button>
+          <section className="bg-gradient-to-r from-[#F9F5EC] to-[#F5ECE0] rounded-3xl border border-[#E2D6C3] p-8 lg:p-10 mt-12 relative overflow-hidden shadow-sm">
+            <div className="relative z-10 max-w-3xl space-y-3">
+              <span className="inline-block px-3 py-1 rounded-full bg-[#1B4332] text-white text-[10.5px] font-extrabold tracking-wider uppercase">
+                SEASONAL SOWING GUIDE
+              </span>
+              <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#111827] tracking-[-0.3px]">
+                Need Help Choosing What to Plant This Month?
+              </h2>
+              <p className="text-[14.5px] text-[#556052] leading-relaxed">
+                Explore our month-by-month Indian Sowing Calendar designed for Kharif, Rabi, and Zaid cultivation across Indian agro-climatic zones. Get acclimatized varieties calibrated for Indian terrace containers and home gardens.
+              </p>
+              <div className="pt-2 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDesktopGroup('Seeds')}
+                  className="bg-[#1B4332] hover:bg-[#2D6A4F] text-white px-5 py-3 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 active:scale-95 transition-all shadow-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span>View Indian Sowing Calendar</span>
+                </button>
+                <Link
+                  href="/categories/seeds"
+                  className="bg-white hover:bg-[#FAFBF9] text-[#1B4332] border border-[#C5D9CB] px-5 py-3 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 active:scale-95 transition-all shadow-xs"
+                >
+                  <span>Explore Heirloom Seeds</span>
+                </Link>
+              </div>
             </div>
           </section>
         </div>

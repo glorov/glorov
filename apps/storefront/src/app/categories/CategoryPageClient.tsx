@@ -856,9 +856,6 @@ export function CategoryPageClient({
                                 <span className="text-[14px] font-black text-[#1B4332]">
                                   ₹{launch.price.toFixed(0)}
                                 </span>
-                                <span className="text-[10.5px] font-bold text-[#52B788] bg-[#D8F3DC] px-2 py-0.5 rounded-full">
-                                  In Stock
-                                </span>
                               </div>
                             )}
                           </div>

@@ -93,9 +93,9 @@ services:
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       COOKIE_SECRET: ${COOKIE_SECRET:?COOKIE_SECRET is required}
-      STORE_CORS: ${STORE_CORS:-https://glorov.in,https://www.glorov.in}
-      ADMIN_CORS: ${ADMIN_CORS:-https://admin.glorov.in}
-      AUTH_CORS: ${AUTH_CORS:-https://glorov.in,https://admin.glorov.in}
+      STORE_CORS: ${STORE_CORS:-https://glorov.com,https://www.glorov.com,https://glorov.tech,https://www.glorov.tech}
+      ADMIN_CORS: ${ADMIN_CORS:-https://admin.glorov.com,https://admin.glorov.tech}
+      AUTH_CORS: ${AUTH_CORS:-https://glorov.com,https://admin.glorov.com,https://glorov.tech,https://admin.glorov.tech}
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:?RAZORPAY_KEY_ID is required}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:?RAZORPAY_KEY_SECRET is required}
       RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:?RAZORPAY_WEBHOOK_SECRET is required}

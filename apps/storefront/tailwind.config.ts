@@ -113,7 +113,7 @@ const config: Config = {
         // Glorov-specific aliases for explicit naming in components
         'mobile-max':  { 'max': '640px' },
         'tablet':      '641px',
-        'cat-desktop': '800px', // Exact Flutter category desktop threshold (width >= 800)
+        'cat-desktop': '641px', // Tablet (>= 641px) & Desktop grid cards threshold
         'desktop':     '1025px',
       },
 

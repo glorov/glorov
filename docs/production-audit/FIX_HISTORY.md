@@ -856,6 +856,39 @@
 - **Remaining Risks:** None.
 - **Rollback Considerations:** Revert commits via git.
 
+### FIX-019: Multi-Domain Admin Dashboard CORS Resolution (`admin.glorov.com` & `admin.glorov.tech`)
+- **Related Issue:** GLOROV-CORS-001 (Production Admin Dashboard Origin Mismatch)
+- **Date:** 2026-11-10
+- **Module:** Backend CORS & Deployment Infrastructure (`apps/backend`, `deploy/`)
+- **Problem:** When navigating to `https://admin.glorov.com`, the Medusa Admin SPA failed to load or authenticate with browser CORS policy violations ("No 'Access-Control-Allow-Origin' header is present on the requested resource"). Meanwhile, `https://admin.glorov.tech` worked normally.
+- **Root Cause:**
+  1. `apps/backend/.env` and production `.env` files (`/var/www/glorov/apps/backend/.env` and `/var/www/glorov/current/apps/backend/.env`) only included `https://admin.glorov.tech` in `ADMIN_CORS` and `AUTH_CORS`, omitting `https://admin.glorov.com` and `http://admin.glorov.com`.
+  2. The compiled Admin Vite bundle in production communicates with `https://api.glorov.tech`. When opened from `https://admin.glorov.com`, the browser initiates cross-origin API and authentication requests (`GET /admin/users/me`, `POST /auth/user/emailpass`) with `Origin: https://admin.glorov.com`.
+  3. Because `admin.glorov.com` was not whitelisted, Medusa v2 CORS middleware omitted `Access-Control-Allow-Origin` on preflight OPTIONS and GET/POST requests, blocking the SPA from initializing.
+- **Files Changed:**
+  - `apps/backend/.env` (Added `https://admin.glorov.com,http://admin.glorov.com,https://api.glorov.com,http://api.glorov.com` to `STORE_CORS`, `ADMIN_CORS`, and `AUTH_CORS`)
+  - `apps/backend/medusa-config.ts` (Added fallback origins for `admin.glorov.com` and `admin.glorov.tech` across `storeCors`, `adminCors`, and `authCors`)
+  - `apps/backend/.env.example` & `.env.example` & `docker-compose.prod.yml` (Updated default allowed CORS origins to cover both `.com` and `.tech` subdomains)
+  - `.github/workflows/deploy.yml` (Extended deployment smoke check step 14 to verify both `admin.glorov.tech` and `admin.glorov.com` as well as `api.glorov.tech` and `api.glorov.com`)
+  - `apps/backend/src/__tests__/admin-access-control.unit.spec.ts` (Added invariant test verifying `adminCors` explicitly contains both `admin.glorov.com` and `admin.glorov.tech`)
+  - Server `/var/www/glorov/apps/backend/.env` and `/var/www/glorov/current/apps/backend/.env` (Updated and reloaded PM2 `glorov-backend`)
+- **Database Changes:** None.
+- **Solution Implemented:**
+  1. Updated `ADMIN_CORS`, `AUTH_CORS`, and `STORE_CORS` across local repository configuration, fallbacks, and server-side production `.env` files.
+  2. Executed zero-downtime PM2 reload with `--update-env` on Azure production VM.
+  3. Verified preflight CORS responses with `curl` for `https://api.glorov.tech/admin/users/me`, `https://api.glorov.tech/auth/user/emailpass`, and `https://api.glorov.com/admin/users/me` returning `Access-Control-Allow-Origin: https://admin.glorov.com` and `Access-Control-Allow-Credentials: true`.
+  4. Confirmed `admin.glorov.tech` remains 100% operational with identical CORS permissions.
+- **Tests Executed:**
+  - `pnpm --filter @glorov/backend exec jest src/__tests__/admin-access-control.unit.spec.ts` (3/3 pass)
+  - `pnpm turbo typecheck` (4/4 packages pass clean)
+  - `pnpm turbo lint` (0 errors)
+  - `pnpm turbo test` (624 unit tests pass: 295 storefront, 329 backend)
+  - `curl -I -s -X OPTIONS https://api.glorov.tech/admin/users/me -H "Origin: https://admin.glorov.com"` (HTTP 204 with `Access-Control-Allow-Origin: https://admin.glorov.com`)
+  - `curl -I -s -X OPTIONS https://api.glorov.tech/auth/user/emailpass -H "Origin: https://admin.glorov.com"` (HTTP 204 with `Access-Control-Allow-Origin: https://admin.glorov.com`)
+- **Test Results:** PASS
+- **Remaining Risks:** None. Both domains point to the same host with valid Let's Encrypt certificates.
+- **Rollback Considerations:** Revert `.env` and PM2 reload.
+
 ### Template for Future Entries
 
 ```

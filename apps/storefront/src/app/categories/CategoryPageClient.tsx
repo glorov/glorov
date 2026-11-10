@@ -10,6 +10,7 @@ import {
   GlorovVegetableIcon,
   GlorovLivePlantIcon,
   GlorovFlowerIcon,
+  GlorovHerbIcon,
   GlorovAllIcon,
 } from '../../components/common/GlorovIcons'
 import {
@@ -20,8 +21,8 @@ export interface CategoryPageClientProps {
   initialCategoryHandle?: string
 }
 
-// Top 4 Primary Botanical Categories strictly: Seeds, Vegetables, Living Plants, Flowers
-const PRIMARY_CATEGORY_HANDLES = ['seeds', 'vegetables', 'live-plants', 'flowers']
+// Mobile: strictly 4 primary categories as requested
+const MOBILE_PRIMARY_CATEGORY_HANDLES = ['seeds', 'vegetables', 'live-plants', 'flowers']
 
 export function CategoryPageClient({
   initialCategoryHandle,
@@ -29,7 +30,7 @@ export function CategoryPageClient({
   const router = useRouter()
   const { cartCount } = useCart()
 
-  // Mobile selected category index in GLOROV_BOTANICAL_CATEGORIES (0 = For You)
+  // Mobile selected category index in mobileRailCategories (0 = For You)
   const initialIndex = useMemo(() => {
     if (!initialCategoryHandle) return 0
     const idx = GLOROV_BOTANICAL_CATEGORIES.findIndex(
@@ -50,10 +51,10 @@ export function CategoryPageClient({
     return match ? match.title : 'All Categories'
   })
 
-  // Mobile categories list: For You + top 4 primary categories strictly
+  // Mobile: Strictly 4 categories (+ For You overview in rail)
   const mobileRailCategories = useMemo(() => {
     return GLOROV_BOTANICAL_CATEGORIES.filter(
-      (c) => c.handle === 'for-you' || PRIMARY_CATEGORY_HANDLES.includes(c.handle)
+      (c) => c.handle === 'for-you' || MOBILE_PRIMARY_CATEGORY_HANDLES.includes(c.handle)
     ).slice(0, 5)
   }, [])
 
@@ -61,15 +62,21 @@ export function CategoryPageClient({
   const activeMobileCategory = mobileRailCategories[selectedMobileIndex] || mobileRailCategories[0]
   const isForYouMobile = activeMobileCategory.handle === 'for-you'
 
-  const primaryCategories = useMemo(() => {
+  // Mobile feed: Strictly 4 categories only
+  const mobileFeedCategories = useMemo(() => {
     return GLOROV_BOTANICAL_CATEGORIES.filter(
-      (c) => c.handle !== 'for-you' && PRIMARY_CATEGORY_HANDLES.includes(c.handle)
+      (c) => c.handle !== 'for-you' && MOBILE_PRIMARY_CATEGORY_HANDLES.includes(c.handle)
     ).slice(0, 4)
   }, [])
 
-  // Desktop categories (strictly capped at 4 categories max)
+  // Desktop & Tablet categories (All 5 botanical categories: Seeds, Vegetables, Living Plants, Flowers, Herbs)
+  const allDesktopCategories = useMemo(() => {
+    return GLOROV_BOTANICAL_CATEGORIES.filter((c) => c.handle !== 'for-you')
+  }, [])
+
+  // Desktop filtered categories
   const filteredDesktopCategories = useMemo(() => {
-    let list = primaryCategories
+    let list = allDesktopCategories
 
     if (selectedDesktopGroup !== 'All Categories') {
       list = list.filter((cat) => cat.title === selectedDesktopGroup)
@@ -85,17 +92,17 @@ export function CategoryPageClient({
       })
     }
 
-    return list.slice(0, 4)
-  }, [primaryCategories, selectedDesktopGroup, desktopSearchQuery])
+    return list
+  }, [allDesktopCategories, selectedDesktopGroup, desktopSearchQuery])
 
   // Desktop selected category for single showcase view
   const activeDesktopCategory = useMemo(() => {
     if (selectedDesktopGroup === 'All Categories') return null
     return (
-      primaryCategories.find((c) => c.title === selectedDesktopGroup) ||
-      primaryCategories[0]
+      allDesktopCategories.find((c) => c.title === selectedDesktopGroup) ||
+      allDesktopCategories[0]
     )
-  }, [primaryCategories, selectedDesktopGroup])
+  }, [allDesktopCategories, selectedDesktopGroup])
 
   const desktopTabs = [
     { label: 'All Categories', Icon: GlorovAllIcon },
@@ -103,6 +110,7 @@ export function CategoryPageClient({
     { label: 'Vegetables', Icon: GlorovVegetableIcon },
     { label: 'Living Plants', Icon: GlorovLivePlantIcon },
     { label: 'Flowers', Icon: GlorovFlowerIcon },
+    { label: 'Herbs', Icon: GlorovHerbIcon },
   ]
 
   return (
@@ -402,7 +410,7 @@ export function CategoryPageClient({
              B. MOBILE VISUAL FEED VIEW (Immersive full-bleed card stream)
              ========================================================================= */
           <main className="flex-1 overflow-y-auto p-3.5 space-y-4">
-            {primaryCategories.map((cat) => (
+            {mobileFeedCategories.map((cat) => (
               <div
                 key={cat.id}
                 className="bg-white rounded-2xl border border-[#E5EDE7] shadow-sm overflow-hidden flex flex-col group"
@@ -602,14 +610,14 @@ export function CategoryPageClient({
           </div>
 
           {/* =========================================================================
-              VIEWPORT SWITCHER: All Categories (4-Col Grid) OR Single Category Showcase
+              VIEWPORT SWITCHER: All Categories (Desktop: 1 Line, Tablet: Max 2 Lines)
               ========================================================================= */}
           {selectedDesktopGroup === 'All Categories' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 pt-1">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3.5 lg:gap-3 xl:gap-4.5 pt-1">
               {filteredDesktopCategories.map((cat) => (
                 <div
                   key={cat.id}
-                  className="bg-white rounded-3xl border border-[#E5EDE7] shadow-[0_4px_20px_rgba(27,67,50,0.05)] hover:shadow-[0_18px_40px_rgba(27,67,50,0.12)] hover:border-[#2D6A4F]/40 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col justify-between group"
+                  className="bg-white rounded-2xl xl:rounded-3xl border border-[#E5EDE7] shadow-[0_4px_20px_rgba(27,67,50,0.05)] hover:shadow-[0_18px_40px_rgba(27,67,50,0.12)] hover:border-[#2D6A4F]/40 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col justify-between group"
                 >
                   {/* Category Image Header with Rich Floating Badges */}
                   <Link
@@ -620,88 +628,96 @@ export function CategoryPageClient({
                       src={cat.image}
                       alt={cat.title}
                       fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 33vw, 20vw"
                       className="object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
                       containerClassName="w-full h-full"
                       fallbackTitle={cat.title}
                     />
 
                     {/* Subtle top gradient for badge contrast */}
-                    <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
+                    <div className="absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
 
                     {/* Botanical Badge (Top-Left) */}
-                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#FFD51F] text-[#042018] text-[11px] font-black tracking-wide shadow-md">
+                    <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-[#FFD51F] text-[#042018] text-[10px] font-black tracking-wide shadow-xs">
                       {cat.badge}
                     </span>
 
                     {/* Varieties Count Badge (Top-Right Glassmorphic) */}
-                    <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/60 text-white text-[11px] font-bold backdrop-blur-md border border-white/25 shadow-md">
-                      {cat.count} Curated Varieties
+                    <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-black/60 text-white text-[10px] font-bold backdrop-blur-md border border-white/25 shadow-xs">
+                      {cat.count} Varieties
                     </span>
                   </Link>
 
                   {/* Card Body with Title, Subcategory Chips and Explorer Button */}
-                  <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div className="p-3.5 xl:p-4 flex-1 flex flex-col justify-between">
                     <div>
                       {/* Title Row with hover icon */}
-                      <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
                         <Link
                           href={`/categories/${cat.handle}`}
-                          className="font-serif !text-[#042018] group-hover:!text-[#1B4332] text-[22px] font-extrabold tracking-[-0.3px] leading-tight transition-colors"
+                          className="font-serif !text-[#042018] group-hover:!text-[#1B4332] text-[17px] xl:text-[19px] font-extrabold tracking-[-0.3px] leading-tight transition-colors truncate"
                         >
                           {cat.title}
                         </Link>
-                        <span className="w-8 h-8 rounded-full bg-[#F3F7F4] group-hover:bg-[#1B4332] group-hover:text-white text-[#1B4332] flex items-center justify-center transition-all duration-300 shrink-0">
-                          <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <span className="w-6 h-6 xl:w-7 xl:h-7 rounded-full bg-[#F3F7F4] group-hover:bg-[#1B4332] group-hover:text-white text-[#1B4332] flex items-center justify-center transition-all duration-300 shrink-0">
+                          <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                           </svg>
                         </span>
                       </div>
 
-                      <p className="text-[13px] text-[#4B5563] leading-[1.5] line-clamp-2">
+                      <p className="text-[12px] text-[#4B5563] leading-[1.4] line-clamp-2">
                         {cat.description}
                       </p>
 
                       {/* Interactive Subcategory Pills */}
-                      <div className="mt-4 pt-3 border-t border-[#F1F5F2]">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">
-                            Popular Subcategories
+                      <div className="mt-3 pt-2.5 border-t border-[#F1F5F2]">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-[#6B7280]">
+                            Collections
                           </span>
-                          <span className="text-[11px] font-semibold text-[#1B4332]">
-                            {cat.subCategories.length} Collections
+                          <span className="text-[10px] font-semibold text-[#1B4332]">
+                            {cat.subCategories.length} Sub-types
                           </span>
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {cat.subCategories.map((sub) => (
+                        <div className="flex flex-wrap items-center gap-1">
+                          {cat.subCategories.slice(0, 2).map((sub) => (
                             <Link
                               key={sub.handle}
                               href={`/categories/${cat.handle}?subcat=${encodeURIComponent(sub.title)}`}
-                              className="px-2.5 py-1 rounded-full bg-[#F3F7F4] hover:bg-[#1B4332] hover:text-white text-[#1B4332] text-[11px] font-bold border border-[#DCE7DF] transition-all flex items-center gap-1"
+                              className="px-2 py-0.5 rounded-full bg-[#F3F7F4] hover:bg-[#1B4332] hover:text-white text-[#1B4332] text-[10px] font-bold border border-[#DCE7DF] transition-all truncate max-w-[120px]"
                             >
                               <span>{sub.title}</span>
-                              <span className="text-[9.5px] opacity-70">({sub.count})</span>
+                              <span className="ml-1 opacity-70">({sub.count})</span>
                             </Link>
                           ))}
+                          {cat.subCategories.length > 2 && (
+                            <Link
+                              href={`/categories/${cat.handle}`}
+                              className="text-[9.5px] font-bold text-[#6B7280] hover:text-[#1B4332] transition-colors ml-0.5"
+                            >
+                              +{cat.subCategories.length - 2} more
+                            </Link>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     {/* Bottom Explore Action CTA */}
-                    <div className="mt-5 pt-3.5 border-t border-[#F1F5F2] flex items-center justify-between">
-                      <div className="text-xs font-semibold text-[#52B788] flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5 text-[#52B788]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="mt-4 pt-3 border-t border-[#F1F5F2] flex items-center justify-between">
+                      <div className="text-[10.5px] font-semibold text-[#52B788] flex items-center gap-1">
+                        <svg className="w-3 h-3 text-[#52B788]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                         </svg>
-                        <span>Pune Acclimatized</span>
+                        <span>Acclimatized</span>
                       </div>
 
                       <Link
                         href={`/categories/${cat.handle}`}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#1B4332] text-white hover:bg-[#2D6A4F] text-xs font-bold shadow-xs hover:shadow-md transition-all active:scale-95"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#1B4332] text-white hover:bg-[#2D6A4F] text-[11px] font-bold shadow-xs hover:shadow-md transition-all active:scale-95"
                       >
-                        <span>Explore Collection</span>
-                        <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <span>Explore</span>
+                        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                         </svg>
                       </Link>

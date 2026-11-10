@@ -12,6 +12,10 @@ describe("Administrative Access Control & Security Invariants", () => {
     // Prohibit wildcard CORS
     expect(storeCors.split(",")).not.toContain("*");
     expect(adminCors.split(",")).not.toContain("*");
+
+    // Ensure both primary and secondary production admin domains are configured
+    expect(adminCors).toContain("https://admin.glorov.com");
+    expect(adminCors).toContain("https://admin.glorov.tech");
   });
 
   it("verifies required secrets are defined and isolated from store client bundles", () => {

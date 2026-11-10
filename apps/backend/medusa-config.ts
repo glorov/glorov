@@ -112,9 +112,15 @@ export default defineConfig({
         ? "redis://localhost:6379"
         : undefined),
     http: {
-      storeCors: process.env.STORE_CORS || "http://localhost:3000",
-      adminCors: process.env.ADMIN_CORS || "http://localhost:5173,http://localhost:9000",
-      authCors: process.env.AUTH_CORS || "http://localhost:3000,http://localhost:5173,http://localhost:9000",
+      storeCors:
+        process.env.STORE_CORS ||
+        "http://localhost:3000,https://glorov.com,https://www.glorov.com,https://glorov.tech,https://www.glorov.tech",
+      adminCors:
+        process.env.ADMIN_CORS ||
+        "http://localhost:5173,http://localhost:9000,https://admin.glorov.com,http://admin.glorov.com,https://admin.glorov.tech,http://admin.glorov.tech",
+      authCors:
+        process.env.AUTH_CORS ||
+        "http://localhost:3000,http://localhost:5173,http://localhost:9000,https://admin.glorov.com,http://admin.glorov.com,https://admin.glorov.tech,http://admin.glorov.tech,https://glorov.com,https://glorov.tech",
       jwtSecret: process.env.JWT_SECRET || "super-secret-jwt-key-glorov-dev-32bytes",
       cookieSecret: process.env.COOKIE_SECRET || "super-secret-cookie-glorov-dev-32bytes",
     },

@@ -162,12 +162,15 @@ jobs:
           echo "1. Checking Storefront (https://glorov.tech)..."
           curl -f -s -I "https://glorov.tech" | head -n 10
 
-          echo "2. Checking Admin Dashboard (https://admin.glorov.tech)..."
+          echo "2. Checking Admin Dashboard (admin.glorov.tech & admin.glorov.com)..."
           curl -f -s -I "https://admin.glorov.tech" | head -n 10
           curl -f -s -L -I "https://admin.glorov.tech/app" | head -n 10
+          curl -f -s -I "https://admin.glorov.com" | head -n 10
+          curl -f -s -L -I "https://admin.glorov.com/app" | head -n 10
 
-          echo "3. Checking Backend Health (https://api.glorov.tech/health)..."
+          echo "3. Checking Backend Health (api.glorov.tech & api.glorov.com)..."
           curl -f -s -I "https://api.glorov.tech/health" | head -n 10
+          curl -f -s -I "https://api.glorov.com/health" | head -n 10
 
           echo "🎉 All production services are ONLINE and HEALTHY!"
 

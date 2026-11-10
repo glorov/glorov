@@ -10,7 +10,6 @@ import {
   GlorovVegetableIcon,
   GlorovLivePlantIcon,
   GlorovFlowerIcon,
-  GlorovHerbIcon,
   GlorovAllIcon,
 } from '../../components/common/GlorovIcons'
 import {
@@ -20,6 +19,9 @@ import {
 export interface CategoryPageClientProps {
   initialCategoryHandle?: string
 }
+
+// Top 4 Primary Botanical Categories strictly: Seeds, Vegetables, Living Plants, Flowers
+const PRIMARY_CATEGORY_HANDLES = ['seeds', 'vegetables', 'live-plants', 'flowers']
 
 export function CategoryPageClient({
   initialCategoryHandle,
@@ -48,13 +50,26 @@ export function CategoryPageClient({
     return match ? match.title : 'All Categories'
   })
 
+  // Mobile categories list: For You + top 4 primary categories strictly
+  const mobileRailCategories = useMemo(() => {
+    return GLOROV_BOTANICAL_CATEGORIES.filter(
+      (c) => c.handle === 'for-you' || PRIMARY_CATEGORY_HANDLES.includes(c.handle)
+    ).slice(0, 5)
+  }, [])
+
   // Mobile active category
-  const activeMobileCategory = GLOROV_BOTANICAL_CATEGORIES[selectedMobileIndex] || GLOROV_BOTANICAL_CATEGORIES[0]
+  const activeMobileCategory = mobileRailCategories[selectedMobileIndex] || mobileRailCategories[0]
   const isForYouMobile = activeMobileCategory.handle === 'for-you'
 
-  // Desktop categories (exclude "for-you" in the main list)
+  const primaryCategories = useMemo(() => {
+    return GLOROV_BOTANICAL_CATEGORIES.filter(
+      (c) => c.handle !== 'for-you' && PRIMARY_CATEGORY_HANDLES.includes(c.handle)
+    ).slice(0, 4)
+  }, [])
+
+  // Desktop categories (strictly capped at 4 categories max)
   const filteredDesktopCategories = useMemo(() => {
-    let list = GLOROV_BOTANICAL_CATEGORIES.filter((c) => c.handle !== 'for-you')
+    let list = primaryCategories
 
     if (selectedDesktopGroup !== 'All Categories') {
       list = list.filter((cat) => cat.title === selectedDesktopGroup)
@@ -70,17 +85,17 @@ export function CategoryPageClient({
       })
     }
 
-    return list
-  }, [selectedDesktopGroup, desktopSearchQuery])
+    return list.slice(0, 4)
+  }, [primaryCategories, selectedDesktopGroup, desktopSearchQuery])
 
   // Desktop selected category for single showcase view
   const activeDesktopCategory = useMemo(() => {
     if (selectedDesktopGroup === 'All Categories') return null
     return (
-      GLOROV_BOTANICAL_CATEGORIES.find((c) => c.title === selectedDesktopGroup) ||
-      GLOROV_BOTANICAL_CATEGORIES[1]
+      primaryCategories.find((c) => c.title === selectedDesktopGroup) ||
+      primaryCategories[0]
     )
-  }, [selectedDesktopGroup])
+  }, [primaryCategories, selectedDesktopGroup])
 
   const desktopTabs = [
     { label: 'All Categories', Icon: GlorovAllIcon },
@@ -88,7 +103,6 @@ export function CategoryPageClient({
     { label: 'Vegetables', Icon: GlorovVegetableIcon },
     { label: 'Living Plants', Icon: GlorovLivePlantIcon },
     { label: 'Flowers', Icon: GlorovFlowerIcon },
-    { label: 'Herbs', Icon: GlorovHerbIcon },
   ]
 
   return (
@@ -186,7 +200,7 @@ export function CategoryPageClient({
               aria-label="Botanical Category Rail"
               className="w-[88px] min-w-[88px] max-w-[88px] bg-[#F7F9F7] border-r border-[#E5E7EB] overflow-y-auto overflow-x-hidden py-1.5 scrollbar-none"
             >
-              {GLOROV_BOTANICAL_CATEGORIES.map((cat, idx) => {
+              {mobileRailCategories.map((cat, idx) => {
                 const isSelected = idx === selectedMobileIndex
                 const isForYou = cat.handle === 'for-you'
 
@@ -388,7 +402,7 @@ export function CategoryPageClient({
              B. MOBILE VISUAL FEED VIEW (Immersive full-bleed card stream)
              ========================================================================= */
           <main className="flex-1 overflow-y-auto p-3.5 space-y-4">
-            {GLOROV_BOTANICAL_CATEGORIES.filter((c) => c.handle !== 'for-you').map((cat) => (
+            {primaryCategories.map((cat) => (
               <div
                 key={cat.id}
                 className="bg-white rounded-2xl border border-[#E5EDE7] shadow-sm overflow-hidden flex flex-col group"
@@ -588,10 +602,10 @@ export function CategoryPageClient({
           </div>
 
           {/* =========================================================================
-              VIEWPORT SWITCHER: All Categories (3-Col Grid) OR Single Category Showcase
+              VIEWPORT SWITCHER: All Categories (4-Col Grid) OR Single Category Showcase
               ========================================================================= */}
           {selectedDesktopGroup === 'All Categories' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6 pt-1">
               {filteredDesktopCategories.map((cat) => (
                 <div
                   key={cat.id}
@@ -606,7 +620,7 @@ export function CategoryPageClient({
                       src={cat.image}
                       alt={cat.title}
                       fill
-                      sizes="(max-width: 1024px) 50vw, 33vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       className="object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
                       containerClassName="w-full h-full"
                       fallbackTitle={cat.title}

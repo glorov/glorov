@@ -184,6 +184,7 @@ export function ProductCard({
             )}
           </Link>
 
+          {/* Note: Low-stock counts ('Only X stocks remaining') are intentionally excluded from product cards to maintain a clean editorial catalog layout. Stock urgency is displayed exclusively on the Product Detail Page. */}
           {/* Sold Out / Out of Stock subtle state inside card body */}
           {isSoldOut && (
             <div className="flex items-center pt-0.5">

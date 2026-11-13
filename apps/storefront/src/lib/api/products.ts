@@ -52,17 +52,26 @@ export function transformMedusaProduct(raw: MedusaProductRaw): GlorovProductItem
 
   // 1. Images
   const imageUrls: string[] = []
-  if (raw.thumbnail) {
-    const thumb = resolveProductImageUrl(raw.thumbnail)
-    if (thumb) imageUrls.push(thumb)
-  }
-  if (Array.isArray(raw.images)) {
-    for (const img of raw.images) {
+  if (Array.isArray(raw.images) && raw.images.length > 0) {
+    const sortedImages = [...raw.images].sort(
+      (a, b) => ((a as { rank?: number })?.rank ?? 0) - ((b as { rank?: number })?.rank ?? 0)
+    )
+    for (const img of sortedImages) {
       if (img?.url) {
         const u = resolveProductImageUrl(img.url)
         if (u && !imageUrls.includes(u)) {
           imageUrls.push(u)
         }
+      }
+    }
+  }
+  if (raw.thumbnail) {
+    const thumb = resolveProductImageUrl(raw.thumbnail)
+    if (thumb && !imageUrls.includes(thumb)) {
+      if (imageUrls.length === 0) {
+        imageUrls.push(thumb)
+      } else {
+        imageUrls.unshift(thumb)
       }
     }
   }
@@ -162,10 +171,10 @@ export function transformMedusaProduct(raw: MedusaProductRaw): GlorovProductItem
   else if (discountPercent && discountPercent > 15) badges.push('Summer Sale')
 
   const resolvedImages =
-    mockMatch?.imageUrls && mockMatch.imageUrls.length > imageUrls.length
-      ? mockMatch.imageUrls
-      : imageUrls.length > 0
-        ? imageUrls
+    imageUrls.length > 0
+      ? imageUrls
+      : mockMatch?.imageUrls && mockMatch.imageUrls.length > 0
+        ? mockMatch.imageUrls
         : [primaryImage]
 
   const rawStock =

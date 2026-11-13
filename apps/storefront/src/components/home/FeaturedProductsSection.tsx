@@ -21,11 +21,21 @@ const CURATED_FEATURED_SLUGS = [
   'anthurium-red-plant',
   'marigold-african-double-seeds',
   'money-plant-golden',
-  'peace-lily-plant',
+  'snake-plant-golden-hahnii',
   'jade-plant-mini',
   'cosmos-mix-seeds',
   'aglaonema-pink-beauty-plant',
 ]
+
+/**
+ * Helper to ensure only strictly in-stock products are displayed on the home page showcase.
+ * Excludes any product explicitly marked inStock === false or with non-positive stock quantity.
+ */
+export function isProductInStock(product: GlorovProductItem): boolean {
+  if (product.inStock === false) return false
+  if (typeof product.stockQuantity === 'number' && product.stockQuantity <= 0) return false
+  return true
+}
 
 export interface FeaturedProductsSectionProps {
   className?: string
@@ -54,10 +64,30 @@ export function FeaturedProductsSection({
     return initialProducts && initialProducts.length > 0 ? initialProducts : MOCK_PRODUCTS
   }, [initialProducts])
 
-  // Instant synchronous filtering matching Flutter _getCuratedProducts()
+  // Filter out any out-of-stock or zero-quantity products so home page displays only available items
+  const inStockPool = useMemo(() => {
+    return productSource.filter(isProductInStock)
+  }, [productSource])
+
+  // Dynamic specimen counters for tabs based on active in-stock pool
+  const tabCounts = useMemo(() => {
+    const plantsCount = inStockPool.filter(
+      (p) => p.category.toLowerCase().includes('plant') || p.productType === 'plants'
+    ).length
+    const seedsCount = inStockPool.filter(
+      (p) => p.category.toLowerCase().includes('seed') || p.productType === 'seeds'
+    ).length
+    return {
+      all: Math.min(inStockPool.length, limit),
+      plants: Math.min(plantsCount, limit),
+      seeds: Math.min(seedsCount, limit),
+    }
+  }, [inStockPool, limit])
+
+  // Instant synchronous filtering matching Flutter _getCuratedProducts() using strictly in-stock items
   const filteredProducts = useMemo(() => {
     if (activeTab === 'plants') {
-      const plants = productSource.filter(
+      const plants = inStockPool.filter(
         (product) =>
           product.category.toLowerCase().includes('plant') ||
           product.productType === 'plants'
@@ -66,7 +96,7 @@ export function FeaturedProductsSection({
     }
 
     if (activeTab === 'seeds') {
-      const seeds = productSource.filter(
+      const seeds = inStockPool.filter(
         (product) =>
           product.category.toLowerCase().includes('seed') ||
           product.productType === 'seeds'
@@ -74,20 +104,20 @@ export function FeaturedProductsSection({
       return seeds.slice(0, limit)
     }
 
-    // Default 'all': Curated botanical showcase prioritizing the 16 featured slugs
+    // Default 'all': Curated botanical showcase prioritizing the 16 featured slugs that are in stock
     const curated = CURATED_FEATURED_SLUGS.map((slug) =>
-      productSource.find((p) => p.slug === slug)
+      inStockPool.find((p) => p.slug === slug)
     ).filter(Boolean) as GlorovProductItem[]
 
     if (curated.length >= limit) {
       return curated.slice(0, limit)
     }
 
-    // Fill remainder from productSource if fewer than 16 curated matches
+    // Fill remainder from inStockPool if fewer than limit curated matches
     const curatedIds = new Set(curated.map((p) => p.id))
-    const remainder = productSource.filter((p) => !curatedIds.has(p.id))
+    const remainder = inStockPool.filter((p) => !curatedIds.has(p.id))
     return [...curated, ...remainder].slice(0, limit)
-  }, [activeTab, productSource, limit])
+  }, [activeTab, inStockPool, limit])
 
   return (
     <section className={cn('w-full bg-[#F9FAF8] py-8 sm:py-12 border-t border-[#E5E7EB]', className)}>
@@ -131,7 +161,7 @@ export function FeaturedProductsSection({
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             )}
-            <span>All Featured (16)</span>
+            <span>All Featured ({tabCounts.all})</span>
           </button>
           <button
             type="button"
@@ -148,7 +178,7 @@ export function FeaturedProductsSection({
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             )}
-            <span>Live Plants (16)</span>
+            <span>Live Plants ({tabCounts.plants})</span>
           </button>
           <button
             type="button"
@@ -165,7 +195,7 @@ export function FeaturedProductsSection({
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             )}
-            <span>Heirloom Seeds (16)</span>
+            <span>Heirloom Seeds ({tabCounts.seeds})</span>
           </button>
         </div>
 

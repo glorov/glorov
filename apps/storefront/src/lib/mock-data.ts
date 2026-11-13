@@ -67,16 +67,30 @@ export const MOCK_ANNOUNCEMENTS: AnnouncementItem[] = /*#__PURE__*/ [
  */
 export const MOCK_BANNERS: BannerSlideItem[] = /*#__PURE__*/ [
   {
+    id: 'banner_garden_begins',
+    title: 'Every Great Garden Begins with a Seed.',
+    subtitle: 'Discover the pure joy of growing something beautiful from scratch.',
+    tag: 'GROW WITH GLOROV',
+    desktopImageUrl:
+      'https://res.cloudinary.com/naodmm8w/image/upload/v1794546486/glorov/banners/ahtiqp3vsi70vbbwiqeh.jpg',
+    mobileImageUrl:
+      'https://res.cloudinary.com/naodmm8w/image/upload/v1794546495/glorov/banners/axnt9otc6barvsnardqn.jpg',
+    ctaText: 'EXPLORE SEEDS & PLANTS',
+    ctaRoute: '/categories/seeds',
+    bgColor: '#1E3D2F',
+    isImageOnly: true,
+  },
+  {
     id: 'banner_grow_fresh',
     title: 'Grow Fresh. Live Green.',
     subtitle: 'Turn your little space into a balcony garden full of life.',
     tag: 'GROW YOUR OWN',
     desktopImageUrl:
-      'https://res.cloudinary.com/naodmm8w/image/upload/v1793516596/glorov/banners/banner_grow_fresh_desktop.png',
+      'https://res.cloudinary.com/naodmm8w/image/upload/v1794546535/glorov/banners/hcdpg2ufpldrnmpjtela.jpg',
     mobileImageUrl:
-      'https://res.cloudinary.com/naodmm8w/image/upload/v1793516597/glorov/banners/banner_grow_fresh_mobile.jpg',
+      'https://res.cloudinary.com/naodmm8w/image/upload/v1794546467/glorov/banners/dpjd5pxkh0zvogdreq5w.jpg',
     ctaText: 'SHOP VEGETABLE SEEDS',
-    ctaRoute: '/categories/vegetables',
+    ctaRoute: '/categories/seeds',
     bgColor: '#183B28',
     isImageOnly: true,
   },
@@ -86,9 +100,9 @@ export const MOCK_BANNERS: BannerSlideItem[] = /*#__PURE__*/ [
     subtitle: 'Bring home the vibrant colors, calm, and soothing beauty of nature.',
     tag: 'A LITTLE MORE NATURE',
     desktopImageUrl:
-      'https://res.cloudinary.com/naodmm8w/image/upload/v1793516595/glorov/banners/banner_garden_bloom_desktop.png',
+      'https://res.cloudinary.com/naodmm8w/image/upload/v1794546569/glorov/banners/qbpl6mrwnbhflkusafkx.jpg',
     mobileImageUrl:
-      'https://res.cloudinary.com/naodmm8w/image/upload/v1793516595/glorov/banners/banner_garden_bloom_mobile.jpg',
+      'https://res.cloudinary.com/naodmm8w/image/upload/v1794546545/glorov/banners/jkkvc299lpgy8gzkn08z.jpg',
     ctaText: 'DISCOVER FLOWER SEEDS',
     ctaRoute: '/categories/flowering',
     bgColor: '#7C1034',
@@ -100,26 +114,12 @@ export const MOCK_BANNERS: BannerSlideItem[] = /*#__PURE__*/ [
     subtitle: 'A greener tomorrow begins with what you plant in your pots today.',
     tag: 'START SOMETHING BEAUTIFUL',
     desktopImageUrl:
-      'https://res.cloudinary.com/naodmm8w/image/upload/v1793516598/glorov/banners/banner_plant_seed_desktop.png',
+      'https://res.cloudinary.com/naodmm8w/image/upload/v1794546584/glorov/banners/lnjogudertui3mkyi77p.jpg',
     mobileImageUrl:
-      'https://res.cloudinary.com/naodmm8w/image/upload/v1793516599/glorov/banners/banner_plant_seed_mobile.jpg',
+      'https://res.cloudinary.com/naodmm8w/image/upload/v1794546579/glorov/banners/piop5pmjjw8c7shksret.jpg',
     ctaText: 'START YOUR GARDEN',
     ctaRoute: '/categories/live-plants',
     bgColor: '#2D5A27',
-    isImageOnly: true,
-  },
-  {
-    id: 'banner_garden_begins',
-    title: 'Every Great Garden Begins with a Seed.',
-    subtitle: 'Discover the pure joy of growing something beautiful from scratch.',
-    tag: 'GROW WITH GLOROV',
-    desktopImageUrl:
-      'https://res.cloudinary.com/naodmm8w/image/upload/v1793516593/glorov/banners/banner_garden_begins_desktop.png',
-    mobileImageUrl:
-      'https://res.cloudinary.com/naodmm8w/image/upload/v1793516594/glorov/banners/banner_garden_begins_mobile.jpg',
-    ctaText: 'EXPLORE SEEDS & PLANTS',
-    ctaRoute: '/categories/seeds',
-    bgColor: '#1E3D2F',
     isImageOnly: true,
   },
 ]

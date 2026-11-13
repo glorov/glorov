@@ -113,6 +113,16 @@ export function HeroBannerSlider({
   const [dragOffset, setDragOffset] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
 
+  // Ensure virtual index is safely bounded if banner count changes dynamically
+  useEffect(() => {
+    setDisplayIndex((current) => {
+      if (slidesCount <= 1) return 0
+      if (current > slidesCount) return 1
+      if (current < 1) return 1
+      return current
+    })
+  }, [slidesCount])
+
   // Drag tracking refs with 2-axis gesture disambiguation
   const startXRef = useRef<number>(0)
   const startYRef = useRef<number>(0)

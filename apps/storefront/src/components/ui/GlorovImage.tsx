@@ -75,12 +75,23 @@ export function GlorovImage({
     onImageError?.()
   }
 
-  // Reset states if src changes
+  // Reset states if src changes and synchronize with cached image state
   useEffect(() => {
     setIsHighResLoaded(false)
     setIsLowResLoaded(false)
     setHasError(false)
-  }, [rawSrc])
+
+    // Check if image was already completed from browser disk/memory cache
+    if (imgRef.current?.complete) {
+      if (imgRef.current.naturalWidth > 0) {
+        setIsHighResLoaded(true)
+        onImageLoad?.()
+      } else if (imgRef.current.naturalWidth === 0 && rawSrc) {
+        setHasError(true)
+        onImageError?.()
+      }
+    }
+  }, [rawSrc, onImageLoad, onImageError])
 
   return (
     <div

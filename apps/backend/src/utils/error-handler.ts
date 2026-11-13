@@ -42,6 +42,15 @@ export function sendSanitizedError(
 
   res.setHeader('x-correlation-id', correlationId)
 
+  // Ensure CORS headers are attached on error responses so browsers do not drop errors with CORS blocks
+  const reqOrigin = req?.headers?.origin as string | undefined
+  if (reqOrigin && !res.getHeader('Access-Control-Allow-Origin')) {
+    res.setHeader('Access-Control-Allow-Origin', reqOrigin)
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-medusa-access-token, x-correlation-id')
+  }
+
   const classified = classifyError(error)
   const operation =
     options.operation ||

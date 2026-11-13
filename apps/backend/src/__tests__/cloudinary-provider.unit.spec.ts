@@ -148,4 +148,103 @@ describe("Cloudinary File Provider & Media Operations", () => {
     });
     expect(generatedUrl).toContain("https://res.cloudinary.com");
   });
+
+  describe("Media Upload Route & Slug Utility", () => {
+    const generateSlugFromFilename = (filename: string): string => {
+      if (!filename) return `asset-${Date.now()}`;
+      const lastDot = filename.lastIndexOf(".");
+      const nameWithoutExt = lastDot > 0 ? filename.substring(0, lastDot) : filename;
+
+      const slug = nameWithoutExt
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      return slug || `asset-${Date.now()}`;
+    };
+
+    it("auto-hyphenates spaces and strips invalid characters in slugs", () => {
+      expect(generateSlugFromFilename("Monstera Deliciosa Plant 01.png")).toBe(
+        "monstera-deliciosa-plant-01"
+      );
+      expect(generateSlugFromFilename("glorov desktop banner 21 9.jpg")).toBe(
+        "glorov-desktop-banner-21-9"
+      );
+      expect(generateSlugFromFilename("Hero_Image_Final (1).webp")).toBe(
+        "hero-image-final-1"
+      );
+      expect(generateSlugFromFilename("multiple   spaces   here.png")).toBe(
+        "multiple-spaces-here"
+      );
+    });
+
+    it("uploads single image to Cloudinary via POST /admin/media/upload handler", async () => {
+      const { POST } = await import("../api/admin/media/upload/route");
+      const req: any = {
+        headers: { origin: "https://admin.glorov.com" },
+        body: {
+          file: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+          folder: "glorov/products",
+          public_id: "monstera-deliciosa",
+        },
+      };
+
+      const res: any = {
+        setHeader: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+
+      await POST(req, res);
+
+      expect(res.setHeader).toHaveBeenCalledWith("Access-Control-Allow-Origin", "https://admin.glorov.com");
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining("uploaded successfully"),
+          asset: expect.objectContaining({
+            public_id: "glorov/test",
+          }),
+        })
+      );
+    });
+
+    it("uploads multiple images in batch via POST /admin/media/upload handler", async () => {
+      const { POST } = await import("../api/admin/media/upload/route");
+      const req: any = {
+        headers: { origin: "https://admin.glorov.com" },
+        body: {
+          files: [
+            {
+              file: "data:image/png;base64,dummy1",
+              public_id: "plant-1",
+            },
+            {
+              file: "data:image/png;base64,dummy2",
+              public_id: "plant-2",
+            },
+          ],
+        },
+      };
+
+      const res: any = {
+        setHeader: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+
+      await POST(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          count: 2,
+          assets: expect.any(Array),
+        })
+      );
+    });
+  });
 });

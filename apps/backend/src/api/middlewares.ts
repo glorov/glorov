@@ -207,6 +207,23 @@ export default defineMiddlewares({
     },
     {
       method: ['POST'],
+      matcher: '/admin/media/upload*',
+      bodyParser: {
+        sizeLimit: '50mb',
+      },
+      middlewares: [
+        authenticate('user', ['session', 'bearer']),
+      ],
+    },
+    {
+      method: ['GET', 'DELETE'],
+      matcher: '/admin/media*',
+      middlewares: [
+        authenticate('user', ['session', 'bearer']),
+      ],
+    },
+    {
+      method: ['POST'],
       matcher: '/admin/products/csv-import*',
       middlewares: [
         authenticate('user', ['session', 'bearer']),

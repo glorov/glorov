@@ -11,11 +11,31 @@ const initCloudinary = () => {
   });
 };
 
+const setCorsHeaders = (req: MedusaRequest, res: MedusaResponse) => {
+  const origin = (req.headers.origin as string) || "https://admin.glorov.com";
+  res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, x-medusa-access-token, x-correlation-id"
+  );
+};
+
+export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse) => {
+  setCorsHeaders(req, res);
+  res.status(204).end();
+};
+
 /**
  * GET /admin/media
  * Lists images stored in Cloudinary under the 'glorov' folder structure.
  */
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
+  setCorsHeaders(req, res);
   try {
     initCloudinary();
     const folder = (req.query?.folder as string) || "glorov";
@@ -47,7 +67,10 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       total_count: result.resources?.length || 0,
     });
   } catch (error: unknown) {
-    sendSanitizedError(res, error, 500);
+    sendSanitizedError(res, error, {
+      req,
+      operation: "GET /admin/media",
+    });
   }
 };
 
@@ -56,12 +79,16 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
  * Deletes an image from Cloudinary by public_id.
  */
 export const DELETE = async (req: MedusaRequest, res: MedusaResponse) => {
+  setCorsHeaders(req, res);
   try {
     initCloudinary();
-    const publicId = (req.query?.public_id as string) || (req.body as any)?.public_id;
+    const publicId =
+      (req.query?.public_id as string) || (req.body as any)?.public_id;
 
     if (!publicId) {
-      res.status(400).json({ message: "Parameter 'public_id' is required for deletion." });
+      res
+        .status(400)
+        .json({ message: "Parameter 'public_id' is required for deletion." });
       return;
     }
 
@@ -77,6 +104,9 @@ export const DELETE = async (req: MedusaRequest, res: MedusaResponse) => {
       result: result.result,
     });
   } catch (error: unknown) {
-    sendSanitizedError(res, error, 500);
+    sendSanitizedError(res, error, {
+      req,
+      operation: "DELETE /admin/media",
+    });
   }
 };

@@ -19,6 +19,44 @@ All required images have been generated at exact platform aspect ratios using Gl
 | **Desktop Featured Banner** | `Desktop Featured Banner (21:9)` | `21:9` | `2520 × 1080 px` | [`glorov-desktop-banner-21x9.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/glorov-desktop-banner-21x9.png) |
 | **Mobile Featured Banner** | `Mobile Featured Banner (3:4)` | `3:4` | `1080 × 1440 px` | [`glorov-mobile-banner-3x4.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/glorov-mobile-banner-3x4.png) |
 | **Update / Changelog Cover** | `Cover Image URL / Upload` | `16:9` | `1920 × 1080 px` | [`glorov-update-cover-16x9.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/glorov-update-cover-16x9.png) |
+| **Full Showcase Video** | `Showcase Video URL` | `16:9` | `1920 × 1080 px (20s @ 30fps)` | [`glorov_showcase_video.mp4`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/glorov_showcase_video.mp4) |
+| **Animated Preview GIF** | Markdown / Readme / Socials | `16:9` | `720p (12s Preview)` | [`glorov_showcase_preview.gif`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/glorov_showcase_preview.gif) |
+
+---
+
+## Part 1B: Complete Diverse Screenshot Gallery (12 Unique Views)
+
+Full high-resolution (2x Retina) live captures across all primary customer & admin journeys:
+
+### Desktop Views (1920 × 1080 @ 2x)
+1. **Homepage Hero:** [`desktop_01_homepage.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/desktop_01_homepage.png) — Announcement marquee, navigation header, and main botanical hero banner.
+2. **Homepage Trust Guarantee Bar:** [`desktop_02_homepage_trust_bar.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/desktop_02_homepage_trust_bar.png) — 4 botanical guarantees ("90-Day Pre-Fertilised Soil", "Arrives Healthy Guaranteed", etc.).
+3. **Categories Catalog Directory:** [`desktop_03_categories_catalog.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/desktop_03_categories_catalog.png) — 5 botanical pillars (Seeds, Vegetables, Living Plants, Flowers, Herbs) + Sowing Calendar.
+4. **Product Detail Page (Heirloom Tomato):** [`desktop_04_product_detail_hero.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/desktop_04_product_detail_hero.png) — Gallery, variant selector, coupon pills, and live pincode delivery estimator.
+5. **Product Specifications & Botanical Guide:** [`desktop_05_product_specs_care.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/desktop_05_product_specs_care.png) — Germination rate, sunlight requirements, soil preparation, and planting instructions.
+6. **Cart Experience & Transit Guarantee:** [`desktop_06_cart_page.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/desktop_06_cart_page.png) — Free shipping milestone tracker, item rows, order summary, and checkout CTA.
+7. **Search & Botanical Filter Discovery:** [`desktop_07_search_discovery.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/desktop_07_search_discovery.png) — Real-time search query matching with category pills and instant pricing.
+8. **Medusa Backend Admin Portal:** [`desktop_08_admin_portal.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/desktop_08_admin_portal.png) — Medusa v2 administrator authentication console (`admin.glorov.com`).
+
+### Mobile Views (iPhone 16 Pro Viewport 393 × 852 @ 2x)
+9. **Mobile Storefront Home:** [`mobile_01_homepage.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/mobile_01_homepage.png) — Mobile search bar, category quicklinks, and responsive hero.
+10. **Mobile Botanical Categories:** [`mobile_02_categories.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/mobile_02_categories.png) — Touch-friendly category cards with live collection badges.
+11. **Mobile Product Page:** [`mobile_03_product_detail.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/mobile_03_product_detail.png) — Mobile gallery carousel, variant picker, and sticky "Add to Cart" bar.
+12. **Mobile Cart:** [`mobile_04_cart.png`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/screenshots/mobile_04_cart.png) — Responsive mobile cart with one-tap checkout.
+
+---
+
+## Part 1C: Video Walkthrough Storyboard (5 Joined Clips)
+
+The showcase video [`glorov_showcase_video.mp4`](file:///Users/sourav/Developer/WEB/top-projects/glorov/docs/elsesourav-publish/glorov_showcase_video.mp4) was programmatically recorded using Puppeteer Chrome at 1920 × 1080 @ 30 fps, then concatenated using FFmpeg:
+
+| Clip | Name | Duration | Description |
+| :--- | :--- | :--- | :--- |
+| **01** | **Title Intro Card** | `00:00 - 00:03` (3.0s) | Dark luxury botanical title card with stroked Glorov logo and production showcase pill. |
+| **02** | **Homepage Scroll** | `00:03 - 00:08` (5.0s) | Smooth programmatic scroll from hero down through botanical collections to the 4 trust badges. |
+| **03** | **Categories Discovery** | `00:08 - 00:12` (4.0s) | Full exploration of `/categories` showcasing seeds, vegetables, living plants, flowers, and herbs. |
+| **04** | **PDP & Live Pincode Check** | `00:12 - 00:17` (5.0s) | Tomato seeds product detail view, typing postal code `560001` into live delivery estimator and displaying instant validation. |
+| **05** | **Architecture & Outro** | `00:17 - 00:20` (3.0s) | Production metrics card (624 tests passed, < 100ms API, 103 kB bundle) with live platform URL. |
 
 ---
 

@@ -37,7 +37,8 @@ Thumbs.db
 
 # Scratch
 scratch/
-screenshots/
+/screenshots/
+docs/qa/screenshots/
 
 coverage/
 playwright-report/

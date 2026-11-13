@@ -333,12 +333,12 @@ export function HeroBannerSlider({
     >
       {/* 
         Responsive Aspect Ratio Container:
-        - Mobile (< 768px): 3:4 (0.75:1) matching 1536x2048 mobile portrait banners
-        - Desktop & Tablet (>= 768px): 2048/746 (2.745:1) matching 2048x746 desktop landscape banners
-        - Seamless full-bleed fit without image stretching or awkward vertical cropping
+        - Mobile (< 768px): 3:4 (0.75:1) matching 1080x1440 portrait banners
+        - Desktop & Tablet (>= 768px): Strictly 21:9 (2.333:1) matching 2520x1080 landscape banners
+        - Pixel-perfect edge-to-edge fit without distortion or awkward vertical cropping
       */}
       <div
-        className="relative w-full aspect-[3/4] md:aspect-[2048/746] overflow-hidden touch-pan-y"
+        className="relative w-full aspect-[3/4] md:aspect-[21/9] overflow-hidden touch-pan-y"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -401,7 +401,7 @@ export function HeroBannerSlider({
                       draggable={false}
                       priority={idx === 1}
                       sizes="100vw"
-                      className="object-cover object-left md:object-center select-none pointer-events-none"
+                      className="object-cover object-center select-none pointer-events-none"
                       containerClassName="w-full h-full"
                     />
                   </div>

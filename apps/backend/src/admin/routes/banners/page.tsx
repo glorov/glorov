@@ -290,7 +290,7 @@ const BannersAdminPage = () => {
                 Live Storefront Preview
               </Heading>
               <Text className="text-ui-fg-subtle text-xs">
-                Switch between Desktop (Landscape 2.75:1) and Mobile (Portrait 3:4) viewports.
+                Switch between Desktop (Landscape 21:9) and Mobile (Portrait 3:4) viewports.
               </Text>
             </div>
 
@@ -315,7 +315,7 @@ const BannersAdminPage = () => {
           {/* Active Preview Viewport */}
           <div className="flex justify-center p-4 bg-ui-bg-base rounded-xl border border-ui-border-base overflow-hidden">
             {activePreviewTab === "desktop" ? (
-              <div className="w-full max-w-4xl relative rounded-xl overflow-hidden shadow-md bg-stone-900 border border-ui-border-base" style={{ aspectRatio: "2.75 / 1" }}>
+              <div className="w-full max-w-4xl relative rounded-xl overflow-hidden shadow-md bg-stone-900 border border-ui-border-base" style={{ aspectRatio: "21 / 9" }}>
                 <img
                   src={activeBanners[previewSlideIdx % activeBanners.length]?.desktop_image_url}
                   alt={activeBanners[previewSlideIdx % activeBanners.length]?.title}
@@ -480,15 +480,15 @@ const BannersAdminPage = () => {
 
               <div className="space-y-4 pt-1">
                 <CloudinaryMediaPicker
-                  label="Desktop Banner Image (2.75:1 Landscape)"
+                  label="Desktop Banner Image (21:9 Landscape)"
                   required
                   value={editingBanner.desktop_image_url || ""}
                   onChange={(url) => setEditingBanner({ ...editingBanner, desktop_image_url: url })}
                   placeholder="https://res.cloudinary.com/... or image URL"
                   folder="glorov/banners"
-                  aspectRatio="2.75:1"
-                  recommendedDimensions="2750 × 1000 px"
-                  helperText="Primary high-resolution landscape banner shown on desktop and large screens."
+                  aspectRatio="21:9"
+                  recommendedDimensions="2520 × 1080 px"
+                  helperText="Primary high-resolution 21:9 landscape banner shown on desktop and large screens."
                 />
 
                 <CloudinaryMediaPicker

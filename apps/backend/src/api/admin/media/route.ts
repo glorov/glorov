@@ -39,14 +39,20 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
     initCloudinary();
     const folder = (req.query?.folder as string) || "glorov";
-    const maxResults = Math.min(Number(req.query?.limit) || 50, 100);
+    const maxResults = Math.min(Number(req.query?.limit) || 100, 100);
+    const cursor = (req.query?.cursor as string) || (req.query?.next_cursor as string);
 
-    const result = await cloudinary.api.resources({
+    const apiOptions: any = {
       type: "upload",
       prefix: folder,
       max_results: maxResults,
       direction: "desc",
-    });
+    };
+    if (cursor) {
+      apiOptions.next_cursor = cursor;
+    }
+
+    const result = await cloudinary.api.resources(apiOptions);
 
     const resources = (result.resources || []).map((r: any) => ({
       public_id: r.public_id,

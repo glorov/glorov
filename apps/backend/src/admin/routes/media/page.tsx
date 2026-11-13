@@ -13,19 +13,7 @@ import {
   Copy,
   usePrompt,
 } from "@medusajs/ui";
-
-export interface MediaAsset {
-  public_id: string;
-  format: string;
-  version: number;
-  resource_type: string;
-  created_at: string;
-  bytes: number;
-  width: number;
-  height: number;
-  folder?: string;
-  secure_url: string;
-}
+import { generateSlugFromFilename, MediaAsset } from "../../components/cloudinary-media-picker";
 
 export interface QueueItem {
   id: string;
@@ -46,27 +34,6 @@ const FOLDER_OPTIONS = [
   { label: "Categories (glorov/categories)", value: "glorov/categories" },
   { label: "General Uploads (glorov/uploads)", value: "glorov/uploads" },
 ];
-
-/**
- * Auto-generates a clean slug from a file name.
- * Strips file extension, replaces spaces with hyphens ("-"),
- * removes invalid characters, and collapses consecutive hyphens.
- */
-export const generateSlugFromFilename = (filename: string): string => {
-  if (!filename) return `asset-${Date.now()}`;
-  const lastDot = filename.lastIndexOf(".");
-  const nameWithoutExt = lastDot > 0 ? filename.substring(0, lastDot) : filename;
-
-  const slug = nameWithoutExt
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")          // Replace all whitespace with "-"
-    .replace(/[^a-z0-9-]/g, "-")   // Replace special characters with "-"
-    .replace(/-+/g, "-")          // Collapse consecutive hyphens
-    .replace(/^-+|-+$/g, "");      // Trim leading/trailing hyphens
-
-  return slug || `asset-${Date.now()}`;
-};
 
 const formatBytes = (bytes: number) => {
   if (!bytes) return "0 B";
@@ -150,17 +117,36 @@ export const MediaAdminPage = () => {
   const [selectedFolder, setSelectedFolder] = useState<string>("glorov");
   const [defaultUploadFolder, setDefaultUploadFolder] = useState<string>("glorov/products");
   const [searchQuery, setSearchQuery] = useState("");
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  // Pagination states for Cloudinary Media Gallery
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(24);
+
+  // Single active file state (for top instant upload with auto-slug)
+  const [singleFile, setSingleFile] = useState<File | null>(null);
+  const [singlePreviewUrl, setSinglePreviewUrl] = useState<string>("");
+  const [customPublicId, setCustomPublicId] = useState<string>("");
+  const [isSingleUploading, setIsSingleUploading] = useState<boolean>(false);
+
+  // Multi-upload queue state
   const [uploadQueue, setUploadQueue] = useState<QueueItem[]>([]);
   const [isBulkUploading, setIsBulkUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchMedia = async () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+
+  // Fetch media from Cloudinary
+  const fetchMedia = async (folderToFetch = selectedFolder) => {
     setIsLoading(true);
     try {
-      const res = await adminFetch(`/admin/media?folder=${encodeURIComponent(selectedFolder)}&limit=100`);
+      const res = await adminFetch(`/admin/media?folder=${encodeURIComponent(folderToFetch)}&limit=100`);
       if (res.ok) {
         const data = res.data;
         setMediaList(data?.media || []);
+        setNextCursor(data?.next_cursor || null);
+        setCurrentPage(1);
       } else {
         toast.error("Cloudinary Error", {
           description: "Failed to load media assets from Cloudinary.",
@@ -175,8 +161,29 @@ export const MediaAdminPage = () => {
     }
   };
 
+  // Load next page from Cloudinary cursor
+  const handleLoadMoreFromCloudinary = async () => {
+    if (!nextCursor || isLoadingMore) return;
+    setIsLoadingMore(true);
+    try {
+      const res = await adminFetch(
+        `/admin/media?folder=${encodeURIComponent(selectedFolder)}&limit=100&cursor=${encodeURIComponent(nextCursor)}`
+      );
+      if (res.ok) {
+        const data = res.data;
+        setMediaList((prev) => [...prev, ...(data?.media || [])]);
+        setNextCursor(data?.next_cursor || null);
+        toast.success("Loaded more assets from Cloudinary.");
+      }
+    } catch {
+      toast.error("Could not load more assets from Cloudinary.");
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
   useEffect(() => {
-    fetchMedia();
+    fetchMedia(selectedFolder);
   }, [selectedFolder]);
 
   // Read file into Base64 data URL
@@ -189,8 +196,10 @@ export const MediaAdminPage = () => {
     });
   };
 
-  // Add files to the upload queue with auto-generated slugs
-  const addFilesToQueue = useCallback(
+  // Add files to the upload flow:
+  // - Single file: Populates top section with preview and auto-slug
+  // - Multiple files: Populates top section with first file AND enqueues all in multi-upload queue
+  const handleFilesChosen = useCallback(
     async (files: File[]) => {
       const validFiles = files.filter((f) => f.type.startsWith("image/"));
       if (validFiles.length === 0) {
@@ -200,38 +209,53 @@ export const MediaAdminPage = () => {
         return;
       }
 
-      const newItems: QueueItem[] = [];
-      for (const file of validFiles) {
-        try {
-          const previewUrl = await readFileAsDataUrl(file);
-          const autoSlug = generateSlugFromFilename(file.name);
-          newItems.push({
-            id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-            file,
-            previewUrl,
-            name: file.name,
-            slug: autoSlug,
-            folder: defaultUploadFolder,
-            sizeFormatted: formatBytes(file.size),
-            status: "idle",
-          });
-        } catch (err) {
-          console.error("Failed to read file preview:", err);
-        }
-      }
+      // 1. Process first file for the prominent top upload section
+      const firstFile = validFiles[0];
+      const autoSlug = generateSlugFromFilename(firstFile.name);
+      const firstPreview = await readFileAsDataUrl(firstFile);
 
-      setUploadQueue((prev) => [...prev, ...newItems]);
-      toast.success("Added to Queue", {
-        description: `${newItems.length} image(s) ready for upload with auto-generated slugs.`,
-      });
+      setSingleFile(firstFile);
+      setSinglePreviewUrl(firstPreview);
+      setCustomPublicId(autoSlug); // Automatically populate custom public ID / slug!
+
+      // 2. If multiple files, add all of them to the queue
+      if (validFiles.length > 1) {
+        const newQueueItems: QueueItem[] = [];
+        for (const file of validFiles) {
+          try {
+            const previewUrl = await readFileAsDataUrl(file);
+            const slug = generateSlugFromFilename(file.name);
+            newQueueItems.push({
+              id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+              file,
+              previewUrl,
+              name: file.name,
+              slug,
+              folder: defaultUploadFolder,
+              sizeFormatted: formatBytes(file.size),
+              status: "idle",
+            });
+          } catch (err) {
+            console.error("Failed to read file preview:", err);
+          }
+        }
+        setUploadQueue((prev) => [...prev, ...newQueueItems]);
+        toast.success("Files Added", {
+          description: `Auto-generated slugs for ${validFiles.length} images. Ready for upload.`,
+        });
+      } else {
+        toast.success("Image Selected", {
+          description: `Auto-generated slug: "${autoSlug}". Ready to upload.`,
+        });
+      }
     },
     [defaultUploadFolder]
   );
 
-  // File input change handler (multiple support)
+  // File input change handler
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      addFilesToQueue(Array.from(e.target.files));
+      handleFilesChosen(Array.from(e.target.files));
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -240,7 +264,7 @@ export const MediaAdminPage = () => {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      addFilesToQueue(Array.from(e.dataTransfer.files));
+      handleFilesChosen(Array.from(e.dataTransfer.files));
     }
   };
 
@@ -248,7 +272,6 @@ export const MediaAdminPage = () => {
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       const target = e.target as HTMLElement;
-      // Do not hijack typing inside text inputs unless clipboard explicitly contains images
       const isInput = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA");
 
       const items = e.clipboardData?.items;
@@ -275,7 +298,7 @@ export const MediaAdminPage = () => {
         if (!isInput) {
           e.preventDefault();
         }
-        addFilesToQueue(imageFiles);
+        handleFilesChosen(imageFiles);
       }
     };
 
@@ -283,7 +306,7 @@ export const MediaAdminPage = () => {
     return () => {
       window.removeEventListener("paste", handlePaste);
     };
-  }, [addFilesToQueue]);
+  }, [handleFilesChosen]);
 
   // Clickable "Paste from Clipboard" button handler
   const handleClipboardButton = async () => {
@@ -301,7 +324,7 @@ export const MediaAdminPage = () => {
           }
         }
         if (imageFiles.length > 0) {
-          addFilesToQueue(imageFiles);
+          handleFilesChosen(imageFiles);
           return;
         }
       }
@@ -312,6 +335,49 @@ export const MediaAdminPage = () => {
       toast.info("Paste Shortcut", {
         description: "Press Cmd+V (Mac) or Ctrl+V anywhere on this page to paste your image.",
       });
+    }
+  };
+
+  // Upload single primary image
+  const handleUploadSingle = async () => {
+    if (!singlePreviewUrl) {
+      toast.error("No image selected", { description: "Please choose or drop an image first." });
+      return;
+    }
+
+    setIsSingleUploading(true);
+    try {
+      const payload = {
+        file: singlePreviewUrl,
+        folder: defaultUploadFolder,
+        public_id: customPublicId.trim() || undefined,
+      };
+
+      const res = await adminFetch("/admin/media/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        toast.success("Upload Successful!", {
+          description: `Image saved to Cloudinary in ${defaultUploadFolder}.`,
+        });
+        // Reset single upload state
+        setSingleFile(null);
+        setSinglePreviewUrl("");
+        setCustomPublicId("");
+        fetchMedia();
+      } else {
+        const errMsg = res.error || res.data?.message || "Upload failed";
+        toast.error("Upload Failed", { description: errMsg });
+      }
+    } catch (err: any) {
+      toast.error("Upload Error", {
+        description: err.message || "Network error while uploading.",
+      });
+    } finally {
+      setIsSingleUploading(false);
     }
   };
 
@@ -399,14 +465,14 @@ export const MediaAdminPage = () => {
     setUploadQueue((prev) => prev.filter((q) => q.id !== id));
   };
 
-  // Update slug for item
+  // Update slug for queue item
   const updateItemSlug = (id: string, newSlug: string) => {
     setUploadQueue((prev) =>
       prev.map((q) => (q.id === id ? { ...q, slug: newSlug } : q))
     );
   };
 
-  // Update target folder for item
+  // Update target folder for queue item
   const updateItemFolder = (id: string, newFolder: string) => {
     setUploadQueue((prev) =>
       prev.map((q) => (q.id === id ? { ...q, folder: newFolder } : q))
@@ -455,6 +521,7 @@ export const MediaAdminPage = () => {
     }
   };
 
+  // Filtered media list based on search query
   const filteredMedia = useMemo(() => {
     if (!searchQuery.trim()) return mediaList;
     const q = searchQuery.toLowerCase();
@@ -464,6 +531,24 @@ export const MediaAdminPage = () => {
         (m.format && m.format.toLowerCase().includes(q))
     );
   }, [mediaList, searchQuery]);
+
+  // Gallery Pagination Calculation
+  const totalAssets = filteredMedia.length;
+  const totalPages = Math.max(1, Math.ceil(totalAssets / itemsPerPage));
+
+  // Current page items
+  const pagedMedia = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredMedia.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredMedia, currentPage, itemsPerPage]);
+
+  const handlePageChange = (page: number) => {
+    const clamped = Math.max(1, Math.min(totalPages, page));
+    setCurrentPage(clamped);
+    if (galleryRef.current) {
+      galleryRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   const pendingCount = uploadQueue.filter((q) => q.status === "idle" || q.status === "error").length;
 
@@ -483,29 +568,29 @@ export const MediaAdminPage = () => {
             </Heading>
           </div>
           <Text className="text-ui-fg-subtle text-sm">
-            Upload single or multiple images, paste directly from clipboard, auto-generate hyphenated slugs, and manage high-res GLOROV botanical assets.
+            Manage, upload, preview, and organize official GLOROV botanical assets, product photography, and banners.
           </Text>
         </div>
 
         <div className="flex items-center gap-2">
           <Badge color="green" size="small">
-            CDN: naodmm8w
+            Cloud: naodmm8w
           </Badge>
-          <Button variant="secondary" size="small" onClick={fetchMedia} disabled={isLoading}>
+          <Button variant="secondary" size="small" onClick={() => fetchMedia()} disabled={isLoading}>
             Refresh Library
           </Button>
         </div>
       </div>
 
-      {/* Multi-Image & Clipboard Upload Zone */}
-      <Container className="p-6 bg-ui-bg-base border border-ui-border-base rounded-xl shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      {/* Upload New Botanical Image Form Container */}
+      <Container className="p-6 bg-ui-bg-base border border-ui-border-base rounded-xl shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ui-border-base pb-4">
           <div>
             <Heading level="h2" className="text-lg font-semibold text-ui-fg-base">
-              Upload Images (Multi-File & Clipboard Paste)
+              Upload New Botanical Image
             </Heading>
-            <Text className="text-xs text-ui-fg-muted">
-              Select multiple files, paste with <kbd className="px-1 py-0.5 bg-ui-bg-subtle rounded border text-[11px] font-mono">Cmd+V</kbd> / <kbd className="px-1 py-0.5 bg-ui-bg-subtle rounded border text-[11px] font-mono">Ctrl+V</kbd>, or drop files below. Slugs are automatically hyphenated from filenames.
+            <Text className="text-xs text-ui-fg-muted mt-0.5">
+              Select or drop an image below. The custom public ID / slug is automatically generated from the file name.
             </Text>
           </div>
 
@@ -523,22 +608,36 @@ export const MediaAdminPage = () => {
           </div>
         </div>
 
-        {/* Global Default Folder Select */}
-        <div className="mb-4 max-w-sm">
-          <label className="block text-xs font-medium text-ui-fg-subtle mb-1.5">
-            Default Cloudinary Folder for New Items
-          </label>
-          <select
-            value={defaultUploadFolder}
-            onChange={(e) => setDefaultUploadFolder(e.target.value)}
-            className="w-full h-9 rounded-md border border-ui-border-base bg-ui-bg-field px-3 text-sm text-ui-fg-base focus:outline-none focus:ring-1 focus:ring-emerald-600"
-          >
-            {FOLDER_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+        {/* Folder & Auto-Slug Input Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-ui-fg-base mb-1.5">
+              Target Cloudinary Folder
+            </label>
+            <select
+              value={defaultUploadFolder}
+              onChange={(e) => setDefaultUploadFolder(e.target.value)}
+              className="w-full h-9 rounded-md border border-ui-border-base bg-ui-bg-field px-3 text-sm text-ui-fg-base focus:outline-none focus:ring-1 focus:ring-emerald-600"
+            >
+              {FOLDER_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-ui-fg-base mb-1.5">
+              Custom Public ID / Slug (Optional, auto-generated from filename)
+            </label>
+            <Input
+              value={customPublicId}
+              onChange={(e) => setCustomPublicId(e.target.value)}
+              placeholder="e.g. heirloom-tomato-seeds-pack"
+              className="h-9 text-sm font-mono"
+            />
+          </div>
         </div>
 
         {/* Drag & Drop Area */}
@@ -562,21 +661,83 @@ export const MediaAdminPage = () => {
               <CloudUploadIcon />
             </div>
             <Text className="text-sm font-medium text-ui-fg-base">
-              Drag & drop multiple images here, or <span className="text-emerald-700 font-semibold underline">browse files</span>
+              Drag and drop your product or banner image here, or <span className="text-emerald-700 font-semibold underline">browse</span>
             </Text>
             <Text className="text-xs text-ui-fg-muted">
-              Supports JPG, PNG, WebP, SVG, GIF up to 50MB. Tip: You can also paste screenshots directly with <strong>Cmd+V / Ctrl+V</strong>.
+              Supports high-resolution JPG, PNG, WebP, SVG (Auto-compressed on Cloudinary CDN). Tip: You can also paste screenshots directly with <strong>Cmd+V / Ctrl+V</strong>.
             </Text>
           </div>
         </div>
 
-        {/* Upload Queue Section */}
+        {/* Active Selected File Preview & Upload Bar */}
+        {singleFile && singlePreviewUrl && (
+          <div className="p-4 bg-emerald-50/30 border border-emerald-300 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded bg-white border border-stone-200 overflow-hidden flex items-center justify-center shrink-0">
+                <img
+                  src={singlePreviewUrl}
+                  alt={singleFile.name}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-ui-fg-base truncate max-w-xs" title={singleFile.name}>
+                  {singleFile.name}
+                </p>
+                <div className="flex items-center gap-2 text-[11px] text-ui-fg-muted">
+                  <span>{formatBytes(singleFile.size)}</span>
+                  <span>•</span>
+                  <span>Folder: <strong>{defaultUploadFolder}</strong></span>
+                  <span>•</span>
+                  <span>Slug: <strong className="font-mono text-emerald-800">{customPublicId}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="small"
+                type="button"
+                onClick={() => {
+                  setSingleFile(null);
+                  setSinglePreviewUrl("");
+                  setCustomPublicId("");
+                }}
+              >
+                Clear
+              </Button>
+              <Button
+                variant="primary"
+                size="small"
+                type="button"
+                disabled={isSingleUploading}
+                onClick={handleUploadSingle}
+                className="bg-emerald-700 hover:bg-emerald-800 text-white flex items-center gap-1.5"
+              >
+                {isSingleUploading ? (
+                  <>
+                    <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  <span>Upload to Cloudinary</span>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Upload Queue Section for Multiple Files */}
         {uploadQueue.length > 0 && (
-          <div className="mt-6 pt-6 border-t border-ui-border-base flex flex-col gap-4">
+          <div className="pt-4 border-t border-ui-border-base flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Heading level="h3" className="text-sm font-semibold text-ui-fg-base">
-                  Upload Queue ({uploadQueue.length})
+                  Batch Queue ({uploadQueue.length})
                 </Heading>
                 {pendingCount > 0 && (
                   <Badge color="blue" size="small">
@@ -740,22 +901,27 @@ export const MediaAdminPage = () => {
         )}
       </Container>
 
-      {/* Media Library View */}
-      <Container className="p-6 bg-ui-bg-base border border-ui-border-base rounded-xl shadow-xs">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+      {/* Cloudinary Media Gallery with Full Pagination */}
+      <Container ref={galleryRef} className="p-6 bg-ui-bg-base border border-ui-border-base rounded-xl shadow-xs space-y-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-ui-border-base pb-4">
           <div>
             <Heading level="h2" className="text-lg font-semibold text-ui-fg-base">
               Cloudinary Media Gallery
             </Heading>
-            <Text className="text-xs text-ui-fg-muted">
-              Showing {filteredMedia.length} assets stored in Cloudinary CDN.
+            <Text className="text-xs text-ui-fg-muted mt-0.5">
+              Showing {totalAssets > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} -{" "}
+              {Math.min(currentPage * itemsPerPage, totalAssets)} of {totalAssets} assets stored in Cloudinary CDN.
             </Text>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            {/* Folder filter */}
             <select
               value={selectedFolder}
-              onChange={(e) => setSelectedFolder(e.target.value)}
+              onChange={(e) => {
+                setSelectedFolder(e.target.value);
+                setCurrentPage(1);
+              }}
               className="h-8 rounded-md border border-ui-border-base bg-ui-bg-field px-2 text-xs text-ui-fg-base focus:outline-none focus:ring-1 focus:ring-emerald-600"
             >
               <option value="glorov">All Glorov Assets (glorov/*)</option>
@@ -765,27 +931,54 @@ export const MediaAdminPage = () => {
               <option value="glorov/uploads">Uploads (glorov/uploads)</option>
             </select>
 
+            {/* Search Input */}
             <Input
               size="small"
               placeholder="Search assets..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-48"
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-40 md:w-48 text-xs"
             />
+
+            {/* Items Per Page Selector */}
+            <div className="flex items-center gap-1.5 text-xs text-ui-fg-subtle">
+              <span>Per page:</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="h-8 rounded-md border border-ui-border-base bg-ui-bg-field px-2 text-xs text-ui-fg-base focus:outline-none focus:ring-1 focus:ring-emerald-600"
+              >
+                <option value={12}>12</option>
+                <option value={24}>24</option>
+                <option value={48}>48</option>
+                <option value={96}>96</option>
+              </select>
+            </div>
           </div>
         </div>
 
+        {/* Gallery Content */}
         {isLoading ? (
-          <div className="py-16 text-center text-ui-fg-muted text-sm">
-            Loading Cloudinary media library...
+          <div className="py-20 text-center text-ui-fg-muted text-sm flex flex-col items-center justify-center gap-3">
+            <svg className="animate-spin h-6 w-6 text-emerald-600" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            <span>Loading Cloudinary media library...</span>
           </div>
         ) : filteredMedia.length === 0 ? (
           <div className="py-16 text-center text-ui-fg-muted text-sm border border-dashed rounded-lg">
             No assets found in selected folder. Upload an image above to get started.
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {filteredMedia.map((asset) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {pagedMedia.map((asset) => (
               <div
                 key={asset.public_id}
                 className="group relative flex flex-col bg-ui-bg-subtle/40 border border-ui-border-base rounded-lg overflow-hidden hover:border-emerald-600 hover:shadow-xs transition-all"
@@ -834,6 +1027,97 @@ export const MediaAdminPage = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Gallery Pagination Controls Bar */}
+        {totalAssets > 0 && (
+          <div className="pt-4 border-t border-ui-border-base flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs text-ui-fg-muted">
+              Showing page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> ({totalAssets} total assets)
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {/* First Page Button */}
+              <Button
+                variant="secondary"
+                size="small"
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(1)}
+                title="First Page"
+              >
+                « First
+              </Button>
+
+              {/* Prev Button */}
+              <Button
+                variant="secondary"
+                size="small"
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                ‹ Prev
+              </Button>
+
+              {/* Numbered Page Buttons */}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum = i + 1;
+                if (totalPages > 5) {
+                  if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                }
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "primary" : "secondary"}
+                    size="small"
+                    onClick={() => handlePageChange(pageNum)}
+                    className="w-8 h-8 p-0"
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+
+              {/* Next Button */}
+              <Button
+                variant="secondary"
+                size="small"
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Next ›
+              </Button>
+
+              {/* Last Page Button */}
+              <Button
+                variant="secondary"
+                size="small"
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(totalPages)}
+                title="Last Page"
+              >
+                Last »
+              </Button>
+            </div>
+
+            {/* Cloudinary next_cursor loader */}
+            {nextCursor && (
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={handleLoadMoreFromCloudinary}
+                disabled={isLoadingMore}
+                className="text-xs"
+              >
+                {isLoadingMore ? "Loading more..." : "Load more from Cloudinary CDN"}
+              </Button>
+            )}
           </div>
         )}
       </Container>

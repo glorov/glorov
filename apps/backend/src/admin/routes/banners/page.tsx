@@ -1,6 +1,7 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import React, { useState, useEffect, useMemo } from "react";
 import { adminFetch } from "../../utils/admin-client";
+import { CloudinaryMediaPicker } from "../../components/cloudinary-media-picker";
 import {
   Container,
   Heading,
@@ -477,24 +478,29 @@ const BannersAdminPage = () => {
                 <p className="text-[11px] text-ui-fg-muted mt-1">Used for admin reference and accessible image label.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-medium text-ui-fg-subtle mb-1 block">Desktop Image URL * (2.75:1 Landscape)</label>
-                  <Input
-                    required
-                    value={editingBanner.desktop_image_url || ""}
-                    onChange={(e) => setEditingBanner({ ...editingBanner, desktop_image_url: e.target.value })}
-                    placeholder="https://... or /banners/...png"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-ui-fg-subtle mb-1 block">Mobile Image URL (3:4 Portrait)</label>
-                  <Input
-                    value={editingBanner.mobile_image_url || ""}
-                    onChange={(e) => setEditingBanner({ ...editingBanner, mobile_image_url: e.target.value })}
-                    placeholder="https://... or /banners/...jpg (Optional)"
-                  />
-                </div>
+              <div className="space-y-4 pt-1">
+                <CloudinaryMediaPicker
+                  label="Desktop Banner Image (2.75:1 Landscape)"
+                  required
+                  value={editingBanner.desktop_image_url || ""}
+                  onChange={(url) => setEditingBanner({ ...editingBanner, desktop_image_url: url })}
+                  placeholder="https://res.cloudinary.com/... or image URL"
+                  folder="glorov/banners"
+                  aspectRatio="2.75:1"
+                  recommendedDimensions="2750 × 1000 px"
+                  helperText="Primary high-resolution landscape banner shown on desktop and large screens."
+                />
+
+                <CloudinaryMediaPicker
+                  label="Mobile Banner Image (3:4 Portrait)"
+                  value={editingBanner.mobile_image_url || ""}
+                  onChange={(url) => setEditingBanner({ ...editingBanner, mobile_image_url: url })}
+                  placeholder="https://res.cloudinary.com/... (Optional, defaults to desktop)"
+                  folder="glorov/banners"
+                  aspectRatio="3:4"
+                  recommendedDimensions="1080 × 1440 px"
+                  helperText="Vertical banner optimized for mobile viewport (optional - falls back to desktop image)."
+                />
               </div>
 
               <div>

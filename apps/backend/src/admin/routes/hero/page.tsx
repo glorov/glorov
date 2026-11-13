@@ -1,6 +1,7 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import React, { useState, useEffect } from "react";
 import { adminFetch } from "../../utils/admin-client";
+import { CloudinaryMediaPicker } from "../../components/cloudinary-media-picker";
 import {
   Container,
   Heading,
@@ -223,52 +224,64 @@ const HeroAdminPage = () => {
             </Badge>
           </div>
 
-          <div className="p-6 bg-white rounded-xl border border-stone-200 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#1B4332] text-white text-xs font-semibold rounded-full">
-              <span className="w-2 h-2 rounded-full bg-[#FFD51F]"></span>
-              {hero.tag || "ORGANIC BOTANICAL COLLECTION"}
-            </div>
+          <div className="p-6 bg-white rounded-xl border border-stone-200 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            <div className={`space-y-4 ${hero.desktop_image_url ? "md:col-span-2" : "md:col-span-3"}`}>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#1B4332] text-white text-xs font-semibold rounded-full">
+                <span className="w-2 h-2 rounded-full bg-[#FFD51F]"></span>
+                {hero.tag || "ORGANIC BOTANICAL COLLECTION"}
+              </div>
 
-            <h2 className="text-3xl font-extrabold text-[#1B4332] whitespace-pre-line leading-tight">
-              {hero.headline || "Grow Something Beautiful."}
-            </h2>
+              <h2 className="text-3xl font-extrabold text-[#1B4332] whitespace-pre-line leading-tight">
+                {hero.headline || "Grow Something Beautiful."}
+              </h2>
 
-            <p className="text-sm text-stone-600 max-w-xl line-clamp-2">
-              {hero.description}
-            </p>
+              <p className="text-sm text-stone-600 max-w-xl line-clamp-2">
+                {hero.description}
+              </p>
 
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                type="button"
-                className="px-5 py-2.5 bg-[#1B4332] text-white text-xs font-semibold rounded-lg shadow-sm"
-              >
-                {hero.cta_text} →
-              </button>
-              <button
-                type="button"
-                className="px-4 py-2.5 border border-[#1B4332] text-[#1B4332] text-xs font-semibold rounded-lg"
-              >
-                {hero.secondary_cta_text}
-              </button>
-            </div>
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  className="px-5 py-2.5 bg-[#1B4332] text-white text-xs font-semibold rounded-lg shadow-sm"
+                >
+                  {hero.cta_text} →
+                </button>
+                <button
+                  type="button"
+                  className="px-4 py-2.5 border border-[#1B4332] text-[#1B4332] text-xs font-semibold rounded-lg"
+                >
+                  {hero.secondary_cta_text}
+                </button>
+              </div>
 
-            {/* Rendered Trust Pills in Preview */}
-            <div className="pt-4 border-t border-stone-100">
-              <Text className="text-xs font-medium text-stone-400 mb-2">Live Trust Pills:</Text>
-              <div className="flex flex-wrap gap-2">
-                {hero.trust_pills.map((pill, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F4F9F4] border border-[#D8EADB] text-xs font-semibold text-[#1B4332]"
-                  >
-                    <span>
-                      {pill.icon.includes("shipping") ? "🚚" : pill.icon.includes("unit") ? "❄️" : "🌱"}
-                    </span>
-                    <span>{pill.text}</span>
-                  </div>
-                ))}
+              {/* Rendered Trust Pills in Preview */}
+              <div className="pt-4 border-t border-stone-100">
+                <Text className="text-xs font-medium text-stone-400 mb-2">Live Trust Pills:</Text>
+                <div className="flex flex-wrap gap-2">
+                  {hero.trust_pills.map((pill, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F4F9F4] border border-[#D8EADB] text-xs font-semibold text-[#1B4332]"
+                    >
+                      <span>
+                        {pill.icon.includes("shipping") ? "🚚" : pill.icon.includes("unit") ? "❄️" : "🌱"}
+                      </span>
+                      <span>{pill.text}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+
+            {hero.desktop_image_url && (
+              <div className="w-full aspect-[4/3] rounded-xl overflow-hidden border border-stone-200 bg-stone-50 flex items-center justify-center shadow-xs">
+                <img
+                  src={hero.desktop_image_url}
+                  alt="Hero Showcase Preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
           </div>
         </Container>
 
@@ -427,6 +440,42 @@ const HeroAdminPage = () => {
                 placeholder="/plant-doctor"
               />
             </div>
+          </div>
+        </Container>
+
+        {/* Hero Showcase Imagery (Desktop & Mobile) */}
+        <Container className="p-6 bg-ui-bg-base border border-ui-border-base rounded-xl space-y-6">
+          <div className="border-b border-ui-border-base pb-3">
+            <Heading level="h2" className="text-lg font-semibold text-ui-fg-base">
+              Hero Showcase Imagery (Desktop & Mobile)
+            </Heading>
+            <Text className="text-xs text-ui-fg-muted mt-0.5">
+              Directly upload new images to Cloudinary or select existing assets from your Cloudinary media library.
+            </Text>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CloudinaryMediaPicker
+              label="Desktop Hero Background Image"
+              value={hero.desktop_image_url || ""}
+              onChange={(url) => setHero({ ...hero, desktop_image_url: url })}
+              placeholder="https://res.cloudinary.com/... or image URL"
+              folder="glorov/banners"
+              aspectRatio="21:9 / 16:9"
+              recommendedDimensions="2560 × 1080 px"
+              helperText="High-resolution hero visual displayed on desktop storefront."
+            />
+
+            <CloudinaryMediaPicker
+              label="Mobile Hero Image"
+              value={hero.mobile_image_url || ""}
+              onChange={(url) => setHero({ ...hero, mobile_image_url: url })}
+              placeholder="https://res.cloudinary.com/... or image URL (Optional)"
+              folder="glorov/banners"
+              aspectRatio="3:4 Portrait"
+              recommendedDimensions="1080 × 1440 px"
+              helperText="Portrait hero visual optimized for mobile devices and tablets."
+            />
           </div>
         </Container>
 

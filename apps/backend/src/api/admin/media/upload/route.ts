@@ -76,7 +76,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       return;
     }
 
-    const uploadedAssets = [];
+    const uploadedAssets: any[] = [];
 
     for (const item of itemsToUpload) {
       if (!item.file || typeof item.file !== "string") {

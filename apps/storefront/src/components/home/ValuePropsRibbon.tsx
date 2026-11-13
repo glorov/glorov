@@ -294,38 +294,38 @@ export function GlorovOfferBanner({
  */
 export function ValuePropsRibbon({ className }: { className?: string }) {
   return (
-    <section className={cn('w-full bg-white py-2 sm:py-5', className)}>
-      <PageContainer className="space-y-2 sm:space-y-3.5 md:space-y-4">
+    <section className={cn('w-full bg-white py-1.5 sm:py-2 md:py-2.5', className)}>
+      <PageContainer className="space-y-2 sm:space-y-2.5">
         {/* 1. Dynamic Botanical Offer Welcome Banner */}
         <GlorovOfferBanner />
 
-        {/* 2. The Unified Trust Ribbon Bar (Forest Medium #2D6A4F) */}
+        {/* 2. The Unified Trust Ribbon Bar (Forest Medium #2D6A4F) - Compact & Elegant */}
         <div
           role="region"
           aria-label="GLOROV botanical trust guarantees and policies"
-          className="w-full bg-[#2D6A4F] text-white rounded-xl sm:rounded-2xl px-2.5 py-3 sm:px-5 sm:py-3.5 md:px-6 md:py-4.5"
+          className="w-full bg-[#2D6A4F] text-white rounded-xl sm:rounded-2xl px-2.5 py-2.5 sm:px-4 sm:py-2.5 md:px-5 md:py-3 shadow-[0_4px_16px_rgba(45,106,79,0.12)]"
         >
           <div className="flex items-center justify-between w-full">
             {MOCK_TRUST_BADGES.map((badge, idx) => {
               const itemContent = (
-                <div className="flex-1 min-w-0 flex flex-col items-center justify-center text-center px-0.5 sm:px-1.5 md:px-2 group">
+                <div className="flex-1 min-w-0 flex flex-col md:flex-row items-center justify-center text-center md:text-left px-0.5 sm:px-1 md:px-2 lg:px-3 group gap-1 sm:gap-1.5 md:gap-2.5 lg:gap-3">
                   {/* Circular White Badge */}
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full bg-white flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-8.5 md:h-8.5 lg:w-9.5 lg:h-9.5 rounded-full bg-white flex items-center justify-center shrink-0 shadow-xs transition-transform duration-200 group-hover:scale-105">
                     <span className="text-[#2D6A4F] flex items-center justify-center">
-                      <span className="sm:hidden">
-                        <TrustIcon icon={badge.icon} size={16} />
+                      <span className="md:hidden">
+                        <TrustIcon icon={badge.icon} size={15} />
                       </span>
-                      <span className="hidden sm:inline-block md:hidden">
-                        <TrustIcon icon={badge.icon} size={20} />
+                      <span className="hidden md:inline-block lg:hidden">
+                        <TrustIcon icon={badge.icon} size={17} />
                       </span>
-                      <span className="hidden md:inline-block">
-                        <TrustIcon icon={badge.icon} size={24} />
+                      <span className="hidden lg:inline-block">
+                        <TrustIcon icon={badge.icon} size={19} />
                       </span>
                     </span>
                   </div>
 
                   {/* Title: Clean, balanced typography without distracting subtitles */}
-                  <h3 className="mt-1.5 sm:mt-2 md:mt-2.5 text-[9.5px] sm:text-[11.5px] md:text-[13px] lg:text-[13.5px] font-semibold text-white tracking-tight leading-[1.22] text-center max-w-[150px] sm:max-w-[170px] md:max-w-[190px] mx-auto">
+                  <h3 className="text-[9.5px] sm:text-[10.5px] md:text-[12px] lg:text-[13px] font-semibold text-white tracking-tight leading-[1.2] text-center md:text-left max-w-[140px] md:max-w-none">
                     {badge.title}
                   </h3>
                 </div>
@@ -336,7 +336,7 @@ export function ValuePropsRibbon({ className }: { className?: string }) {
                   {idx > 0 && (
                     <div
                       aria-hidden="true"
-                      className="w-[1px] bg-white/20 h-6 sm:h-8 md:h-9 shrink-0 mx-0.5 sm:mx-1"
+                      className="w-[1px] bg-white/20 h-5 sm:h-5.5 md:h-6 shrink-0 mx-0.5 sm:mx-1 md:mx-1.5"
                     />
                   )}
 

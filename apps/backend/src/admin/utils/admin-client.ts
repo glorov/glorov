@@ -4,6 +4,50 @@
  * and handles both JSON and error responses gracefully.
  */
 
+/**
+ * Automatically sets the GLOROV botanical favicon in the Medusa Admin document head
+ * replacing any default or empty placeholder favicon.
+ */
+export function ensureAdminFavicon(): void {
+  if (typeof document === "undefined") return;
+
+  const setFavicon = () => {
+    let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement | null;
+    const faviconHref = "/favicon.ico";
+
+    if (!link || link.href.includes("data:,") || !link.href) {
+      if (!link) {
+        link = document.createElement("link");
+        document.head.appendChild(link);
+      }
+      link.type = "image/x-icon";
+      link.rel = "shortcut icon";
+      link.href = faviconHref;
+    }
+
+    // Also inject SVG favicon if available
+    let svgLink = document.querySelector("link[type='image/svg+xml']") as HTMLLinkElement | null;
+    if (!svgLink) {
+      svgLink = document.createElement("link");
+      svgLink.rel = "icon";
+      svgLink.type = "image/svg+xml";
+      svgLink.href = "/favicon.svg";
+      document.head.appendChild(svgLink);
+    }
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setFavicon);
+  } else {
+    setFavicon();
+  }
+}
+
+// Automatically invoke on admin client load
+if (typeof window !== "undefined") {
+  ensureAdminFavicon();
+}
+
 export function getBackendBaseUrl(): string {
   if (typeof window !== "undefined") {
     const sdk = (window as any).__sdk;

@@ -53,6 +53,7 @@ if [ -d "${BASE_DIR}/apps/backend" ]; then
   [ -f "${BASE_DIR}/apps/backend/.env" ] && cp -f "${BASE_DIR}/apps/backend/.env" "${RELEASE_DIR}/apps/backend/"
   if [ -d "${BASE_DIR}/apps/backend/static" ]; then
     cp -r "${BASE_DIR}/apps/backend/static" "${RELEASE_DIR}/apps/backend/" 2>/dev/null || true
+    cp -f "${BASE_DIR}/apps/backend/static"/favicon* "${RELEASE_DIR}/admin/" 2>/dev/null || true
   fi
   # Symlink src and node_modules so custom plugins like payment-razorpay resolve reliably
   if [ -d "${BASE_DIR}/apps/backend/src" ]; then

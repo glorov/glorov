@@ -110,8 +110,11 @@ export function HeroBannerSlider({
   const [displayIndex, setDisplayIndex] = useState(slidesCount > 1 ? 1 : 0)
   const [isTransitioning, setIsTransitioning] = useState(true)
   const [isDragging, setIsDragging] = useState(false)
-  const [dragOffset, setDragOffset] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+
+  // Direct GPU track element reference & animation frame ID for zero-lag 120fps hardware composite gestures
+  const trackRef = useRef<HTMLDivElement>(null)
+  const rafIdRef = useRef<number | null>(null)
 
   // Ensure virtual index is safely bounded if banner count changes dynamically
   useEffect(() => {
@@ -166,10 +169,18 @@ export function HeroBannerSlider({
       // Reached tail clone (clone of slide 0) -> jump silently back to real slide 0 (displayIndex 1)
       setIsTransitioning(false)
       setDisplayIndex(1)
+      if (trackRef.current) {
+        trackRef.current.style.transition = 'none'
+        trackRef.current.style.transform = `translate3d(-100%, 0, 0)`
+      }
     } else if (displayIndex <= 0) {
       // Reached head clone (clone of slide N-1) -> jump silently back to real slide N-1 (displayIndex N)
       setIsTransitioning(false)
       setDisplayIndex(slidesCount)
+      if (trackRef.current) {
+        trackRef.current.style.transition = 'none'
+        trackRef.current.style.transform = `translate3d(-${slidesCount * 100}%, 0, 0)`
+      }
     }
   }, [displayIndex, slidesCount])
 
@@ -184,6 +195,15 @@ export function HeroBannerSlider({
       return () => cancelAnimationFrame(raf)
     }
   }, [isTransitioning])
+
+  // Cancel any active animation frames on unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+    }
+  }, [])
 
   // Auto-play timer: advances slide smoothly every autoPlayIntervalMs.
   // Progress bar is driven by GPU CSS keyframes without 50ms JS state churn.
@@ -249,7 +269,9 @@ export function HeroBannerSlider({
       isLockedRef.current = 'horizontal'
       setIsDragging(true)
       setIsPaused(true)
-      setDragOffset(0)
+      if (trackRef.current) {
+        trackRef.current.style.transition = 'none'
+      }
       try {
         e.currentTarget.setPointerCapture(e.pointerId)
         capturedPointerIdRef.current = e.pointerId
@@ -258,7 +280,16 @@ export function HeroBannerSlider({
 
     if (isLockedRef.current === 'horizontal') {
       dragDeltaRef.current = diffX
-      setDragOffset(diffX)
+      // Real-time zero-lag GPU hardware composite update via requestAnimationFrame (no React state churn)
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+      rafIdRef.current = requestAnimationFrame(() => {
+        if (trackRef.current) {
+          trackRef.current.style.transition = 'none'
+          trackRef.current.style.transform = `translate3d(calc(-${displayIndex * 100}% + ${diffX}px), 0, 0)`
+        }
+      })
     }
   }
 
@@ -272,6 +303,11 @@ export function HeroBannerSlider({
       capturedPointerIdRef.current = null
     }
 
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current)
+      rafIdRef.current = null
+    }
+
     const wasHorizontal = isLockedRef.current === 'horizontal'
     const deltaX = dragDeltaRef.current
     const threshold = 40 // min pixel delta to trigger slide change
@@ -280,13 +316,20 @@ export function HeroBannerSlider({
     isLockedRef.current = 'none'
     setIsDragging(false)
     setIsPaused(false)
-    setDragOffset(0)
 
     if (wasHorizontal) {
+      if (trackRef.current) {
+        trackRef.current.style.transition = 'transform 500ms cubic-bezier(0.33, 1, 0.68, 1)'
+      }
       if (deltaX < -threshold) {
         handleNext()
       } else if (deltaX > threshold) {
         handlePrev()
+      } else {
+        // Snap smoothly back to current slide
+        if (trackRef.current) {
+          trackRef.current.style.transform = `translate3d(-${displayIndex * 100}%, 0, 0)`
+        }
       }
     }
   }
@@ -299,11 +342,20 @@ export function HeroBannerSlider({
       capturedPointerIdRef.current = null
     }
 
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current)
+      rafIdRef.current = null
+    }
+
+    if (trackRef.current) {
+      trackRef.current.style.transition = 'transform 500ms cubic-bezier(0.33, 1, 0.68, 1)'
+      trackRef.current.style.transform = `translate3d(-${displayIndex * 100}%, 0, 0)`
+    }
+
     isPointerDownRef.current = false
     isLockedRef.current = 'none'
     setIsDragging(false)
     setIsPaused(false)
-    setDragOffset(0)
     // Abort cleanly without changing slides
   }
 
@@ -348,15 +400,18 @@ export function HeroBannerSlider({
       >
         {/* Horizontal Infinite Slider Track */}
         <div
+          ref={trackRef}
           onTransitionEnd={handleTransitionEnd}
           onDragStart={(e) => e.preventDefault()}
           className="flex h-full w-full will-change-transform"
           style={{
-            transform: `translateX(calc(-${displayIndex * 100}% + ${dragOffset}px))`,
+            transform: `translate3d(-${displayIndex * 100}%, 0, 0)`,
             transition:
               isDragging || !isTransitioning
                 ? 'none'
                 : 'transform 500ms cubic-bezier(0.33, 1, 0.68, 1)',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
           }}
         >
           {extendedSlides.map((slide, idx) => {
@@ -385,7 +440,8 @@ export function HeroBannerSlider({
                       alt={isClone ? '' : (slide.title || 'Glorov Banner')}
                       fill
                       draggable={false}
-                      priority={idx === 1}
+                      priority={idx <= 3}
+                      progressive={false}
                       sizes="100vw"
                       className="object-cover object-top select-none pointer-events-none"
                       containerClassName="w-full h-full"
@@ -399,7 +455,8 @@ export function HeroBannerSlider({
                       alt={isClone ? '' : (slide.title || 'Glorov Banner')}
                       fill
                       draggable={false}
-                      priority={idx === 1}
+                      priority={idx <= 3}
+                      progressive={false}
                       sizes="100vw"
                       className="object-cover object-center select-none pointer-events-none"
                       containerClassName="w-full h-full"

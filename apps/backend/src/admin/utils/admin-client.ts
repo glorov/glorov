@@ -60,7 +60,7 @@ export function getBackendBaseUrl(): string {
     // @ts-ignore
     return String(__BACKEND_URL__).replace(/\/+$/, "");
   }
-  return "https://20.244.48.139.sslip.io/medusa";
+  return "https://api.glorov.tech";
 }
 
 export interface AdminApiResponse<T = any> {
